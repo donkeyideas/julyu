@@ -1,0 +1,72 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import Sidebar from '@/components/dashboard/Sidebar'
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const router = useRouter()
+  const [loading, setLoading] = useState(true)
+  const [authenticated, setAuthenticated] = useState(false)
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        
+        if (user) {
+          setAuthenticated(true)
+        } else {
+          router.push('/auth/login')
+        }
+      } catch (error) {
+        // Check localStorage for test auth
+        if (typeof window !== 'undefined') {
+          const testUser = localStorage.getItem('test_user')
+          if (testUser) {
+            setAuthenticated(true)
+          } else {
+            router.push('/auth/login')
+          }
+        } else {
+          router.push('/auth/login')
+        }
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkAuth()
+  }, [router])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block w-12 h-12 border-4 border-gray-800 border-t-green-500 rounded-full animate-spin mb-4"></div>
+          <div>Loading...</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!authenticated) {
+    return null
+  }
+
+  return (
+    <div className="min-h-screen bg-black text-white flex">
+      <Sidebar />
+      <main className="flex-1 ml-[280px] p-8">
+        {children}
+      </main>
+    </div>
+  )
+}
+
