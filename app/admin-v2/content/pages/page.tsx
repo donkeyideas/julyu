@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import AdminSidebar from '@/components/admin-v2/Sidebar'
 
 interface Page {
   id: string
@@ -58,11 +57,7 @@ export default function ContentPagesPage() {
   ])
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <AdminSidebar />
-
-      <main className="ml-[280px] p-8">
-        <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="flex justify-between items-center mb-8">
             <div>
@@ -120,8 +115,6 @@ export default function ContentPagesPage() {
               Full CMS support for all pages is coming soon.
             </p>
           </div>
-        </div>
-      </main>
     </div>
   )
 }

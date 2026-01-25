@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import AdminSidebar from '@/components/admin-v2/Sidebar'
 
 interface SeoSettings {
   site_name: string
@@ -77,11 +76,7 @@ export default function SeoSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <AdminSidebar />
-
-      <main className="ml-[280px] p-8">
-        <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="flex justify-between items-center mb-8">
             <div>
@@ -259,9 +254,7 @@ export default function SeoSettingsPage() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </main>
+      </div>
     </div>
   )
 }

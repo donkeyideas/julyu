@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import AdminSidebar from '@/components/admin-v2/Sidebar'
+import { useState } from 'react'
 
 interface HeroContent {
   headline: string
@@ -101,12 +100,8 @@ export default function HomeEditorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <AdminSidebar />
-
-      <main className="ml-[280px] p-8">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
+    <div className="max-w-6xl mx-auto">
+      {/* Header */}
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-3xl font-bold mb-2">Home Page Editor</h1>
@@ -437,10 +432,9 @@ export default function HomeEditorPage() {
                   </div>
                 )}
               </div>
-            </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   )
 }
