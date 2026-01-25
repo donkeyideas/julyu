@@ -494,7 +494,7 @@ export default function AIModelsPage() {
 
           <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
             <p className="text-blue-400 text-sm">
-              <strong>Supported Stores:</strong> Kroger, Fred Meyer, Ralphs, King Soopers, Fry's, Smith's, QFC, Harris Teeter, and more.
+              <strong>Supported Stores:</strong> Kroger, Fred Meyer, Ralphs, King Soopers, Fry&apos;s, Smith&apos;s, QFC, Harris Teeter, and more.
             </p>
           </div>
         </div>
