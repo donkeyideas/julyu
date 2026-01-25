@@ -252,6 +252,8 @@ export class KrogerClient {
       throw new Error('Kroger API credentials not configured. Add them in Admin → API Settings.')
     }
 
+    console.log('[Kroger] Attempting OAuth with client ID:', creds.clientId.substring(0, 8) + '...')
+
     try {
       const credentials = Buffer.from(`${creds.clientId}:${creds.clientSecret}`).toString('base64')
 
@@ -282,8 +284,24 @@ export class KrogerClient {
         credentialsCache = null
         tokenCache = null
       }
-      console.error('[Kroger] OAuth error:', error.response?.data || error.message)
-      throw new Error('Failed to authenticate with Kroger API')
+      console.error('[Kroger] OAuth error status:', error.response?.status)
+      console.error('[Kroger] OAuth error data:', JSON.stringify(error.response?.data))
+      console.error('[Kroger] OAuth error message:', error.message)
+
+      // Provide more specific error messages
+      const status = error.response?.status
+      const errorData = error.response?.data
+      let errorMsg = 'Failed to authenticate with Kroger API'
+
+      if (status === 401) {
+        errorMsg = 'Invalid Kroger credentials. Check your Client ID and Secret.'
+      } else if (status === 403) {
+        errorMsg = 'Kroger API access denied. Your app may need to be approved or moved to Production mode.'
+      } else if (errorData?.error_description) {
+        errorMsg = `Kroger API: ${errorData.error_description}`
+      }
+
+      throw new Error(errorMsg)
     }
   }
 
