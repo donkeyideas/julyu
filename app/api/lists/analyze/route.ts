@@ -102,6 +102,14 @@ async function analyzeWithKroger(items: string[], zipCode: string) {
       stores: [],
       bestOption: null,
       alternatives: [],
+      products: [],
+      summary: {
+        totalItems: items.length,
+        itemsFound: 0,
+        itemsMissing: items.length,
+        estimatedTotal: 0,
+        storesSearched: 0,
+      },
     })
   }
 

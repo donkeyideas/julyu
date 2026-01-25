@@ -142,19 +142,19 @@ export default function ComparePage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div>
                 <div className="text-3xl font-bold text-green-500">
-                  ${results.summary.estimatedTotal?.toFixed(2) || '0.00'}
+                  ${results.summary?.estimatedTotal?.toFixed(2) || '0.00'}
                 </div>
                 <div className="text-sm text-gray-500">Estimated Total</div>
               </div>
               <div>
                 <div className="text-3xl font-bold">
-                  {results.summary.itemsFound}/{results.summary.totalItems}
+                  {results.summary?.itemsFound || 0}/{results.summary?.totalItems || 0}
                 </div>
                 <div className="text-sm text-gray-500">Items Found</div>
               </div>
               <div>
                 <div className="text-3xl font-bold">
-                  {results.summary.storesSearched || 1}
+                  {results.summary?.storesSearched || 0}
                 </div>
                 <div className="text-sm text-gray-500">Stores Searched</div>
               </div>
@@ -190,7 +190,7 @@ export default function ComparePage() {
                       <div className="text-sm text-gray-500">{results.bestOption.store.retailer}</div>
                     </td>
                     <td className="p-4">{results.bestOption.store.distance || '-'} mi</td>
-                    <td className="p-4">{results.summary.itemsFound}/{results.summary.totalItems}</td>
+                    <td className="p-4">{results.summary?.itemsFound || 0}/{results.summary?.totalItems || 0}</td>
                     <td className="p-4 font-bold text-green-500 text-xl">${results.bestOption.total?.toFixed(2)}</td>
                     <td className="p-4">
                       <button className="px-4 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600">
@@ -206,7 +206,7 @@ export default function ComparePage() {
                       <div className="text-sm text-gray-500">{alt.store.retailer}</div>
                     </td>
                     <td className="p-4">-</td>
-                    <td className="p-4">{results.summary.itemsFound}/{results.summary.totalItems}</td>
+                    <td className="p-4">{results.summary?.itemsFound || 0}/{results.summary?.totalItems || 0}</td>
                     <td className="p-4 font-bold">${alt.total?.toFixed(2)}</td>
                     <td className="p-4">
                       <button className="px-4 py-2 border border-gray-700 rounded-lg hover:border-green-500">
@@ -263,8 +263,8 @@ export default function ComparePage() {
         </div>
       )}
 
-      {results && !results.success && !results.error && results.message && (
-        <div className="bg-yellow-500/10 border border-yellow-500/50 rounded-2xl p-6">
+      {results && results.message && (
+        <div className="bg-yellow-500/10 border border-yellow-500/50 rounded-2xl p-6 mb-8">
           <p className="text-yellow-500">{results.message}</p>
         </div>
       )}
