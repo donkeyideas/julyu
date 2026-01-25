@@ -1,25 +1,13 @@
 import Link from 'next/link'
+import Header from '@/components/shared/Header'
+import Footer from '@/components/shared/Footer'
 
 export default function FeaturesPage() {
   return (
     <div className="min-h-screen bg-black text-white">
-      <nav className="fixed top-0 left-0 right-0 bg-black/95 backdrop-blur-lg border-b border-gray-800 px-5% py-6 z-50">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <Link href="/" className="text-3xl font-black text-green-500">Julyu</Link>
-          <ul className="hidden md:flex gap-12 list-none">
-            <li><Link href="/" className="text-white hover:text-green-500">Home</Link></li>
-            <li><Link href="/features" className="text-green-500">Features</Link></li>
-            <li><Link href="/pricing" className="text-white hover:text-green-500">Pricing</Link></li>
-            <li><Link href="/contact" className="text-white hover:text-green-500">Contact</Link></li>
-          </ul>
-          <div className="flex gap-4">
-            <Link href="/auth/login" className="px-6 py-3 rounded-lg border border-gray-700 text-white hover:border-green-500">Sign In</Link>
-            <Link href="/auth/signup" className="px-6 py-3 rounded-lg bg-green-500 text-black font-semibold hover:bg-green-600">Get Started</Link>
-          </div>
-        </div>
-      </nav>
+      <Header />
 
-      <div className="pt-32 pb-16 px-5%">
+      <div className="pt-32 pb-16 px-[5%]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h1 className="text-5xl md:text-6xl font-black mb-4">
@@ -57,8 +45,8 @@ export default function FeaturesPage() {
           </div>
         </div>
       </div>
+
+      <Footer />
     </div>
   )
 }
-
-

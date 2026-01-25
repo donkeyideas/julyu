@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export default function CTASection() {
   return (
-    <section className="py-24 px-[5%] bg-black">
+    <section className="py-24 px-[5%] bg-gradient-to-b from-green-950/60 to-green-900/40">
       <div className="max-w-4xl mx-auto text-center">
         <div className="bg-gradient-to-r from-green-500/20 to-green-600/20 rounded-3xl p-12 md:p-16 border border-green-500/30 relative overflow-hidden">
           {/* Background Pattern */}

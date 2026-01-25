@@ -76,7 +76,7 @@ export default function FeatureShowcase() {
   }
 
   return (
-    <section className="py-24 px-[5%] bg-black">
+    <section className="py-24 px-[5%] bg-gradient-to-b from-green-950/20 to-green-950/40">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-black mb-4">

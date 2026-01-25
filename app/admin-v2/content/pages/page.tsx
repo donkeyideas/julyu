@@ -97,9 +97,12 @@ export default function ContentPagesPage() {
                     Edit
                   </Link>
                 ) : (
-                  <button className="px-3 py-1 bg-gray-700 text-gray-400 rounded text-sm cursor-not-allowed">
+                  <Link
+                    href={`/admin-v2/content/pages/${page.page_slug}`}
+                    className="px-3 py-1 bg-green-500 text-black rounded text-sm font-medium hover:bg-green-600 transition"
+                  >
                     Edit
-                  </button>
+                  </Link>
                 )}
               </div>
             </div>
@@ -108,11 +111,11 @@ export default function ContentPagesPage() {
       </div>
 
       {/* Info Box */}
-      <div className="mt-8 bg-blue-500/10 border border-blue-500/30 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-blue-400 mb-2">Content Management</h3>
+      <div className="mt-8 bg-green-500/10 border border-green-500/30 rounded-xl p-6">
+        <h3 className="text-lg font-semibold text-green-400 mb-2">Content Management Active</h3>
         <p className="text-gray-400">
-          Currently, the Home Page has a full visual editor. Other pages can be edited directly in the codebase.
-          Full CMS support for all pages is coming soon.
+          Click &quot;Edit&quot; on any page to modify its content, headlines, and SEO settings.
+          Changes will be reflected on the live site after saving.
         </p>
       </div>
     </div>
