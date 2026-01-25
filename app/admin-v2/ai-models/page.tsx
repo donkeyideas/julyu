@@ -7,10 +7,11 @@ export default function AIModelsPage() {
   const [openaiKey, setOpenaiKey] = useState('')
   const [krogerClientId, setKrogerClientId] = useState('')
   const [krogerClientSecret, setKrogerClientSecret] = useState('')
+  const [spoonacularKey, setSpoonacularKey] = useState('')
   const [saving, setSaving] = useState(false)
   const [testing, setTesting] = useState<string | null>(null)
   const [testResult, setTestResult] = useState<{ success: boolean; message: string; details?: any } | null>(null)
-  const [apiKeyStatus, setApiKeyStatus] = useState({ deepseek: false, openai: false, kroger: false })
+  const [apiKeyStatus, setApiKeyStatus] = useState({ deepseek: false, openai: false, kroger: false, spoonacular: false })
 
   const loadApiKeyStatus = async () => {
     try {
@@ -20,6 +21,7 @@ export default function AIModelsPage() {
         deepseek: data.deepseekConfigured || false,
         openai: data.openaiConfigured || false,
         kroger: data.krogerConfigured || false,
+        spoonacular: data.spoonacularConfigured || false,
       })
     } catch (error) {
       console.error('Error loading API key status:', error)
@@ -149,6 +151,71 @@ export default function AIModelsPage() {
         setTestResult({
           success: true,
           message: `Connection successful! Found ${data.count || 0} stores.`,
+          details: data,
+        })
+      } else {
+        setTestResult({
+          success: false,
+          message: data.error || 'Connection failed',
+          details: data,
+        })
+      }
+    } catch (error: any) {
+      setTestResult({
+        success: false,
+        message: error.message || 'Test failed',
+      })
+    } finally {
+      setTesting(null)
+    }
+  }
+
+  const handleSaveSpoonacular = async () => {
+    if (!spoonacularKey.trim()) {
+      alert('Please enter a Spoonacular API key')
+      return
+    }
+
+    setSaving(true)
+    try {
+      const response = await fetch('/api/admin/save-api-keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          spoonacular: spoonacularKey.trim(),
+        }),
+      })
+
+      const data = await response.json()
+      console.log('[Save] Spoonacular Response:', data)
+
+      if (data.success) {
+        alert('Spoonacular API key saved successfully!')
+        setSpoonacularKey('')
+        await loadApiKeyStatus()
+      } else {
+        alert(`Failed to save: ${data.error || 'Unknown error'}`)
+      }
+    } catch (error: any) {
+      console.error('[Save] Spoonacular Error:', error)
+      alert(`Error: ${error.message || 'Unknown error'}`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleTestSpoonacular = async () => {
+    setTesting('spoonacular')
+    setTestResult(null)
+
+    try {
+      const response = await fetch('/api/spoonacular/test')
+      const data = await response.json()
+
+      if (data.success) {
+        setTestResult({
+          success: true,
+          message: `Connection successful! Found ${data.productCount || 0} products.`,
           details: data,
         })
       } else {
@@ -495,6 +562,84 @@ export default function AIModelsPage() {
           <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
             <p className="text-blue-400 text-sm">
               <strong>Supported Stores:</strong> Kroger, Fred Meyer, Ralphs, King Soopers, Fry&apos;s, Smith&apos;s, QFC, Harris Teeter, and more.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Spoonacular API Key */}
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 mt-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold mb-2">Spoonacular API</h2>
+            <p className="text-gray-500 text-sm">Used for product data, nutrition info, and price estimates</p>
+            <a
+              href="https://spoonacular.com/food-api"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 text-sm hover:underline"
+            >
+              Get API key from spoonacular.com/food-api
+            </a>
+          </div>
+          <div>
+            {apiKeyStatus.spoonacular ? (
+              <span className="px-4 py-2 bg-green-500/15 text-green-500 rounded-lg text-sm font-semibold">
+                ✓ Configured
+              </span>
+            ) : (
+              <span className="px-4 py-2 bg-red-500/15 text-red-500 rounded-lg text-sm font-semibold">
+                ✗ Not Set
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">API Key</label>
+            <input
+              type="text"
+              value={spoonacularKey}
+              onChange={(e) => setSpoonacularKey(e.target.value)}
+              placeholder={apiKeyStatus.spoonacular ? "Enter new key to update" : "your-api-key"}
+              className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white focus:border-green-500 focus:outline-none font-mono text-sm"
+            />
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={handleSaveSpoonacular}
+              disabled={saving || !spoonacularKey.trim()}
+              className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Save Key'}
+            </button>
+            <button
+              onClick={handleTestSpoonacular}
+              disabled={testing === 'spoonacular' || !apiKeyStatus.spoonacular}
+              className="px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 disabled:opacity-50"
+            >
+              {testing === 'spoonacular' ? 'Testing...' : 'Test Connection'}
+            </button>
+          </div>
+
+          {testResult && testing === null && (
+            <div className={`p-4 rounded-lg border ${
+              testResult.success
+                ? 'bg-green-500/10 border-green-500/50 text-green-500'
+                : 'bg-red-500/10 border-red-500/50 text-red-500'
+            }`}>
+              <div className="font-semibold mb-1">
+                {testResult.success ? 'Success' : 'Failed'}
+              </div>
+              <div className="text-sm">{testResult.message}</div>
+            </div>
+          )}
+
+          <div className="mt-4 p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+            <p className="text-purple-400 text-sm">
+              <strong>Features:</strong> Grocery product search, UPC lookup, nutrition data, price estimates, product classification.
             </p>
           </div>
         </div>

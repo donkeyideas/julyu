@@ -156,9 +156,9 @@ export async function POST(request: NextRequest) {
     // Proceed to save keys (auth already checked or skipped)
 
     const body = await request.json()
-    const { deepseek, openai, krogerClientId, krogerClientSecret } = body
+    const { deepseek, openai, krogerClientId, krogerClientSecret, spoonacular } = body
 
-    if (!deepseek && !openai && !(krogerClientId && krogerClientSecret)) {
+    if (!deepseek && !openai && !(krogerClientId && krogerClientSecret) && !spoonacular) {
       return NextResponse.json({ success: false, error: 'At least one API key required' }, { status: 400 })
     }
 
@@ -370,6 +370,43 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Save Spoonacular API key
+    if (spoonacular) {
+      const trimmedKey = spoonacular.trim()
+      if (!trimmedKey || trimmedKey.length < 10) {
+        return NextResponse.json({ success: false, error: 'Invalid Spoonacular API key format' }, { status: 400 })
+      }
+
+      console.log('[Save API Keys] Saving Spoonacular key, length:', trimmedKey.length)
+      const encryptedKey = encrypt(trimmedKey)
+
+      const { error: spoonacularError } = await supabase
+        .from('ai_model_config')
+        .upsert({
+          model_name: 'spoonacular',
+          provider: 'Spoonacular',
+          api_key_encrypted: encryptedKey,
+          api_endpoint: 'https://api.spoonacular.com',
+          model_version: 'v1',
+          is_active: true,
+          config: {},
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'model_name',
+        })
+
+      if (spoonacularError) {
+        if (!spoonacularError.message?.includes('relation') && !spoonacularError.message?.includes('does not exist')) {
+          console.error('[Save API Keys] Error saving Spoonacular key:', spoonacularError)
+          return NextResponse.json({ success: false, error: 'Failed to save Spoonacular API key' }, { status: 500 })
+        } else {
+          console.log('[Save API Keys] Database table not found, but Spoonacular key accepted')
+        }
+      } else {
+        console.log('[Save API Keys] Spoonacular key saved successfully')
+      }
+    }
+
     console.log('[Save API Keys] All keys processed successfully')
     return NextResponse.json({
       success: true,
@@ -377,6 +414,7 @@ export async function POST(request: NextRequest) {
       deepseekConfigured: !!deepseek,
       openaiConfigured: !!openai,
       krogerConfigured: !!(krogerClientId && krogerClientSecret),
+      spoonacularConfigured: !!spoonacular,
     })
   } catch (error: any) {
     console.error('[Save API Keys] Error saving API keys:', error)
@@ -393,45 +431,52 @@ export async function GET() {
     const { data: configs, error } = await supabase
       .from('ai_model_config')
       .select('model_name, api_key_encrypted, is_active')
-      .in('model_name', ['deepseek-chat', 'gpt-4-vision', 'kroger'])
+      .in('model_name', ['deepseek-chat', 'gpt-4-vision', 'kroger', 'spoonacular'])
 
     if (error) {
       // If table doesn't exist, check environment variables as fallback
       const hasDeepseekEnv = !!(process.env.DEEPSEEK_API_KEY && process.env.DEEPSEEK_API_KEY.trim() !== '')
       const hasOpenaiEnv = !!(process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.trim() !== '')
       const hasKrogerEnv = !!(process.env.KROGER_CLIENT_ID && process.env.KROGER_CLIENT_SECRET)
+      const hasSpoonacularEnv = !!(process.env.SPOONACULAR_API_KEY && process.env.SPOONACULAR_API_KEY.trim() !== '')
 
       return NextResponse.json({
         deepseekConfigured: hasDeepseekEnv,
         openaiConfigured: hasOpenaiEnv,
         krogerConfigured: hasKrogerEnv,
+        spoonacularConfigured: hasSpoonacularEnv,
       })
     }
 
     const deepseekConfigured = configs?.some((c: any) => c.model_name === 'deepseek-chat' && c.api_key_encrypted && c.is_active) || false
     const openaiConfigured = configs?.some((c: any) => c.model_name === 'gpt-4-vision' && c.api_key_encrypted && c.is_active) || false
     const krogerConfigured = configs?.some((c: any) => c.model_name === 'kroger' && c.api_key_encrypted && c.is_active) || false
+    const spoonacularConfigured = configs?.some((c: any) => c.model_name === 'spoonacular' && c.api_key_encrypted && c.is_active) || false
 
     // Also check environment variables as fallback
     const hasDeepseekEnv = !!(process.env.DEEPSEEK_API_KEY && process.env.DEEPSEEK_API_KEY.trim() !== '')
     const hasOpenaiEnv = !!(process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.trim() !== '')
     const hasKrogerEnv = !!(process.env.KROGER_CLIENT_ID && process.env.KROGER_CLIENT_SECRET)
+    const hasSpoonacularEnv = !!(process.env.SPOONACULAR_API_KEY && process.env.SPOONACULAR_API_KEY.trim() !== '')
 
     return NextResponse.json({
       deepseekConfigured: deepseekConfigured || hasDeepseekEnv,
       openaiConfigured: openaiConfigured || hasOpenaiEnv,
       krogerConfigured: krogerConfigured || hasKrogerEnv,
+      spoonacularConfigured: spoonacularConfigured || hasSpoonacularEnv,
     })
   } catch (error) {
     // Fallback to environment variables
     const hasDeepseekEnv = !!(process.env.DEEPSEEK_API_KEY && process.env.DEEPSEEK_API_KEY.trim() !== '')
     const hasOpenaiEnv = !!(process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.trim() !== '')
     const hasKrogerEnv = !!(process.env.KROGER_CLIENT_ID && process.env.KROGER_CLIENT_SECRET)
+    const hasSpoonacularEnv = !!(process.env.SPOONACULAR_API_KEY && process.env.SPOONACULAR_API_KEY.trim() !== '')
 
     return NextResponse.json({
       deepseekConfigured: hasDeepseekEnv,
       openaiConfigured: hasOpenaiEnv,
       krogerConfigured: hasKrogerEnv,
+      spoonacularConfigured: hasSpoonacularEnv,
     })
   }
 }

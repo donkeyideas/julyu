@@ -151,6 +151,14 @@ export async function getApiKey(modelName: string): Promise<string | null> {
       }
     }
 
+    // Spoonacular API
+    if (modelName === 'spoonacular' || modelName.includes('spoonacular')) {
+      const envKey = process.env.SPOONACULAR_API_KEY
+      if (envKey && envKey.trim() !== '') {
+        return envKey
+      }
+    }
+
     return null
   } catch (error: any) {
     console.error(`Error getting API key for ${modelName}:`, error)
@@ -173,8 +181,20 @@ export async function getApiKey(modelName: string): Promise<string | null> {
       }
     }
 
+    // Spoonacular API fallback
+    if (modelName === 'spoonacular' || modelName.includes('spoonacular')) {
+      return process.env.SPOONACULAR_API_KEY || null
+    }
+
     return null
   }
+}
+
+/**
+ * Get Spoonacular API key
+ */
+export async function getSpoonacularApiKey(): Promise<string | null> {
+  return await getApiKey('spoonacular')
 }
 
 /**
