@@ -15,17 +15,23 @@ export default function AdminSidebar() {
 
   const navItems: NavItem[] = [
     { href: '/admin-v2', label: 'Dashboard', icon: '', section: 'Overview' },
+    { href: '/admin-v2/content/home-editor', label: 'Home Page', icon: '', section: 'Content' },
+    { href: '/admin-v2/content/pages', label: 'All Pages', icon: '', section: 'Content' },
+    { href: '/admin-v2/content/testimonials', label: 'Testimonials', icon: '', section: 'Content' },
+    { href: '/admin-v2/content/seo', label: 'SEO Settings', icon: '', section: 'Content' },
     { href: '/admin-v2/ai-models', label: 'AI Models', icon: '', section: 'AI/LLM Systems' },
     { href: '/admin-v2/ai-performance', label: 'AI Performance', icon: '', section: 'AI/LLM Systems' },
     { href: '/admin-v2/usage', label: 'Usage & Costs', icon: '', section: 'AI/LLM Systems' },
     { href: '/admin-v2/partnerships-costs', label: 'Partnerships AI Costs', icon: '', section: 'Partnerships' },
     { href: '/admin-v2/retailers', label: 'Retailer Partnerships', icon: '', section: 'Partnerships' },
+    { href: '/admin-v2/instacart', label: 'Instacart API', icon: '', section: 'Partnerships' },
     { href: '/admin-v2/users', label: 'Users', icon: '', section: 'Operations' },
     { href: '/admin-v2/prices', label: 'Price Database', icon: '', section: 'Operations' },
   ]
 
   const sections = [
     { name: 'Overview', items: navItems.filter(item => item.section === 'Overview') },
+    { name: 'Content', items: navItems.filter(item => item.section === 'Content') },
     { name: 'AI/LLM Systems', items: navItems.filter(item => item.section === 'AI/LLM Systems') },
     { name: 'Partnerships', items: navItems.filter(item => item.section === 'Partnerships') },
     { name: 'Operations', items: navItems.filter(item => item.section === 'Operations') },
