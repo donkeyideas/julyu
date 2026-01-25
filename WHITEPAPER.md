@@ -1,3 +1,227 @@
+Julyu Whitepaper
+================
+
+Executive Summary
+-----------------
+Julyu is an AI-powered grocery price comparison platform that helps households reduce
+weekly grocery spend by automatically finding the best prices across nearby stores and
+online retailers. The platform ingests pricing, inventory, and promotion data, normalizes
+product matches, and generates a best-basket recommendation optimized for total cost,
+availability, and user preferences. The result is faster shopping decisions, lower
+spend, and improved price transparency in a fragmented grocery market.
+
+We are seeking parent-company funding to scale the data pipeline, expand retailer
+coverage, and accelerate go-to-market. The funding will be used to grow engineering,
+data, and partnerships, with a clear path to revenue through affiliate commissions,
+subscription tiers, and B2B analytics.
+
+Company Overview
+----------------
+Company background
+Julyu is a product initiative focused on consumer savings and price transparency.
+Our core premise is that grocery shopping is a high-frequency, low-satisfaction task
+with substantial household budget impact. The market is large, fragmented, and suffers
+from inconsistent pricing, promotions, and product naming conventions, which makes
+manual price comparison difficult.
+
+Mission statement
+Help every household shop smarter by making grocery pricing transparent, comparable,
+and personalized.
+
+Vision
+Become the trusted shopping intelligence layer that powers how consumers discover,
+compare, and buy everyday goods.
+
+Core values
+- Consumer-first savings and trust.
+- Accurate, explainable recommendations.
+- Ethical data practices and privacy by design.
+- Operational excellence and measurable impact.
+
+Problem & Solution
+------------------
+Problem statement
+Grocery prices fluctuate weekly, promotions are complex, and product naming varies
+across retailers. Consumers either shop without price awareness or spend significant
+time checking flyers and multiple apps. This leads to unnecessary overspend, poor
+budget predictability, and lack of price transparency.
+
+Market opportunity
+Grocery is a high-frequency spend category. Even low single-digit percentage savings
+on weekly trips translate into meaningful annual household savings. At the same time,
+retailers and brands have incentive to drive basket conversion and loyalty through
+personalized deals and better targeting.
+
+Solution
+Julyu automates the entire price comparison workflow:
+- Ingest prices, promotions, and availability from multiple sources.
+- Normalize and match products across retailers using AI-assisted entity resolution.
+- Optimize a shopping basket for total cost, availability, and user constraints.
+- Provide clear savings explanations and a recommended purchase plan.
+
+Product Description
+-------------------
+Julyu delivers a consumer web app that:
+- Builds a personal grocery list and learns preferences.
+- Shows best basket prices across multiple stores and online retailers.
+- Highlights deal-driven substitutions when acceptable.
+- Tracks historical pricing for smarter future shopping.
+- Provides transparency on why a recommendation is made.
+
+Future product extensions include:
+- Loyalty account integration for personalized pricing.
+- Family and shared list collaboration.
+- Budget alerts and spending forecasts.
+- B2B analytics dashboards for brands and retailers.
+
+Technology & Architecture
+-------------------------
+Architecture
+The platform uses a modern web stack with a data pipeline and matching engine:
+- Frontend: Next.js + React for fast, SEO-friendly user experience.
+- Backend: Supabase for managed Postgres, auth, and storage.
+- State and validation: Zustand and Zod for reliable data flow.
+- Data ingestion: scheduled pipelines that pull retailer data via APIs, feeds, or
+  compliant scraping where allowed by terms.
+- Matching layer: AI-assisted canonical product catalog with probabilistic matching.
+- Pricing engine: basket optimization with constraints (availability, substitution,
+  loyalty requirements, budget limits).
+
+Technical details
+- Product matching uses multi-signal features (brand, size, unit price, synonyms).
+- Normalization converts sizes to comparable units (oz, lb, count, etc.).
+- Basket optimizer uses weighted scoring and constraint satisfaction to minimize cost.
+- Audit trails for each recommendation support transparency and trust.
+- Security uses Supabase Auth and role-based access for internal tools.
+
+Business Model
+--------------
+Revenue streams
+- Affiliate commissions on completed orders and retailer referrals.
+- Premium subscription for advanced features (price history, alerts, family sharing).
+- B2B analytics and insights licensing for CPG brands or retailers.
+
+Pricing strategy
+- Consumer free tier: core price comparison, limited retailers.
+- Consumer premium: monthly subscription with advanced features.
+- B2B: tiered enterprise pricing based on data usage and insight modules.
+
+Go-to-market strategy
+- Launch in 1-2 metro areas to validate data coverage and savings impact.
+- Acquire users via content SEO, influencer partnerships, and savings challenges.
+- Partnerships with local retailers for early integration.
+- Referral incentives tied to measurable savings.
+
+Market Analysis
+---------------
+Target market
+- Primary: budget-conscious households and families shopping weekly.
+- Secondary: deal-seeking individuals, students, and bulk shoppers.
+- Tertiary: brands and retailers seeking demand insights.
+
+Market size
+The grocery market is massive and recurring. Even a small market share in a single
+metro area can generate meaningful GMV. The opportunity is amplified by the growing
+share of digital grocery and omnichannel shopping.
+
+Market trends
+- Increased price sensitivity due to inflationary pressure.
+- Rising adoption of digital grocery tools.
+- Consumer demand for transparency and personalization.
+- Retailer interest in data-driven promotions.
+
+Competitive Landscape
+---------------------
+Competitive analysis
+- Retailer-native apps provide single-store pricing but lack cross-store comparison.
+- Coupon and deal aggregators often lack real-time availability and full basket view.
+- Delivery marketplaces optimize convenience but not cross-store price savings.
+
+Competitive advantage
+- Cross-store basket optimization, not just item-by-item comparison.
+- AI product matching at scale with transparent reasoning.
+- Focus on measurable savings and household budget impact.
+- Scalable, API-first data model that supports B2B insights.
+
+Roadmap & Milestones
+--------------------
+Product roadmap
+- Phase 1: MVP with 3-5 retailers, list building, basket comparison.
+- Phase 2: price history, alerts, and substitution recommendations.
+- Phase 3: loyalty integration, B2B analytics, expanded market coverage.
+- Phase 4: national rollout and retailer API partnerships.
+
+Key milestones
+- MVP launch and first 5,000 active users.
+- Verified average savings per basket.
+- Retailer or brand partnership for data access.
+- Revenue validation through affiliate and subscription conversion.
+
+Financial Projections
+---------------------
+Assumptions
+- Launch in 1-2 metro areas Year 1, expand to 6-10 Year 2.
+- User growth driven by savings ROI and referral loops.
+- Monetization via affiliate and premium subscriptions.
+
+Illustrative projections (to be validated)
+Year 1:
+- Active users: 25k-50k
+- Affiliate revenue: $150k-$400k
+- Subscription revenue: $50k-$150k
+
+Year 2:
+- Active users: 150k-300k
+- Affiliate revenue: $1.0M-$2.5M
+- Subscription revenue: $500k-$1.2M
+
+Year 3:
+- Active users: 500k-1.0M
+- Affiliate revenue: $4.0M-$8.0M
+- Subscription revenue: $2.0M-$4.5M
+
+Use of funds
+- Data pipeline and matching engine scaling.
+- Retailer integrations and partnerships.
+- Product and design enhancement.
+- Marketing and growth experiments.
+- Compliance, legal, and security hardening.
+
+Tokenomics / Economics
+----------------------
+Tokenomics (if applicable)
+This product does not currently use a token. If a rewards or incentive token is
+introduced in the future, it would be tied to verified savings and user engagement
+with clear utility and compliance review.
+
+Economics model
+Unit economics focus on CAC to LTV ratio through recurring grocery savings:
+- Acquisition: content, referral, and paid performance.
+- LTV: recurring affiliate revenue plus subscription ARPU.
+- Retention: recurring weekly usage with household savings impact.
+
+Legal & Regulatory
+------------------
+Legal considerations
+- Data sourcing must comply with retailer terms and applicable laws.
+- Transparent disclosures for affiliate relationships.
+- Clear data retention and privacy policy.
+
+Regulatory compliance
+- Privacy and data security aligned to applicable standards (e.g., GDPR/CCPA where
+  relevant).
+- Opt-in consent for data collection and personalization.
+- Secure handling of authentication and user data.
+
+Risk factors
+- Retailer data access constraints or policy changes.
+- Pricing inaccuracies or delays in updates.
+- Competitive response from retailer apps or marketplaces.
+- Consumer trust and perception risks.
+
+Disclaimers
+All projections are illustrative and subject to validation. Market size and revenue
+assumptions should be refined using updated data sources and pilot metrics.
 # Julyu Whitepaper
 ## The Bloomberg Terminal for Grocery Consumers
 
