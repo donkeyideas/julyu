@@ -40,7 +40,7 @@ export default function AdminSidebar() {
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-[280px] bg-gray-900 border-r border-gray-800 p-8 overflow-y-auto">
       <Link href="/admin-v2" className="text-3xl font-black text-green-500 mb-12 block">
-        Julyu Admin v2
+        Julyu Admin
       </Link>
 
       <nav className="space-y-6">

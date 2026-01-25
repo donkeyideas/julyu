@@ -5,7 +5,6 @@ import InteractiveDemo from '@/components/home/InteractiveDemo'
 import HowItWorks from '@/components/home/HowItWorks'
 import FeatureShowcase from '@/components/home/FeatureShowcase'
 import Testimonials from '@/components/home/Testimonials'
-import AnimatedStats from '@/components/home/AnimatedStats'
 import CTASection from '@/components/home/CTASection'
 
 export default function HomePage() {
@@ -13,8 +12,8 @@ export default function HomePage() {
     <div className="min-h-screen bg-black text-white">
       <Header transparent />
 
-      {/* Hero Section */}
-      <section className="min-h-screen flex items-center justify-center px-[5%] pt-24 pb-16 bg-gradient-to-br from-black via-black to-gray-900">
+      {/* Hero Section - starts black, ends black */}
+      <section className="min-h-screen flex items-center justify-center px-[5%] pt-24 pb-16">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           <div>
             <h1 className="text-5xl md:text-7xl font-black leading-tight mb-6">
@@ -37,18 +36,18 @@ export default function HomePage() {
                 Try Demo
               </Link>
             </div>
-            <div className="grid grid-cols-3 gap-8">
-              <div>
-                <div className="text-4xl font-black text-green-500 mb-2">$4.2M</div>
-                <div className="text-sm text-gray-500">Total Savings</div>
+            <div className="flex justify-center md:justify-start gap-8 md:gap-12">
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-black text-green-500 mb-1">$4.2M</div>
+                <div className="text-xs md:text-sm text-gray-500">Total Savings</div>
               </div>
-              <div>
-                <div className="text-4xl font-black text-green-500 mb-2">127K</div>
-                <div className="text-sm text-gray-500">Active Users</div>
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-black text-green-500 mb-1">127K</div>
+                <div className="text-xs md:text-sm text-gray-500">Active Users</div>
               </div>
-              <div>
-                <div className="text-4xl font-black text-green-500 mb-2">23%</div>
-                <div className="text-sm text-gray-500">Avg. Savings</div>
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-black text-green-500 mb-1">23%</div>
+                <div className="text-xs md:text-sm text-gray-500">Avg. Savings</div>
               </div>
             </div>
           </div>
@@ -60,11 +59,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* How It Works */}
+      {/* How It Works - seamless transition */}
       <HowItWorks />
-
-      {/* Animated Stats */}
-      <AnimatedStats />
 
       {/* Feature Showcase */}
       <FeatureShowcase />

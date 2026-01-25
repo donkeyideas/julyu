@@ -84,7 +84,7 @@ export default function AdminV2Dashboard() {
   return (
     <div>
       <div className="mb-10 pb-6 border-b border-gray-800">
-        <h1 className="text-4xl font-black">Admin Dashboard v2</h1>
+        <h1 className="text-4xl font-black">Admin Dashboard</h1>
         <p className="text-gray-500 mt-2">Complete overview of your Julyu system</p>
       </div>
 
