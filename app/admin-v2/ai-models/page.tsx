@@ -5,10 +5,12 @@ import { useState, useEffect } from 'react'
 export default function AIModelsPage() {
   const [deepseekKey, setDeepseekKey] = useState('')
   const [openaiKey, setOpenaiKey] = useState('')
+  const [krogerClientId, setKrogerClientId] = useState('')
+  const [krogerClientSecret, setKrogerClientSecret] = useState('')
   const [saving, setSaving] = useState(false)
   const [testing, setTesting] = useState<string | null>(null)
   const [testResult, setTestResult] = useState<{ success: boolean; message: string; details?: any } | null>(null)
-  const [apiKeyStatus, setApiKeyStatus] = useState({ deepseek: false, openai: false })
+  const [apiKeyStatus, setApiKeyStatus] = useState({ deepseek: false, openai: false, kroger: false })
 
   const loadApiKeyStatus = async () => {
     try {
@@ -17,6 +19,7 @@ export default function AIModelsPage() {
       setApiKeyStatus({
         deepseek: data.deepseekConfigured || false,
         openai: data.openaiConfigured || false,
+        kroger: data.krogerConfigured || false,
       })
     } catch (error) {
       console.error('Error loading API key status:', error)
@@ -29,7 +32,7 @@ export default function AIModelsPage() {
 
   const handleSaveKey = async (model: 'deepseek' | 'openai') => {
     const key = model === 'deepseek' ? deepseekKey : openaiKey
-    
+
     if (!key || key.trim() === '') {
       alert('Please enter an API key')
       return
@@ -77,7 +80,7 @@ export default function AIModelsPage() {
 
       const data = await response.json()
       console.log('[Save] Response:', data)
-      
+
       if (data.success) {
         alert(`${model === 'deepseek' ? 'DeepSeek' : 'OpenAI'} API key saved successfully!`)
         if (model === 'deepseek') {
@@ -94,6 +97,74 @@ export default function AIModelsPage() {
       alert(`Error: ${error.message || 'Unknown error'}`)
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleSaveKroger = async () => {
+    if (!krogerClientId.trim() || !krogerClientSecret.trim()) {
+      alert('Please enter both Client ID and Client Secret')
+      return
+    }
+
+    setSaving(true)
+    try {
+      const response = await fetch('/api/admin/save-api-keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          krogerClientId: krogerClientId.trim(),
+          krogerClientSecret: krogerClientSecret.trim(),
+        }),
+      })
+
+      const data = await response.json()
+      console.log('[Save] Kroger Response:', data)
+
+      if (data.success) {
+        alert('Kroger API credentials saved successfully!')
+        setKrogerClientId('')
+        setKrogerClientSecret('')
+        await loadApiKeyStatus()
+      } else {
+        alert(`Failed to save: ${data.error || 'Unknown error'}`)
+      }
+    } catch (error: any) {
+      console.error('[Save] Kroger Error:', error)
+      alert(`Error: ${error.message || 'Unknown error'}`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleTestKroger = async () => {
+    setTesting('kroger')
+    setTestResult(null)
+
+    try {
+      // Test by trying to get an access token
+      const response = await fetch('/api/kroger/stores?zipCode=45202&limit=1')
+      const data = await response.json()
+
+      if (data.success || data.stores) {
+        setTestResult({
+          success: true,
+          message: `Connection successful! Found ${data.count || 0} stores.`,
+          details: data,
+        })
+      } else {
+        setTestResult({
+          success: false,
+          message: data.error || 'Connection failed',
+          details: data,
+        })
+      }
+    } catch (error: any) {
+      setTestResult({
+        success: false,
+        message: error.message || 'Test failed',
+      })
+    } finally {
+      setTesting(null)
     }
   }
 
@@ -277,7 +348,7 @@ export default function AIModelsPage() {
       </div>
 
       {/* OpenAI API Key */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8">
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 mb-8">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-bold mb-2">OpenAI API Key</h2>
@@ -337,6 +408,95 @@ export default function AIModelsPage() {
               <div className="text-sm">{testResult.message}</div>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Kroger API Credentials */}
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold mb-2">Kroger API</h2>
+            <p className="text-gray-500 text-sm">Used for real-time grocery prices (FREE)</p>
+            <a
+              href="https://developer.kroger.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 text-sm hover:underline"
+            >
+              Get API keys from developer.kroger.com
+            </a>
+          </div>
+          <div>
+            {apiKeyStatus.kroger ? (
+              <span className="px-4 py-2 bg-green-500/15 text-green-500 rounded-lg text-sm font-semibold">
+                ✓ Configured
+              </span>
+            ) : (
+              <span className="px-4 py-2 bg-red-500/15 text-red-500 rounded-lg text-sm font-semibold">
+                ✗ Not Set
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Client ID</label>
+            <input
+              type="text"
+              value={krogerClientId}
+              onChange={(e) => setKrogerClientId(e.target.value)}
+              placeholder={apiKeyStatus.kroger ? "Enter new Client ID to update" : "your-client-id"}
+              className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white focus:border-green-500 focus:outline-none font-mono text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Client Secret</label>
+            <input
+              type="password"
+              value={krogerClientSecret}
+              onChange={(e) => setKrogerClientSecret(e.target.value)}
+              placeholder={apiKeyStatus.kroger ? "Enter new Client Secret to update" : "your-client-secret"}
+              className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white focus:border-green-500 focus:outline-none font-mono text-sm"
+            />
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={handleSaveKroger}
+              disabled={saving || !krogerClientId.trim() || !krogerClientSecret.trim()}
+              className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Save Credentials'}
+            </button>
+            <button
+              onClick={handleTestKroger}
+              disabled={testing === 'kroger' || !apiKeyStatus.kroger}
+              className="px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 disabled:opacity-50"
+            >
+              {testing === 'kroger' ? 'Testing...' : 'Test Connection'}
+            </button>
+          </div>
+
+          {testResult && testing === null && (
+            <div className={`p-4 rounded-lg border ${
+              testResult.success
+                ? 'bg-green-500/10 border-green-500/50 text-green-500'
+                : 'bg-red-500/10 border-red-500/50 text-red-500'
+            }`}>
+              <div className="font-semibold mb-1">
+                {testResult.success ? 'Success' : 'Failed'}
+              </div>
+              <div className="text-sm">{testResult.message}</div>
+            </div>
+          )}
+
+          <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+            <p className="text-blue-400 text-sm">
+              <strong>Supported Stores:</strong> Kroger, Fred Meyer, Ralphs, King Soopers, Fry's, Smith's, QFC, Harris Teeter, and more.
+            </p>
+          </div>
         </div>
       </div>
     </div>

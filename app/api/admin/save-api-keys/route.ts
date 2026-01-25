@@ -156,9 +156,9 @@ export async function POST(request: NextRequest) {
     // Proceed to save keys (auth already checked or skipped)
 
     const body = await request.json()
-    const { deepseek, openai } = body
+    const { deepseek, openai, krogerClientId, krogerClientSecret } = body
 
-    if (!deepseek && !openai) {
+    if (!deepseek && !openai && !(krogerClientId && krogerClientSecret)) {
       return NextResponse.json({ success: false, error: 'At least one API key required' }, { status: 400 })
     }
 
@@ -328,12 +328,55 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Save Kroger API credentials
+    if (krogerClientId && krogerClientSecret) {
+      const trimmedClientId = krogerClientId.trim()
+      const trimmedClientSecret = krogerClientSecret.trim()
+
+      if (!trimmedClientId || !trimmedClientSecret) {
+        return NextResponse.json({ success: false, error: 'Both Client ID and Client Secret are required for Kroger' }, { status: 400 })
+      }
+
+      console.log('[Save API Keys] Saving Kroger credentials')
+
+      // Store as clientId:clientSecret format
+      const combinedCredentials = `${trimmedClientId}:${trimmedClientSecret}`
+      const encryptedKey = encrypt(combinedCredentials)
+
+      const { error: krogerError } = await supabase
+        .from('ai_model_config')
+        .upsert({
+          model_name: 'kroger',
+          provider: 'Kroger',
+          api_key_encrypted: encryptedKey,
+          api_endpoint: 'https://api.kroger.com/v1',
+          model_version: 'v1',
+          is_active: true,
+          config: {},
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'model_name',
+        })
+
+      if (krogerError) {
+        if (!krogerError.message?.includes('relation') && !krogerError.message?.includes('does not exist')) {
+          console.error('[Save API Keys] Error saving Kroger credentials:', krogerError)
+          return NextResponse.json({ success: false, error: 'Failed to save Kroger API credentials' }, { status: 500 })
+        } else {
+          console.log('[Save API Keys] Database table not found, but Kroger credentials accepted')
+        }
+      } else {
+        console.log('[Save API Keys] Kroger credentials saved successfully')
+      }
+    }
+
     console.log('[Save API Keys] All keys processed successfully')
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: 'API keys saved successfully',
       deepseekConfigured: !!deepseek,
       openaiConfigured: !!openai,
+      krogerConfigured: !!(krogerClientId && krogerClientSecret),
     })
   } catch (error: any) {
     console.error('[Save API Keys] Error saving API keys:', error)
@@ -345,43 +388,50 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   try {
     const supabase = createServerClient()
-    
+
     // Get API key configs (without decrypting - just check if they exist)
     const { data: configs, error } = await supabase
       .from('ai_model_config')
       .select('model_name, api_key_encrypted, is_active')
-      .in('model_name', ['deepseek-chat', 'gpt-4-vision'])
+      .in('model_name', ['deepseek-chat', 'gpt-4-vision', 'kroger'])
 
     if (error) {
       // If table doesn't exist, check environment variables as fallback
       const hasDeepseekEnv = !!(process.env.DEEPSEEK_API_KEY && process.env.DEEPSEEK_API_KEY.trim() !== '')
       const hasOpenaiEnv = !!(process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.trim() !== '')
-      
+      const hasKrogerEnv = !!(process.env.KROGER_CLIENT_ID && process.env.KROGER_CLIENT_SECRET)
+
       return NextResponse.json({
         deepseekConfigured: hasDeepseekEnv,
         openaiConfigured: hasOpenaiEnv,
+        krogerConfigured: hasKrogerEnv,
       })
     }
 
     const deepseekConfigured = configs?.some((c: any) => c.model_name === 'deepseek-chat' && c.api_key_encrypted && c.is_active) || false
     const openaiConfigured = configs?.some((c: any) => c.model_name === 'gpt-4-vision' && c.api_key_encrypted && c.is_active) || false
-    
+    const krogerConfigured = configs?.some((c: any) => c.model_name === 'kroger' && c.api_key_encrypted && c.is_active) || false
+
     // Also check environment variables as fallback
     const hasDeepseekEnv = !!(process.env.DEEPSEEK_API_KEY && process.env.DEEPSEEK_API_KEY.trim() !== '')
     const hasOpenaiEnv = !!(process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.trim() !== '')
+    const hasKrogerEnv = !!(process.env.KROGER_CLIENT_ID && process.env.KROGER_CLIENT_SECRET)
 
     return NextResponse.json({
       deepseekConfigured: deepseekConfigured || hasDeepseekEnv,
       openaiConfigured: openaiConfigured || hasOpenaiEnv,
+      krogerConfigured: krogerConfigured || hasKrogerEnv,
     })
   } catch (error) {
     // Fallback to environment variables
     const hasDeepseekEnv = !!(process.env.DEEPSEEK_API_KEY && process.env.DEEPSEEK_API_KEY.trim() !== '')
     const hasOpenaiEnv = !!(process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.trim() !== '')
-    
+    const hasKrogerEnv = !!(process.env.KROGER_CLIENT_ID && process.env.KROGER_CLIENT_SECRET)
+
     return NextResponse.json({
       deepseekConfigured: hasDeepseekEnv,
       openaiConfigured: hasOpenaiEnv,
+      krogerConfigured: hasKrogerEnv,
     })
   }
 }

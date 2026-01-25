@@ -142,6 +142,15 @@ export async function getApiKey(modelName: string): Promise<string | null> {
       }
     }
 
+    // Kroger API (returns client_id:client_secret format)
+    if (modelName === 'kroger' || modelName.includes('kroger')) {
+      const clientId = process.env.KROGER_CLIENT_ID
+      const clientSecret = process.env.KROGER_CLIENT_SECRET
+      if (clientId && clientSecret && clientId.trim() !== '' && clientSecret.trim() !== '') {
+        return `${clientId}:${clientSecret}`
+      }
+    }
+
     return null
   } catch (error: any) {
     console.error(`Error getting API key for ${modelName}:`, error)
@@ -155,7 +164,33 @@ export async function getApiKey(modelName: string): Promise<string | null> {
       return process.env.OPENAI_API_KEY || null
     }
 
+    // Kroger API fallback
+    if (modelName === 'kroger' || modelName.includes('kroger')) {
+      const clientId = process.env.KROGER_CLIENT_ID
+      const clientSecret = process.env.KROGER_CLIENT_SECRET
+      if (clientId && clientSecret) {
+        return `${clientId}:${clientSecret}`
+      }
+    }
+
     return null
+  }
+}
+
+/**
+ * Get Kroger API credentials
+ * Returns { clientId, clientSecret } or null
+ */
+export async function getKrogerCredentials(): Promise<{ clientId: string; clientSecret: string } | null> {
+  const combined = await getApiKey('kroger')
+  if (!combined) return null
+
+  const parts = combined.split(':')
+  if (parts.length !== 2) return null
+
+  return {
+    clientId: parts[0],
+    clientSecret: parts[1],
   }
 }
 
