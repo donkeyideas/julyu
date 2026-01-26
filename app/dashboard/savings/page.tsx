@@ -36,12 +36,12 @@ export default async function SavingsPage() {
 
   return (
     <div>
-      <div className="mb-10 pb-6 border-b border-gray-800">
-        <h1 className="text-4xl font-black">Savings Tracker</h1>
+      <div className="mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
+        <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>Savings Tracker</h1>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 mb-8">
-        <h3 className="text-2xl font-bold mb-8">Monthly Savings (Last 6 Months)</h3>
+      <div className="rounded-2xl p-8 mb-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <h3 className="text-2xl font-bold mb-8" style={{ color: 'var(--text-primary)' }}>Monthly Savings (Last 6 Months)</h3>
         <div className="h-64 flex items-end justify-between gap-4">
           {savings && savings.length > 0 ? (
             (() => {
@@ -60,7 +60,7 @@ export default async function SavingsPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="mt-2 text-xs text-gray-500 text-center">
+                    <div className="mt-2 text-xs text-center" style={{ color: 'var(--text-muted)' }}>
                       {new Date(s.month).toLocaleDateString('en-US', { month: 'short' })}
                     </div>
                   </div>
@@ -68,25 +68,25 @@ export default async function SavingsPage() {
               })
             })()
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-500">No savings data yet</div>
+            <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--text-muted)' }}>No savings data yet</div>
           )}
         </div>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-4">Total Lifetime Savings</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>Total Lifetime Savings</div>
           <div className="text-5xl font-black text-green-500">
             ${totalLifetime.toFixed(2)}
           </div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-4">Average Per Shopping Trip</div>
-          <div className="text-3xl font-black">${avgPerTrip.toFixed(2)}</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>Average Per Shopping Trip</div>
+          <div className="text-3xl font-black" style={{ color: 'var(--text-primary)' }}>${avgPerTrip.toFixed(2)}</div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-4">Projected Annual Savings</div>
-          <div className="text-3xl font-black">${projectedAnnual.toFixed(0)}</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>Projected Annual Savings</div>
+          <div className="text-3xl font-black" style={{ color: 'var(--text-primary)' }}>${projectedAnnual.toFixed(0)}</div>
         </div>
       </div>
     </div>

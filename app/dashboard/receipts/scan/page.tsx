@@ -212,8 +212,8 @@ export default function ScanReceiptPage() {
         </Link>
       </div>
 
-      <h1 className="text-4xl font-black mb-2">Scan Receipt</h1>
-      <p className="text-gray-400 mb-8">
+      <h1 className="text-4xl font-black mb-2" style={{ color: 'var(--text-primary)' }}>Scan Receipt</h1>
+      <p className="mb-8" style={{ color: 'var(--text-muted)' }}>
         Upload a photo of your receipt to automatically extract items and prices using AI
       </p>
 
@@ -225,7 +225,7 @@ export default function ScanReceiptPage() {
 
       {/* Upload Area */}
       {!ocrResult && (
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 mb-8">
+        <div className="rounded-2xl p-8 mb-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <input
             type="file"
             ref={fileInputRef}
@@ -239,7 +239,8 @@ export default function ScanReceiptPage() {
               onClick={() => fileInputRef.current?.click()}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
-              className="border-2 border-dashed border-gray-700 rounded-xl p-12 text-center cursor-pointer hover:border-green-500/50 transition"
+              className="border-2 border-dashed rounded-xl p-12 text-center cursor-pointer hover:border-green-500/50 transition"
+              style={{ borderColor: 'var(--border-color)' }}
             >
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/10 flex items-center justify-center">
                 <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -247,8 +248,8 @@ export default function ScanReceiptPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
-              <p className="text-white font-semibold mb-2">Drop receipt image here or click to upload</p>
-              <p className="text-gray-500 text-sm">Supports JPG, PNG, HEIC - Max 10MB</p>
+              <p className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Drop receipt image here or click to upload</p>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Supports JPG, PNG, HEIC - Max 10MB</p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -273,7 +274,8 @@ export default function ScanReceiptPage() {
                 <button
                   onClick={resetForm}
                   disabled={uploading || processing}
-                  className="px-6 py-3 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition disabled:opacity-50"
+                  className="px-6 py-3 font-semibold rounded-lg hover:opacity-80 transition disabled:opacity-50"
+                  style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
                 >
                   Choose Different Image
                 </button>
@@ -310,19 +312,19 @@ export default function ScanReceiptPage() {
       {ocrResult && (
         <div className="space-y-6">
           {/* Store Info */}
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+          <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-2xl font-bold text-white">
+                <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
                   {ocrResult.storeName || 'Unknown Store'}
                 </h2>
                 {ocrResult.storeAddress && (
-                  <p className="text-gray-500 text-sm">{ocrResult.storeAddress}</p>
+                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{ocrResult.storeAddress}</p>
                 )}
               </div>
               {ocrResult.confidence && (
                 <div className="text-right">
-                  <div className="text-sm text-gray-500">Confidence</div>
+                  <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Confidence</div>
                   <div className={`text-lg font-bold ${
                     ocrResult.confidence > 0.8 ? 'text-green-500' :
                     ocrResult.confidence > 0.6 ? 'text-yellow-500' : 'text-red-500'
@@ -334,25 +336,25 @@ export default function ScanReceiptPage() {
             </div>
 
             {ocrResult.purchaseDate && (
-              <p className="text-gray-400 text-sm">
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                 Purchased: {new Date(ocrResult.purchaseDate).toLocaleDateString()}
               </p>
             )}
           </div>
 
           {/* Items */}
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
-            <div className="p-6 border-b border-gray-800">
-              <h3 className="text-xl font-bold text-white">Extracted Items</h3>
-              <p className="text-gray-500 text-sm">{ocrResult.items.length} items found</p>
+          <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <div className="p-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
+              <h3 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Extracted Items</h3>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{ocrResult.items.length} items found</p>
             </div>
 
-            <div className="divide-y divide-gray-800">
+            <div>
               {ocrResult.items.map((item, index) => (
-                <div key={index} className="flex items-center justify-between px-6 py-4">
+                <div key={index} className="flex items-center justify-between px-6 py-4" style={{ borderBottom: index < ocrResult.items.length - 1 ? '1px solid var(--border-color)' : 'none' }}>
                   <div className="flex items-center gap-3">
-                    <span className="text-gray-500 text-sm w-8">{item.quantity}x</span>
-                    <span className="text-white">{item.name}</span>
+                    <span className="text-sm w-8" style={{ color: 'var(--text-muted)' }}>{item.quantity}x</span>
+                    <span style={{ color: 'var(--text-primary)' }}>{item.name}</span>
                   </div>
                   <span className="text-green-500 font-semibold">
                     ${item.price.toFixed(2)}
@@ -362,21 +364,21 @@ export default function ScanReceiptPage() {
             </div>
 
             {/* Totals */}
-            <div className="bg-black/50 p-6 space-y-2">
+            <div className="p-6 space-y-2" style={{ backgroundColor: 'var(--bg-secondary)' }}>
               {ocrResult.subtotal && (
-                <div className="flex justify-between text-gray-400">
+                <div className="flex justify-between" style={{ color: 'var(--text-muted)' }}>
                   <span>Subtotal</span>
                   <span>${ocrResult.subtotal.toFixed(2)}</span>
                 </div>
               )}
               {ocrResult.tax && (
-                <div className="flex justify-between text-gray-400">
+                <div className="flex justify-between" style={{ color: 'var(--text-muted)' }}>
                   <span>Tax</span>
                   <span>${ocrResult.tax.toFixed(2)}</span>
                 </div>
               )}
               {ocrResult.total && (
-                <div className="flex justify-between text-white text-xl font-bold pt-2 border-t border-gray-800">
+                <div className="flex justify-between text-xl font-bold pt-2" style={{ borderTop: '1px solid var(--border-color)', color: 'var(--text-primary)' }}>
                   <span>Total</span>
                   <span className="text-green-500">${ocrResult.total.toFixed(2)}</span>
                 </div>
@@ -388,7 +390,8 @@ export default function ScanReceiptPage() {
           <div className="flex gap-4">
             <button
               onClick={resetForm}
-              className="flex-1 px-6 py-4 bg-gray-800 text-white font-semibold rounded-xl hover:bg-gray-700 transition"
+              className="flex-1 px-6 py-4 font-semibold rounded-xl hover:opacity-80 transition"
+              style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
             >
               Scan Another Receipt
             </button>
@@ -406,9 +409,9 @@ export default function ScanReceiptPage() {
       )}
 
       {/* Tips */}
-      <div className="mt-12 bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-        <h3 className="font-semibold text-white mb-4">Tips for Best Results</h3>
-        <ul className="space-y-2 text-gray-400 text-sm">
+      <div className="mt-12 rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <h3 className="font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Tips for Best Results</h3>
+        <ul className="space-y-2 text-sm" style={{ color: 'var(--text-muted)' }}>
           <li className="flex items-start gap-2">
             <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

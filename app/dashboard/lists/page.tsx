@@ -21,8 +21,8 @@ export default async function ListsPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-10 pb-6 border-b border-gray-800">
-        <h1 className="text-4xl font-black">My Shopping Lists</h1>
+      <div className="flex justify-between items-center mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
+        <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>My Shopping Lists</h1>
         <Link href="/dashboard/lists/new" className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600">
           + New List
         </Link>
@@ -31,21 +31,22 @@ export default async function ListsPage() {
       <div className="grid md:grid-cols-3 gap-6">
         {lists.length > 0 ? (
           lists.map((list: any) => (
-            <div key={list.id} className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-              <h3 className="text-xl font-bold mb-4">{list.name}</h3>
-              <div className="text-gray-500 mb-6">
+            <div key={list.id} className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+              <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>{list.name}</h3>
+              <div className="mb-6" style={{ color: 'var(--text-muted)' }}>
                 {list.list_items?.[0]?.count || 0} items
               </div>
               <Link
                 href={`/dashboard/compare?listId=${list.id}`}
-                className="block w-full py-3 text-center border border-gray-700 rounded-lg hover:border-green-500 transition"
+                className="block w-full py-3 text-center rounded-lg transition"
+                style={{ border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
               >
                 Compare Prices
               </Link>
             </div>
           ))
         ) : (
-          <div className="col-span-3 text-center py-12 text-gray-500">
+          <div className="col-span-3 text-center py-12" style={{ color: 'var(--text-muted)' }}>
             No shopping lists yet. Create your first list to start comparing prices!
           </div>
         )}

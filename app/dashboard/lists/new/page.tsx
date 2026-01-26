@@ -174,8 +174,8 @@ export default function NewListPage() {
         </Link>
       </div>
 
-      <h1 className="text-4xl font-black mb-2">New Shopping List</h1>
-      <p className="text-gray-500 mb-8">Add items naturally - we&apos;ll parse quantities and units automatically</p>
+      <h1 className="text-4xl font-black mb-2" style={{ color: 'var(--text-primary)' }}>New Shopping List</h1>
+      <p className="mb-8" style={{ color: 'var(--text-muted)' }}>Add items naturally - we&apos;ll parse quantities and units automatically</p>
 
       {error && (
         <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400">
@@ -184,22 +184,23 @@ export default function NewListPage() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8">
+        <div className="rounded-2xl p-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-400 mb-2">List Name</label>
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>List Name</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Weekly Groceries, Party Supplies"
-              className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white focus:outline-none focus:border-green-500"
+              className="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-green-500"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>
               Items
-              <span className="text-gray-600 ml-2 font-normal">
+              <span className="ml-2 font-normal" style={{ color: 'var(--text-secondary)' }}>
                 (one per line, or comma-separated)
               </span>
             </label>
@@ -214,9 +215,10 @@ whole wheat bread
 3 cans tomato sauce
 chicken breast 2 lbs"
               rows={8}
-              className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white focus:outline-none focus:border-green-500 font-mono text-sm"
+              className="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-green-500 font-mono text-sm"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
-            <p className="text-xs text-gray-600 mt-2">
+            <p className="text-xs mt-2" style={{ color: 'var(--text-secondary)' }}>
               Tip: Include quantities like &quot;2 gallons&quot;, &quot;3 lbs&quot;, &quot;1 dozen&quot; for better organization
             </p>
           </div>
@@ -224,22 +226,23 @@ chicken breast 2 lbs"
           {/* Preview parsed items */}
           {parsedItems.length > 0 && (
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-400 mb-3">
+              <label className="block text-sm font-medium mb-3" style={{ color: 'var(--text-muted)' }}>
                 Preview ({parsedItems.length} items)
               </label>
-              <div className="bg-black/50 rounded-lg border border-gray-800 divide-y divide-gray-800">
+              <div className="rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
                 {parsedItems.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between px-4 py-3">
+                  <div key={index} className="flex items-center justify-between px-4 py-3" style={{ borderBottom: index < parsedItems.length - 1 ? '1px solid var(--border-color)' : 'none' }}>
                     <div className="flex items-center gap-3">
                       <span className="text-green-500 font-semibold min-w-[3rem]">
                         {item.quantity}{item.unit ? ` ${item.unit}` : 'x'}
                       </span>
-                      <span className="text-white">{item.name}</span>
+                      <span style={{ color: 'var(--text-primary)' }}>{item.name}</span>
                     </div>
                     <button
                       type="button"
                       onClick={() => removeItem(index)}
-                      className="text-gray-500 hover:text-red-500 transition"
+                      className="hover:text-red-500 transition"
+                      style={{ color: 'var(--text-muted)' }}
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -256,7 +259,8 @@ chicken breast 2 lbs"
           <button
             type="submit"
             disabled={saving}
-            className="flex-1 px-6 py-4 bg-gray-800 text-white font-semibold rounded-xl hover:bg-gray-700 transition disabled:opacity-50"
+            className="flex-1 px-6 py-4 font-semibold rounded-xl hover:opacity-80 transition disabled:opacity-50"
+            style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
           >
             {saving ? 'Saving...' : 'Save List'}
           </button>
@@ -282,7 +286,7 @@ chicken breast 2 lbs"
 
       {/* Quick templates */}
       <div className="mt-12">
-        <h3 className="text-lg font-semibold mb-4 text-gray-400">Quick Start Templates</h3>
+        <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-muted)' }}>Quick Start Templates</h3>
         <div className="grid md:grid-cols-3 gap-4">
           {[
             {
@@ -304,10 +308,11 @@ chicken breast 2 lbs"
                 setName(template.name)
                 handleItemsChange(template.items)
               }}
-              className="p-4 bg-gray-900 border border-gray-800 rounded-xl text-left hover:border-green-500/50 transition"
+              className="p-4 rounded-xl text-left hover:border-green-500/50 transition"
+              style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
             >
-              <div className="font-semibold text-white mb-1">{template.name}</div>
-              <div className="text-sm text-gray-500">
+              <div className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>{template.name}</div>
+              <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
                 {template.items.split('\n').length} items
               </div>
             </button>

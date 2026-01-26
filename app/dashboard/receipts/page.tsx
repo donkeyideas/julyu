@@ -107,10 +107,10 @@ export default async function ReceiptsPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-10 pb-6 border-b border-gray-800">
+      <div className="flex justify-between items-center mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
         <div>
-          <h1 className="text-4xl font-black">Receipt History</h1>
-          <p className="text-gray-500 mt-2">Track your purchases and find savings opportunities</p>
+          <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>Receipt History</h1>
+          <p className="mt-2" style={{ color: 'var(--text-muted)' }}>Track your purchases and find savings opportunities</p>
         </div>
         <Link
           href="/dashboard/receipts/scan"
@@ -122,13 +122,13 @@ export default async function ReceiptsPage() {
 
       {/* Stats Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <div className="text-sm text-gray-500 mb-1">Total Receipts</div>
-          <div className="text-3xl font-bold">{receipts.length}</div>
+        <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Total Receipts</div>
+          <div className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{receipts.length}</div>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <div className="text-sm text-gray-500 mb-1">Total Spent</div>
-          <div className="text-3xl font-bold">
+        <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Total Spent</div>
+          <div className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
             ${receipts.reduce((sum, r) => sum + (r.total_amount || 0), 0).toFixed(2)}
           </div>
         </div>
@@ -140,16 +140,16 @@ export default async function ReceiptsPage() {
         </div>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <table className="w-full">
-          <thead className="bg-black">
+          <thead style={{ backgroundColor: 'var(--bg-secondary)' }}>
             <tr>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Date</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Store</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Items</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Total</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Potential Savings</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Action</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Date</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Store</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Items</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Total</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Potential Savings</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -159,26 +159,26 @@ export default async function ReceiptsPage() {
                 const hasSavings = (receipt.potential_savings || 0) > 0
 
                 return (
-                  <tr key={receipt.id} className="border-t border-gray-800 hover:bg-black/50">
-                    <td className="p-4">
+                  <tr key={receipt.id} className="hover:opacity-80" style={{ borderTop: '1px solid var(--border-color)' }}>
+                    <td className="p-4" style={{ color: 'var(--text-primary)' }}>
                       {receipt.purchase_date
                         ? new Date(receipt.purchase_date).toLocaleDateString()
                         : new Date(receipt.created_at).toLocaleDateString()}
                     </td>
                     <td className="p-4">
-                      <div className="font-medium">
+                      <div className="font-medium" style={{ color: 'var(--text-primary)' }}>
                         {receipt.stores?.name || receipt.ocr_result?.store?.name || 'Unknown Store'}
                       </div>
                       {receipt.stores?.retailer && receipt.stores.retailer !== receipt.stores.name && (
-                        <div className="text-sm text-gray-500">{receipt.stores.retailer}</div>
+                        <div className="text-sm" style={{ color: 'var(--text-muted)' }}>{receipt.stores.retailer}</div>
                       )}
                     </td>
                     <td className="p-4">
-                      <span className="px-2 py-1 bg-gray-800 rounded text-sm">
+                      <span className="px-2 py-1 rounded text-sm" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>
                         {itemCount} item{itemCount !== 1 ? 's' : ''}
                       </span>
                     </td>
-                    <td className="p-4 font-bold">
+                    <td className="p-4 font-bold" style={{ color: 'var(--text-primary)' }}>
                       ${receipt.total_amount?.toFixed(2) || '0.00'}
                     </td>
                     <td className="p-4">
@@ -187,13 +187,14 @@ export default async function ReceiptsPage() {
                           ${receipt.potential_savings?.toFixed(2)}
                         </span>
                       ) : (
-                        <span className="text-gray-500">—</span>
+                        <span style={{ color: 'var(--text-muted)' }}>—</span>
                       )}
                     </td>
                     <td className="p-4">
                       <Link
                         href={`/dashboard/receipts/${receipt.id}`}
-                        className="px-4 py-2 border border-gray-700 rounded-lg hover:border-green-500 hover:text-green-500 transition inline-block text-sm"
+                        className="px-4 py-2 rounded-lg hover:border-green-500 hover:text-green-500 transition inline-block text-sm"
+                        style={{ border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
                       >
                         View Details
                       </Link>
@@ -204,13 +205,13 @@ export default async function ReceiptsPage() {
             ) : (
               <tr>
                 <td colSpan={6} className="p-12 text-center">
-                  <div className="text-gray-500 mb-4">
+                  <div className="mb-4" style={{ color: 'var(--text-muted)' }}>
                     <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                     No receipts yet
                   </div>
-                  <p className="text-gray-600 mb-6">Scan your first receipt to start tracking prices and finding savings!</p>
+                  <p className="mb-6" style={{ color: 'var(--text-secondary)' }}>Scan your first receipt to start tracking prices and finding savings!</p>
                   <Link
                     href="/dashboard/receipts/scan"
                     className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition inline-block"
@@ -226,14 +227,14 @@ export default async function ReceiptsPage() {
 
       {/* Tips Section */}
       {receipts.length > 0 && (
-        <div className="mt-8 bg-gray-900 border border-gray-800 rounded-2xl p-6">
-          <h3 className="font-bold mb-3 flex items-center gap-2">
+        <div className="mt-8 rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <h3 className="font-bold mb-3 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
             <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
             How We Calculate Savings
           </h3>
-          <p className="text-gray-500 text-sm">
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
             We compare prices on your receipt to the lowest prices we&apos;ve found across all stores in our database.
             The &quot;Potential Savings&quot; shows how much you could save by shopping at stores with better prices for those items.
             Click &quot;View Details&quot; on any receipt to see item-by-item comparisons.

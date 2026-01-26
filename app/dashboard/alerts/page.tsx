@@ -155,8 +155,8 @@ export default function AlertsPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="inline-block w-12 h-12 border-4 border-gray-800 border-t-green-500 rounded-full animate-spin mb-4"></div>
-          <div className="text-gray-500">Loading alerts...</div>
+          <div className="inline-block w-12 h-12 border-4 rounded-full animate-spin mb-4" style={{ borderColor: 'var(--border-color)', borderTopColor: 'var(--accent-primary)' }}></div>
+          <div style={{ color: 'var(--text-muted)' }}>Loading alerts...</div>
         </div>
       </div>
     )
@@ -164,10 +164,10 @@ export default function AlertsPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-10 pb-6 border-b border-gray-800">
+      <div className="flex justify-between items-center mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
         <div>
-          <h1 className="text-4xl font-black">Price Alerts</h1>
-          <p className="text-gray-500 mt-2">Get notified when prices drop to your target</p>
+          <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>Price Alerts</h1>
+          <p className="mt-2" style={{ color: 'var(--text-muted)' }}>Get notified when prices drop to your target</p>
         </div>
         <button
           onClick={openCreateModal}
@@ -178,15 +178,15 @@ export default function AlertsPage() {
       </div>
 
       {/* Alerts Table */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <table className="w-full">
-          <thead className="bg-black">
+          <thead style={{ backgroundColor: 'var(--bg-secondary)' }}>
             <tr>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Product</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Target Price</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Current Price</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Status</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Actions</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Product</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Target Price</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Current Price</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Status</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -196,17 +196,17 @@ export default function AlertsPage() {
                 const savings = alert.current_price ? (alert.current_price - alert.target_price) : null
 
                 return (
-                  <tr key={alert.id} className="border-t border-gray-800 hover:bg-black/50">
+                  <tr key={alert.id} className="hover:opacity-80" style={{ borderTop: '1px solid var(--border-color)' }}>
                     <td className="p-4">
-                      <div className="font-medium">{alert.products?.name || 'Unknown Product'}</div>
+                      <div className="font-medium" style={{ color: 'var(--text-primary)' }}>{alert.products?.name || 'Unknown Product'}</div>
                       {alert.products?.brand && (
-                        <div className="text-sm text-gray-500">{alert.products.brand}</div>
+                        <div className="text-sm" style={{ color: 'var(--text-muted)' }}>{alert.products.brand}</div>
                       )}
                     </td>
                     <td className="p-4 text-green-500 font-bold">
                       ${alert.target_price.toFixed(2)}
                     </td>
-                    <td className={`p-4 font-bold ${isTriggered ? 'text-green-500' : 'text-white'}`}>
+                    <td className="p-4 font-bold" style={{ color: isTriggered ? 'var(--accent-primary)' : 'var(--text-primary)' }}>
                       {alert.current_price !== null ? `$${alert.current_price.toFixed(2)}` : '—'}
                     </td>
                     <td className="p-4">
@@ -218,7 +218,7 @@ export default function AlertsPage() {
                           )}
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-gray-800 text-gray-400 rounded-full text-sm">
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>
                           <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
                           Watching
                         </span>
@@ -233,14 +233,16 @@ export default function AlertsPage() {
                         ) : (
                           <button
                             onClick={() => openEditModal(alert)}
-                            className="px-4 py-2 border border-gray-700 rounded-lg hover:border-green-500 hover:text-green-500 transition"
+                            className="px-4 py-2 rounded-lg hover:border-green-500 hover:text-green-500 transition"
+                            style={{ border: '1px solid var(--border-color)' }}
                           >
                             Edit
                           </button>
                         )}
                         <button
                           onClick={() => handleDelete(alert.id)}
-                          className="px-4 py-2 border border-gray-700 rounded-lg hover:border-red-500 hover:text-red-500 transition"
+                          className="px-4 py-2 rounded-lg hover:border-red-500 hover:text-red-500 transition"
+                          style={{ border: '1px solid var(--border-color)' }}
                         >
                           Delete
                         </button>
@@ -252,13 +254,13 @@ export default function AlertsPage() {
             ) : (
               <tr>
                 <td colSpan={5} className="p-12 text-center">
-                  <div className="text-gray-500 mb-4">
+                  <div className="mb-4" style={{ color: 'var(--text-muted)' }}>
                     <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
                     No price alerts yet
                   </div>
-                  <p className="text-gray-600 mb-6">Create an alert to be notified when prices drop!</p>
+                  <p className="mb-6" style={{ color: 'var(--text-secondary)' }}>Create an alert to be notified when prices drop!</p>
                   <button
                     onClick={openCreateModal}
                     className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition"
@@ -275,8 +277,8 @@ export default function AlertsPage() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-6">
+          <div className="rounded-2xl p-8 max-w-md w-full" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>
               {editingAlert ? 'Edit Price Alert' : 'Create Price Alert'}
             </h2>
 
@@ -289,24 +291,25 @@ export default function AlertsPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block font-medium mb-2">Product Name</label>
+                  <label className="block font-medium mb-2" style={{ color: 'var(--text-primary)' }}>Product Name</label>
                   <input
                     type="text"
                     value={formData.product_name}
                     onChange={(e) => setFormData(prev => ({ ...prev, product_name: e.target.value }))}
                     disabled={!!editingAlert}
                     placeholder="e.g., Organic Milk, Bread, Eggs"
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:border-green-500 focus:outline-none disabled:opacity-50"
+                    className="w-full rounded-lg px-4 py-3 focus:border-green-500 focus:outline-none disabled:opacity-50"
+                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   />
                   {editingAlert && (
-                    <p className="text-sm text-gray-500 mt-1">Product cannot be changed. Create a new alert instead.</p>
+                    <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Product cannot be changed. Create a new alert instead.</p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block font-medium mb-2">Target Price</label>
+                  <label className="block font-medium mb-2" style={{ color: 'var(--text-primary)' }}>Target Price</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }}>$</span>
                     <input
                       type="number"
                       step="0.01"
@@ -314,10 +317,11 @@ export default function AlertsPage() {
                       value={formData.target_price}
                       onChange={(e) => setFormData(prev => ({ ...prev, target_price: e.target.value }))}
                       placeholder="0.00"
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-8 pr-4 py-3 focus:border-green-500 focus:outline-none"
+                      className="w-full rounded-lg pl-8 pr-4 py-3 focus:border-green-500 focus:outline-none"
+                      style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                     />
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">You&apos;ll be notified when the price drops to or below this amount</p>
+                  <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>You&apos;ll be notified when the price drops to or below this amount</p>
                 </div>
               </div>
 
@@ -325,7 +329,8 @@ export default function AlertsPage() {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="flex-1 px-4 py-3 border border-gray-700 rounded-lg hover:border-gray-500 transition"
+                  className="flex-1 px-4 py-3 rounded-lg hover:opacity-80 transition"
+                  style={{ border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
                 >
                   Cancel
                 </button>

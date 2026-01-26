@@ -391,7 +391,8 @@ export default function AssistantPage() {
           <div className="relative" ref={historyRef}>
             <button
               onClick={() => setShowHistory(!showHistory)}
-              className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition text-sm flex items-center gap-2"
+              className="px-4 py-2 rounded-lg hover:opacity-80 transition text-sm flex items-center gap-2"
+              style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -403,9 +404,9 @@ export default function AssistantPage() {
             </button>
 
             {showHistory && (
-              <div className="absolute right-0 mt-2 w-72 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto">
-                <div className="p-2 border-b border-gray-700">
-                  <p className="text-xs text-gray-500 uppercase font-medium px-2">Recent Conversations</p>
+              <div className="absolute right-0 mt-2 w-72 rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                <div className="p-2" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <p className="text-xs uppercase font-medium px-2" style={{ color: 'var(--text-muted)' }}>Recent Conversations</p>
                 </div>
                 {conversations.length > 0 ? (
                   <div className="p-2">
@@ -416,15 +417,16 @@ export default function AssistantPage() {
                         className={`w-full text-left px-3 py-2 rounded-lg mb-1 truncate transition text-sm ${
                           conversationId === conv.id
                             ? 'bg-green-500/15 text-green-500'
-                            : 'hover:bg-gray-800 text-gray-300'
+                            : 'hover:opacity-80'
                         }`}
+                        style={{ color: conversationId === conv.id ? undefined : 'var(--text-secondary)' }}
                       >
                         {conv.title}
                       </button>
                     ))}
                   </div>
                 ) : (
-                  <div className="p-4 text-center text-gray-500 text-sm">
+                  <div className="p-4 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
                     No conversations yet
                   </div>
                 )}
@@ -435,7 +437,7 @@ export default function AssistantPage() {
       </div>
 
       {/* Chat Container */}
-      <div className="flex-1 bg-gray-900/50 rounded-xl border border-gray-800 flex flex-col overflow-hidden">
+      <div className="flex-1 rounded-xl flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-4">
           {messages.length === 0 ? (
@@ -455,7 +457,8 @@ export default function AssistantPage() {
                   <button
                     key={i}
                     onClick={() => sendMessage(prompt)}
-                    className="text-left px-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg hover:border-green-500 hover:bg-gray-800/80 transition text-sm"
+                    className="text-left px-3 py-2.5 rounded-lg hover:border-green-500 transition text-sm"
+                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   >
                     {prompt}
                   </button>
@@ -481,8 +484,9 @@ export default function AssistantPage() {
                       className={`px-4 py-3 rounded-2xl ${
                         message.role === 'user'
                           ? 'bg-green-500'
-                          : 'bg-gray-800 border border-gray-700'
+                          : ''
                       }`}
+                      style={message.role === 'assistant' ? { backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' } : undefined}
                     >
                       {message.role === 'assistant' ? (
                         <div className="text-sm leading-relaxed text-gray-200">
@@ -521,14 +525,14 @@ export default function AssistantPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                     </svg>
                   </div>
-                  <div className="bg-gray-800 border border-gray-700 px-4 py-3 rounded-2xl">
+                  <div className="px-4 py-3 rounded-2xl" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
                     <div className="flex items-center gap-2">
                       <div className="flex gap-1">
                         <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
                         <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
                         <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                       </div>
-                      <span className="text-xs text-gray-500">Thinking...</span>
+                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Thinking...</span>
                     </div>
                   </div>
                 </div>
@@ -540,7 +544,7 @@ export default function AssistantPage() {
         </div>
 
         {/* Input Area */}
-        <div className="p-4 border-t border-gray-800 bg-gray-900/80">
+        <div className="p-4" style={{ borderTop: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}>
           <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
             <div className="flex gap-3 items-end">
               <div className="flex-1">
@@ -551,8 +555,8 @@ export default function AssistantPage() {
                   onKeyDown={handleKeyDown}
                   placeholder="Ask me anything about groceries..."
                   rows={1}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 resize-none focus:border-green-500 focus:outline-none text-sm text-white placeholder-gray-500"
-                  style={{ minHeight: '48px', maxHeight: '120px' }}
+                  className="w-full rounded-xl px-4 py-3 resize-none focus:border-green-500 focus:outline-none text-sm"
+                  style={{ minHeight: '48px', maxHeight: '120px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <button
@@ -565,7 +569,7 @@ export default function AssistantPage() {
                 </svg>
               </button>
             </div>
-            <p className="text-xs text-gray-600 mt-2 text-center">
+            <p className="text-xs mt-2 text-center" style={{ color: 'var(--text-muted)' }}>
               Press Enter to send, Shift+Enter for new line
             </p>
           </form>

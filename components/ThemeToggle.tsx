@@ -39,12 +39,12 @@ export default function ThemeToggle() {
   const { theme, setTheme } = useTheme()
 
   return (
-    <div className="flex items-center gap-1 p-1 rounded-lg" style={{ backgroundColor: 'var(--bg-card)' }}>
+    <div className="inline-flex items-center gap-0.5 p-0.5 rounded-lg" style={{ backgroundColor: 'var(--bg-card)' }}>
       {themes.map((t) => (
         <button
           key={t.value}
           onClick={() => setTheme(t.value)}
-          className={`flex items-center justify-center w-10 h-10 rounded-md transition-all ${
+          className={`flex items-center justify-center w-8 h-8 rounded-md transition-all ${
             theme === t.value
               ? 'bg-green-500 text-black'
               : 'hover:opacity-80'

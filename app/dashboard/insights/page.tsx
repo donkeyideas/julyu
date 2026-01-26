@@ -88,8 +88,8 @@ export default function InsightsPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="inline-block w-12 h-12 border-4 border-gray-800 border-t-green-500 rounded-full animate-spin mb-4"></div>
-          <div className="text-gray-500">Generating insights...</div>
+          <div className="inline-block w-12 h-12 border-4 rounded-full animate-spin mb-4" style={{ borderColor: 'var(--border-color)', borderTopColor: 'var(--accent-primary)' }}></div>
+          <div style={{ color: 'var(--text-muted)' }}>Generating insights...</div>
         </div>
       </div>
     )
@@ -101,9 +101,9 @@ export default function InsightsPage() {
 
   return (
     <div>
-      <div className="mb-10 pb-6 border-b border-gray-800">
-        <h1 className="text-4xl font-black">Smart Insights</h1>
-        <p className="text-gray-500 mt-2">AI-powered tips and analysis to help you save more</p>
+      <div className="mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
+        <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>Smart Insights</h1>
+        <p className="mt-2" style={{ color: 'var(--text-muted)' }}>AI-powered tips and analysis to help you save more</p>
       </div>
 
       {/* High Priority Alerts */}
@@ -170,7 +170,8 @@ export default function InsightsPage() {
               return (
                 <div
                   key={insight.id}
-                  className="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-gray-700 transition relative group"
+                  className="rounded-2xl p-6 hover:opacity-90 transition relative group"
+                  style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
                 >
                   <button
                     onClick={() => dismissInsight(insight.id)}
@@ -214,13 +215,13 @@ export default function InsightsPage() {
         </div>
       ) : (
         <div className="text-center py-12">
-          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-900 flex items-center justify-center">
-            <svg className="w-10 h-10 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--bg-card)' }}>
+            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--text-muted)' }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
           </div>
-          <h3 className="text-xl font-bold mb-2">All caught up!</h3>
-          <p className="text-gray-500 mb-6">No new insights right now. Keep using Julyu and we&apos;ll generate personalized tips.</p>
+          <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>All caught up!</h3>
+          <p className="mb-6" style={{ color: 'var(--text-muted)' }}>No new insights right now. Keep using Julyu and we&apos;ll generate personalized tips.</p>
           <Link
             href="/dashboard/compare"
             className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition inline-block"
@@ -231,28 +232,28 @@ export default function InsightsPage() {
       )}
 
       {/* Summary Stats */}
-      <div className="mt-12 pt-8 border-t border-gray-800">
-        <h2 className="text-xl font-bold mb-4">Quick Stats</h2>
+      <div className="mt-12 pt-8" style={{ borderTop: '1px solid var(--border-color)' }}>
+        <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Quick Stats</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
+          <div className="rounded-xl p-4 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="text-3xl font-black text-green-500">{insights.length}</div>
-            <div className="text-sm text-gray-500">Active Insights</div>
+            <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Active Insights</div>
           </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
+          <div className="rounded-xl p-4 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="text-3xl font-black text-yellow-500">{highPriority.length}</div>
-            <div className="text-sm text-gray-500">Needs Attention</div>
+            <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Needs Attention</div>
           </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
+          <div className="rounded-xl p-4 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="text-3xl font-black text-purple-500">
               {insights.filter(i => i.insight_type === 'recommendation').length}
             </div>
-            <div className="text-sm text-gray-500">Recommendations</div>
+            <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Recommendations</div>
           </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
+          <div className="rounded-xl p-4 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="text-3xl font-black text-blue-500">
               {insights.filter(i => i.insight_type === 'savings').length}
             </div>
-            <div className="text-sm text-gray-500">Savings Tips</div>
+            <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Savings Tips</div>
           </div>
         </div>
       </div>

@@ -123,8 +123,8 @@ export default function BudgetPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="inline-block w-12 h-12 border-4 border-gray-800 border-t-green-500 rounded-full animate-spin mb-4"></div>
-          <div className="text-gray-500">Loading budget data...</div>
+          <div className="inline-block w-12 h-12 border-4 rounded-full animate-spin mb-4" style={{ borderColor: 'var(--border-color)', borderTopColor: 'var(--accent-primary)' }}></div>
+          <div style={{ color: 'var(--text-muted)' }}>Loading budget data...</div>
         </div>
       </div>
     )
@@ -137,21 +137,21 @@ export default function BudgetPage() {
 
   return (
     <div>
-      <div className="mb-10 pb-6 border-b border-gray-800">
-        <h1 className="text-4xl font-black">Budget Optimizer</h1>
-        <p className="text-gray-500 mt-2">Track spending and get AI recommendations to save more</p>
+      <div className="mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
+        <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>Budget Optimizer</h1>
+        <p className="mt-2" style={{ color: 'var(--text-muted)' }}>Track spending and get AI recommendations to save more</p>
       </div>
 
       {/* No Data State */}
       {!hasRealData && categories.length === 0 && (
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 mb-8 text-center">
+        <div className="rounded-2xl p-8 mb-8 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
             <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
           </div>
-          <h3 className="text-xl font-bold mb-2">Start Tracking Your Spending</h3>
-          <p className="text-gray-500 mb-6 max-w-md mx-auto">
+          <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Start Tracking Your Spending</h3>
+          <p className="mb-6 max-w-md mx-auto" style={{ color: 'var(--text-muted)' }}>
             Scan receipts or run price comparisons to see your spending breakdown by category and get personalized savings recommendations.
           </p>
           <div className="flex gap-4 justify-center">
@@ -163,7 +163,8 @@ export default function BudgetPage() {
             </Link>
             <Link
               href="/dashboard/compare"
-              className="px-6 py-3 border border-gray-700 rounded-lg hover:border-green-500 transition"
+              className="px-6 py-3 rounded-lg hover:border-green-500 transition"
+              style={{ border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
             >
               Compare Prices
             </Link>
@@ -174,9 +175,9 @@ export default function BudgetPage() {
       {/* Budget Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {/* Monthly Budget Card */}
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <div className="flex justify-between items-start mb-4">
-            <div className="text-sm text-gray-500">Monthly Budget</div>
+            <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Monthly Budget</div>
             <button
               onClick={() => setEditingBudget(true)}
               className="text-green-500 hover:text-green-400 text-sm"
@@ -187,12 +188,13 @@ export default function BudgetPage() {
           {editingBudget ? (
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }}>$</span>
                 <input
                   type="number"
                   value={newBudget}
                   onChange={(e) => setNewBudget(e.target.value)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-7 pr-3 py-2 focus:border-green-500 focus:outline-none"
+                  className="w-full rounded-lg pl-7 pr-3 py-2 focus:border-green-500 focus:outline-none"
+                  style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   placeholder="0.00"
                 />
               </div>
@@ -204,7 +206,7 @@ export default function BudgetPage() {
               </button>
             </div>
           ) : totalBudget ? (
-            <div className="text-4xl font-black">${totalBudget.toFixed(2)}</div>
+            <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>${totalBudget.toFixed(2)}</div>
           ) : (
             <button
               onClick={() => setEditingBudget(true)}
@@ -216,20 +218,20 @@ export default function BudgetPage() {
         </div>
 
         {/* Spent So Far */}
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-4">Spent This Month</div>
-          <div className={`text-4xl font-black ${totalBudget && budgetUsed >= 80 ? 'text-yellow-500' : ''} ${totalBudget && budgetUsed >= 100 ? 'text-red-500' : ''}`}>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>Spent This Month</div>
+          <div className={`text-4xl font-black ${totalBudget && budgetUsed >= 80 ? 'text-yellow-500' : ''} ${totalBudget && budgetUsed >= 100 ? 'text-red-500' : ''}`} style={{ color: totalBudget && (budgetUsed >= 80 || budgetUsed >= 100) ? undefined : 'var(--text-primary)' }}>
             ${totalSpent.toFixed(2)}
           </div>
           {totalBudget && (
             <div className="mt-3">
-              <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+              <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)' }}>
                 <div
                   className={`h-full ${getProgressColor(totalSpent, totalBudget)} transition-all`}
                   style={{ width: `${Math.min(budgetUsed, 100)}%` }}
                 />
               </div>
-              <div className="text-sm text-gray-500 mt-1">
+              <div className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
                 {budgetUsed.toFixed(0)}% of budget used
               </div>
             </div>
@@ -250,18 +252,18 @@ export default function BudgetPage() {
 
       {/* Category Breakdown */}
       {categories.length > 0 && (
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
-          <h2 className="text-xl font-bold mb-6">Spending by Category</h2>
+        <div className="rounded-2xl p-6 mb-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <h2 className="text-xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>Spending by Category</h2>
           <div className="space-y-4">
             {categories.map((cat, i) => (
               <div key={i}>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium">{cat.category}</span>
+                  <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{cat.category}</span>
                   <span className={getProgressTextColor(cat.current_spent, cat.monthly_limit)}>
                     ${cat.current_spent.toFixed(2)} / ${cat.monthly_limit.toFixed(2)}
                   </span>
                 </div>
-                <div className="w-full h-3 bg-gray-800 rounded-full overflow-hidden">
+                <div className="w-full h-3 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)' }}>
                   <div
                     className={`h-full ${getProgressColor(cat.current_spent, cat.monthly_limit)} transition-all`}
                     style={{ width: `${Math.min((cat.current_spent / cat.monthly_limit) * 100, 100)}%` }}
@@ -292,22 +294,23 @@ export default function BudgetPage() {
             {recommendations.map(rec => (
               <div
                 key={rec.id}
-                className={`bg-gray-900 border rounded-2xl p-6 transition ${
+                className={`rounded-2xl p-6 transition ${
                   rec.implemented
                     ? 'border-green-500/30 opacity-60'
-                    : 'border-gray-800 hover:border-gray-700'
+                    : 'hover:opacity-90'
                 }`}
+                style={{ backgroundColor: 'var(--bg-card)', border: rec.implemented ? undefined : '1px solid var(--border-color)' }}
               >
                 <div className="flex justify-between items-start mb-3">
-                  <span className="px-2 py-1 bg-gray-800 text-gray-400 rounded text-xs capitalize">
+                  <span className="px-2 py-1 rounded text-xs capitalize" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>
                     {rec.recommendation_type.replace('_', ' ')}
                   </span>
                   <span className="text-green-500 font-bold">
                     Save ${rec.potential_savings.toFixed(2)}/mo
                   </span>
                 </div>
-                <h3 className="font-bold mb-2">{rec.title}</h3>
-                <p className="text-gray-500 text-sm mb-4">{rec.description}</p>
+                <h3 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{rec.title}</h3>
+                <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>{rec.description}</p>
                 {rec.implemented ? (
                   <span className="inline-flex items-center gap-1 text-green-500 text-sm">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -333,20 +336,22 @@ export default function BudgetPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Link
           href="/dashboard/compare"
-          className="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-green-500 transition group"
+          className="rounded-2xl p-6 hover:opacity-90 transition group"
+          style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
         >
           <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-green-500/30 transition">
             <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
           </div>
-          <h3 className="font-bold mb-1">Compare Prices</h3>
-          <p className="text-gray-500 text-sm">Find the best deals before you shop</p>
+          <h3 className="font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Compare Prices</h3>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Find the best deals before you shop</p>
         </Link>
 
         <Link
           href="/dashboard/receipts/scan"
-          className="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-green-500 transition group"
+          className="rounded-2xl p-6 hover:opacity-90 transition group"
+          style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
         >
           <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-purple-500/30 transition">
             <svg className="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -354,21 +359,22 @@ export default function BudgetPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </div>
-          <h3 className="font-bold mb-1">Scan Receipt</h3>
-          <p className="text-gray-500 text-sm">Track your spending automatically</p>
+          <h3 className="font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Scan Receipt</h3>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Track your spending automatically</p>
         </Link>
 
         <Link
           href="/dashboard/assistant"
-          className="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-green-500 transition group"
+          className="rounded-2xl p-6 hover:opacity-90 transition group"
+          style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
         >
           <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-500/30 transition">
             <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           </div>
-          <h3 className="font-bold mb-1">Ask AI Assistant</h3>
-          <p className="text-gray-500 text-sm">Get personalized budget advice</p>
+          <h3 className="font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Ask AI Assistant</h3>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Get personalized budget advice</p>
         </Link>
       </div>
     </div>
