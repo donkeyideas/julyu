@@ -17,27 +17,59 @@ export async function GET() {
       return NextResponse.json({ friends: getTestFriends() })
     }
 
-    // Fetch friends where user is either user_id or friend_id
-    const { data: friends, error } = await supabase
+    // Fetch friends in BOTH directions:
+    // 1. Where current user sent the request (user_id = me, friend is in friend_id)
+    // 2. Where current user received the request (friend_id = me, friend is in user_id)
+
+    // Query 1: I sent the request - get friend info from friend_id
+    const { data: sentRequests, error: error1 } = await supabase
       .from('user_friends')
       .select(`
         *,
         friend:users!user_friends_friend_id_fkey(id, email, full_name)
       `)
       .eq('user_id', userId)
+      .eq('status', 'accepted')
 
-    if (error) {
-      console.error('[Friends] Error:', error)
+    // Query 2: I received the request - get friend info from user_id (the sender)
+    const { data: receivedRequests, error: error2 } = await supabase
+      .from('user_friends')
+      .select(`
+        *,
+        sender:users!user_friends_user_id_fkey(id, email, full_name)
+      `)
+      .eq('friend_id', userId)
+      .eq('status', 'accepted')
+
+    if (error1 || error2) {
+      console.error('[Friends] Error:', error1 || error2)
       // Fall back to test data if table doesn't exist or other errors
-      if (isTestMode || error.message?.includes('relation') || error.code === '42P01') {
+      const err = error1 || error2
+      if (isTestMode || err?.message?.includes('relation') || err?.code === '42P01') {
         return NextResponse.json({ friends: getTestFriends() })
       }
       // Return test data for any database error to allow demo functionality
       return NextResponse.json({ friends: getTestFriends() })
     }
 
-    return NextResponse.json({ friends: friends || [] })
-  } catch (error: any) {
+    // Combine and normalize the results
+    // For sent requests, friend info is in 'friend' field
+    // For received requests, friend info is in 'sender' field - rename to 'friend' for consistency
+    const friendsFromSent = (sentRequests || []).map((f: Record<string, unknown>) => ({
+      ...f,
+      friend: f.friend
+    }))
+
+    const friendsFromReceived = (receivedRequests || []).map((f: Record<string, unknown>) => ({
+      ...f,
+      friend: f.sender, // The sender is the friend for received requests
+      sender: undefined
+    }))
+
+    const allFriends = [...friendsFromSent, ...friendsFromReceived]
+
+    return NextResponse.json({ friends: allFriends })
+  } catch (error: unknown) {
     console.error('[Friends] Error:', error)
     // Return test data on any error to keep the app functional
     return NextResponse.json({ friends: getTestFriends() })
