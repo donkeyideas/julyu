@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     } else if (format === 'csv') {
       // CSV format
       const headers = ['id', 'input', 'output', 'use_case', 'model_name', 'accuracy_score', 'user_feedback', 'created_at']
-      const rows = trainingData.map(record => {
+      const rows = trainingData.map((record: TrainingDataRecord) => {
         return [
           record.id,
           `"${(record.input_text || '').replace(/"/g, '""')}"`,
