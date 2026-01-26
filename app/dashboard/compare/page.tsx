@@ -18,6 +18,7 @@ interface StoreOption {
     name: string
     retailer: string
     distance?: string | null
+    address?: string
   }
   total: number
   savings?: number
@@ -41,13 +42,49 @@ interface AnalyzeResult {
   message?: string
 }
 
+interface SearchHistoryItem {
+  id: string
+  items: string[]
+  zipCode: string
+  address: string
+  timestamp: number
+  resultSummary?: {
+    total: number
+    itemsFound: number
+    bestStore?: string
+  }
+}
+
+interface StoreDetailsModal {
+  isOpen: boolean
+  store: StoreOption | null
+  products: ProductResult[]
+}
+
 export default function ComparePage() {
   const searchParams = useSearchParams()
   const [list, setList] = useState('milk 2%\neggs organic\nbread whole wheat\napples gala\nchicken breast\npasta penne')
   const [zipCode, setZipCode] = useState('45202')
+  const [address, setAddress] = useState('')
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<AnalyzeResult | null>(null)
   const [fromAssistant, setFromAssistant] = useState(false)
+  const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([])
+  const [showHistory, setShowHistory] = useState(false)
+  const [storeDetails, setStoreDetails] = useState<StoreDetailsModal>({ isOpen: false, store: null, products: [] })
+
+  // Load search history from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem('compareSearchHistory')
+    if (stored) {
+      try {
+        const history = JSON.parse(stored) as SearchHistoryItem[]
+        setSearchHistory(history)
+      } catch (e) {
+        console.error('Failed to parse search history:', e)
+      }
+    }
+  }, [])
 
   // Load items from AI Assistant if redirected
   useEffect(() => {
@@ -70,26 +107,63 @@ export default function ComparePage() {
 
   const itemCount = list.split('\n').filter(item => item.trim() !== '').length
 
+  const saveToHistory = (items: string[], result: AnalyzeResult) => {
+    const historyItem: SearchHistoryItem = {
+      id: Date.now().toString(),
+      items,
+      zipCode,
+      address,
+      timestamp: Date.now(),
+      resultSummary: result.success ? {
+        total: result.summary?.estimatedTotal || 0,
+        itemsFound: result.summary?.itemsFound || 0,
+        bestStore: result.bestOption?.store.name
+      } : undefined
+    }
+
+    const newHistory = [historyItem, ...searchHistory.slice(0, 9)] // Keep last 10 searches
+    setSearchHistory(newHistory)
+    localStorage.setItem('compareSearchHistory', JSON.stringify(newHistory))
+  }
+
+  const loadFromHistory = (item: SearchHistoryItem) => {
+    setList(item.items.join('\n'))
+    setZipCode(item.zipCode)
+    setAddress(item.address)
+    setShowHistory(false)
+  }
+
+  const clearHistory = () => {
+    setSearchHistory([])
+    localStorage.removeItem('compareSearchHistory')
+  }
+
   const handleCompare = async () => {
     setLoading(true)
     setResults(null)
+
+    const items = list.split('\n').filter(item => item.trim())
 
     try {
       const response = await fetch('/api/lists/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: list.split('\n').filter(item => item.trim()),
+          items,
           zipCode: zipCode,
+          address: address,
         }),
       })
 
       const data = await response.json()
       console.log('[Compare] API Response:', data)
       setResults(data)
+
+      // Save to history
+      saveToHistory(items, data)
     } catch (error) {
       console.error('Comparison error:', error)
-      setResults({
+      const errorResult: AnalyzeResult = {
         success: false,
         dataSource: 'error',
         bestOption: null,
@@ -97,16 +171,118 @@ export default function ComparePage() {
         products: [],
         summary: { totalItems: 0, itemsFound: 0, itemsMissing: 0, estimatedTotal: 0 },
         error: 'Failed to analyze prices. Please try again.',
-      })
+      }
+      setResults(errorResult)
     } finally {
       setLoading(false)
     }
   }
 
+  const handleShopHere = (store: StoreOption) => {
+    // Open store location in Google Maps
+    const query = store.store.address
+      ? encodeURIComponent(store.store.address)
+      : encodeURIComponent(`${store.store.name} ${store.store.retailer} ${zipCode}`)
+    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank')
+  }
+
+  const handleViewDetails = (store: StoreOption) => {
+    setStoreDetails({
+      isOpen: true,
+      store,
+      products: results?.products || []
+    })
+  }
+
+  const formatDate = (timestamp: number) => {
+    const date = new Date(timestamp)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    if (diffDays < 7) return `${diffDays}d ago`
+    return date.toLocaleDateString()
+  }
+
   return (
     <div>
-      <div className="mb-10 pb-6 border-b border-gray-800">
+      <div className="mb-10 pb-6 border-b border-gray-800 flex items-center justify-between">
         <h1 className="text-4xl font-black">Compare Prices</h1>
+
+        {/* Search History Button */}
+        <div className="relative">
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-900 border border-gray-800 rounded-lg hover:border-gray-700 transition"
+          >
+            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-gray-300">History</span>
+            {searchHistory.length > 0 && (
+              <span className="bg-green-500 text-black text-xs font-bold px-2 py-0.5 rounded-full">
+                {searchHistory.length}
+              </span>
+            )}
+          </button>
+
+          {/* History Dropdown */}
+          {showHistory && (
+            <div className="absolute right-0 top-12 w-80 bg-gray-900 border border-gray-800 rounded-xl shadow-xl z-50 max-h-96 overflow-y-auto">
+              <div className="p-3 border-b border-gray-800 flex items-center justify-between">
+                <span className="text-sm font-semibold text-gray-400">Search History</span>
+                {searchHistory.length > 0 && (
+                  <button
+                    onClick={clearHistory}
+                    className="text-xs text-red-400 hover:text-red-300"
+                  >
+                    Clear All
+                  </button>
+                )}
+              </div>
+              {searchHistory.length === 0 ? (
+                <div className="p-4 text-center text-gray-500 text-sm">
+                  No search history yet
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-800">
+                  {searchHistory.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => loadFromHistory(item)}
+                      className="w-full p-3 text-left hover:bg-gray-800/50 transition"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm text-white truncate">
+                            {item.items.slice(0, 3).join(', ')}
+                            {item.items.length > 3 && ` +${item.items.length - 3} more`}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {item.zipCode} {item.address && `• ${item.address}`}
+                          </div>
+                          {item.resultSummary && (
+                            <div className="text-xs text-green-500 mt-1">
+                              ${item.resultSummary.total.toFixed(2)} at {item.resultSummary.bestStore}
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-xs text-gray-600 whitespace-nowrap">
+                          {formatDate(item.timestamp)}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* AI Assistant Import Banner */}
@@ -133,16 +309,28 @@ export default function ComparePage() {
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 mb-8">
         <h2 className="text-2xl font-bold mb-6">Enter Your Grocery List</h2>
 
-        {/* Zip Code Input */}
-        <div className="mb-4">
-          <label className="block text-sm text-gray-400 mb-2">Your Zip Code</label>
-          <input
-            type="text"
-            value={zipCode}
-            onChange={(e) => setZipCode(e.target.value)}
-            placeholder="Enter zip code..."
-            className="w-48 px-4 py-2 bg-black border border-gray-800 rounded-lg text-white focus:border-green-500 focus:outline-none"
-          />
+        {/* Location Inputs */}
+        <div className="mb-4 flex flex-wrap gap-4">
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Zip Code</label>
+            <input
+              type="text"
+              value={zipCode}
+              onChange={(e) => setZipCode(e.target.value)}
+              placeholder="Enter zip code..."
+              className="w-32 px-4 py-2 bg-black border border-gray-800 rounded-lg text-white focus:border-green-500 focus:outline-none"
+            />
+          </div>
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm text-gray-400 mb-2">Address (optional)</label>
+            <input
+              type="text"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="Enter street address for better results..."
+              className="w-full px-4 py-2 bg-black border border-gray-800 rounded-lg text-white focus:border-green-500 focus:outline-none"
+            />
+          </div>
         </div>
 
         <div className="bg-black border border-gray-800 rounded-xl p-6">
@@ -168,7 +356,7 @@ export default function ComparePage() {
       {loading && (
         <div className="text-center py-12">
           <div className="inline-block w-12 h-12 border-4 border-gray-800 border-t-green-500 rounded-full animate-spin mb-4"></div>
-          <div className="text-gray-500">Searching Kroger stores for real-time prices...</div>
+          <div className="text-gray-500">Searching for real-time prices...</div>
         </div>
       )}
 
@@ -203,7 +391,7 @@ export default function ComparePage() {
               </div>
               <div>
                 <div className="text-sm font-semibold text-green-500 bg-green-500/10 px-3 py-1 rounded-full inline-block">
-                  {results.dataSource === 'kroger_api' ? 'Live Kroger Prices' : 'Database Prices'}
+                  {results.dataSource === 'kroger_api' ? 'Live Prices' : 'Database Prices'}
                 </div>
               </div>
             </div>
@@ -232,11 +420,16 @@ export default function ComparePage() {
                       </div>
                       <div className="text-sm text-gray-500">{results.bestOption.store.retailer}</div>
                     </td>
-                    <td className="p-4">{results.bestOption.store.distance || '-'} mi</td>
+                    <td className="p-4">
+                      {results.bestOption.store.distance ? `${results.bestOption.store.distance} mi` : 'N/A'}
+                    </td>
                     <td className="p-4">{results.summary?.itemsFound || 0}/{results.summary?.totalItems || 0}</td>
                     <td className="p-4 font-bold text-green-500 text-xl">${results.bestOption.total?.toFixed(2)}</td>
                     <td className="p-4">
-                      <button className="px-4 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600">
+                      <button
+                        onClick={() => handleShopHere(results.bestOption!)}
+                        className="px-4 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition"
+                      >
                         Shop Here
                       </button>
                     </td>
@@ -248,12 +441,23 @@ export default function ComparePage() {
                       <strong>{alt.store.name}</strong>
                       <div className="text-sm text-gray-500">{alt.store.retailer}</div>
                     </td>
-                    <td className="p-4">-</td>
+                    <td className="p-4">
+                      {alt.store.distance ? `${alt.store.distance} mi` : 'N/A'}
+                    </td>
                     <td className="p-4">{results.summary?.itemsFound || 0}/{results.summary?.totalItems || 0}</td>
                     <td className="p-4 font-bold">${alt.total?.toFixed(2)}</td>
-                    <td className="p-4">
-                      <button className="px-4 py-2 border border-gray-700 rounded-lg hover:border-green-500">
-                        View Details
+                    <td className="p-4 flex gap-2">
+                      <button
+                        onClick={() => handleShopHere(alt)}
+                        className="px-3 py-2 border border-gray-700 rounded-lg hover:border-green-500 transition text-sm"
+                      >
+                        Directions
+                      </button>
+                      <button
+                        onClick={() => handleViewDetails(alt)}
+                        className="px-3 py-2 border border-gray-700 rounded-lg hover:border-green-500 transition text-sm"
+                      >
+                        Details
                       </button>
                     </td>
                   </tr>
@@ -310,6 +514,80 @@ export default function ComparePage() {
         <div className="bg-yellow-500/10 border border-yellow-500/50 rounded-2xl p-6 mb-8">
           <p className="text-yellow-500">{results.message}</p>
         </div>
+      )}
+
+      {/* Store Details Modal */}
+      {storeDetails.isOpen && storeDetails.store && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+            <div className="p-6 border-b border-gray-800 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold">{storeDetails.store.store.name}</h3>
+                <p className="text-sm text-gray-500">{storeDetails.store.store.retailer}</p>
+              </div>
+              <button
+                onClick={() => setStoreDetails({ isOpen: false, store: null, products: [] })}
+                className="text-gray-400 hover:text-white"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto max-h-[60vh]">
+              <div className="mb-6 p-4 bg-green-500/10 rounded-xl">
+                <div className="text-2xl font-bold text-green-500">
+                  ${storeDetails.store.total.toFixed(2)}
+                </div>
+                <div className="text-sm text-gray-400">Total for available items</div>
+              </div>
+
+              <h4 className="font-semibold mb-4">Items at this store:</h4>
+              <div className="space-y-3">
+                {storeDetails.products.map((product, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 bg-black rounded-lg">
+                    <div className="flex items-center gap-3">
+                      {product.imageUrl && (
+                        <img src={product.imageUrl} alt="" className="w-10 h-10 object-cover rounded" />
+                      )}
+                      <div>
+                        <div className="font-medium">{product.name}</div>
+                        <div className="text-xs text-gray-500">{product.brand || 'Generic'}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {product.available ? (
+                        <div className="font-bold">${product.price?.toFixed(2) || '-'}</div>
+                      ) : (
+                        <div className="text-red-500 text-sm">Not available</div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 flex gap-3">
+                <button
+                  onClick={() => {
+                    handleShopHere(storeDetails.store!)
+                    setStoreDetails({ isOpen: false, store: null, products: [] })
+                  }}
+                  className="flex-1 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition"
+                >
+                  Get Directions
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Click outside to close history */}
+      {showHistory && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setShowHistory(false)}
+        />
       )}
     </div>
   )

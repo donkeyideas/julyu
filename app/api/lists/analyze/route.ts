@@ -4,6 +4,97 @@ import { deepseekClient } from '@/lib/api/deepseek'
 import { krogerClient, NormalizedKrogerProduct } from '@/lib/api/kroger'
 import { compareShoppingList, getAggregatedPrices } from '@/lib/services/price-aggregator'
 
+/**
+ * Save comparison to database and update user savings
+ */
+async function saveComparison(
+  supabase: ReturnType<typeof createServerClient>,
+  userId: string,
+  items: string[],
+  result: {
+    bestOption: { store: { name: string }; total: number } | null
+    summary: { totalItems: number; itemsFound: number; estimatedTotal: number }
+  }
+) {
+  try {
+    // Create a temporary shopping list for this comparison
+    const { data: list, error: listError } = await supabase
+      .from('shopping_lists')
+      .insert({
+        user_id: userId,
+        name: `Quick Compare - ${new Date().toLocaleDateString()}`,
+      })
+      .select('id')
+      .single()
+
+    if (listError || !list) {
+      console.error('[SaveComparison] Failed to create list:', listError)
+      return
+    }
+
+    // Insert list items
+    const listItems = items.map(item => ({
+      list_id: list.id,
+      user_input: item,
+    }))
+
+    await supabase.from('list_items').insert(listItems)
+
+    // Save the comparison
+    const { error: compError } = await supabase.from('comparisons').insert({
+      list_id: list.id,
+      user_id: userId,
+      results: result,
+      best_option: result.bestOption,
+      total_savings: 0, // Calculate actual savings when we have multi-store comparison
+    })
+
+    if (compError) {
+      console.error('[SaveComparison] Failed to save comparison:', compError)
+      return
+    }
+
+    // Update user savings for this month
+    const currentMonth = new Date().toISOString().slice(0, 7) + '-01'
+
+    // Get existing savings record for this month
+    const { data: existingSavings } = await supabase
+      .from('user_savings')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('month', currentMonth)
+      .single()
+
+    if (existingSavings) {
+      // Update existing record
+      await supabase
+        .from('user_savings')
+        .update({
+          total_spent: (existingSavings.total_spent || 0) + (result.summary?.estimatedTotal || 0),
+          trips_count: (existingSavings.trips_count || 0) + 1,
+          avg_savings_per_trip: existingSavings.total_saved
+            ? (existingSavings.total_saved / ((existingSavings.trips_count || 0) + 1))
+            : 0,
+        })
+        .eq('id', existingSavings.id)
+    } else {
+      // Create new record for this month
+      await supabase.from('user_savings').insert({
+        user_id: userId,
+        month: currentMonth,
+        total_spent: result.summary?.estimatedTotal || 0,
+        total_saved: 0,
+        trips_count: 1,
+        avg_savings_per_trip: 0,
+      })
+    }
+
+    console.log('[SaveComparison] Successfully saved comparison and updated savings')
+  } catch (error) {
+    console.error('[SaveComparison] Error:', error)
+  }
+}
+
 interface StoreResult {
   storeId: string
   storeName: string
@@ -62,11 +153,11 @@ export async function POST(request: NextRequest) {
 
     if (krogerAvailable) {
       // Use Kroger API for real-time prices
-      return await analyzeWithKroger(items, zipCode || '45202')
+      return await analyzeWithKroger(items, zipCode || '45202', supabase, userId)
     }
 
     // Fallback to database-based analysis
-    return await analyzeWithDatabase(items, supabase)
+    return await analyzeWithDatabase(items, supabase, userId)
   } catch (error: any) {
     console.error('[ListAnalyze] Error:', error)
     return NextResponse.json(
@@ -79,7 +170,12 @@ export async function POST(request: NextRequest) {
 /**
  * Analyze shopping list using Kroger API for real-time prices
  */
-async function analyzeWithKroger(items: string[], zipCode: string) {
+async function analyzeWithKroger(
+  items: string[],
+  zipCode: string,
+  supabase: ReturnType<typeof createServerClient>,
+  userId: string
+) {
   console.log('[ListAnalyze] Using Kroger API with zip:', zipCode)
 
   // Step 1: Find nearby Kroger stores
@@ -176,22 +272,22 @@ async function analyzeWithKroger(items: string[], zipCode: string) {
   }))
 
   // Best option is the closest store with most items
-  const bestOption = storeResults[0]
+  const bestOptionStore = storeResults[0]
 
-  return NextResponse.json({
+  const result = {
     success: true,
     dataSource: 'kroger_api',
     stores: storeResults,
-    bestOption: bestOption ? {
+    bestOption: bestOptionStore ? {
       store: {
-        id: bestOption.storeId,
-        name: bestOption.storeName,
-        retailer: bestOption.retailer,
+        id: bestOptionStore.storeId,
+        name: bestOptionStore.storeName,
+        retailer: bestOptionStore.retailer,
         distance: stores[0].location ? '2.5' : null, // Would calculate actual distance
       },
-      total: bestOption.total,
+      total: bestOptionStore.total,
       savings: 0, // Would compare to other retailers
-      items: bestOption.items,
+      items: bestOptionStore.items,
     } : null,
     alternatives: storeResults.slice(1).map(store => ({
       store: {
@@ -217,13 +313,26 @@ async function analyzeWithKroger(items: string[], zipCode: string) {
       estimatedTotal: total,
       storesSearched: stores.length,
     },
-  })
+  }
+
+  // Save comparison to database (don't await to avoid slowing down response)
+  if (userId !== 'test-user-id') {
+    saveComparison(supabase, userId, items, result).catch(err => {
+      console.error('[ListAnalyze] Failed to save comparison:', err)
+    })
+  }
+
+  return NextResponse.json(result)
 }
 
 /**
  * Fallback: Analyze using database (receipt-based prices)
  */
-async function analyzeWithDatabase(items: string[], supabase: any) {
+async function analyzeWithDatabase(
+  items: string[],
+  supabase: ReturnType<typeof createServerClient>,
+  userId: string
+) {
   console.log('[ListAnalyze] Using database fallback')
 
   // Step 1: Match products using DeepSeek

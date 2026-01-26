@@ -26,51 +26,7 @@ export default function BudgetPage() {
   const [loading, setLoading] = useState(true)
   const [editingBudget, setEditingBudget] = useState(false)
   const [newBudget, setNewBudget] = useState('')
-
-  // Demo categories for when no real data exists
-  const demoCategories: BudgetCategory[] = [
-    { category: 'Produce', monthly_limit: 100, current_spent: 78.50 },
-    { category: 'Dairy', monthly_limit: 60, current_spent: 45.20 },
-    { category: 'Meat & Seafood', monthly_limit: 120, current_spent: 98.00 },
-    { category: 'Pantry Staples', monthly_limit: 80, current_spent: 62.30 },
-    { category: 'Snacks & Beverages', monthly_limit: 50, current_spent: 55.00 },
-    { category: 'Household', monthly_limit: 40, current_spent: 28.50 },
-  ]
-
-  const demoRecommendations: Recommendation[] = [
-    {
-      id: '1',
-      recommendation_type: 'store_change',
-      title: 'Switch stores for dairy products',
-      description: 'Based on your purchase history, you could save an average of $12/month by buying dairy at Aldi instead of your current store.',
-      potential_savings: 12.00,
-      implemented: false
-    },
-    {
-      id: '2',
-      recommendation_type: 'substitution',
-      title: 'Try store brand alternatives',
-      description: 'Switching to store brands for 5 commonly purchased items could save you $8.50/month without sacrificing quality.',
-      potential_savings: 8.50,
-      implemented: false
-    },
-    {
-      id: '3',
-      recommendation_type: 'bulk_buy',
-      title: 'Buy rice and pasta in bulk',
-      description: 'You buy these items frequently. Purchasing in bulk once a month instead of weekly would save $4.20/month.',
-      potential_savings: 4.20,
-      implemented: false
-    },
-    {
-      id: '4',
-      recommendation_type: 'timing',
-      title: 'Shop on Wednesday mornings',
-      description: 'Stores restock on Tuesdays and mark down items. Wednesday morning shopping could save you $6/month on discounted items.',
-      potential_savings: 6.00,
-      implemented: false
-    }
-  ]
+  const [hasRealData, setHasRealData] = useState(false)
 
   useEffect(() => {
     loadBudgetData()
@@ -78,7 +34,7 @@ export default function BudgetPage() {
 
   const loadBudgetData = async () => {
     try {
-      // Try to load from settings first
+      // Load budget settings
       const settingsResponse = await fetch('/api/settings')
       if (settingsResponse.ok) {
         const data = await settingsResponse.json()
@@ -88,15 +44,23 @@ export default function BudgetPage() {
         }
       }
 
-      // Use demo data for now
-      setCategories(demoCategories)
-      setRecommendations(demoRecommendations)
-      setTotalSpent(demoCategories.reduce((sum, c) => sum + c.current_spent, 0))
+      // Load real spending data from budget API
+      const budgetResponse = await fetch('/api/budget')
+      if (budgetResponse.ok) {
+        const budgetData = await budgetResponse.json()
+
+        if (budgetData.categories && budgetData.categories.length > 0) {
+          setCategories(budgetData.categories)
+          setTotalSpent(budgetData.totalSpent || 0)
+          setHasRealData(true)
+        }
+
+        if (budgetData.recommendations && budgetData.recommendations.length > 0) {
+          setRecommendations(budgetData.recommendations)
+        }
+      }
     } catch (error) {
       console.error('Failed to load budget data:', error)
-      setCategories(demoCategories)
-      setRecommendations(demoRecommendations)
-      setTotalSpent(demoCategories.reduce((sum, c) => sum + c.current_spent, 0))
     } finally {
       setLoading(false)
     }
@@ -122,10 +86,23 @@ export default function BudgetPage() {
     }
   }
 
-  const implementRecommendation = (id: string) => {
-    setRecommendations(prev =>
-      prev.map(r => r.id === id ? { ...r, implemented: true } : r)
-    )
+  const implementRecommendation = async (id: string) => {
+    try {
+      await fetch('/api/budget/recommendations', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, implemented: true })
+      })
+      setRecommendations(prev =>
+        prev.map(r => r.id === id ? { ...r, implemented: true } : r)
+      )
+    } catch (error) {
+      console.error('Failed to update recommendation:', error)
+      // Still update locally
+      setRecommendations(prev =>
+        prev.map(r => r.id === id ? { ...r, implemented: true } : r)
+      )
+    }
   }
 
   const getProgressColor = (spent: number, limit: number) => {
@@ -164,6 +141,35 @@ export default function BudgetPage() {
         <h1 className="text-4xl font-black">Budget Optimizer</h1>
         <p className="text-gray-500 mt-2">Track spending and get AI recommendations to save more</p>
       </div>
+
+      {/* No Data State */}
+      {!hasRealData && categories.length === 0 && (
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 mb-8 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
+            <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-bold mb-2">Start Tracking Your Spending</h3>
+          <p className="text-gray-500 mb-6 max-w-md mx-auto">
+            Scan receipts or run price comparisons to see your spending breakdown by category and get personalized savings recommendations.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Link
+              href="/dashboard/receipts/scan"
+              className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition"
+            >
+              Scan Receipt
+            </Link>
+            <Link
+              href="/dashboard/compare"
+              className="px-6 py-3 border border-gray-700 rounded-lg hover:border-green-500 transition"
+            >
+              Compare Prices
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Budget Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -243,81 +249,85 @@ export default function BudgetPage() {
       </div>
 
       {/* Category Breakdown */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
-        <h2 className="text-xl font-bold mb-6">Spending by Category</h2>
-        <div className="space-y-4">
-          {categories.map((cat, i) => (
-            <div key={i}>
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-medium">{cat.category}</span>
-                <span className={getProgressTextColor(cat.current_spent, cat.monthly_limit)}>
-                  ${cat.current_spent.toFixed(2)} / ${cat.monthly_limit.toFixed(2)}
-                </span>
-              </div>
-              <div className="w-full h-3 bg-gray-800 rounded-full overflow-hidden">
-                <div
-                  className={`h-full ${getProgressColor(cat.current_spent, cat.monthly_limit)} transition-all`}
-                  style={{ width: `${Math.min((cat.current_spent / cat.monthly_limit) * 100, 100)}%` }}
-                />
-              </div>
-              {cat.current_spent > cat.monthly_limit && (
-                <div className="text-xs text-red-500 mt-1">
-                  Over budget by ${(cat.current_spent - cat.monthly_limit).toFixed(2)}
+      {categories.length > 0 && (
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+          <h2 className="text-xl font-bold mb-6">Spending by Category</h2>
+          <div className="space-y-4">
+            {categories.map((cat, i) => (
+              <div key={i}>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium">{cat.category}</span>
+                  <span className={getProgressTextColor(cat.current_spent, cat.monthly_limit)}>
+                    ${cat.current_spent.toFixed(2)} / ${cat.monthly_limit.toFixed(2)}
+                  </span>
                 </div>
-              )}
-            </div>
-          ))}
+                <div className="w-full h-3 bg-gray-800 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full ${getProgressColor(cat.current_spent, cat.monthly_limit)} transition-all`}
+                    style={{ width: `${Math.min((cat.current_spent / cat.monthly_limit) * 100, 100)}%` }}
+                  />
+                </div>
+                {cat.current_spent > cat.monthly_limit && (
+                  <div className="text-xs text-red-500 mt-1">
+                    Over budget by ${(cat.current_spent - cat.monthly_limit).toFixed(2)}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* AI Recommendations */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-          <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-          </svg>
-          AI Recommendations
-        </h2>
+      {recommendations.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+            <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+            AI Recommendations
+          </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {recommendations.map(rec => (
-            <div
-              key={rec.id}
-              className={`bg-gray-900 border rounded-2xl p-6 transition ${
-                rec.implemented
-                  ? 'border-green-500/30 opacity-60'
-                  : 'border-gray-800 hover:border-gray-700'
-              }`}
-            >
-              <div className="flex justify-between items-start mb-3">
-                <span className="px-2 py-1 bg-gray-800 text-gray-400 rounded text-xs capitalize">
-                  {rec.recommendation_type.replace('_', ' ')}
-                </span>
-                <span className="text-green-500 font-bold">
-                  Save ${rec.potential_savings.toFixed(2)}/mo
-                </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {recommendations.map(rec => (
+              <div
+                key={rec.id}
+                className={`bg-gray-900 border rounded-2xl p-6 transition ${
+                  rec.implemented
+                    ? 'border-green-500/30 opacity-60'
+                    : 'border-gray-800 hover:border-gray-700'
+                }`}
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <span className="px-2 py-1 bg-gray-800 text-gray-400 rounded text-xs capitalize">
+                    {rec.recommendation_type.replace('_', ' ')}
+                  </span>
+                  <span className="text-green-500 font-bold">
+                    Save ${rec.potential_savings.toFixed(2)}/mo
+                  </span>
+                </div>
+                <h3 className="font-bold mb-2">{rec.title}</h3>
+                <p className="text-gray-500 text-sm mb-4">{rec.description}</p>
+                {rec.implemented ? (
+                  <span className="inline-flex items-center gap-1 text-green-500 text-sm">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Implemented
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => implementRecommendation(rec.id)}
+                    className="px-4 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition text-sm"
+                  >
+                    Mark as Done
+                  </button>
+                )}
               </div>
-              <h3 className="font-bold mb-2">{rec.title}</h3>
-              <p className="text-gray-500 text-sm mb-4">{rec.description}</p>
-              {rec.implemented ? (
-                <span className="inline-flex items-center gap-1 text-green-500 text-sm">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Implemented
-                </span>
-              ) : (
-                <button
-                  onClick={() => implementRecommendation(rec.id)}
-                  className="px-4 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition text-sm"
-                >
-                  Mark as Done
-                </button>
-              )}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
