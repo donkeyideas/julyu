@@ -312,6 +312,42 @@ export default function ChatPage() {
             localStorage.setItem('pendingFriends', JSON.stringify(pendingFriends))
           }
         }
+
+        // Automatically start a conversation and send a friend request message
+        try {
+          const convResponse = await fetch('/api/chat/conversations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              participant_id: data.friend.friend_id,
+              participant_email: data.friend.friend.email,
+              participant_name: data.friend.friend.full_name || data.friend.friend.email.split('@')[0]
+            })
+          })
+
+          if (convResponse.ok) {
+            const convData = await convResponse.json()
+            const conversationId = convData.conversation?.id
+
+            if (conversationId) {
+              // Send a friend request message
+              const userName = currentUser?.full_name || currentUser?.email?.split('@')[0] || 'Someone'
+              await fetch(`/api/chat/conversations/${conversationId}/messages`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  content: `👋 Hi! ${userName} sent you a friend request on Julyu. Let's share grocery deals and save money together!`
+                })
+              })
+
+              // Refresh conversations to show the new one
+              fetchConversations()
+            }
+          }
+        } catch (convError) {
+          console.error('Failed to create conversation:', convError)
+          // Don't block the friend add if conversation fails
+        }
       }
 
       setFriendEmail('')
