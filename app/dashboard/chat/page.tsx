@@ -181,7 +181,11 @@ export default function ChatPage() {
       const response = await fetch('/api/chat/conversations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ participant_id: friend.friend_id })
+        body: JSON.stringify({
+          participant_id: friend.friend_id,
+          participant_email: friend.friend.email,
+          participant_name: friend.friend.full_name || friend.friend.email.split('@')[0]
+        })
       })
       if (response.ok) {
         const data = await response.json()
@@ -259,8 +263,15 @@ export default function ChatPage() {
         return
       }
 
+      // Add the new friend to local state immediately
+      if (data.friend) {
+        setFriends(prev => [...prev, data.friend])
+      }
+
       setFriendEmail('')
       setShowAddFriend(false)
+
+      // Also refresh from server in case there are updates
       fetchFriends()
     } catch (error) {
       console.error('Failed to add friend:', error)
@@ -634,26 +645,30 @@ export default function ChatPage() {
                     </button>
                   ))}
 
-                  {/* Pending Requests */}
+                  {/* Pending Requests - Also allow starting conversations */}
                   {friends.filter(f => f.status === 'pending').length > 0 && (
                     <>
                       <div className="pt-4 text-xs font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Pending</div>
                       {friends.filter(f => f.status === 'pending').map(friend => (
-                        <div
+                        <button
                           key={friend.id}
-                          className="p-3 rounded-lg flex items-center gap-3"
+                          onClick={() => startNewConversation(friend)}
+                          className="w-full p-3 rounded-lg flex items-center gap-3 hover:opacity-80 transition"
                           style={{ backgroundColor: 'var(--bg-secondary)' }}
                         >
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center text-white font-bold">
                             {(friend.friend.full_name || friend.friend.email)[0].toUpperCase()}
                           </div>
-                          <div className="flex-1">
+                          <div className="flex-1 text-left">
                             <div className="font-medium" style={{ color: 'var(--text-primary)' }}>
                               {friend.friend.full_name || friend.friend.email}
                             </div>
-                            <div className="text-xs text-yellow-500">Pending</div>
+                            <div className="text-xs text-yellow-500">Pending - Click to start chat</div>
                           </div>
-                        </div>
+                          <svg className="w-5 h-5" style={{ color: 'var(--text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                          </svg>
+                        </button>
                       ))}
                     </>
                   )}
