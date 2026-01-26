@@ -219,9 +219,6 @@ export default function InteractiveDemo() {
             )}
           </button>
 
-          <p className="text-xs text-gray-500 text-center">
-            Powered by live Kroger API data
-          </p>
         </div>
       ) : (
         <div className="space-y-4">
