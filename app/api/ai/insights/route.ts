@@ -177,7 +177,7 @@ async function generateUserInsights(supabase: ReturnType<typeof createServerClie
         action_url: '/dashboard/alerts'
       })
     } else {
-      const triggeredAlerts = alerts.filter(a =>
+      const triggeredAlerts = alerts.filter((a: { current_price?: number; target_price: number }) =>
         a.current_price && a.current_price <= a.target_price
       )
       if (triggeredAlerts.length > 0) {
