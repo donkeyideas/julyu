@@ -156,10 +156,38 @@ export default function ChatPage() {
       const response = await fetch('/api/chat/friends')
       if (response.ok) {
         const data = await response.json()
-        setFriends(data.friends || [])
+        const apiFriends = data.friends || []
+
+        // Load pending friends from localStorage and merge
+        const storedPending = localStorage.getItem('pendingFriends')
+        let pendingFriends: Friend[] = []
+        if (storedPending) {
+          try {
+            pendingFriends = JSON.parse(storedPending)
+          } catch (e) {
+            console.error('Failed to parse pending friends:', e)
+          }
+        }
+
+        // Merge API friends with pending friends (avoid duplicates)
+        const pendingEmails = new Set(apiFriends.map((f: Friend) => f.friend.email.toLowerCase()))
+        const uniquePending = pendingFriends.filter(
+          pf => !pendingEmails.has(pf.friend.email.toLowerCase())
+        )
+
+        setFriends([...apiFriends, ...uniquePending])
       }
     } catch (error) {
       console.error('Failed to fetch friends:', error)
+      // Load from localStorage only on error
+      const storedPending = localStorage.getItem('pendingFriends')
+      if (storedPending) {
+        try {
+          setFriends(JSON.parse(storedPending))
+        } catch (e) {
+          console.error('Failed to parse pending friends:', e)
+        }
+      }
     }
   }
 
@@ -266,6 +294,24 @@ export default function ChatPage() {
       // Add the new friend to local state immediately
       if (data.friend) {
         setFriends(prev => [...prev, data.friend])
+
+        // If it's a pending friend, save to localStorage for persistence
+        if (data.friend.status === 'pending') {
+          const storedPending = localStorage.getItem('pendingFriends')
+          let pendingFriends: Friend[] = []
+          if (storedPending) {
+            try {
+              pendingFriends = JSON.parse(storedPending)
+            } catch (e) {
+              console.error('Failed to parse pending friends:', e)
+            }
+          }
+          // Add new pending friend if not already there
+          if (!pendingFriends.some(f => f.friend.email === data.friend.friend.email)) {
+            pendingFriends.push(data.friend)
+            localStorage.setItem('pendingFriends', JSON.stringify(pendingFriends))
+          }
+        }
       }
 
       setFriendEmail('')

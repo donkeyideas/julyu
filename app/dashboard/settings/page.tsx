@@ -57,6 +57,8 @@ export default function SettingsPage() {
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [seedingDemo, setSeedingDemo] = useState(false)
   const [clearingDemo, setClearingDemo] = useState(false)
+  const [editingName, setEditingName] = useState(false)
+  const [editedName, setEditedName] = useState('')
 
   useEffect(() => {
     loadSettings()
@@ -212,7 +214,50 @@ export default function SettingsPage() {
           </div>
           <div>
             <div className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Name</div>
-            <div style={{ color: 'var(--text-muted)' }}>{user?.full_name || 'Not set'}</div>
+            {editingName ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={editedName}
+                  onChange={(e) => setEditedName(e.target.value)}
+                  placeholder="Enter your name"
+                  className="rounded-lg px-3 py-2 w-64 focus:border-green-500 focus:outline-none"
+                  style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+                />
+                <button
+                  onClick={() => {
+                    setUser(prev => prev ? { ...prev, full_name: editedName || null } : null)
+                    setEditingName(false)
+                  }}
+                  className="px-3 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition text-sm"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => {
+                    setEditedName(user?.full_name || '')
+                    setEditingName(false)
+                  }}
+                  className="px-3 py-2 rounded-lg hover:opacity-80 transition text-sm"
+                  style={{ border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span style={{ color: 'var(--text-muted)' }}>{user?.full_name || 'Not set'}</span>
+                <button
+                  onClick={() => {
+                    setEditedName(user?.full_name || '')
+                    setEditingName(true)
+                  }}
+                  className="text-green-500 hover:text-green-400 text-sm transition"
+                >
+                  Edit
+                </button>
+              </div>
+            )}
           </div>
           <div>
             <div className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Subscription</div>
@@ -239,7 +284,7 @@ export default function SettingsPage() {
                 onChange={() => updateNotificationPreference('price_alerts')}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500" style={{ backgroundColor: 'var(--bg-secondary)' }}></div>
+              <div className="w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500 bg-gray-600"></div>
             </div>
           </label>
           <label className="flex justify-between items-center cursor-pointer">
@@ -254,7 +299,7 @@ export default function SettingsPage() {
                 onChange={() => updateNotificationPreference('weekly_summary')}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500" style={{ backgroundColor: 'var(--bg-secondary)' }}></div>
+              <div className="w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500 bg-gray-600"></div>
             </div>
           </label>
           <label className="flex justify-between items-center cursor-pointer">
@@ -269,7 +314,7 @@ export default function SettingsPage() {
                 onChange={() => updateNotificationPreference('new_features')}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500" style={{ backgroundColor: 'var(--bg-secondary)' }}></div>
+              <div className="w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500 bg-gray-600"></div>
             </div>
           </label>
         </div>
@@ -291,7 +336,7 @@ export default function SettingsPage() {
                 onChange={() => setSettings(prev => ({ ...prev, ai_features_enabled: !prev.ai_features_enabled }))}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500" style={{ backgroundColor: 'var(--bg-secondary)' }}></div>
+              <div className="w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500 bg-gray-600"></div>
             </div>
           </label>
         </div>
@@ -329,7 +374,7 @@ export default function SettingsPage() {
                 onChange={() => setSettings(prev => ({ ...prev, auto_translate_chat: !prev.auto_translate_chat }))}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500" style={{ backgroundColor: 'var(--bg-secondary)' }}></div>
+              <div className="w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500 bg-gray-600"></div>
             </div>
           </label>
         </div>
