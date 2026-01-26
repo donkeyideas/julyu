@@ -139,14 +139,22 @@ class AITracker {
    * Calculate cost based on model and tokens
    */
   calculateCost(modelName: string, inputTokens: number, outputTokens: number): number {
-    // Pricing per 1M tokens (as of 2024)
+    // Pricing per 1M tokens (as of 2025)
     const pricing: Record<string, { input: number; output: number }> = {
       'deepseek-chat': {
         input: 0.14, // $0.14 per 1M tokens
         output: 0.28, // $0.28 per 1M tokens
       },
+      'gpt-4o': {
+        input: 2.50, // $2.50 per 1M tokens
+        output: 10.00, // $10.00 per 1M tokens
+      },
+      'gpt-4o-mini': {
+        input: 0.15, // $0.15 per 1M tokens
+        output: 0.60, // $0.60 per 1M tokens
+      },
       'gpt-4-vision': {
-        input: 10.00, // $10.00 per 1M tokens
+        input: 10.00, // $10.00 per 1M tokens (legacy)
         output: 30.00, // $30.00 per 1M tokens
       },
       'gpt-4': {

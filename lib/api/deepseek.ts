@@ -283,5 +283,82 @@ export class DeepSeekClient {
   }
 }
 
+  /**
+   * Generic chat method for various use cases (translation, etc.)
+   */
+  async chat(
+    messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>,
+    options?: {
+      temperature?: number
+      maxTokens?: number
+    }
+  ): Promise<{ content: string; usage: { inputTokens: number; outputTokens: number } }> {
+    const apiKey = await this.getApiKey()
+    const trimmedKey = apiKey.trim()
+
+    const startTime = Date.now()
+
+    try {
+      const response = await axios.post(
+        `${this.baseURL}/v1/chat/completions`,
+        {
+          model: 'deepseek-chat',
+          messages,
+          temperature: options?.temperature ?? 0.7,
+          max_tokens: options?.maxTokens ?? 1000,
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${trimmedKey}`,
+            'Content-Type': 'application/json',
+          },
+          timeout: 30000,
+        }
+      )
+
+      const responseTime = Date.now() - startTime
+      const inputTokens = response.data.usage?.prompt_tokens || 0
+      const outputTokens = response.data.usage?.completion_tokens || 0
+      const cost = aiTracker.calculateCost('deepseek-chat', inputTokens, outputTokens)
+
+      // Track usage
+      await aiTracker.trackUsage({
+        model_name: 'deepseek-chat',
+        provider: 'DeepSeek',
+        use_case: 'chat',
+        input_tokens: inputTokens,
+        output_tokens: outputTokens,
+        response_time_ms: responseTime,
+        cost,
+        success: true,
+      })
+
+      const content = response.data.choices?.[0]?.message?.content || ''
+      return {
+        content,
+        usage: { inputTokens, outputTokens },
+      }
+    } catch (error: any) {
+      const responseTime = Date.now() - startTime
+
+      console.error('[DeepSeek Chat] Error:', error.response?.data || error.message)
+
+      await aiTracker.trackUsage({
+        model_name: 'deepseek-chat',
+        provider: 'DeepSeek',
+        use_case: 'chat',
+        input_tokens: 0,
+        output_tokens: 0,
+        response_time_ms: responseTime,
+        cost: 0,
+        success: false,
+        error_message: error.message,
+      }).catch(() => {})
+
+      throw new Error(error.response?.data?.error?.message || 'Failed to chat with DeepSeek')
+    }
+  }
+}
+
 export const deepseekClient = new DeepSeekClient()
 

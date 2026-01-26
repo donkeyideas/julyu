@@ -44,6 +44,21 @@ export async function GET(
       return NextResponse.json({ error: 'Receipt not found' }, { status: 404 })
     }
 
+    // Transform OCR result to match frontend expected structure if needed
+    if (receipt.ocr_result) {
+      const ocr = receipt.ocr_result as Record<string, unknown>
+      // Handle legacy format (store.name -> storeName)
+      if (ocr.store && !ocr.storeName) {
+        const store = ocr.store as { name?: string; address?: string }
+        receipt.ocr_result = {
+          ...ocr,
+          storeName: store?.name || 'Unknown Store',
+          storeAddress: store?.address,
+          store: undefined,
+        }
+      }
+    }
+
     return NextResponse.json({
       success: true,
       receipt,

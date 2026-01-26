@@ -24,18 +24,17 @@ export class OpenAIClient {
   }
 
   /**
-   * Extract structured data from receipt image using GPT-4 Vision
+   * Extract structured data from receipt image using GPT-4o
    */
   async scanReceipt(imageBase64: string): Promise<{
-    store: {
-      name: string
-      address?: string
-    }
+    storeName: string
+    storeAddress?: string
     items: Array<{
       name: string
       price: number
       quantity: number
     }>
+    subtotal?: number
     total: number
     tax?: number
     purchaseDate?: string
@@ -45,39 +44,40 @@ export class OpenAIClient {
 
     const prompt = `Extract all information from this grocery receipt image.
 
-Return JSON with this exact structure:
+Return JSON with this EXACT structure (no nesting for store):
 {
-  "store": {
-    "name": "Store Name",
-    "address": "Full Address"
-  },
+  "storeName": "Store Name",
+  "storeAddress": "Full Address",
   "items": [
     {
-      "name": "Product Name",
+      "name": "Product Name (clean, readable name)",
       "price": 5.99,
       "quantity": 1
     }
   ],
+  "subtotal": 80.19,
   "total": 87.43,
   "tax": 7.24,
-  "purchaseDate": "2025-11-22T14:30:00Z",
+  "purchaseDate": "2025-11-22",
   "confidence": 0.95
 }
 
 Rules:
 - Extract ALL items visible on receipt
+- Clean up item names (remove codes, abbreviations - make them readable)
 - Use format XX.XX for prices (always 2 decimals)
-- Parse date/time to ISO 8601 format
-- If text is unclear, mark confidence lower
-- Return valid JSON only`
+- Parse date to YYYY-MM-DD format
+- If text is unclear, mark confidence lower (0.0 to 1.0)
+- Ignore savings/discount lines that are not actual items
+- Return valid JSON only, no markdown formatting`
 
     const startTime = Date.now()
-    
+
     try {
       const response = await axios.post(
         `${OPENAI_BASE_URL}/chat/completions`,
         {
-          model: 'gpt-4-vision-preview',
+          model: 'gpt-4o',
           messages: [
             {
               role: 'user',
@@ -90,12 +90,13 @@ Rules:
                   type: 'image_url',
                   image_url: {
                     url: `data:image/jpeg;base64,${imageBase64}`,
+                    detail: 'high',
                   },
                 },
               ],
             },
           ],
-          max_tokens: 2000,
+          max_tokens: 4000,
           temperature: 0.1, // Low temperature for consistent extraction
         },
         {
@@ -126,7 +127,7 @@ Rules:
 
       // Track usage
       await aiTracker.trackUsage({
-        model_name: 'gpt-4-vision',
+        model_name: 'gpt-4o',
         provider: 'OpenAI',
         use_case: 'receipt_ocr',
         input_tokens: inputTokens,
@@ -142,7 +143,7 @@ Rules:
       await aiTracker.storeTrainingData({
         input: { imageBase64: imageBase64.substring(0, 100) + '...' }, // Store truncated for privacy
         output: result,
-        model_name: 'gpt-4-vision',
+        model_name: 'gpt-4o',
         use_case: 'receipt_ocr',
         accuracy_score: result.confidence,
       })
@@ -150,10 +151,10 @@ Rules:
       return result
     } catch (error: any) {
       const responseTime = Date.now() - startTime
-      
+
       // Track failed usage
       await aiTracker.trackUsage({
-        model_name: 'gpt-4-vision',
+        model_name: 'gpt-4o',
         provider: 'OpenAI',
         use_case: 'receipt_ocr',
         input_tokens: 0,
@@ -165,8 +166,8 @@ Rules:
         error_message: error.message,
       })
 
-      console.error('OpenAI API error:', error)
-      throw new Error('Failed to scan receipt')
+      console.error('OpenAI API error:', error.response?.data || error.message || error)
+      throw new Error(error.response?.data?.error?.message || 'Failed to scan receipt')
     }
   }
 }

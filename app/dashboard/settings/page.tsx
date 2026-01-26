@@ -14,7 +14,26 @@ interface Settings {
   budget_monthly: number | null
   favorite_stores: string[]
   shopping_frequency: string
+  preferred_language: string
+  auto_translate_chat: boolean
 }
+
+const SUPPORTED_LANGUAGES = [
+  { code: 'en', name: 'English', nativeName: 'English' },
+  { code: 'es', name: 'Spanish', nativeName: 'Espanol' },
+  { code: 'fr', name: 'French', nativeName: 'Francais' },
+  { code: 'de', name: 'German', nativeName: 'Deutsch' },
+  { code: 'it', name: 'Italian', nativeName: 'Italiano' },
+  { code: 'pt', name: 'Portuguese', nativeName: 'Portugues' },
+  { code: 'zh', name: 'Chinese', nativeName: '中文' },
+  { code: 'ja', name: 'Japanese', nativeName: '日本語' },
+  { code: 'ko', name: 'Korean', nativeName: '한국어' },
+  { code: 'vi', name: 'Vietnamese', nativeName: 'Tieng Viet' },
+  { code: 'tl', name: 'Tagalog', nativeName: 'Tagalog' },
+  { code: 'ar', name: 'Arabic', nativeName: 'العربية' },
+  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी' },
+  { code: 'ru', name: 'Russian', nativeName: 'Русский' },
+]
 
 interface UserInfo {
   email: string
@@ -28,7 +47,9 @@ export default function SettingsPage() {
     ai_features_enabled: true,
     budget_monthly: null,
     favorite_stores: [],
-    shopping_frequency: 'weekly'
+    shopping_frequency: 'weekly',
+    preferred_language: 'en',
+    auto_translate_chat: true
   })
   const [user, setUser] = useState<UserInfo | null>(null)
   const [loading, setLoading] = useState(true)
@@ -55,7 +76,9 @@ export default function SettingsPage() {
           ai_features_enabled: data.preferences?.ai_features_enabled ?? true,
           budget_monthly: data.preferences?.budget_monthly ?? null,
           favorite_stores: data.preferences?.favorite_stores ?? [],
-          shopping_frequency: data.preferences?.shopping_frequency ?? 'weekly'
+          shopping_frequency: data.preferences?.shopping_frequency ?? 'weekly',
+          preferred_language: data.preferences?.preferred_language ?? 'en',
+          auto_translate_chat: data.preferences?.auto_translate_chat ?? true
         })
         setUser(data.user)
       }
@@ -266,6 +289,44 @@ export default function SettingsPage() {
                 type="checkbox"
                 checked={settings.ai_features_enabled}
                 onChange={() => setSettings(prev => ({ ...prev, ai_features_enabled: !prev.ai_features_enabled }))}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500" style={{ backgroundColor: 'var(--bg-secondary)' }}></div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      {/* Language Preferences */}
+      <div className="rounded-2xl p-8 mb-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <h3 className="text-2xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>Language Preferences</h3>
+        <div className="space-y-6">
+          <div>
+            <label className="font-medium mb-2 block" style={{ color: 'var(--text-primary)' }}>Dashboard Language</label>
+            <select
+              value={settings.preferred_language}
+              onChange={(e) => setSettings(prev => ({ ...prev, preferred_language: e.target.value }))}
+              className="rounded-lg px-4 py-2 w-64 focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+            >
+              {SUPPORTED_LANGUAGES.map(lang => (
+                <option key={lang.code} value={lang.code}>
+                  {lang.name} ({lang.nativeName})
+                </option>
+              ))}
+            </select>
+            <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>Choose your preferred language for the dashboard interface</p>
+          </div>
+          <label className="flex justify-between items-center cursor-pointer">
+            <div>
+              <span className="font-medium" style={{ color: 'var(--text-primary)' }}>Auto-translate chat messages</span>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Automatically translate messages from other users to your preferred language</p>
+            </div>
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={settings.auto_translate_chat}
+                onChange={() => setSettings(prev => ({ ...prev, auto_translate_chat: !prev.auto_translate_chat }))}
                 className="sr-only peer"
               />
               <div className="w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500" style={{ backgroundColor: 'var(--bg-secondary)' }}></div>
