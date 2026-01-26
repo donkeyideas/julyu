@@ -1,6 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
+interface PartnerRecord {
+  id: string
+  name: string
+  slug: string
+  brand_color: string | null
+  commission_type: string | null
+  commission_rate: number | null
+  flat_commission: number | null
+}
+
+interface ClickRecord {
+  id: string
+  partner_id: string | null
+  user_id: string | null
+  store_name: string | null
+  store_retailer: string | null
+  items_count: number | null
+  estimated_total: number | null
+  deep_link_used: boolean | null
+  commission_rate: number | null
+  estimated_commission: number | null
+  converted: boolean | null
+  conversion_date: string | null
+  order_total: number | null
+  actual_commission: number | null
+  created_at: string
+}
+
 // GET - Get delivery partner analytics
 export async function GET(request: NextRequest) {
   try {
@@ -56,26 +84,28 @@ export async function GET(request: NextRequest) {
     if (partnersError) throw partnersError
 
     // Create partner lookup map
-    const partnerMap: Record<string, typeof partners[0]> = {}
-    partners?.forEach(p => { partnerMap[p.id] = p })
+    const partnerData = partners as PartnerRecord[] | null
+    const clickData = clicks as ClickRecord[] | null
+    const partnerMap: Record<string, PartnerRecord> = {}
+    partnerData?.forEach((p: PartnerRecord) => { partnerMap[p.id] = p })
 
     // Calculate overall stats
-    const totalClicks = clicks?.length || 0
-    const conversions = clicks?.filter(c => c.converted).length || 0
+    const totalClicks = clickData?.length || 0
+    const conversions = clickData?.filter((c: ClickRecord) => c.converted).length || 0
     const conversionRate = totalClicks > 0 ? (conversions / totalClicks) * 100 : 0
-    const totalRevenue = clicks?.reduce((sum, c) =>
+    const totalRevenue = clickData?.reduce((sum: number, c: ClickRecord) =>
       sum + (c.actual_commission || c.estimated_commission || 0), 0) || 0
-    const estimatedRevenue = clicks?.reduce((sum, c) =>
+    const estimatedRevenue = clickData?.reduce((sum: number, c: ClickRecord) =>
       sum + (c.estimated_commission || 0), 0) || 0
-    const actualRevenue = clicks?.reduce((sum, c) =>
+    const actualRevenue = clickData?.reduce((sum: number, c: ClickRecord) =>
       sum + (c.actual_commission || 0), 0) || 0
-    const totalOrderValue = clicks?.filter(c => c.converted)
-      .reduce((sum, c) => sum + (c.order_total || 0), 0) || 0
+    const totalOrderValue = clickData?.filter((c: ClickRecord) => c.converted)
+      .reduce((sum: number, c: ClickRecord) => sum + (c.order_total || 0), 0) || 0
     const avgOrderValue = conversions > 0 ? totalOrderValue / conversions : 0
 
     // Calculate stats per partner
     const partnerStats: Record<string, {
-      partner: typeof partners[0] | null
+      partner: PartnerRecord | null
       clicks: number
       conversions: number
       conversionRate: number
@@ -85,7 +115,7 @@ export async function GET(request: NextRequest) {
       avgOrderValue: number
     }> = {}
 
-    clicks?.forEach(click => {
+    clickData?.forEach((click: ClickRecord) => {
       const pid = click.partner_id || 'unknown'
       if (!partnerStats[pid]) {
         partnerStats[pid] = {
@@ -122,7 +152,7 @@ export async function GET(request: NextRequest) {
       revenue: number
     }> = {}
 
-    clicks?.forEach(click => {
+    clickData?.forEach((click: ClickRecord) => {
       const date = click.created_at.split('T')[0]
       if (!dailyStats[date]) {
         dailyStats[date] = { date, clicks: 0, conversions: 0, revenue: 0 }
@@ -136,7 +166,7 @@ export async function GET(request: NextRequest) {
 
     // Top stores
     const storeStats: Record<string, { store: string; retailer: string; clicks: number; conversions: number }> = {}
-    clicks?.forEach(click => {
+    clickData?.forEach((click: ClickRecord) => {
       const key = click.store_name || 'Unknown Store'
       if (!storeStats[key]) {
         storeStats[key] = {
@@ -168,7 +198,7 @@ export async function GET(request: NextRequest) {
       byPartner: Object.values(partnerStats).sort((a, b) => b.clicks - a.clicks),
       dailyTrend: Object.values(dailyStats).sort((a, b) => a.date.localeCompare(b.date)),
       topStores,
-      recentClicks: clicks?.slice(0, 20).map(c => ({
+      recentClicks: clickData?.slice(0, 20).map((c: ClickRecord) => ({
         ...c,
         partnerName: partnerMap[c.partner_id || '']?.name || 'Unknown'
       }))
