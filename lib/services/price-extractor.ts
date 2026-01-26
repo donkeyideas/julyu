@@ -7,15 +7,20 @@ import { deepseekClient } from '@/lib/api/deepseek'
  */
 
 interface ReceiptOCRResult {
-  store: {
+  // Support both old and new format
+  store?: {
     name: string
     address?: string
   }
+  // New format from OpenAI client
+  storeName?: string
+  storeAddress?: string
   items: Array<{
     name: string
     price: number
     quantity: number
   }>
+  subtotal?: number
   total: number
   tax?: number
   purchaseDate?: string
@@ -52,8 +57,14 @@ export async function extractPricesFromReceipt(
   let pricesUpdated = 0
   let newProductsCreated = 0
 
+  // Normalize store data to support both old and new format
+  const storeData = ocrResult.store || {
+    name: ocrResult.storeName || 'Unknown Store',
+    address: ocrResult.storeAddress
+  }
+
   // Step 1: Find or create the store
-  const storeResult = await findOrCreateStore(supabase, ocrResult.store)
+  const storeResult = await findOrCreateStore(supabase, storeData)
   if (!storeResult.success) {
     errors.push(`Store processing failed: ${storeResult.error}`)
   }
