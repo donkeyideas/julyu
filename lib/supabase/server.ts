@@ -1,7 +1,26 @@
 import { createServerClient as createSupabaseServerClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { Database } from '@/types/database'
 import { getTestAuth } from '@/lib/auth/test-auth'
+
+// Service role client - bypasses RLS, use for server-side operations
+export const createServiceRoleClient = () => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!url || !serviceKey) {
+    console.warn('[Supabase] Service role key not configured, using anon client')
+    return createServerClient()
+  }
+
+  return createClient<Database>(url, serviceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  })
+}
 
 export const createServerClient = () => {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL

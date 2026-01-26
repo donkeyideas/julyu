@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient, createServiceRoleClient } from '@/lib/supabase/server'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createServerClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const authClient = createServerClient()
+    const { data: { user }, error: authError } = await authClient.auth.getUser()
 
     const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
                        process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
@@ -20,6 +20,9 @@ export async function GET(
       // Return test data for demo purposes
       return NextResponse.json({ messages: getTestMessages(conversationId) })
     }
+
+    // Use service role client for database operations
+    const supabase = createServiceRoleClient()
 
     // Verify user is participant
     const { data: conversation, error: convError } = await supabase
@@ -62,8 +65,8 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createServerClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const authClient = createServerClient()
+    const { data: { user }, error: authError } = await authClient.auth.getUser()
 
     const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
                        process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
@@ -92,6 +95,9 @@ export async function POST(
         }
       })
     }
+
+    // Use service role client for database operations
+    const supabase = createServiceRoleClient()
 
     // Verify user is participant
     const { data: conversation, error: convError } = await supabase

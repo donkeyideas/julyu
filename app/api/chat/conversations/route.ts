@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient, createServiceRoleClient } from '@/lib/supabase/server'
 
 interface ConversationRow {
   id: string
@@ -12,8 +12,8 @@ interface ConversationRow {
 
 export async function GET() {
   try {
-    const supabase = createServerClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const authClient = createServerClient()
+    const { data: { user }, error: authError } = await authClient.auth.getUser()
 
     const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
                        process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
@@ -25,6 +25,9 @@ export async function GET() {
       // Return test data for demo purposes when not authenticated
       return NextResponse.json({ conversations: getTestConversations() })
     }
+
+    // Use service role client for database operations (bypasses RLS)
+    const supabase = createServiceRoleClient()
 
     // Fetch conversations where user is a participant
     const { data: conversations, error } = await supabase
@@ -67,8 +70,8 @@ export async function POST(request: NextRequest) {
   let requestBody: { participant_id?: string; participant_email?: string; participant_name?: string } = {}
 
   try {
-    const supabase = createServerClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const authClient = createServerClient()
+    const { data: { user }, error: authError } = await authClient.auth.getUser()
 
     const userId = user?.id || null
 
@@ -82,6 +85,9 @@ export async function POST(request: NextRequest) {
     if (!participantId) {
       return NextResponse.json({ error: 'Participant ID required' }, { status: 400 })
     }
+
+    // Use service role client for database operations (bypasses RLS)
+    const supabase = createServiceRoleClient()
 
     // Check if conversation already exists between these two users
     const { data: existing, error: existingError } = await supabase
