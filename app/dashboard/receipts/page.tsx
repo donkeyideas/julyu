@@ -72,7 +72,7 @@ async function calculatePotentialSavings(
       if (!products || products.length === 0) continue
 
       // Get lowest price for any of these products
-      const productIds = products.map(p => p.id)
+      const productIds = products.map((p: { id: string }) => p.id)
       const { data: prices } = await supabase
         .from('prices')
         .select('price')
