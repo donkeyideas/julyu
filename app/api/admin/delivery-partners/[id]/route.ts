@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
+interface ClickRecord {
+  id: string
+  converted: boolean | null
+  actual_commission: number | null
+  estimated_commission: number | null
+  order_total: number | null
+}
+
 // GET - Get single delivery partner
 export async function GET(
   request: NextRequest,
@@ -39,15 +47,16 @@ export async function GET(
     }
 
     // Calculate stats
+    const clickData = clicks as ClickRecord[] | null
     const stats = {
-      totalClicks: clicks?.length || 0,
-      conversions: clicks?.filter(c => c.converted).length || 0,
-      revenue: clicks?.reduce((sum, c) => sum + (c.actual_commission || c.estimated_commission || 0), 0) || 0,
+      totalClicks: clickData?.length || 0,
+      conversions: clickData?.filter((c: ClickRecord) => c.converted).length || 0,
+      revenue: clickData?.reduce((sum: number, c: ClickRecord) => sum + (c.actual_commission || c.estimated_commission || 0), 0) || 0,
       avgOrderValue: 0 as number
     }
 
     if (stats.conversions > 0) {
-      const totalOrders = clicks?.filter(c => c.converted).reduce((sum, c) => sum + (c.order_total || 0), 0) || 0
+      const totalOrders = clickData?.filter((c: ClickRecord) => c.converted).reduce((sum: number, c: ClickRecord) => sum + (c.order_total || 0), 0) || 0
       stats.avgOrderValue = totalOrders / stats.conversions
     }
 
