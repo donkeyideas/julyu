@@ -13,6 +13,15 @@ interface ReceiptItem {
   category?: string
 }
 
+interface BudgetRecommendation {
+  id: string
+  recommendation_type: string | null
+  title: string | null
+  description: string | null
+  potential_savings: number | null
+  implemented: boolean | null
+}
+
 // Category mapping for receipt items
 const categoryPatterns: Record<string, RegExp[]> = {
   'Produce': [/fruit/i, /vegetable/i, /apple/i, /banana/i, /tomato/i, /lettuce/i, /carrot/i, /onion/i, /potato/i],
@@ -134,7 +143,7 @@ export async function GET() {
       categories: categories.sort((a, b) => b.current_spent - a.current_spent),
       totalSpent,
       receiptsCount: receipts?.length || 0,
-      recommendations: recommendations?.map(r => ({
+      recommendations: recommendations?.map((r: BudgetRecommendation) => ({
         id: r.id,
         recommendation_type: r.recommendation_type || 'general',
         title: r.title || 'Savings Tip',
