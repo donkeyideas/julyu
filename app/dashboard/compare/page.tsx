@@ -66,6 +66,22 @@ interface ShopOptionsModal {
   store: StoreOption | null
 }
 
+interface DeliveryPartner {
+  id: string
+  name: string
+  display_name: string | null
+  slug: string
+  description: string | null
+  logo_url: string | null
+  icon_letter: string | null
+  brand_color: string | null
+  base_url: string
+  deep_link_template: string | null
+  supports_deep_linking: boolean | null
+  supports_search_url: boolean | null
+  supported_retailers: string[] | null
+}
+
 // Wrap in Suspense for useSearchParams
 export default function ComparePage() {
   return (
@@ -98,6 +114,8 @@ function ComparePageContent() {
   const [showHistory, setShowHistory] = useState(false)
   const [storeDetails, setStoreDetails] = useState<StoreDetailsModal>({ isOpen: false, store: null, products: [] })
   const [shopOptions, setShopOptions] = useState<ShopOptionsModal>({ isOpen: false, store: null })
+  const [deliveryPartners, setDeliveryPartners] = useState<DeliveryPartner[]>([])
+  const [loadingPartners, setLoadingPartners] = useState(false)
 
   // Load search history from localStorage
   useEffect(() => {
@@ -157,6 +175,28 @@ function ComparePageContent() {
   }, [searchParams])
 
   const itemCount = list.split('\n').filter(item => item.trim() !== '').length
+
+  // Fetch delivery partners when shop modal opens
+  useEffect(() => {
+    if (shopOptions.isOpen && deliveryPartners.length === 0) {
+      const fetchPartners = async () => {
+        setLoadingPartners(true)
+        try {
+          const retailer = shopOptions.store?.store.retailer?.toLowerCase() || ''
+          const response = await fetch(`/api/delivery-partners?retailer=${encodeURIComponent(retailer)}`)
+          if (response.ok) {
+            const data = await response.json()
+            setDeliveryPartners(data.partners || [])
+          }
+        } catch (error) {
+          console.error('Failed to fetch delivery partners:', error)
+        } finally {
+          setLoadingPartners(false)
+        }
+      }
+      fetchPartners()
+    }
+  }, [shopOptions.isOpen, shopOptions.store?.store.retailer, deliveryPartners.length])
 
   const saveToHistory = (items: string[], result: AnalyzeResult) => {
     const historyItem: SearchHistoryItem = {
@@ -234,7 +274,7 @@ function ComparePageContent() {
     setShopOptions({ isOpen: true, store })
   }
 
-  const handleShopOption = (option: 'directions' | 'instacart' | 'doordash' | 'walmart' | 'shipt' | 'amazon') => {
+  const handleShopOption = (option: 'directions') => {
     if (!shopOptions.store) return
 
     const store = shopOptions.store
@@ -242,33 +282,55 @@ function ComparePageContent() {
     const retailer = store.store.retailer
     const storeAddress = store.store.address || `${storeName} ${retailer} ${zipCode}`
 
-    switch (option) {
-      case 'directions':
-        // Open Google Maps with the store location
-        const query = encodeURIComponent(storeAddress)
-        window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank')
-        break
-      case 'instacart':
-        // Open Instacart search for the store
-        const instacartStore = retailer.toLowerCase().includes('kroger') ? 'kroger' : retailer.toLowerCase()
-        window.open(`https://www.instacart.com/store/${instacartStore}/storefront`, '_blank')
-        break
-      case 'doordash':
-        // Open DoorDash grocery search
-        window.open(`https://www.doordash.com/convenience/`, '_blank')
-        break
-      case 'walmart':
-        // Open Walmart grocery delivery
-        window.open(`https://www.walmart.com/grocery`, '_blank')
-        break
-      case 'shipt':
-        // Open Shipt for delivery
-        window.open(`https://www.shipt.com/`, '_blank')
-        break
-      case 'amazon':
-        // Open Amazon Fresh
-        window.open(`https://www.amazon.com/alm/storefront?almBrandId=QW1hem9uIEZyZXNo`, '_blank')
-        break
+    if (option === 'directions') {
+      // Open Google Maps with the store location
+      const query = encodeURIComponent(storeAddress)
+      window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank')
+    }
+
+    setShopOptions({ isOpen: false, store: null })
+  }
+
+  const handlePartnerClick = async (partner: DeliveryPartner) => {
+    if (!shopOptions.store) return
+
+    const store = shopOptions.store
+    const items = results?.products?.map(p => ({
+      userInput: p.userInput,
+      name: p.name,
+      price: p.price,
+      quantity: 1
+    })) || []
+
+    try {
+      // Track the click and get the deep link URL
+      const response = await fetch('/api/delivery-partners/click', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          partnerId: partner.id,
+          store: {
+            store: store.store.name,
+            retailer: store.store.retailer,
+            address: store.store.address,
+            total: store.total
+          },
+          items
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Open the generated deep link URL
+        window.open(data.url, '_blank')
+      } else {
+        // Fallback to base URL if tracking fails
+        window.open(partner.base_url, '_blank')
+      }
+    } catch (error) {
+      console.error('Failed to track click:', error)
+      // Fallback to base URL
+      window.open(partner.base_url, '_blank')
     }
 
     setShopOptions({ isOpen: false, store: null })
@@ -730,90 +792,43 @@ function ComparePageContent() {
               <div>
                 <h4 className="text-xs font-semibold uppercase mb-3" style={{ color: 'var(--text-muted)' }}>Get it Delivered</h4>
                 <div className="space-y-2">
-                  <button
-                    onClick={() => handleShopOption('instacart')}
-                    className="w-full flex items-center gap-4 p-4 rounded-xl transition"
-                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
-                  >
-                    <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
-                      <span className="text-white font-bold text-lg">I</span>
+                  {loadingPartners ? (
+                    <div className="text-center py-6">
+                      <div className="inline-block w-6 h-6 border-2 rounded-full animate-spin" style={{ borderColor: 'var(--border-color)', borderTopColor: 'var(--accent-primary)' }}></div>
+                      <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>Loading delivery options...</p>
                     </div>
-                    <div className="flex-1 text-left">
-                      <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>Instacart</div>
-                      <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Delivery in as fast as 1 hour</div>
+                  ) : deliveryPartners.length > 0 ? (
+                    deliveryPartners.map((partner) => (
+                      <button
+                        key={partner.id}
+                        onClick={() => handlePartnerClick(partner)}
+                        className="w-full flex items-center gap-4 p-4 rounded-xl transition hover:opacity-90"
+                        style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
+                      >
+                        <div
+                          className="w-12 h-12 rounded-xl flex items-center justify-center"
+                          style={{ backgroundColor: partner.brand_color || '#22C55E' }}
+                        >
+                          {partner.logo_url ? (
+                            <img src={partner.logo_url} alt="" className="w-8 h-8 object-contain" />
+                          ) : (
+                            <span className="text-white font-bold text-lg">{partner.icon_letter || partner.name.charAt(0)}</span>
+                          )}
+                        </div>
+                        <div className="flex-1 text-left">
+                          <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{partner.display_name || partner.name}</div>
+                          <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{partner.description || 'Order for delivery'}</div>
+                        </div>
+                        <svg className="w-5 h-5" style={{ color: 'var(--text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="text-center py-4" style={{ color: 'var(--text-muted)' }}>
+                      <p className="text-sm">No delivery partners available</p>
                     </div>
-                    <svg className="w-5 h-5" style={{ color: 'var(--text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                  </button>
-
-                  <button
-                    onClick={() => handleShopOption('shipt')}
-                    className="w-full flex items-center gap-4 p-4 rounded-xl transition"
-                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
-                  >
-                    <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center">
-                      <span className="text-white font-bold text-lg">S</span>
-                    </div>
-                    <div className="flex-1 text-left">
-                      <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>Shipt</div>
-                      <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Same-day delivery from local stores</div>
-                    </div>
-                    <svg className="w-5 h-5" style={{ color: 'var(--text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                  </button>
-
-                  <button
-                    onClick={() => handleShopOption('doordash')}
-                    className="w-full flex items-center gap-4 p-4 rounded-xl transition"
-                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
-                  >
-                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center">
-                      <span className="text-white font-bold text-lg">D</span>
-                    </div>
-                    <div className="flex-1 text-left">
-                      <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>DoorDash</div>
-                      <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Fast delivery from nearby stores</div>
-                    </div>
-                    <svg className="w-5 h-5" style={{ color: 'var(--text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                  </button>
-
-                  <button
-                    onClick={() => handleShopOption('walmart')}
-                    className="w-full flex items-center gap-4 p-4 rounded-xl transition"
-                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
-                  >
-                    <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
-                      <span className="text-white font-bold text-lg">W</span>
-                    </div>
-                    <div className="flex-1 text-left">
-                      <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>Walmart Grocery</div>
-                      <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Delivery & pickup available</div>
-                    </div>
-                    <svg className="w-5 h-5" style={{ color: 'var(--text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                  </button>
-
-                  <button
-                    onClick={() => handleShopOption('amazon')}
-                    className="w-full flex items-center gap-4 p-4 rounded-xl transition"
-                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
-                  >
-                    <div className="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center">
-                      <span className="text-black font-bold text-lg">A</span>
-                    </div>
-                    <div className="flex-1 text-left">
-                      <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>Amazon Fresh</div>
-                      <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Free delivery with Prime</div>
-                    </div>
-                    <svg className="w-5 h-5" style={{ color: 'var(--text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                  </button>
+                  )}
                 </div>
               </div>
 

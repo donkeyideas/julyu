@@ -1086,6 +1086,176 @@ export interface Database {
           accepted_at?: string | null
         }
       }
+      // Delivery Partners (for monetization/shop modal)
+      delivery_partners: {
+        Row: {
+          id: string
+          name: string
+          display_name: string | null
+          slug: string
+          description: string | null
+          logo_url: string | null
+          icon_letter: string | null
+          brand_color: string | null
+          base_url: string
+          deep_link_template: string | null
+          affiliate_base_url: string | null
+          affiliate_id: string | null
+          api_key_encrypted: string | null
+          api_secret_encrypted: string | null
+          api_endpoint: string | null
+          api_config: Json | null
+          commission_type: 'percentage' | 'flat' | 'per_order'
+          commission_rate: number | null
+          flat_commission: number | null
+          supports_deep_linking: boolean | null
+          supports_cart_api: boolean | null
+          supports_search_url: boolean | null
+          requires_partnership: boolean | null
+          sort_order: number | null
+          is_active: boolean | null
+          show_in_modal: boolean | null
+          supported_retailers: Json | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          display_name?: string | null
+          slug: string
+          description?: string | null
+          logo_url?: string | null
+          icon_letter?: string | null
+          brand_color?: string | null
+          base_url: string
+          deep_link_template?: string | null
+          affiliate_base_url?: string | null
+          affiliate_id?: string | null
+          api_key_encrypted?: string | null
+          api_secret_encrypted?: string | null
+          api_endpoint?: string | null
+          api_config?: Json | null
+          commission_type?: 'percentage' | 'flat' | 'per_order'
+          commission_rate?: number | null
+          flat_commission?: number | null
+          supports_deep_linking?: boolean | null
+          supports_cart_api?: boolean | null
+          supports_search_url?: boolean | null
+          requires_partnership?: boolean | null
+          sort_order?: number | null
+          is_active?: boolean | null
+          show_in_modal?: boolean | null
+          supported_retailers?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          display_name?: string | null
+          slug?: string
+          description?: string | null
+          logo_url?: string | null
+          icon_letter?: string | null
+          brand_color?: string | null
+          base_url?: string
+          deep_link_template?: string | null
+          affiliate_base_url?: string | null
+          affiliate_id?: string | null
+          api_key_encrypted?: string | null
+          api_secret_encrypted?: string | null
+          api_endpoint?: string | null
+          api_config?: Json | null
+          commission_type?: 'percentage' | 'flat' | 'per_order'
+          commission_rate?: number | null
+          flat_commission?: number | null
+          supports_deep_linking?: boolean | null
+          supports_cart_api?: boolean | null
+          supports_search_url?: boolean | null
+          requires_partnership?: boolean | null
+          sort_order?: number | null
+          is_active?: boolean | null
+          show_in_modal?: boolean | null
+          supported_retailers?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      delivery_partner_clicks: {
+        Row: {
+          id: string
+          user_id: string | null
+          partner_id: string | null
+          store_name: string | null
+          store_retailer: string | null
+          store_address: string | null
+          items_json: Json | null
+          items_count: number | null
+          estimated_total: number | null
+          generated_url: string | null
+          deep_link_used: boolean | null
+          commission_rate: number | null
+          estimated_commission: number | null
+          converted: boolean | null
+          conversion_date: string | null
+          order_total: number | null
+          actual_commission: number | null
+          external_order_id: string | null
+          session_id: string | null
+          user_agent: string | null
+          referrer: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          partner_id?: string | null
+          store_name?: string | null
+          store_retailer?: string | null
+          store_address?: string | null
+          items_json?: Json | null
+          items_count?: number | null
+          estimated_total?: number | null
+          generated_url?: string | null
+          deep_link_used?: boolean | null
+          commission_rate?: number | null
+          estimated_commission?: number | null
+          converted?: boolean | null
+          conversion_date?: string | null
+          order_total?: number | null
+          actual_commission?: number | null
+          external_order_id?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          referrer?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          partner_id?: string | null
+          store_name?: string | null
+          store_retailer?: string | null
+          store_address?: string | null
+          items_json?: Json | null
+          items_count?: number | null
+          estimated_total?: number | null
+          generated_url?: string | null
+          deep_link_used?: boolean | null
+          commission_rate?: number | null
+          estimated_commission?: number | null
+          converted?: boolean | null
+          conversion_date?: string | null
+          order_total?: number | null
+          actual_commission?: number | null
+          external_order_id?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          referrer?: string | null
+          created_at?: string
+        }
+      }
       // Alias for retailers (used in admin dashboard)
       retailers: {
         Row: {
