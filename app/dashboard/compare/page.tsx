@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 interface ProductResult {
   userInput: string
@@ -41,10 +42,31 @@ interface AnalyzeResult {
 }
 
 export default function ComparePage() {
+  const searchParams = useSearchParams()
   const [list, setList] = useState('milk 2%\neggs organic\nbread whole wheat\napples gala\nchicken breast\npasta penne')
   const [zipCode, setZipCode] = useState('45202')
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<AnalyzeResult | null>(null)
+  const [fromAssistant, setFromAssistant] = useState(false)
+
+  // Load items from AI Assistant if redirected
+  useEffect(() => {
+    if (searchParams.get('fromAssistant') === 'true') {
+      const stored = localStorage.getItem('compareItems')
+      if (stored) {
+        try {
+          const items = JSON.parse(stored) as string[]
+          if (items.length > 0) {
+            setList(items.join('\n'))
+            setFromAssistant(true)
+            localStorage.removeItem('compareItems') // Clear after use
+          }
+        } catch (e) {
+          console.error('Failed to parse stored items:', e)
+        }
+      }
+    }
+  }, [searchParams])
 
   const itemCount = list.split('\n').filter(item => item.trim() !== '').length
 
@@ -86,6 +108,27 @@ export default function ComparePage() {
       <div className="mb-10 pb-6 border-b border-gray-800">
         <h1 className="text-4xl font-black">Compare Prices</h1>
       </div>
+
+      {/* AI Assistant Import Banner */}
+      {fromAssistant && (
+        <div className="mb-4 p-4 bg-green-500/10 border border-green-500/30 rounded-xl flex items-center gap-3">
+          <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          </svg>
+          <div className="flex-1">
+            <p className="text-green-400 font-medium text-sm">Ingredients imported from AI Assistant</p>
+            <p className="text-gray-400 text-xs">Review the items below and click &quot;Compare Prices&quot; to find the best deals</p>
+          </div>
+          <button
+            onClick={() => setFromAssistant(false)}
+            className="text-gray-400 hover:text-white"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 mb-8">
         <h2 className="text-2xl font-bold mb-6">Enter Your Grocery List</h2>

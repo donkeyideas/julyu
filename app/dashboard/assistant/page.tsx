@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 interface Message {
   id: string
@@ -21,6 +22,65 @@ const SUGGESTED_PROMPTS = [
   "What's a good substitute for butter?",
   "How can I save money on groceries?",
 ]
+
+// Extract ingredients from message content
+function extractIngredients(content: string): string[] {
+  const ingredients: string[] = []
+  const lines = content.split('\n')
+
+  for (const line of lines) {
+    // Match bullet points with ingredients
+    if (line.trim().startsWith('-') || line.trim().startsWith('*') || line.trim().startsWith('•')) {
+      let item = line.replace(/^\s*[-*•]\s*/, '').trim()
+      item = item.replace(/\*\*/g, '') // Remove bold markers
+
+      // If it has a colon, take the part before it (the ingredient name)
+      if (item.includes(':')) {
+        item = item.split(':')[0].trim()
+      }
+
+      // Skip if it looks like a step or instruction
+      const lowerItem = item.toLowerCase()
+      if (lowerItem.includes('step') || lowerItem.includes('minute') || lowerItem.includes('heat') ||
+          lowerItem.includes('serve') || lowerItem.includes('stir') || lowerItem.includes('mix') ||
+          item.length < 2 || item.length > 60) {
+        continue
+      }
+
+      // Simplify the ingredient
+      const simplified = simplifyIngredient(item)
+      if (simplified && !ingredients.includes(simplified)) {
+        ingredients.push(simplified)
+      }
+    }
+  }
+
+  return ingredients.slice(0, 15)
+}
+
+// Simplify ingredient to searchable form
+function simplifyIngredient(item: string): string {
+  let simplified = item
+    .replace(/^\d+[\d\/\.\s-]*\s*(?:cups?|tbsps?|tablespoons?|tsps?|teaspoons?|oz|ounces?|lbs?|pounds?|cans?|cloves?|pieces?|bunch|bunches|head|heads|bag|bags|package|packages|bottle|bottles|jar|jars|g|kg|ml|l)?\s*/i, '')
+    .replace(/\([^)]*\)/g, '')
+    .replace(/,.*$/, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  return simplified
+}
+
+// Check if message likely contains a recipe/ingredients
+function hasIngredients(content: string): boolean {
+  const lowerContent = content.toLowerCase()
+  const hasIngredientKeywords =
+    lowerContent.includes('ingredient') ||
+    lowerContent.includes('you\'ll need') ||
+    lowerContent.includes('shopping list') ||
+    lowerContent.includes('what you need') ||
+    lowerContent.includes('here\'s what')
+  const bulletPoints = (content.match(/^\s*[-*•]\s*.+$/gm) || []).length
+  return hasIngredientKeywords && bulletPoints >= 3
+}
 
 // Simple markdown renderer
 function renderMarkdown(text: string) {
@@ -60,9 +120,18 @@ function renderMarkdown(text: string) {
       return
     }
 
+    if (trimmed.startsWith('### ')) {
+      elements.push(
+        <h4 key={index} className="font-semibold text-sm mt-3 mb-1 text-green-400">
+          {formatInlineMarkdown(trimmed.slice(4))}
+        </h4>
+      )
+      return
+    }
+
     if (trimmed.startsWith('## ')) {
       elements.push(
-        <h3 key={index} className="font-bold text-base mt-3 mb-1">
+        <h3 key={index} className="font-bold text-base mt-3 mb-1 text-white">
           {formatInlineMarkdown(trimmed.slice(3))}
         </h3>
       )
@@ -71,7 +140,7 @@ function renderMarkdown(text: string) {
 
     if (trimmed.startsWith('# ')) {
       elements.push(
-        <h2 key={index} className="font-bold text-lg mt-3 mb-1">
+        <h2 key={index} className="font-bold text-lg mt-3 mb-1 text-white">
           {formatInlineMarkdown(trimmed.slice(2))}
         </h2>
       )
@@ -124,6 +193,7 @@ function formatInlineMarkdown(text: string): React.ReactNode {
 }
 
 export default function AssistantPage() {
+  const router = useRouter()
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -249,6 +319,14 @@ export default function AssistantPage() {
       setMessages(prev => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleCompareIngredients = (content: string) => {
+    const ingredients = extractIngredients(content)
+    if (ingredients.length > 0) {
+      localStorage.setItem('compareItems', JSON.stringify(ingredients))
+      router.push('/dashboard/compare?fromAssistant=true')
     }
   }
 
@@ -381,23 +459,37 @@ export default function AssistantPage() {
                       </svg>
                     </div>
                   )}
-                  <div
-                    className={`max-w-[75%] px-4 py-3 rounded-2xl ${
-                      message.role === 'user'
-                        ? 'bg-green-500'
-                        : 'bg-gray-800 border border-gray-700'
-                    }`}
-                  >
-                    {message.role === 'assistant' ? (
-                      <div className="text-sm leading-relaxed text-gray-200">
-                        {renderMarkdown(message.content)}
+                  <div className="flex flex-col gap-2 max-w-[75%]">
+                    <div
+                      className={`px-4 py-3 rounded-2xl ${
+                        message.role === 'user'
+                          ? 'bg-green-500'
+                          : 'bg-gray-800 border border-gray-700'
+                      }`}
+                    >
+                      {message.role === 'assistant' ? (
+                        <div className="text-sm leading-relaxed text-gray-200">
+                          {renderMarkdown(message.content)}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-white font-medium">{message.content}</div>
+                      )}
+                      <div className={`text-xs mt-1.5 ${message.role === 'user' ? 'text-green-100/70' : 'text-gray-500'}`}>
+                        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
-                    ) : (
-                      <div className="text-sm text-white font-medium">{message.content}</div>
-                    )}
-                    <div className={`text-xs mt-1.5 ${message.role === 'user' ? 'text-green-100/70' : 'text-gray-500'}`}>
-                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </div>
+                    {/* Compare Prices button for messages with ingredients */}
+                    {message.role === 'assistant' && hasIngredients(message.content) && (
+                      <button
+                        onClick={() => handleCompareIngredients(message.content)}
+                        className="self-start flex items-center gap-2 px-3 py-1.5 bg-green-500/10 border border-green-500/30 text-green-400 rounded-lg hover:bg-green-500/20 transition text-xs font-medium"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                        </svg>
+                        Compare Ingredient Prices
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
