@@ -7,6 +7,10 @@ interface Message {
   content: string
 }
 
+type ShoppingListRow = {
+  id: string
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = createServerClient()
@@ -126,8 +130,9 @@ async function getUserContext(supabase: ReturnType<typeof createServerClient>, u
       .order('updated_at', { ascending: false })
       .limit(3)
 
-    if (lists && lists.length > 0) {
-      const listIds = lists.map(l => l.id)
+    const listRows: ShoppingListRow[] = lists ?? []
+    if (listRows.length > 0) {
+      const listIds = listRows.map(l => l.id)
       const { data: items } = await supabase
         .from('list_items')
         .select('user_input')
