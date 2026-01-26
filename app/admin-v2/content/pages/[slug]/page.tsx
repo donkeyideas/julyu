@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
 
 interface PageData {
@@ -9,99 +9,50 @@ interface PageData {
   headline: string
   subheadline: string
   meta_description: string
-  sections: Section[]
+  content: {
+    email?: string
+    about_text?: string
+  }
 }
 
-interface Section {
-  id: string
-  type: 'hero' | 'features' | 'pricing' | 'content' | 'cta'
-  title: string
-  content: string
-  items?: SectionItem[]
-}
-
-interface SectionItem {
-  id: string
-  icon: string
-  title: string
-  description: string
-}
-
-// Default page data for each page type
+// Default content that matches the actual website pages
 const defaultPageData: Record<string, PageData> = {
   features: {
     title: 'Features',
     headline: 'Everything You Need to Never Overpay',
     subheadline: 'AI-powered platform with real-time pricing and intelligent optimization',
     meta_description: 'Explore all features of Julyu grocery price comparison.',
-    sections: [
-      {
-        id: '1',
-        type: 'features',
-        title: 'Core Features',
-        content: '',
-        items: [
-          { id: '1', icon: '🧠', title: 'AI Product Matching', description: 'DeepSeek-powered semantic understanding matches products across retailers with 98% accuracy.' },
-          { id: '2', icon: '🗺️', title: 'Route Optimization', description: 'Multi-store routing finds optimal paths factoring price, distance, and time value.' },
-          { id: '3', icon: '📸', title: 'Receipt Scanning', description: 'OCR technology extracts prices automatically, building your price history.' },
-        ],
-      },
-    ],
+    content: {},
   },
   pricing: {
     title: 'Pricing',
     headline: 'Simple Transparent Pricing',
     subheadline: 'Professional grocery intelligence for everyone',
     meta_description: 'Simple, transparent pricing for Julyu.',
-    sections: [
-      {
-        id: '1',
-        type: 'pricing',
-        title: 'Pricing Tiers',
-        content: '',
-        items: [
-          { id: '1', icon: '🆓', title: 'Free', description: '$0 - Forever free. 5 comparisons/month, Basic price tracking, 3 receipt scans' },
-          { id: '2', icon: '⭐', title: 'Premium', description: '$15/month - Unlimited comparisons, Unlimited receipts, Price alerts, Advanced analytics' },
-          { id: '3', icon: '🏢', title: 'Enterprise', description: 'Custom pricing - White-label, API access, Dedicated support' },
-        ],
-      },
-    ],
+    content: {},
   },
   about: {
     title: 'About Us',
     headline: 'About Julyu',
-    subheadline: 'Learn about the team behind Julyu',
+    subheadline: 'The Bloomberg Terminal for Grocery Consumers',
     meta_description: 'Learn about the team behind Julyu.',
-    sections: [
-      {
-        id: '1',
-        type: 'content',
-        title: 'Our Mission',
-        content: 'Julyu is on a mission to help consumers save money on groceries through AI-powered price intelligence.',
-        items: [],
-      },
-    ],
+    content: {
+      about_text: 'Julyu is an AI-powered grocery price comparison platform that helps consumers save money by comparing prices across 50+ retailers. Our mission is to make grocery shopping more transparent and affordable for everyone.',
+    },
   },
   contact: {
     title: 'Contact',
     headline: 'Contact Us',
     subheadline: 'Get in touch with the Julyu team',
     meta_description: 'Get in touch with the Julyu team.',
-    sections: [
-      {
-        id: '1',
-        type: 'content',
-        title: 'Contact Information',
-        content: 'For support, partnerships, or inquiries: contact@julyu.com',
-        items: [],
-      },
-    ],
+    content: {
+      email: 'contact@julyu.com',
+    },
   },
 }
 
 export default function EditPagePage() {
   const params = useParams()
-  const router = useRouter()
   const slug = params.slug as string
 
   const [pageData, setPageData] = useState<PageData | null>(null)
@@ -110,30 +61,47 @@ export default function EditPagePage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
-    // Load page data (in real app, this would fetch from API/database)
-    const loadPageData = async () => {
-      setLoading(true)
-      try {
-        // For now, use default data - in production this would fetch from Supabase
-        const data = defaultPageData[slug] || {
+    loadPageData()
+  }, [slug])
+
+  const loadPageData = async () => {
+    setLoading(true)
+    try {
+      // Fetch from database
+      const response = await fetch(`/api/admin/content/pages?slug=${slug}`)
+      const result = await response.json()
+
+      if (result.page) {
+        setPageData({
+          title: result.page.title,
+          headline: result.page.headline,
+          subheadline: result.page.subheadline,
+          meta_description: result.page.meta_description,
+          content: result.page.content || {},
+        })
+      } else {
+        // Use default data
+        setPageData(defaultPageData[slug] || {
           title: slug.charAt(0).toUpperCase() + slug.slice(1),
           headline: '',
           subheadline: '',
           meta_description: '',
-          sections: [],
-        }
-        setPageData(data)
-      } catch (error) {
-        console.error('Error loading page:', error)
-      } finally {
-        setLoading(false)
+          content: {},
+        })
       }
+    } catch (error) {
+      console.error('Error loading page:', error)
+      setPageData(defaultPageData[slug] || {
+        title: slug.charAt(0).toUpperCase() + slug.slice(1),
+        headline: '',
+        subheadline: '',
+        meta_description: '',
+        content: {},
+      })
+    } finally {
+      setLoading(false)
     }
-
-    if (slug) {
-      loadPageData()
-    }
-  }, [slug])
+  }
 
   const handleSave = async () => {
     if (!pageData) return
@@ -142,7 +110,6 @@ export default function EditPagePage() {
     setMessage(null)
 
     try {
-      // In production, this would save to Supabase
       const response = await fetch('/api/admin/content/pages', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -150,56 +117,24 @@ export default function EditPagePage() {
       })
 
       if (response.ok) {
-        setMessage({ type: 'success', text: 'Page saved successfully!' })
+        setMessage({ type: 'success', text: 'Page saved successfully! Changes will appear on the live site.' })
       } else {
-        // Still show success for now since API might not exist yet
-        setMessage({ type: 'success', text: 'Page saved successfully!' })
+        const error = await response.json()
+        setMessage({ type: 'error', text: error.error || 'Failed to save page' })
       }
-    } catch (error) {
-      // Still show success for demo purposes
-      setMessage({ type: 'success', text: 'Page saved successfully!' })
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.message || 'Failed to save page' })
     } finally {
       setSaving(false)
     }
   }
 
-  const updateSection = (sectionIndex: number, field: string, value: string) => {
+  const updateContent = (key: string, value: string) => {
     if (!pageData) return
-    const newSections = [...pageData.sections]
-    newSections[sectionIndex] = { ...newSections[sectionIndex], [field]: value }
-    setPageData({ ...pageData, sections: newSections })
-  }
-
-  const updateSectionItem = (sectionIndex: number, itemIndex: number, field: string, value: string) => {
-    if (!pageData) return
-    const newSections = [...pageData.sections]
-    const items = [...(newSections[sectionIndex].items || [])]
-    items[itemIndex] = { ...items[itemIndex], [field]: value }
-    newSections[sectionIndex] = { ...newSections[sectionIndex], items }
-    setPageData({ ...pageData, sections: newSections })
-  }
-
-  const addSectionItem = (sectionIndex: number) => {
-    if (!pageData) return
-    const newSections = [...pageData.sections]
-    const items = [...(newSections[sectionIndex].items || [])]
-    items.push({
-      id: Date.now().toString(),
-      icon: '📌',
-      title: 'New Item',
-      description: 'Description here...',
+    setPageData({
+      ...pageData,
+      content: { ...pageData.content, [key]: value },
     })
-    newSections[sectionIndex] = { ...newSections[sectionIndex], items }
-    setPageData({ ...pageData, sections: newSections })
-  }
-
-  const removeSectionItem = (sectionIndex: number, itemIndex: number) => {
-    if (!pageData) return
-    const newSections = [...pageData.sections]
-    const items = [...(newSections[sectionIndex].items || [])]
-    items.splice(itemIndex, 1)
-    newSections[sectionIndex] = { ...newSections[sectionIndex], items }
-    setPageData({ ...pageData, sections: newSections })
   }
 
   if (loading) {
@@ -315,84 +250,58 @@ export default function EditPagePage() {
         </div>
       </div>
 
-      {/* Sections */}
-      {pageData.sections.map((section, sectionIndex) => (
-        <div key={section.id} className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
-          <h3 className="text-xl font-semibold mb-6">{section.title}</h3>
-
-          {section.type === 'content' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">Content</label>
-              <textarea
-                value={section.content}
-                onChange={(e) => updateSection(sectionIndex, 'content', e.target.value)}
-                rows={4}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
-              />
-            </div>
-          )}
-
-          {(section.type === 'features' || section.type === 'pricing') && section.items && (
-            <div className="space-y-4">
-              {section.items.map((item, itemIndex) => (
-                <div key={item.id} className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-4">
-                    <span className="text-sm text-gray-500">Item {itemIndex + 1}</span>
-                    <button
-                      onClick={() => removeSectionItem(sectionIndex, itemIndex)}
-                      className="text-red-400 hover:text-red-300 text-sm"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-12 gap-4">
-                    <div className="col-span-2">
-                      <label className="block text-xs text-gray-500 mb-1">Icon</label>
-                      <input
-                        type="text"
-                        value={item.icon}
-                        onChange={(e) => updateSectionItem(sectionIndex, itemIndex, 'icon', e.target.value)}
-                        className="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-white text-center text-2xl focus:border-green-500 focus:outline-none"
-                      />
-                    </div>
-                    <div className="col-span-10">
-                      <label className="block text-xs text-gray-500 mb-1">Title</label>
-                      <input
-                        type="text"
-                        value={item.title}
-                        onChange={(e) => updateSectionItem(sectionIndex, itemIndex, 'title', e.target.value)}
-                        className="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-white focus:border-green-500 focus:outline-none"
-                      />
-                    </div>
-                    <div className="col-span-12">
-                      <label className="block text-xs text-gray-500 mb-1">Description</label>
-                      <textarea
-                        value={item.description}
-                        onChange={(e) => updateSectionItem(sectionIndex, itemIndex, 'description', e.target.value)}
-                        rows={2}
-                        className="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-white focus:border-green-500 focus:outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <button
-                onClick={() => addSectionItem(sectionIndex)}
-                className="w-full py-3 border-2 border-dashed border-gray-700 rounded-lg text-gray-400 hover:border-green-500 hover:text-green-500 transition"
-              >
-                + Add Item
-              </button>
-            </div>
-          )}
+      {/* Contact Page - Email Editor */}
+      {slug === 'contact' && (
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
+          <h3 className="text-xl font-semibold mb-6">Contact Information</h3>
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-2">Contact Email</label>
+            <input
+              type="email"
+              value={pageData.content.email || ''}
+              onChange={(e) => updateContent('email', e.target.value)}
+              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              placeholder="contact@julyu.com"
+            />
+            <p className="text-sm text-gray-500 mt-2">This email will be displayed on the Contact page.</p>
+          </div>
         </div>
-      ))}
+      )}
+
+      {/* About Page - Text Editor */}
+      {slug === 'about' && (
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
+          <h3 className="text-xl font-semibold mb-6">About Content</h3>
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-2">Mission Statement</label>
+            <textarea
+              value={pageData.content.about_text || ''}
+              onChange={(e) => updateContent('about_text', e.target.value)}
+              rows={6}
+              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+            />
+            <p className="text-sm text-gray-500 mt-2">This text will be displayed in the &quot;Our Mission&quot; section.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Features/Pricing Info */}
+      {(slug === 'features' || slug === 'pricing') && (
+        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-6 mb-6">
+          <h3 className="text-lg font-semibold text-yellow-400 mb-2">Page Content</h3>
+          <p className="text-gray-400 text-sm">
+            The {slug} page content (feature cards, pricing tiers) is managed in the codebase.
+            You can edit the page title, headline, and SEO settings above.
+          </p>
+        </div>
+      )}
 
       {/* Help Text */}
-      <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-blue-400 mb-2">How It Works</h3>
+      <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-6">
+        <h3 className="text-lg font-semibold text-green-400 mb-2">How It Works</h3>
         <p className="text-gray-400 text-sm">
-          Changes made here will update the live page. The page title and meta description affect SEO.
-          Edit section items to customize the content displayed on the page. Click &quot;Save Changes&quot; when done.
+          Changes saved here are stored in the database and will appear on the live website.
+          Click &quot;Save Changes&quot; when you&apos;re done editing.
         </p>
       </div>
     </div>
