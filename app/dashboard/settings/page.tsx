@@ -34,6 +34,8 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+  const [seedingDemo, setSeedingDemo] = useState(false)
+  const [clearingDemo, setClearingDemo] = useState(false)
 
   useEffect(() => {
     loadSettings()
@@ -103,6 +105,46 @@ export default function SettingsPage() {
     free: { label: 'Free Plan', color: 'text-gray-400' },
     premium: { label: 'Premium ($14.99/month)', color: 'text-green-500' },
     enterprise: { label: 'Enterprise', color: 'text-purple-500' }
+  }
+
+  const handleSeedDemo = async () => {
+    setSeedingDemo(true)
+    setSaveMessage(null)
+    try {
+      const response = await fetch('/api/demo/seed', { method: 'POST' })
+      const data = await response.json()
+      if (response.ok) {
+        setSaveMessage({
+          type: 'success',
+          text: `Demo data loaded! Created: ${Object.entries(data.results).map(([k, v]) => `${v} ${k}`).join(', ')}`
+        })
+      } else {
+        setSaveMessage({ type: 'error', text: data.error || 'Failed to seed demo data' })
+      }
+    } catch (error) {
+      setSaveMessage({ type: 'error', text: 'Failed to seed demo data' })
+    } finally {
+      setSeedingDemo(false)
+    }
+  }
+
+  const handleClearDemo = async () => {
+    if (!confirm('Are you sure? This will delete all your shopping data.')) return
+    setClearingDemo(true)
+    setSaveMessage(null)
+    try {
+      const response = await fetch('/api/demo/seed', { method: 'DELETE' })
+      if (response.ok) {
+        setSaveMessage({ type: 'success', text: 'All data cleared successfully!' })
+      } else {
+        const data = await response.json()
+        setSaveMessage({ type: 'error', text: data.error || 'Failed to clear data' })
+      }
+    } catch (error) {
+      setSaveMessage({ type: 'error', text: 'Failed to clear data' })
+    } finally {
+      setClearingDemo(false)
+    }
   }
 
   if (loading) {
@@ -267,6 +309,40 @@ export default function SettingsPage() {
               <option value="biweekly">Every two weeks</option>
               <option value="monthly">Monthly</option>
             </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Demo Data Section */}
+      <div className="bg-gray-900 border border-green-900/50 rounded-2xl p-8 mb-6">
+        <h3 className="text-2xl font-bold mb-2">Demo Data</h3>
+        <p className="text-gray-500 mb-6">Load sample data to explore all dashboard features</p>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <span className="font-medium text-green-500">Load demo data</span>
+              <p className="text-sm text-gray-500">Populate your dashboard with realistic sample data including shopping lists, receipts, savings history, and AI insights</p>
+            </div>
+            <button
+              onClick={handleSeedDemo}
+              disabled={seedingDemo}
+              className="px-4 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition disabled:opacity-50"
+            >
+              {seedingDemo ? 'Loading...' : 'Load Demo Data'}
+            </button>
+          </div>
+          <div className="flex justify-between items-center pt-4 border-t border-gray-800">
+            <div>
+              <span className="font-medium text-yellow-500">Clear all data</span>
+              <p className="text-sm text-gray-500">Remove all shopping data (lists, receipts, savings, etc.)</p>
+            </div>
+            <button
+              onClick={handleClearDemo}
+              disabled={clearingDemo}
+              className="px-4 py-2 border border-yellow-500 text-yellow-500 rounded-lg hover:bg-yellow-500 hover:text-black transition disabled:opacity-50"
+            >
+              {clearingDemo ? 'Clearing...' : 'Clear Data'}
+            </button>
           </div>
         </div>
       </div>
