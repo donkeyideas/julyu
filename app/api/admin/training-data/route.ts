@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
+type TrainingDataStat = {
+  use_case: string | null
+  validated: boolean | null
+  user_feedback: string | null
+}
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = createServerClient()
@@ -37,19 +43,20 @@ export async function GET(request: NextRequest) {
       .from('ai_training_data')
       .select('use_case, validated, user_feedback')
 
+    const statList: TrainingDataStat[] = stats ?? []
     const summary = {
-      total: stats?.length || 0,
-      validated: stats?.filter(s => s.validated).length || 0,
-      pending: stats?.filter(s => !s.validated).length || 0,
+      total: statList.length,
+      validated: statList.filter(s => s.validated).length,
+      pending: statList.filter(s => !s.validated).length,
       byUseCase: {} as Record<string, number>,
       byFeedback: {
-        positive: stats?.filter(s => s.user_feedback === 'positive').length || 0,
-        negative: stats?.filter(s => s.user_feedback === 'negative').length || 0,
-        neutral: stats?.filter(s => s.user_feedback === 'neutral').length || 0,
+        positive: statList.filter(s => s.user_feedback === 'positive').length,
+        negative: statList.filter(s => s.user_feedback === 'negative').length,
+        neutral: statList.filter(s => s.user_feedback === 'neutral').length,
       }
     }
 
-    stats?.forEach(s => {
+    statList.forEach(s => {
       if (s.use_case) {
         summary.byUseCase[s.use_case] = (summary.byUseCase[s.use_case] || 0) + 1
       }
