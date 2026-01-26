@@ -984,6 +984,108 @@ export interface Database {
           deployed_at?: string | null
         }
       }
+      // Community Chat - User to User Messaging
+      chat_conversations: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          last_message: string | null
+          last_message_at: string | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          last_message?: string | null
+          last_message_at?: string | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          last_message?: string | null
+          last_message_at?: string | null
+        }
+      }
+      chat_participants: {
+        Row: {
+          id: string
+          conversation_id: string
+          user_id: string
+          joined_at: string
+        }
+        Insert: {
+          id?: string
+          conversation_id: string
+          user_id: string
+          joined_at?: string
+        }
+        Update: {
+          id?: string
+          conversation_id?: string
+          user_id?: string
+          joined_at?: string
+        }
+      }
+      chat_messages: {
+        Row: {
+          id: string
+          conversation_id: string
+          sender_id: string
+          content: string
+          message_type: 'text' | 'recipe' | 'list' | 'image'
+          metadata: Json | null
+          created_at: string
+          read_at: string | null
+        }
+        Insert: {
+          id?: string
+          conversation_id: string
+          sender_id: string
+          content: string
+          message_type?: 'text' | 'recipe' | 'list' | 'image'
+          metadata?: Json | null
+          created_at?: string
+          read_at?: string | null
+        }
+        Update: {
+          id?: string
+          conversation_id?: string
+          sender_id?: string
+          content?: string
+          message_type?: 'text' | 'recipe' | 'list' | 'image'
+          metadata?: Json | null
+          created_at?: string
+          read_at?: string | null
+        }
+      }
+      user_friends: {
+        Row: {
+          id: string
+          user_id: string
+          friend_id: string
+          status: 'pending' | 'accepted' | 'blocked'
+          created_at: string
+          accepted_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          friend_id: string
+          status?: 'pending' | 'accepted' | 'blocked'
+          created_at?: string
+          accepted_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          friend_id?: string
+          status?: 'pending' | 'accepted' | 'blocked'
+          created_at?: string
+          accepted_at?: string | null
+        }
+      }
       // Alias for retailers (used in admin dashboard)
       retailers: {
         Row: {

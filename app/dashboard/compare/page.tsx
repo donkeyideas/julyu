@@ -131,6 +131,31 @@ function ComparePageContent() {
     }
   }, [searchParams])
 
+  // Load items from a shopping list if listId is provided
+  useEffect(() => {
+    const listId = searchParams.get('listId')
+    if (listId) {
+      const fetchListItems = async () => {
+        try {
+          const response = await fetch(`/api/lists/${listId}`)
+          if (response.ok) {
+            const data = await response.json()
+            if (data.list?.list_items && data.list.list_items.length > 0) {
+              const items = data.list.list_items.map((item: { user_input: string; quantity?: number }) => {
+                const qty = item.quantity && item.quantity > 1 ? `${item.quantity} ` : ''
+                return `${qty}${item.user_input}`
+              })
+              setList(items.join('\n'))
+            }
+          }
+        } catch (error) {
+          console.error('Failed to load list items:', error)
+        }
+      }
+      fetchListItems()
+    }
+  }, [searchParams])
+
   const itemCount = list.split('\n').filter(item => item.trim() !== '').length
 
   const saveToHistory = (items: string[], result: AnalyzeResult) => {
