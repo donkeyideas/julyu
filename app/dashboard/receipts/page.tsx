@@ -41,7 +41,7 @@ async function getReceipts() {
 
   // Calculate potential savings for each receipt
   const receiptsWithSavings = await Promise.all(
-    receipts.map(async (receipt) => {
+    receipts.map(async (receipt: Receipt) => {
       const savings = await calculatePotentialSavings(supabase, receipt)
       return { ...receipt, potential_savings: savings }
     })
