@@ -4,7 +4,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="bg-gradient-to-b from-green-900/40 to-black py-16 px-[5%]">
+    <footer className="bg-transparent py-16 px-[5%]">
       <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-16">
         <div>
           <h3 className="text-2xl font-bold text-green-500 mb-4">Julyu</h3>

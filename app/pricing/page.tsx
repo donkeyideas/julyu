@@ -4,10 +4,10 @@ import Footer from '@/components/shared/Footer'
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-black to-green-900/40 text-white">
+    <div className="min-h-screen bg-gradient-to-b from-black via-green-900/30 to-black text-white flex flex-col">
       <Header />
 
-      <div className="pt-32 pb-16 px-[5%]">
+      <div className="flex-1 pt-32 pb-16 px-[5%]">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
             <h1 className="text-5xl md:text-6xl font-black mb-4">

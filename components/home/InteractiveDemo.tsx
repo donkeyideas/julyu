@@ -41,7 +41,8 @@ interface AnalyzeResult {
   message?: string
 }
 
-const DEFAULT_ITEMS = [
+// Fixed demo items - these cannot be changed
+const DEMO_ITEMS = [
   'milk 2%',
   'eggs organic',
   'bread whole wheat',
@@ -51,23 +52,10 @@ const DEFAULT_ITEMS = [
 ]
 
 export default function InteractiveDemo() {
-  const [items, setItems] = useState<string[]>(DEFAULT_ITEMS)
-  const [newItem, setNewItem] = useState('')
   const [zipCode, setZipCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<AnalyzeResult | null>(null)
   const [error, setError] = useState<string | null>(null)
-
-  const handleAddItem = () => {
-    if (newItem.trim() && items.length < 10) {
-      setItems([...items, newItem.trim()])
-      setNewItem('')
-    }
-  }
-
-  const handleRemoveItem = (index: number) => {
-    setItems(items.filter((_, i) => i !== index))
-  }
 
   const handleCompare = async () => {
     if (!zipCode.trim()) {
@@ -75,8 +63,8 @@ export default function InteractiveDemo() {
       return
     }
 
-    if (items.length === 0) {
-      setError('Please add at least one item')
+    if (zipCode.trim().length !== 5 || !/^\d+$/.test(zipCode.trim())) {
+      setError('Please enter a valid 5-digit zip code')
       return
     }
 
@@ -85,33 +73,14 @@ export default function InteractiveDemo() {
     setResults(null)
 
     try {
-      const response = await fetch('/api/lists/analyze', {
+      const response = await fetch('/api/demo/compare', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: items,
+          items: DEMO_ITEMS,
           zipCode: zipCode.trim(),
         }),
       })
-
-      // Handle auth required - show signup prompt instead of error
-      if (response.status === 401) {
-        setResults({
-          success: true,
-          dataSource: 'demo',
-          bestOption: null,
-          alternatives: [],
-          products: [],
-          summary: {
-            totalItems: items.length,
-            itemsFound: 0,
-            itemsMissing: items.length,
-            estimatedTotal: 0,
-          },
-          message: 'Sign up for free to compare real prices across 50+ stores in your area!'
-        })
-        return
-      }
 
       const data = await response.json()
 
@@ -124,12 +93,6 @@ export default function InteractiveDemo() {
       setError('Failed to compare prices. Please try again.')
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleAddItem()
     }
   }
 
@@ -155,58 +118,32 @@ export default function InteractiveDemo() {
             <input
               type="text"
               value={zipCode}
-              onChange={(e) => setZipCode(e.target.value)}
+              onChange={(e) => setZipCode(e.target.value.replace(/\D/g, ''))}
               placeholder="Enter zip code (e.g., 45202)"
               maxLength={5}
               className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white focus:border-green-500 focus:outline-none"
             />
           </div>
 
-          {/* Items List */}
+          {/* Fixed Items List */}
           <div>
             <label className="block text-sm text-gray-400 mb-2">
-              Your Grocery List ({items.length}/10 items)
+              Sample Grocery List ({DEMO_ITEMS.length} items)
             </label>
-            <div className="bg-black border border-gray-800 rounded-lg p-3 max-h-48 overflow-y-auto">
-              {items.map((item, index) => (
+            <div className="bg-black border border-gray-800 rounded-lg p-3">
+              {DEMO_ITEMS.map((item, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between py-2 px-2 hover:bg-gray-900 rounded"
+                  className="flex items-center py-2 px-2"
                 >
+                  <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
                   <span className="text-gray-300">{item}</span>
-                  <button
-                    onClick={() => handleRemoveItem(index)}
-                    className="text-gray-500 hover:text-red-500 transition"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
                 </div>
               ))}
             </div>
           </div>
-
-          {/* Add Item Input */}
-          {items.length < 10 && (
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newItem}
-                onChange={(e) => setNewItem(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Add an item..."
-                className="flex-1 px-4 py-2 bg-black border border-gray-800 rounded-lg text-white focus:border-green-500 focus:outline-none text-sm"
-              />
-              <button
-                onClick={handleAddItem}
-                disabled={!newItem.trim()}
-                className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 transition"
-              >
-                Add
-              </button>
-            </div>
-          )}
 
           {/* Error Message */}
           {error && (
@@ -218,7 +155,7 @@ export default function InteractiveDemo() {
           {/* Compare Button */}
           <button
             onClick={handleCompare}
-            disabled={loading || items.length === 0}
+            disabled={loading}
             className="w-full py-4 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 disabled:opacity-50 transition flex items-center justify-center gap-2"
           >
             {loading ? (
@@ -238,16 +175,24 @@ export default function InteractiveDemo() {
             )}
           </button>
 
+          <p className="text-xs text-gray-500 text-center">
+            Sign up to create your own lists with unlimited items
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
           {/* Results Header */}
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-gray-500">Best Price Found</div>
+              <div className="text-sm text-gray-500">Best Price at {results.bestOption?.store.name}</div>
               <div className="text-3xl font-bold text-green-500">
                 ${results.summary?.estimatedTotal?.toFixed(2) || '0.00'}
               </div>
+              {results.bestOption?.savings && results.bestOption.savings > 0 && (
+                <div className="text-sm text-green-400">
+                  Save ${results.bestOption.savings.toFixed(2)} vs average
+                </div>
+              )}
             </div>
             <button
               onClick={() => setResults(null)}
@@ -257,47 +202,52 @@ export default function InteractiveDemo() {
             </button>
           </div>
 
-          {/* Message if no stores */}
-          {results.message && (
-            <div className="p-3 bg-yellow-500/10 border border-yellow-500/50 rounded-lg">
-              <p className="text-yellow-500 text-sm">{results.message}</p>
-            </div>
-          )}
-
-          {/* Best Store */}
-          {results.bestOption && (
-            <div className="bg-green-500/10 border border-green-500/50 rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs bg-green-500 text-black px-2 py-0.5 rounded font-bold">BEST</span>
-                <span className="font-semibold text-green-500">{results.bestOption.store.name}</span>
+          {/* Store Comparison */}
+          <div className="space-y-2">
+            {/* Best Store */}
+            {results.bestOption && (
+              <div className="bg-green-500/10 border border-green-500/50 rounded-xl p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs bg-green-500 text-black px-2 py-0.5 rounded font-bold">BEST</span>
+                    <span className="font-semibold text-green-500">{results.bestOption.store.name}</span>
+                  </div>
+                  <span className="text-lg font-bold text-green-500">${results.bestOption.total.toFixed(2)}</span>
+                </div>
+                <div className="text-sm text-gray-400 mt-1">
+                  {results.bestOption.store.distance} mi away
+                </div>
               </div>
-              <div className="text-sm text-gray-400">
-                {results.bestOption.store.distance && `${results.bestOption.store.distance} mi away`}
-                {' | '}
-                {results.summary?.itemsFound || 0}/{results.summary?.totalItems || 0} items found
-              </div>
-            </div>
-          )}
+            )}
 
-          {/* Items Found */}
+            {/* Alternative Stores */}
+            {results.alternatives?.map((alt, idx) => (
+              <div key={idx} className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-gray-300">{alt.store.name}</span>
+                  <span className="text-lg font-semibold text-gray-400">${alt.total.toFixed(2)}</span>
+                </div>
+                <div className="text-sm text-gray-500 mt-1">
+                  {alt.store.distance} mi away
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Items Breakdown */}
           <div>
-            <div className="text-sm text-gray-400 mb-2">Items Found</div>
+            <div className="text-sm text-gray-400 mb-2">Price Breakdown ({results.summary?.itemsFound || 0} items)</div>
             <div className="bg-black border border-gray-800 rounded-lg divide-y divide-gray-800 max-h-40 overflow-y-auto">
-              {results.products?.slice(0, 5).map((product, idx) => (
+              {results.products?.filter(p => p.available).map((product, idx) => (
                 <div key={idx} className="flex items-center justify-between p-3">
-                  <div className="flex items-center gap-3">
-                    {product.imageUrl && (
-                      <img src={product.imageUrl} alt="" className="w-8 h-8 object-cover rounded" />
+                  <div>
+                    <div className="text-sm text-white">{product.name}</div>
+                    {product.brand && (
+                      <div className="text-xs text-gray-500">{product.brand}</div>
                     )}
-                    <div>
-                      <div className="text-sm text-white truncate max-w-[150px]">{product.name}</div>
-                      {product.brand && (
-                        <div className="text-xs text-gray-500">{product.brand}</div>
-                      )}
-                    </div>
                   </div>
                   <div className="text-sm font-semibold text-green-500">
-                    {product.price ? `$${product.price.toFixed(2)}` : '-'}
+                    ${product.price?.toFixed(2)}
                   </div>
                 </div>
               ))}
@@ -310,10 +260,10 @@ export default function InteractiveDemo() {
               href="/auth/signup"
               className="block w-full py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition text-center"
             >
-              Sign Up to Save Your Lists
+              Sign Up for Real-Time Prices
             </Link>
             <p className="text-xs text-gray-500 text-center mt-2">
-              Get price alerts when items go on sale
+              Compare prices across 50+ stores in your area
             </p>
           </div>
         </div>

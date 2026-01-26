@@ -20,7 +20,7 @@ export default async function AboutPage() {
   const aboutText = pageContent?.content?.about_text || defaultContent.about_text
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-black to-green-900/40 text-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-black via-green-900/30 to-black text-white flex flex-col">
       <Header />
 
       <div className="flex-1 pt-32 pb-16 px-[5%]">
