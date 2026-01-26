@@ -46,7 +46,7 @@ async function getReceipt(id: string) {
           .limit(5)
 
         if (products && products.length > 0) {
-          const productIds = products.map(p => p.id)
+          const productIds = products.map((p: { id: string }) => p.id)
 
           // Get lowest price with store info
           const { data: prices } = await supabase
