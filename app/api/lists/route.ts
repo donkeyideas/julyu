@@ -86,7 +86,21 @@ export async function POST(request: NextRequest) {
       console.error('[Lists] Create list error:', listError)
       // In test mode, return mock data
       if (isTestMode) {
-        const mockList = {
+        const mockList: {
+          id: string
+          user_id: string
+          name: string
+          created_at: string
+          updated_at: string
+          list_items: Array<{
+            id: string
+            list_id: string
+            user_input: string
+            quantity: number
+            unit: string | null
+            created_at: string
+          }>
+        } = {
           id: `list-${Date.now()}`,
           user_id: userId,
           name: name.trim(),
