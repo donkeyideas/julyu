@@ -2,7 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* Dark Theme (Default) */
+:root,
+[data-theme="dark"] {
   --green-primary: #22c55e;
   --green-dark: #16a34a;
   --green-light: #86efac;
@@ -11,6 +13,72 @@
   --gray-dark: #0a0a0a;
   --gray-medium: #262626;
   --gray-light: #737373;
+
+  /* Theme-specific colors */
+  --bg-primary: #000000;
+  --bg-secondary: #111111;
+  --bg-card: #111827;
+  --bg-card-hover: #1f2937;
+  --border-color: #1f2937;
+  --text-primary: #ffffff;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  --accent-primary: #22c55e;
+  --accent-secondary: #16a34a;
+  --scrollbar-track: #000000;
+  --scrollbar-thumb: #333333;
+}
+
+/* Light Theme (Cream) */
+[data-theme="light"] {
+  --green-primary: #16a34a;
+  --green-dark: #15803d;
+  --green-light: #22c55e;
+  --black: #1f2937;
+  --white: #faf7f2;
+  --gray-dark: #f5f1ea;
+  --gray-medium: #e8e4dd;
+  --gray-light: #8b8780;
+
+  /* Theme-specific colors */
+  --bg-primary: #faf7f2;
+  --bg-secondary: #f5f1ea;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f5f1ea;
+  --border-color: #e8e4dd;
+  --text-primary: #1f2937;
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
+  --accent-primary: #16a34a;
+  --accent-secondary: #15803d;
+  --scrollbar-track: #f5f1ea;
+  --scrollbar-thumb: #d4d0c9;
+}
+
+/* Green Theme */
+[data-theme="green"] {
+  --green-primary: #22c55e;
+  --green-dark: #16a34a;
+  --green-light: #86efac;
+  --black: #052e16;
+  --white: #f0fdf4;
+  --gray-dark: #064e3b;
+  --gray-medium: #065f46;
+  --gray-light: #6ee7b7;
+
+  /* Theme-specific colors */
+  --bg-primary: #052e16;
+  --bg-secondary: #064e3b;
+  --bg-card: #065f46;
+  --bg-card-hover: #047857;
+  --border-color: #059669;
+  --text-primary: #f0fdf4;
+  --text-secondary: #a7f3d0;
+  --text-muted: #6ee7b7;
+  --accent-primary: #22c55e;
+  --accent-secondary: #4ade80;
+  --scrollbar-track: #052e16;
+  --scrollbar-thumb: #059669;
 }
 
 * {
@@ -21,34 +89,58 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
-  background: var(--black);
-  color: var(--white);
+  background: var(--bg-primary);
+  color: var(--text-primary);
   line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Custom Scrollbar - Black theme */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #000000;
+  background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #333333;
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #444444;
+  background: var(--accent-primary);
 }
 
 /* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #333333 #000000;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
+/* Theme-aware utility classes */
+.theme-bg-primary {
+  background-color: var(--bg-primary);
+}
 
+.theme-bg-secondary {
+  background-color: var(--bg-secondary);
+}
+
+.theme-bg-card {
+  background-color: var(--bg-card);
+}
+
+.theme-text-primary {
+  color: var(--text-primary);
+}
+
+.theme-text-secondary {
+  color: var(--text-secondary);
+}
+
+.theme-border {
+  border-color: var(--border-color);
+}

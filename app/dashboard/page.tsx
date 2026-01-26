@@ -11,19 +11,32 @@ interface SavingsData {
   month?: string
 }
 
+interface ComparisonItem {
+  name: string
+  price?: number
+  quantity?: number
+}
+
 interface Comparison {
   id: string
   created_at: string
   total_savings?: number
   best_option?: {
-    store?: { name?: string }
+    store?: { name?: string; retailer?: string }
     total?: number
+    items?: ComparisonItem[]
   } | null
   results?: {
     summary?: {
       totalItems?: number
       itemsFound?: number
     }
+    stores?: Array<{
+      name: string
+      total: number
+      items?: ComparisonItem[]
+    }>
+    items?: ComparisonItem[]
   } | null
 }
 
@@ -42,6 +55,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date())
   const [hasHistoricalData, setHasHistoricalData] = useState(false)
+  const [selectedComparison, setSelectedComparison] = useState<Comparison | null>(null)
 
   const loadData = async () => {
     try {
@@ -171,6 +185,28 @@ export default function DashboardPage() {
     }
   }
 
+  // Helper to get item count from comparison
+  const getItemCount = (comp: Comparison): number | string => {
+    // Try results.summary first
+    if (comp.results?.summary?.totalItems) return comp.results.summary.totalItems
+    if (comp.results?.summary?.itemsFound) return comp.results.summary.itemsFound
+    // Try best_option.items
+    if (comp.best_option?.items?.length) return comp.best_option.items.length
+    // Try results.items
+    if (comp.results?.items?.length) return comp.results.items.length
+    // Try first store's items
+    if (comp.results?.stores?.[0]?.items?.length) return comp.results.stores[0].items.length
+    return '-'
+  }
+
+  // Helper to get items from comparison for modal
+  const getComparisonItems = (comp: Comparison): ComparisonItem[] => {
+    if (comp.best_option?.items?.length) return comp.best_option.items
+    if (comp.results?.items?.length) return comp.results.items
+    if (comp.results?.stores?.[0]?.items?.length) return comp.results.stores[0].items
+    return []
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -269,19 +305,21 @@ export default function DashboardPage() {
               <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Best Store</th>
               <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Total</th>
               <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Savings</th>
+              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Actions</th>
             </tr>
           </thead>
           <tbody>
             {comparisons.length > 0 ? (
               comparisons.map((comp) => {
                 const bestStore = comp.best_option?.store?.name || 'N/A'
-                const itemCount = comp.results?.summary?.totalItems || comp.results?.summary?.itemsFound || '-'
+                const itemCount = getItemCount(comp)
                 const total = comp.best_option?.total || 0
+                const hasItems = getComparisonItems(comp).length > 0
 
                 return (
                   <tr key={comp.id} className="border-t border-gray-800 hover:bg-black/50">
                     <td className="p-4">{new Date(comp.created_at).toLocaleDateString()}</td>
-                    <td className="p-4">{itemCount}</td>
+                    <td className="p-4 font-medium">{itemCount}</td>
                     <td className="p-4">
                       <span className="px-3 py-1 bg-green-500/15 text-green-500 rounded-full text-sm font-semibold">
                         {bestStore}
@@ -293,12 +331,20 @@ export default function DashboardPage() {
                     <td className="p-4 text-green-500 font-bold">
                       ${(comp.total_savings || 0).toFixed(2)}
                     </td>
+                    <td className="p-4">
+                      <button
+                        onClick={() => setSelectedComparison(comp)}
+                        className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium transition"
+                      >
+                        View Details
+                      </button>
+                    </td>
                   </tr>
                 )
               })
             ) : (
               <tr>
-                <td colSpan={5} className="p-8 text-center text-gray-500">
+                <td colSpan={6} className="p-8 text-center text-gray-500">
                   No comparisons yet. Start comparing prices to see your savings!
                 </td>
               </tr>
@@ -306,7 +352,125 @@ export default function DashboardPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Comparison Details Modal */}
+      {selectedComparison && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Comparison Details</h2>
+                <p className="text-gray-500">
+                  {new Date(selectedComparison.created_at).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedComparison(null)}
+                className="text-gray-500 hover:text-white transition p-2"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Summary */}
+            <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="bg-black rounded-xl p-4 text-center">
+                <div className="text-sm text-gray-500 mb-1">Best Store</div>
+                <div className="text-green-500 font-bold">
+                  {selectedComparison.best_option?.store?.name || 'N/A'}
+                </div>
+              </div>
+              <div className="bg-black rounded-xl p-4 text-center">
+                <div className="text-sm text-gray-500 mb-1">Total</div>
+                <div className="font-bold text-xl">
+                  ${(selectedComparison.best_option?.total || 0).toFixed(2)}
+                </div>
+              </div>
+              <div className="bg-black rounded-xl p-4 text-center">
+                <div className="text-sm text-gray-500 mb-1">Savings</div>
+                <div className="text-green-500 font-bold text-xl">
+                  ${(selectedComparison.total_savings || 0).toFixed(2)}
+                </div>
+              </div>
+            </div>
+
+            {/* Items List */}
+            <h3 className="text-lg font-bold mb-4">Items Compared</h3>
+            {getComparisonItems(selectedComparison).length > 0 ? (
+              <div className="space-y-2">
+                {getComparisonItems(selectedComparison).map((item, idx) => (
+                  <div key={idx} className="flex justify-between items-center bg-black rounded-lg p-3">
+                    <div className="flex items-center gap-3">
+                      <span className="w-6 h-6 bg-green-500/15 text-green-500 rounded-full flex items-center justify-center text-sm font-bold">
+                        {idx + 1}
+                      </span>
+                      <span>{item.name}</span>
+                      {item.quantity && item.quantity > 1 && (
+                        <span className="text-gray-500 text-sm">x{item.quantity}</span>
+                      )}
+                    </div>
+                    {item.price && (
+                      <span className="font-medium">${item.price.toFixed(2)}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-black rounded-xl p-6 text-center text-gray-500">
+                <p>Item details not available for this comparison.</p>
+                <p className="text-sm mt-2">
+                  {getItemCount(selectedComparison) !== '-'
+                    ? `${getItemCount(selectedComparison)} items were compared.`
+                    : 'Re-seed demo data to see item details.'}
+                </p>
+              </div>
+            )}
+
+            {/* Store Comparison */}
+            {selectedComparison.results?.stores && selectedComparison.results.stores.length > 0 && (
+              <>
+                <h3 className="text-lg font-bold mb-4 mt-6">Store Comparison</h3>
+                <div className="space-y-2">
+                  {selectedComparison.results.stores.map((store, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex justify-between items-center rounded-lg p-3 ${
+                        store.name === selectedComparison.best_option?.store?.name
+                          ? 'bg-green-500/15 border border-green-500/30'
+                          : 'bg-black'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span>{store.name}</span>
+                        {store.name === selectedComparison.best_option?.store?.name && (
+                          <span className="text-xs px-2 py-0.5 bg-green-500 text-black rounded-full font-bold">
+                            BEST
+                          </span>
+                        )}
+                      </div>
+                      <span className="font-bold">${store.total.toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            <button
+              onClick={() => setSelectedComparison(null)}
+              className="w-full mt-6 px-4 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium transition"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
-

@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import ThemeToggle from '@/components/ThemeToggle'
 
 interface User {
   id: string
@@ -80,21 +81,24 @@ export default function Sidebar() {
   ]
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-[280px] bg-gray-900 border-r border-gray-800 p-8 overflow-y-auto">
-      <Link href="/dashboard" className="text-3xl font-black text-green-500 mb-12 block">
+    <aside
+      className="fixed left-0 top-0 bottom-0 w-[280px] p-8 overflow-y-auto transition-colors"
+      style={{ backgroundColor: 'var(--bg-secondary)', borderRight: '1px solid var(--border-color)' }}
+    >
+      <Link href="/dashboard" className="text-3xl font-black mb-12 block" style={{ color: 'var(--accent-primary)' }}>
         Julyu
       </Link>
 
       {user && (
-        <div className="mb-8 pb-8 border-b border-gray-800">
-          <div className="font-bold text-lg mb-1">
+        <div className="mb-8 pb-8" style={{ borderBottom: '1px solid var(--border-color)' }}>
+          <div className="font-bold text-lg mb-1" style={{ color: 'var(--text-primary)' }}>
             {userInfo?.full_name || user.user_metadata?.full_name || user.email}
           </div>
           <div className={`text-sm ${
             userInfo?.subscription_tier === 'premium' ? 'text-green-500' :
             userInfo?.subscription_tier === 'enterprise' ? 'text-purple-500' :
-            'text-gray-500'
-          }`}>
+            ''
+          }`} style={{ color: userInfo?.subscription_tier === 'premium' || userInfo?.subscription_tier === 'enterprise' ? undefined : 'var(--text-muted)' }}>
             {userInfo?.subscription_tier === 'premium' ? 'Premium Member' :
              userInfo?.subscription_tier === 'enterprise' ? 'Enterprise Member' :
              'Free Plan'}
@@ -111,9 +115,14 @@ export default function Sidebar() {
               href={item.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
                 isActive
-                  ? 'bg-green-500/15 text-green-500 border-l-4 border-green-500 font-semibold'
-                  : 'text-gray-400 hover:bg-green-500/10 hover:text-white'
+                  ? 'font-semibold'
+                  : 'hover:opacity-80'
               }`}
+              style={{
+                backgroundColor: isActive ? 'rgba(34, 197, 94, 0.15)' : 'transparent',
+                color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                borderLeft: isActive ? '4px solid var(--accent-primary)' : '4px solid transparent'
+              }}
             >
               <span>{item.icon}</span>
               <span>{item.label}</span>
@@ -122,9 +131,16 @@ export default function Sidebar() {
         })}
       </nav>
 
+      {/* Theme Toggle */}
+      <div className="mt-6 pt-6" style={{ borderTop: '1px solid var(--border-color)' }}>
+        <div className="text-xs uppercase font-semibold mb-3" style={{ color: 'var(--text-muted)' }}>Theme</div>
+        <ThemeToggle />
+      </div>
+
       <button
         onClick={handleLogout}
-        className="mt-8 w-full px-4 py-3 text-left text-gray-400 hover:bg-red-500/10 hover:text-red-500 rounded-lg transition"
+        className="mt-8 w-full px-4 py-3 text-left hover:bg-red-500/10 hover:text-red-500 rounded-lg transition"
+        style={{ color: 'var(--text-muted)' }}
       >
         Sign Out
       </button>

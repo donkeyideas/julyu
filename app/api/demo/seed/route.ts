@@ -189,7 +189,15 @@ export async function POST(request: NextRequest) {
       const listId = listIds[Math.floor(Math.random() * listIds.length)]
       const store = STORES[Math.floor(Math.random() * STORES.length)]
       const numItems = 4 + Math.floor(Math.random() * 6)
-      const total = 25 + Math.random() * 75
+
+      // Pick random products for this comparison
+      const comparisonProducts = [...PRODUCTS].sort(() => Math.random() - 0.5).slice(0, numItems)
+      const comparisonItems = comparisonProducts.map(p => ({
+        name: p.name,
+        price: variedPrice(p.basePrice),
+        quantity: 1,
+      }))
+      const total = comparisonItems.reduce((sum, item) => sum + item.price, 0)
       const savings = 5 + Math.random() * 15
 
       const { error } = await supabase.from('comparisons').insert({
@@ -198,18 +206,24 @@ export async function POST(request: NextRequest) {
         results: {
           stores: STORES.slice(0, 3).map(s => ({
             name: s.name,
-            total: total + (Math.random() - 0.5) * 20
+            total: total + (Math.random() - 0.5) * 20,
+            items: comparisonItems.map(item => ({
+              ...item,
+              price: variedPrice(item.price * 0.9 + Math.random() * item.price * 0.2)
+            }))
           })),
           summary: {
             totalItems: numItems,
             itemsFound: numItems - Math.floor(Math.random() * 2),
             estimatedTotal: total,
             storesSearched: 3,
-          }
+          },
+          items: comparisonItems,
         },
         best_option: {
           store: { name: store.name, retailer: store.chain },
           total: Math.round(total * 100) / 100,
+          items: comparisonItems,
         },
         total_savings: Math.round(savings * 100) / 100,
         created_at: randomDate(30).toISOString(),
