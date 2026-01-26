@@ -15,6 +15,17 @@ type ShoppingListItemRow = {
   user_input: string | null
 }
 
+type ReceiptStoreRow = {
+  name?: string | null
+  retailer?: string | null
+}
+
+type ReceiptRow = {
+  total_amount: number | null
+  purchase_date: string | null
+  stores: ReceiptStoreRow | null
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = createServerClient()
@@ -167,10 +178,10 @@ async function getUserContext(supabase: ReturnType<typeof createServerClient>, u
       .order('purchase_date', { ascending: false })
       .limit(5)
 
-    if (receipts && receipts.length > 0) {
-      context.recent_receipts = receipts.map(r => ({
-        store: (r.stores as { name?: string; retailer?: string })?.name ||
-               (r.stores as { name?: string; retailer?: string })?.retailer || 'Unknown Store',
+    const receiptRows: ReceiptRow[] = receipts ?? []
+    if (receiptRows.length > 0) {
+      context.recent_receipts = receiptRows.map(r => ({
+        store: r.stores?.name || r.stores?.retailer || 'Unknown Store',
         total: r.total_amount || 0,
         date: r.purchase_date || new Date().toISOString()
       }))
