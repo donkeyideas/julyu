@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
+type TrainingDataRecord = {
+  id: string | number
+  input_text: string | null
+  output_text: string | null
+  use_case: string | null
+  model_name: string | null
+  accuracy_score: number | null
+  user_feedback: string | null
+  created_at: string | null
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = createServerClient()
@@ -36,7 +47,7 @@ export async function POST(request: NextRequest) {
     if (format === 'jsonl') {
       // JSONL format (one JSON object per line) - ideal for fine-tuning
       exportContent = trainingData
-        .map(record => {
+        .map((record: TrainingDataRecord) => {
           const formatted = {
             input: record.input_text,
             output: record.output_text,
