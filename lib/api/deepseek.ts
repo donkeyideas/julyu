@@ -281,7 +281,6 @@ export class DeepSeekClient {
       throw new Error('Failed to parse product matches')
     }
   }
-}
 
   /**
    * Generic chat method for various use cases (translation, etc.)
