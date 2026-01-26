@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
+type ReceiptRow = {
+  total_amount: number | null
+  purchase_date: string | null
+  ocr_result: unknown
+}
+
 export async function GET() {
   try {
     const supabase = createServerClient()
@@ -135,15 +141,16 @@ async function generateUserInsights(supabase: ReturnType<typeof createServerClie
       }
     }
 
-    if (receipts && receipts.length > 0) {
-      const totalSpent = receipts.reduce((sum, r) => sum + (r.total_amount || 0), 0)
-      const avgPerTrip = totalSpent / receipts.length
+    const receiptRows: ReceiptRow[] = receipts ?? []
+    if (receiptRows.length > 0) {
+      const totalSpent = receiptRows.reduce((sum, r) => sum + (r.total_amount || 0), 0)
+      const avgPerTrip = totalSpent / receiptRows.length
 
       insights.push({
         id: `avg-spending-${Date.now()}`,
         insight_type: 'spending',
         title: 'Your shopping patterns',
-        content: `You've spent $${totalSpent.toFixed(2)} across ${receipts.length} shopping trips recently, averaging $${avgPerTrip.toFixed(2)} per trip.`,
+        content: `You've spent $${totalSpent.toFixed(2)} across ${receiptRows.length} shopping trips recently, averaging $${avgPerTrip.toFixed(2)} per trip.`,
         priority: 1,
         action_url: '/dashboard/receipts'
       })
