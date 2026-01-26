@@ -106,6 +106,11 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    // At this point friendUser is guaranteed to be non-null (else block returns early)
+    if (!friendUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
     // Check if already friends
     const { data: existing } = await supabase
       .from('user_friends')
