@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 
 interface User {
   id: string
@@ -47,81 +46,30 @@ export default function UsersPage() {
   const loadUsers = async () => {
     setLoading(true)
     try {
-      const supabase = createClient()
+      const response = await fetch('/api/admin/users')
 
-      // Fetch all users
-      const { data: usersData, error } = await supabase
-        .from('users')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) {
-        console.error('Error fetching users:', error)
-        // If error, check for test auth user in localStorage
-        loadTestUsers()
+      if (!response.ok) {
+        console.error('Error fetching users:', response.statusText)
+        setUsers([])
         return
       }
 
-      if (usersData && usersData.length > 0) {
-        setUsers(usersData)
-        calculateStats(usersData)
-      } else {
-        // No users in database, check for test user
-        loadTestUsers()
-      }
+      const data = await response.json()
+      setUsers(data.users || [])
+      setStats(data.stats || {
+        total: 0,
+        premium: 0,
+        enterprise: 0,
+        free: 0,
+        newThisMonth: 0,
+        activeToday: 0,
+      })
     } catch (error) {
       console.error('Error loading users:', error)
-      loadTestUsers()
+      setUsers([])
     } finally {
       setLoading(false)
     }
-  }
-
-  const loadTestUsers = () => {
-    // Check for test auth user
-    if (typeof window !== 'undefined') {
-      const testUserJson = localStorage.getItem('test_user')
-      if (testUserJson) {
-        try {
-          const testUser = JSON.parse(testUserJson)
-          const user: User = {
-            id: testUser.id || 'test-user-1',
-            email: testUser.email || 'test@julyu.com',
-            full_name: testUser.full_name || testUser.user_metadata?.full_name || 'Test User',
-            phone: null,
-            created_at: new Date().toISOString(),
-            last_login: new Date().toISOString(),
-            subscription_tier: testUser.subscription_tier || 'premium',
-            stripe_customer_id: null,
-          }
-          setUsers([user])
-          calculateStats([user])
-        } catch {
-          setUsers([])
-        }
-      }
-    }
-  }
-
-  const calculateStats = (usersData: User[]) => {
-    const now = new Date()
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-
-    const premium = usersData.filter(u => u.subscription_tier === 'premium').length
-    const enterprise = usersData.filter(u => u.subscription_tier === 'enterprise').length
-    const free = usersData.filter(u => u.subscription_tier === 'free').length
-    const newThisMonth = usersData.filter(u => new Date(u.created_at) >= startOfMonth).length
-    const activeToday = usersData.filter(u => u.last_login && new Date(u.last_login) >= startOfToday).length
-
-    setStats({
-      total: usersData.length,
-      premium,
-      enterprise,
-      free,
-      newThisMonth,
-      activeToday,
-    })
   }
 
   const filteredUsers = users.filter(user => {
@@ -142,24 +90,36 @@ export default function UsersPage() {
 
     setSaving(true)
     try {
-      const supabase = createClient()
-      const { error } = await supabase
-        .from('users')
-        .update({
+      const response = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: selectedUser.id,
           full_name: selectedUser.full_name,
           subscription_tier: selectedUser.subscription_tier,
           phone: selectedUser.phone,
-        })
-        .eq('id', selectedUser.id)
+        }),
+      })
 
-      if (error) {
-        console.error('Error updating user:', error)
-        // For test mode, just update local state
+      if (!response.ok) {
+        console.error('Error updating user:', response.statusText)
       }
 
       // Update local state
       setUsers(users.map(u => u.id === selectedUser.id ? selectedUser : u))
-      calculateStats(users.map(u => u.id === selectedUser.id ? selectedUser : u))
+      // Recalculate stats based on updated users
+      const updatedUsers = users.map(u => u.id === selectedUser.id ? selectedUser : u)
+      const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      setStats({
+        total: updatedUsers.length,
+        premium: updatedUsers.filter(u => u.subscription_tier === 'premium').length,
+        enterprise: updatedUsers.filter(u => u.subscription_tier === 'enterprise').length,
+        free: updatedUsers.filter(u => u.subscription_tier === 'free').length,
+        newThisMonth: updatedUsers.filter(u => new Date(u.created_at) >= startOfMonth).length,
+        activeToday: updatedUsers.filter(u => u.last_login && new Date(u.last_login) >= startOfToday).length,
+      })
       setEditModalOpen(false)
       setSelectedUser(null)
     } catch (error) {

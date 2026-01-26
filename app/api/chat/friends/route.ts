@@ -49,7 +49,11 @@ export async function POST(request: NextRequest) {
     const supabase = createServerClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-    const userId = user?.id || null
+    const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+                       process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
+                       process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
+
+    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -81,14 +85,11 @@ export async function POST(request: NextRequest) {
     if (existingUser && !findError) {
       friendUser = existingUser
     } else {
-      // User not in our users table - create an invite-style friend connection
-      // This allows adding friends even if they haven't been synced to users table
-      console.log('[Friends] User not in users table, creating pending friend with email:', normalizedEmail)
+      // User not in our users table - create an invite-style friend request
+      console.log('[Friends] User not in users table, creating pending request with email:', normalizedEmail)
 
-      // Generate a deterministic ID based on email for consistency
       const friendId = `pending-${Buffer.from(normalizedEmail).toString('base64').substring(0, 20)}`
 
-      // Return a pending friend relationship
       return NextResponse.json({
         friend: {
           id: `friend-${Date.now()}`,
@@ -102,34 +103,47 @@ export async function POST(request: NextRequest) {
           },
           created_at: new Date().toISOString()
         },
-        message: 'Friend request sent. They will appear when they accept.'
+        message: 'Friend request sent! They will see it when they join Julyu.',
+        requestSent: true
       })
     }
 
-    // At this point friendUser is guaranteed to be non-null (else block returns early)
     if (!friendUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Check if already friends
-    const { data: existing } = await supabase
+    // Check if relationship already exists (in either direction)
+    const { data: existingRelation } = await supabase
       .from('user_friends')
       .select('*')
-      .eq('user_id', userId)
-      .eq('friend_id', friendUser.id)
+      .or(`and(user_id.eq.${userId},friend_id.eq.${friendUser.id}),and(user_id.eq.${friendUser.id},friend_id.eq.${userId})`)
       .single()
 
-    if (existing) {
-      return NextResponse.json({ error: 'Already friends with this user' }, { status: 400 })
+    if (existingRelation) {
+      if (existingRelation.status === 'accepted') {
+        return NextResponse.json({ error: 'Already friends with this user' }, { status: 400 })
+      }
+      if (existingRelation.status === 'pending') {
+        if (existingRelation.user_id === userId) {
+          return NextResponse.json({ error: 'Friend request already sent' }, { status: 400 })
+        } else {
+          // They sent us a request - tell user to check incoming requests
+          return NextResponse.json({
+            error: 'This user already sent you a friend request! Check your incoming requests.',
+            hasIncomingRequest: true,
+            incomingRequestId: existingRelation.id
+          }, { status: 400 })
+        }
+      }
     }
 
-    // Create friend relationship (auto-accept for now)
+    // Create friend request (pending status - recipient must accept)
     const { data: friend, error: insertError } = await supabase
       .from('user_friends')
       .insert({
         user_id: userId,
         friend_id: friendUser.id,
-        status: 'accepted',
+        status: 'pending',
         created_at: new Date().toISOString()
       })
       .select(`
@@ -140,38 +154,32 @@ export async function POST(request: NextRequest) {
 
     if (insertError) {
       console.error('[Friends] Insert error:', insertError)
-      // If insert fails (table doesn't exist), return a demo response
       return NextResponse.json({
         friend: {
           id: `friend-${Date.now()}`,
           user_id: userId,
           friend_id: friendUser.id,
-          status: 'accepted',
+          status: 'pending',
           friend: {
             id: friendUser.id,
             email: friendUser.email,
             full_name: friendUser.full_name || friendUser.email.split('@')[0]
           },
           created_at: new Date().toISOString()
-        }
+        },
+        message: 'Friend request sent!',
+        requestSent: true
       })
     }
 
-    // Also create reverse relationship (ignore errors)
-    await supabase
-      .from('user_friends')
-      .insert({
-        user_id: friendUser.id,
-        friend_id: userId,
-        status: 'accepted',
-        created_at: new Date().toISOString()
-      }).catch(() => {})
-
-    return NextResponse.json({ friend })
+    return NextResponse.json({
+      friend,
+      message: 'Friend request sent! Waiting for them to accept.',
+      requestSent: true
+    })
   } catch (error: any) {
     console.error('[Friends] Error:', error)
 
-    // On any error, return a demo friend to keep the feature working
     const body = await request.json().catch(() => ({}))
     const email = body.email || 'friend@example.com'
 
@@ -180,14 +188,16 @@ export async function POST(request: NextRequest) {
         id: `friend-${Date.now()}`,
         user_id: 'current-user',
         friend_id: `demo-friend-${Date.now()}`,
-        status: 'accepted',
+        status: 'pending',
         friend: {
           id: `demo-friend-${Date.now()}`,
           email: email,
           full_name: email.split('@')[0]
         },
         created_at: new Date().toISOString()
-      }
+      },
+      message: 'Friend request sent!',
+      requestSent: true
     })
   }
 }

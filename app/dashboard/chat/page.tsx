@@ -38,6 +38,15 @@ interface Friend {
   created_at: string
 }
 
+interface FriendRequest {
+  id: string
+  sender_id: string
+  recipient_id: string
+  status: string
+  created_at: string
+  sender: User
+}
+
 export default function ChatPage() {
   const router = useRouter()
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -51,10 +60,12 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [friends, setFriends] = useState<Friend[]>([])
+  const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([])
   const [showFriends, setShowFriends] = useState(false)
   const [showAddFriend, setShowAddFriend] = useState(false)
   const [friendEmail, setFriendEmail] = useState('')
   const [addFriendError, setAddFriendError] = useState('')
+  const [processingRequest, setProcessingRequest] = useState<string | null>(null)
   const [extractedItems, setExtractedItems] = useState<string[]>([])
   const [showExtractModal, setShowExtractModal] = useState(false)
   const [userLanguage, setUserLanguage] = useState('en')
@@ -64,6 +75,7 @@ export default function ChatPage() {
     fetchCurrentUser()
     fetchConversations()
     fetchFriends()
+    fetchFriendRequests()
   }, [])
 
   useEffect(() => {
@@ -191,6 +203,45 @@ export default function ChatPage() {
     }
   }
 
+  const fetchFriendRequests = async () => {
+    try {
+      const response = await fetch('/api/chat/friend-requests')
+      if (response.ok) {
+        const data = await response.json()
+        setFriendRequests(data.requests || [])
+      }
+    } catch (error) {
+      console.error('Failed to fetch friend requests:', error)
+    }
+  }
+
+  const handleFriendRequest = async (requestId: string, action: 'accept' | 'decline') => {
+    setProcessingRequest(requestId)
+    try {
+      const response = await fetch(`/api/chat/friend-requests/${requestId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+
+        // Remove the request from list
+        setFriendRequests(prev => prev.filter(r => r.id !== requestId))
+
+        // If accepted, refresh friends list
+        if (action === 'accept' && data.friend) {
+          fetchFriends()
+        }
+      }
+    } catch (error) {
+      console.error('Failed to handle friend request:', error)
+    } finally {
+      setProcessingRequest(null)
+    }
+  }
+
   const loadConversation = async (conversation: ChatConversation) => {
     setActiveConversation(conversation)
     try {
@@ -287,15 +338,20 @@ export default function ChatPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        setAddFriendError(data.error || 'Failed to add friend')
+        // Check if user has incoming request from this person
+        if (data.hasIncomingRequest) {
+          setAddFriendError(data.error || 'This user already sent you a friend request!')
+        } else {
+          setAddFriendError(data.error || 'Failed to send friend request')
+        }
         return
       }
 
-      // Add the new friend to local state immediately
+      // Add the new friend request to local state
       if (data.friend) {
         setFriends(prev => [...prev, data.friend])
 
-        // If it's a pending friend, save to localStorage for persistence
+        // If it's a pending friend request, save to localStorage for persistence
         if (data.friend.status === 'pending') {
           const storedPending = localStorage.getItem('pendingFriends')
           let pendingFriends: Friend[] = []
@@ -312,52 +368,16 @@ export default function ChatPage() {
             localStorage.setItem('pendingFriends', JSON.stringify(pendingFriends))
           }
         }
-
-        // Automatically start a conversation and send a friend request message
-        try {
-          const convResponse = await fetch('/api/chat/conversations', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              participant_id: data.friend.friend_id,
-              participant_email: data.friend.friend.email,
-              participant_name: data.friend.friend.full_name || data.friend.friend.email.split('@')[0]
-            })
-          })
-
-          if (convResponse.ok) {
-            const convData = await convResponse.json()
-            const conversationId = convData.conversation?.id
-
-            if (conversationId) {
-              // Send a friend request message
-              const userName = currentUser?.full_name || currentUser?.email?.split('@')[0] || 'Someone'
-              await fetch(`/api/chat/conversations/${conversationId}/messages`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  content: `👋 Hi! ${userName} sent you a friend request on Julyu. Let's share grocery deals and save money together!`
-                })
-              })
-
-              // Refresh conversations to show the new one
-              fetchConversations()
-            }
-          }
-        } catch (convError) {
-          console.error('Failed to create conversation:', convError)
-          // Don't block the friend add if conversation fails
-        }
       }
 
       setFriendEmail('')
       setShowAddFriend(false)
 
-      // Also refresh from server in case there are updates
+      // Refresh from server
       fetchFriends()
     } catch (error) {
-      console.error('Failed to add friend:', error)
-      setAddFriendError('Failed to add friend')
+      console.error('Failed to send friend request:', error)
+      setAddFriendError('Failed to send friend request')
     }
   }
 
@@ -447,9 +467,9 @@ export default function ChatPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
             Friends
-            {friends.filter(f => f.status === 'pending').length > 0 && (
-              <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                {friends.filter(f => f.status === 'pending').length}
+            {friendRequests.length > 0 && (
+              <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full animate-pulse">
+                {friendRequests.length}
               </span>
             )}
           </button>
@@ -685,7 +705,7 @@ export default function ChatPage() {
                       onClick={addFriend}
                       className="flex-1 px-4 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition"
                     >
-                      Add
+                      Send Request
                     </button>
                   </div>
                 </div>
@@ -700,6 +720,54 @@ export default function ChatPage() {
                   </svg>
                   Add Friend
                 </button>
+              )}
+
+              {/* Incoming Friend Requests */}
+              {friendRequests.length > 0 && (
+                <div className="mb-6">
+                  <div className="text-xs font-semibold uppercase mb-3 flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+                    <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                    Incoming Requests ({friendRequests.length})
+                  </div>
+                  <div className="space-y-2">
+                    {friendRequests.map(request => (
+                      <div
+                        key={request.id}
+                        className="p-3 rounded-lg"
+                        style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
+                      >
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold">
+                            {(request.sender.full_name || request.sender.email)[0].toUpperCase()}
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium" style={{ color: 'var(--text-primary)' }}>
+                              {request.sender.full_name || request.sender.email.split('@')[0]}
+                            </div>
+                            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{request.sender.email}</div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleFriendRequest(request.id, 'accept')}
+                            disabled={processingRequest === request.id}
+                            className="flex-1 px-3 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition text-sm disabled:opacity-50"
+                          >
+                            {processingRequest === request.id ? 'Processing...' : 'Accept'}
+                          </button>
+                          <button
+                            onClick={() => handleFriendRequest(request.id, 'decline')}
+                            disabled={processingRequest === request.id}
+                            className="flex-1 px-3 py-2 rounded-lg hover:bg-red-500/20 hover:text-red-500 transition text-sm disabled:opacity-50"
+                            style={{ border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
 
               {/* Friends List */}
@@ -727,15 +795,19 @@ export default function ChatPage() {
                     </button>
                   ))}
 
-                  {/* Pending Requests - Also allow starting conversations */}
+                  {/* Sent Requests - Awaiting response */}
                   {friends.filter(f => f.status === 'pending').length > 0 && (
                     <>
-                      <div className="pt-4 text-xs font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Pending</div>
+                      <div className="pt-4 text-xs font-semibold uppercase flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                        Sent Requests
+                      </div>
                       {friends.filter(f => f.status === 'pending').map(friend => (
-                        <button
+                        <div
                           key={friend.id}
-                          onClick={() => startNewConversation(friend)}
-                          className="w-full p-3 rounded-lg flex items-center gap-3 hover:opacity-80 transition"
+                          className="w-full p-3 rounded-lg flex items-center gap-3"
                           style={{ backgroundColor: 'var(--bg-secondary)' }}
                         >
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center text-white font-bold">
@@ -745,22 +817,20 @@ export default function ChatPage() {
                             <div className="font-medium" style={{ color: 'var(--text-primary)' }}>
                               {friend.friend.full_name || friend.friend.email}
                             </div>
-                            <div className="text-xs text-yellow-500">Pending - Click to start chat</div>
+                            <div className="text-xs text-yellow-500">Waiting for them to accept...</div>
                           </div>
-                          <svg className="w-5 h-5" style={{ color: 'var(--text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                          </svg>
-                        </button>
+                          <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                        </div>
                       ))}
                     </>
                   )}
                 </div>
-              ) : (
+              ) : friendRequests.length === 0 ? (
                 <div className="text-center py-8" style={{ color: 'var(--text-muted)' }}>
                   <p className="text-sm">No friends yet</p>
-                  <p className="text-xs mt-1">Add friends by their email to start chatting!</p>
+                  <p className="text-xs mt-1">Send friend requests by email to start chatting!</p>
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
         </div>

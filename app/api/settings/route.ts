@@ -42,10 +42,12 @@ export async function GET() {
 
     // For test mode, return test user info with premium tier
     const userInfo = isTestMode && !user ? {
+      id: 'test-user-id',
       email: 'test@example.com',
       full_name: 'Test User',
       subscription_tier: 'premium' as const
     } : {
+      id: userId,
       email: userData?.email || user?.email || '',
       full_name: userData?.full_name || null,
       subscription_tier: userData?.subscription_tier || 'free' as const
@@ -77,6 +79,7 @@ export async function GET() {
         auto_translate_chat: true
       },
       user: {
+        id: 'test-user-id',
         email: '',
         full_name: null,
         subscription_tier: 'free'

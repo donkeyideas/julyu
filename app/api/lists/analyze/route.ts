@@ -99,6 +99,8 @@ interface StoreResult {
   storeId: string
   storeName: string
   retailer: string
+  distance?: string | null
+  address?: string
   items: Array<{
     userInput: string
     product: NormalizedKrogerProduct | null
@@ -107,6 +109,84 @@ interface StoreResult {
   total: number
   itemsFound: number
   itemsMissing: number
+}
+
+/**
+ * Calculate distance between two points using Haversine formula
+ */
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 3959 // Earth's radius in miles
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+  const a =
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+  return R * c
+}
+
+/**
+ * Get approximate coordinates for a US zip code
+ * Using a simple estimation - in production would use a geocoding API
+ */
+async function getZipCodeCoordinates(zipCode: string): Promise<{ lat: number; lng: number } | null> {
+  // Common US zip codes with approximate coordinates
+  const zipCoords: Record<string, { lat: number; lng: number }> = {
+    '45202': { lat: 39.1031, lng: -84.5120 }, // Cincinnati
+    '45203': { lat: 39.1090, lng: -84.5280 },
+    '45204': { lat: 39.0960, lng: -84.5580 },
+    '45205': { lat: 39.1120, lng: -84.5790 },
+    '45206': { lat: 39.1280, lng: -84.4850 },
+    '45207': { lat: 39.1380, lng: -84.4720 },
+    '45208': { lat: 39.1360, lng: -84.4320 },
+    '45209': { lat: 39.1550, lng: -84.4270 },
+    '45210': { lat: 39.1150, lng: -84.5020 },
+    '45211': { lat: 39.1620, lng: -84.5970 },
+    '45212': { lat: 39.1670, lng: -84.4590 },
+    '45213': { lat: 39.1820, lng: -84.4190 },
+    '45214': { lat: 39.1180, lng: -84.5480 },
+    '45215': { lat: 39.2030, lng: -84.4620 },
+    '45216': { lat: 39.1950, lng: -84.4930 },
+    '45217': { lat: 39.1770, lng: -84.4920 },
+    '45218': { lat: 39.2330, lng: -84.4790 },
+    '45219': { lat: 39.1280, lng: -84.5130 },
+    '45220': { lat: 39.1430, lng: -84.5280 },
+    '45223': { lat: 39.1640, lng: -84.5660 },
+    '45224': { lat: 39.1930, lng: -84.5280 },
+    '45225': { lat: 39.1450, lng: -84.5650 },
+    '45226': { lat: 39.1120, lng: -84.4280 },
+    '45227': { lat: 39.1550, lng: -84.3850 },
+    '45229': { lat: 39.1500, lng: -84.4950 },
+    '45230': { lat: 39.0750, lng: -84.3940 },
+    '45231': { lat: 39.2150, lng: -84.5280 },
+    '45232': { lat: 39.1860, lng: -84.5150 },
+    '45233': { lat: 39.1120, lng: -84.6580 },
+    '45236': { lat: 39.2090, lng: -84.3900 },
+    '45237': { lat: 39.1970, lng: -84.4550 },
+    '45238': { lat: 39.0970, lng: -84.6120 },
+    '45239': { lat: 39.2000, lng: -84.5700 },
+    '45240': { lat: 39.2430, lng: -84.5370 },
+    '45241': { lat: 39.2650, lng: -84.4080 },
+    '45242': { lat: 39.2430, lng: -84.3520 },
+    '45243': { lat: 39.1810, lng: -84.3390 },
+    '45244': { lat: 39.1110, lng: -84.3320 },
+    '45245': { lat: 39.0690, lng: -84.2850 },
+    '45246': { lat: 39.2870, lng: -84.4700 },
+    '45247': { lat: 39.2070, lng: -84.6350 },
+    '45248': { lat: 39.1610, lng: -84.6700 },
+    '45249': { lat: 39.2720, lng: -84.3550 },
+    '45251': { lat: 39.2510, lng: -84.5880 },
+    '45252': { lat: 39.2660, lng: -84.6080 },
+    '45255': { lat: 39.0560, lng: -84.3240 },
+  }
+
+  if (zipCoords[zipCode]) {
+    return zipCoords[zipCode]
+  }
+
+  // For unknown zip codes, return null - we'll show N/A
+  return null
 }
 
 export async function POST(request: NextRequest) {
@@ -256,20 +336,44 @@ async function analyzeWithKroger(
   const itemsWithoutPrices = productResults.filter(p => p.price === null)
   const total = itemsWithPrices.reduce((sum, p) => sum + (p.price || 0), 0)
 
-  // Build store results
-  const storeResults: StoreResult[] = stores.map((store, index) => ({
-    storeId: store.id,
-    storeName: store.name,
-    retailer: store.chain || 'Kroger',
-    items: productResults.map(p => ({
-      userInput: p.userInput,
-      product: p.krogerProduct,
-      price: p.price,
-    })),
-    total: total, // Same prices for now (would need separate searches for each store)
-    itemsFound: itemsWithPrices.length,
-    itemsMissing: itemsWithoutPrices.length,
-  }))
+  // Step 4: Calculate distances for each store
+  const userCoords = await getZipCodeCoordinates(zipCode)
+  console.log('[ListAnalyze] User coordinates for zip', zipCode, ':', userCoords)
+
+  // Build store results with distances
+  const storeResults: StoreResult[] = stores.map((store, index) => {
+    let distance: string | null = null
+    if (userCoords && store.location?.lat && store.location?.lng) {
+      const distanceMiles = calculateDistance(
+        userCoords.lat, userCoords.lng,
+        store.location.lat, store.location.lng
+      )
+      distance = distanceMiles.toFixed(1)
+    }
+    return {
+      storeId: store.id,
+      storeName: store.name,
+      retailer: store.chain || 'Kroger',
+      distance,
+      address: store.address ? `${store.address}, ${store.city}, ${store.state} ${store.zip}` : undefined,
+      items: productResults.map(p => ({
+        userInput: p.userInput,
+        product: p.krogerProduct,
+        price: p.price,
+      })),
+      total: total, // Same prices for now (would need separate searches for each store)
+      itemsFound: itemsWithPrices.length,
+      itemsMissing: itemsWithoutPrices.length,
+    }
+  })
+
+  // Sort by distance (closest first) if distances are available
+  storeResults.sort((a, b) => {
+    if (!a.distance && !b.distance) return 0
+    if (!a.distance) return 1
+    if (!b.distance) return -1
+    return parseFloat(a.distance) - parseFloat(b.distance)
+  })
 
   // Best option is the closest store with most items
   const bestOptionStore = storeResults[0]
@@ -283,7 +387,8 @@ async function analyzeWithKroger(
         id: bestOptionStore.storeId,
         name: bestOptionStore.storeName,
         retailer: bestOptionStore.retailer,
-        distance: stores[0].location ? '2.5' : null, // Would calculate actual distance
+        distance: bestOptionStore.distance,
+        address: bestOptionStore.address,
       },
       total: bestOptionStore.total,
       savings: 0, // Would compare to other retailers
@@ -294,6 +399,8 @@ async function analyzeWithKroger(
         id: store.storeId,
         name: store.storeName,
         retailer: store.retailer,
+        distance: store.distance,
+        address: store.address,
       },
       total: store.total,
       items: store.items,

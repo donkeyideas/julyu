@@ -12,15 +12,26 @@ interface SavingsData {
 }
 
 interface ComparisonItem {
-  name: string
+  name?: string
+  userInput?: string
   price?: number
   quantity?: number
+}
+
+interface ProductItem {
+  userInput: string
+  name?: string
+  price?: number | null
+  available?: boolean
 }
 
 interface Comparison {
   id: string
   created_at: string
   total_savings?: number
+  items_count?: number
+  item_count?: number
+  input_items?: string[] | ComparisonItem[]
   best_option?: {
     store?: { name?: string; retailer?: string }
     total?: number
@@ -30,13 +41,18 @@ interface Comparison {
     summary?: {
       totalItems?: number
       itemsFound?: number
+      matchedProducts?: number
     }
     stores?: Array<{
-      name: string
+      name?: string
+      storeName?: string
       total: number
       items?: ComparisonItem[]
+      itemsFound?: number
     }>
     items?: ComparisonItem[]
+    products?: ProductItem[]
+    matches?: Array<{ userInput: string }>
   } | null
 }
 
@@ -187,23 +203,73 @@ export default function DashboardPage() {
 
   // Helper to get item count from comparison
   const getItemCount = (comp: Comparison): number | string => {
-    // Try results.summary first
-    if (comp.results?.summary?.totalItems) return comp.results.summary.totalItems
-    if (comp.results?.summary?.itemsFound) return comp.results.summary.itemsFound
+    // Try direct item count fields first
+    if (comp.items_count && comp.items_count > 0) return comp.items_count
+    if (comp.item_count && comp.item_count > 0) return comp.item_count
+    // Try input_items array
+    if (comp.input_items?.length) return comp.input_items.length
+    // Try results.summary (most reliable for seeded and API data)
+    if (comp.results?.summary?.totalItems && comp.results.summary.totalItems > 0) {
+      return comp.results.summary.totalItems
+    }
+    if (comp.results?.summary?.itemsFound && comp.results.summary.itemsFound > 0) {
+      return comp.results.summary.itemsFound
+    }
+    if (comp.results?.summary?.matchedProducts && comp.results.summary.matchedProducts > 0) {
+      return comp.results.summary.matchedProducts
+    }
+    // Try products array (Kroger API stores items here)
+    if (comp.results?.products?.length) return comp.results.products.length
+    // Try matches array (database fallback stores items here)
+    if (comp.results?.matches?.length) return comp.results.matches.length
     // Try best_option.items
     if (comp.best_option?.items?.length) return comp.best_option.items.length
     // Try results.items
     if (comp.results?.items?.length) return comp.results.items.length
-    // Try first store's items
+    // Try first store's items or itemsFound
     if (comp.results?.stores?.[0]?.items?.length) return comp.results.stores[0].items.length
+    if (comp.results?.stores?.[0]?.itemsFound) return comp.results.stores[0].itemsFound
+    // Try counting items across all stores (some comparisons only have items in stores array)
+    const allStoreItems = comp.results?.stores?.reduce((total, store) => {
+      return total + (store.items?.length || store.itemsFound || 0)
+    }, 0)
+    if (allStoreItems && allStoreItems > 0) return allStoreItems
     return '-'
   }
 
   // Helper to get items from comparison for modal
   const getComparisonItems = (comp: Comparison): ComparisonItem[] => {
-    if (comp.best_option?.items?.length) return comp.best_option.items
-    if (comp.results?.items?.length) return comp.results.items
-    if (comp.results?.stores?.[0]?.items?.length) return comp.results.stores[0].items
+    // Try best_option.items first
+    if (comp.best_option?.items?.length) {
+      return comp.best_option.items.map(item => ({
+        name: item.name || item.userInput || 'Unknown Item',
+        price: item.price ?? undefined,
+        quantity: item.quantity,
+      }))
+    }
+    // Try results.items (demo seeded data)
+    if (comp.results?.items?.length) {
+      return comp.results.items.map(item => ({
+        name: item.name || item.userInput || 'Unknown Item',
+        price: item.price ?? undefined,
+        quantity: item.quantity,
+      }))
+    }
+    // Try results.products (Kroger API data)
+    if (comp.results?.products?.length) {
+      return comp.results.products.map(product => ({
+        name: product.name || product.userInput || 'Unknown Item',
+        price: product.price ?? undefined,
+      }))
+    }
+    // Try first store's items
+    if (comp.results?.stores?.[0]?.items?.length) {
+      return comp.results.stores[0].items.map(item => ({
+        name: item.name || item.userInput || 'Unknown Item',
+        price: item.price ?? undefined,
+        quantity: item.quantity,
+      }))
+    }
     return []
   }
 
