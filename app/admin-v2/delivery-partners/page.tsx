@@ -35,7 +35,30 @@ interface DeliveryPartner {
   }
 }
 
-const defaultFormData = {
+const defaultFormData: {
+  name: string
+  display_name: string
+  slug: string
+  description: string
+  logo_url: string
+  icon_letter: string
+  brand_color: string
+  base_url: string
+  deep_link_template: string
+  affiliate_base_url: string
+  affiliate_id: string
+  commission_type: 'percentage' | 'flat' | 'per_order'
+  commission_rate: number
+  flat_commission: number
+  supports_deep_linking: boolean
+  supports_cart_api: boolean
+  supports_search_url: boolean
+  requires_partnership: boolean
+  sort_order: number
+  is_active: boolean
+  show_in_modal: boolean
+  supported_retailers: string[]
+} = {
   name: '',
   display_name: '',
   slug: '',
@@ -47,7 +70,7 @@ const defaultFormData = {
   deep_link_template: '',
   affiliate_base_url: '',
   affiliate_id: '',
-  commission_type: 'percentage' as const,
+  commission_type: 'percentage',
   commission_rate: 0,
   flat_commission: 0,
   supports_deep_linking: false,
@@ -57,7 +80,7 @@ const defaultFormData = {
   sort_order: 999,
   is_active: true,
   show_in_modal: true,
-  supported_retailers: [] as string[]
+  supported_retailers: []
 }
 
 export default function DeliveryPartnersPage() {
