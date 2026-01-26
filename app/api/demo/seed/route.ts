@@ -60,9 +60,10 @@ export async function POST(request: NextRequest) {
 
     // Allow test mode
     const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder')
+                       process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
+                       process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
 
-    const userId = user?.id || (isTestMode ? 'demo-user-id' : null)
+    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -186,18 +187,31 @@ export async function POST(request: NextRequest) {
     let compCount = 0
     for (let i = 0; i < 5; i++) {
       const listId = listIds[Math.floor(Math.random() * listIds.length)]
-      const storeName = STORES[Math.floor(Math.random() * STORES.length)].name
+      const store = STORES[Math.floor(Math.random() * STORES.length)]
+      const numItems = 4 + Math.floor(Math.random() * 6)
       const total = 25 + Math.random() * 75
-      const savings = Math.random() * 15
+      const savings = 5 + Math.random() * 15
 
       const { error } = await supabase.from('comparisons').insert({
         user_id: userId,
         list_id: listId,
         results: {
-          stores: STORES.slice(0, 3).map(s => ({ name: s.name, total: total + (Math.random() - 0.5) * 20 })),
+          stores: STORES.slice(0, 3).map(s => ({
+            name: s.name,
+            total: total + (Math.random() - 0.5) * 20
+          })),
+          summary: {
+            totalItems: numItems,
+            itemsFound: numItems - Math.floor(Math.random() * 2),
+            estimatedTotal: total,
+            storesSearched: 3,
+          }
         },
-        best_option: { store: { name: storeName }, total },
-        total_savings: savings,
+        best_option: {
+          store: { name: store.name, retailer: store.chain },
+          total: Math.round(total * 100) / 100,
+        },
+        total_savings: Math.round(savings * 100) / 100,
         created_at: randomDate(30).toISOString(),
       })
       if (!error) compCount++
@@ -219,11 +233,14 @@ export async function POST(request: NextRequest) {
         purchase_date: randomDate(60).toISOString(),
         ocr_status: 'complete',
         ocr_result: {
-          store_name: store.name,
+          store: { name: store.name },
           items: items.map(p => ({
+            name: p.name,
             description: p.name,
+            price: variedPrice(p.basePrice),
             amount: variedPrice(p.basePrice),
             category: p.category,
+            quantity: 1,
           })),
           total: Math.round(total * 100) / 100,
         },
@@ -423,9 +440,10 @@ export async function DELETE(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
 
     const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder')
+                       process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
+                       process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
 
-    const userId = user?.id || (isTestMode ? 'demo-user-id' : null)
+    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

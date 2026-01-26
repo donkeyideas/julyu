@@ -15,9 +15,16 @@ interface Comparison {
   id: string
   created_at: string
   total_savings?: number
-  total_spent?: number
-  best_store?: string
-  item_count?: number
+  best_option?: {
+    store?: { name?: string }
+    total?: number
+  } | null
+  results?: {
+    summary?: {
+      totalItems?: number
+      itemsFound?: number
+    }
+  } | null
 }
 
 export default function DashboardPage() {
@@ -266,23 +273,29 @@ export default function DashboardPage() {
           </thead>
           <tbody>
             {comparisons.length > 0 ? (
-              comparisons.map((comp) => (
-                <tr key={comp.id} className="border-t border-gray-800 hover:bg-black/50">
-                  <td className="p-4">{new Date(comp.created_at).toLocaleDateString()}</td>
-                  <td className="p-4">{comp.item_count || '-'}</td>
-                  <td className="p-4">
-                    <span className="px-3 py-1 bg-green-500/15 text-green-500 rounded-full text-sm font-semibold">
-                      {comp.best_store || 'N/A'}
-                    </span>
-                  </td>
-                  <td className="p-4 font-bold">
-                    ${(comp.total_spent || 0).toFixed(2)}
-                  </td>
-                  <td className="p-4 text-green-500 font-bold">
-                    ${(comp.total_savings || 0).toFixed(2)}
-                  </td>
-                </tr>
-              ))
+              comparisons.map((comp) => {
+                const bestStore = comp.best_option?.store?.name || 'N/A'
+                const itemCount = comp.results?.summary?.totalItems || comp.results?.summary?.itemsFound || '-'
+                const total = comp.best_option?.total || 0
+
+                return (
+                  <tr key={comp.id} className="border-t border-gray-800 hover:bg-black/50">
+                    <td className="p-4">{new Date(comp.created_at).toLocaleDateString()}</td>
+                    <td className="p-4">{itemCount}</td>
+                    <td className="p-4">
+                      <span className="px-3 py-1 bg-green-500/15 text-green-500 rounded-full text-sm font-semibold">
+                        {bestStore}
+                      </span>
+                    </td>
+                    <td className="p-4 font-bold">
+                      ${total.toFixed(2)}
+                    </td>
+                    <td className="p-4 text-green-500 font-bold">
+                      ${(comp.total_savings || 0).toFixed(2)}
+                    </td>
+                  </tr>
+                )
+              })
             ) : (
               <tr>
                 <td colSpan={5} className="p-8 text-center text-gray-500">

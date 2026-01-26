@@ -14,10 +14,17 @@ interface User {
   }
 }
 
+interface UserInfo {
+  email: string
+  full_name: string | null
+  subscription_tier: 'free' | 'premium' | 'enterprise'
+}
+
 export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -38,6 +45,18 @@ export default function Sidebar() {
         }
       }
     })
+
+    // Fetch user info including subscription tier
+    fetch('/api/settings')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.user) {
+          setUserInfo(data.user)
+        }
+      })
+      .catch(() => {
+        // Ignore errors
+      })
   }, [])
 
   const handleLogout = async () => {
@@ -68,8 +87,18 @@ export default function Sidebar() {
 
       {user && (
         <div className="mb-8 pb-8 border-b border-gray-800">
-          <div className="font-bold text-lg mb-1">{user.user_metadata?.full_name || user.email}</div>
-          <div className="text-sm text-gray-500">Premium Member</div>
+          <div className="font-bold text-lg mb-1">
+            {userInfo?.full_name || user.user_metadata?.full_name || user.email}
+          </div>
+          <div className={`text-sm ${
+            userInfo?.subscription_tier === 'premium' ? 'text-green-500' :
+            userInfo?.subscription_tier === 'enterprise' ? 'text-purple-500' :
+            'text-gray-500'
+          }`}>
+            {userInfo?.subscription_tier === 'premium' ? 'Premium Member' :
+             userInfo?.subscription_tier === 'enterprise' ? 'Enterprise Member' :
+             'Free Plan'}
+          </div>
         </div>
       )}
 

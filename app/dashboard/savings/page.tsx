@@ -42,25 +42,33 @@ export default async function SavingsPage() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 mb-8">
         <h3 className="text-2xl font-bold mb-8">Monthly Savings (Last 6 Months)</h3>
-        <div className="flex items-end justify-between gap-4 h-64">
+        <div className="h-64 flex items-end justify-between gap-4">
           {savings && savings.length > 0 ? (
-            savings.map((s: SavingsRecord, idx: number) => {
-              const maxSavings = Math.max(...savings.map((x: SavingsRecord) => x.total_saved || 1))
-              const height = ((s.total_saved || 0) / maxSavings) * 100
-              return (
-                <div key={idx} className="flex-1 flex flex-col items-center">
-                  <div
-                    className="w-full bg-gradient-to-t from-green-600 to-green-500 rounded-t transition hover:opacity-80"
-                    style={{ height: `${Math.max(height, 10)}%` }}
-                  />
-                  <div className="mt-2 text-xs text-gray-500 text-center">
-                    {new Date(s.month).toLocaleDateString('en-US', { month: 'short' })}
+            (() => {
+              const maxSavings = Math.max(...savings.map((x: SavingsRecord) => x.total_saved || 1), 1)
+              return savings.map((s: SavingsRecord, idx: number) => {
+                const heightPercent = Math.max(((s.total_saved || 0) / maxSavings) * 100, 10)
+                return (
+                  <div key={idx} className="flex-1 flex flex-col items-center justify-end h-full">
+                    <div className="w-full flex flex-col items-center justify-end" style={{ height: '85%' }}>
+                      <div
+                        className="w-full bg-gradient-to-t from-green-600 to-green-500 rounded-t transition-all hover:opacity-80"
+                        style={{ height: `${heightPercent}%`, minHeight: '8px' }}
+                      >
+                        <div className="text-center text-xs text-white font-bold pt-1">
+                          ${(s.total_saved || 0).toFixed(0)}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-2 text-xs text-gray-500 text-center">
+                      {new Date(s.month).toLocaleDateString('en-US', { month: 'short' })}
+                    </div>
                   </div>
-                </div>
-              )
-            })
+                )
+              })
+            })()
           ) : (
-            <div className="w-full text-center text-gray-500">No savings data yet</div>
+            <div className="w-full h-full flex items-center justify-center text-gray-500">No savings data yet</div>
           )}
         </div>
       </div>
