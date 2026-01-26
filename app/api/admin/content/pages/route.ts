@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch pages' }, { status: 500 })
     }
 
-    const pages = (data || []).map(item => ({
+    const pages = (data || []).map((item: { key: string; value: Record<string, any> }) => ({
       slug: item.key.replace('page_content_', ''),
       ...item.value
     }))
