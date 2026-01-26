@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
+interface ConversationRow {
+  id: string
+  participant_ids: string[]
+  last_message: string | null
+  last_message_at: string | null
+  created_at: string
+  participants?: { user: { id: string; email: string; full_name: string | null } | null }[]
+}
+
 export async function GET() {
   try {
     const supabase = createServerClient()
@@ -37,9 +46,9 @@ export async function GET() {
     }
 
     // Transform participants
-    const transformed = conversations?.map(conv => ({
+    const transformed = (conversations as ConversationRow[] | null)?.map((conv: ConversationRow) => ({
       ...conv,
-      participants: conv.participants?.map((p: any) => p.user).filter(Boolean) || []
+      participants: conv.participants?.map((p) => p.user).filter(Boolean) || []
     })) || []
 
     return NextResponse.json({ conversations: transformed })
