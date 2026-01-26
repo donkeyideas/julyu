@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { clearAdminSession, getAdminSession } from '@/lib/auth/admin-auth'
 
 interface NavItem {
   href: string
@@ -12,6 +13,13 @@ interface NavItem {
 
 export default function AdminSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+  const session = typeof window !== 'undefined' ? getAdminSession() : null
+
+  const handleLogout = () => {
+    clearAdminSession()
+    router.push('/admin-v2/login')
+  }
 
   const navItems: NavItem[] = [
     { href: '/admin-v2', label: 'Dashboard', icon: '', section: 'Overview' },
@@ -72,12 +80,26 @@ export default function AdminSidebar() {
         ))}
       </nav>
 
-      <Link
-        href="/dashboard"
-        className="mt-8 block w-full px-4 py-3 text-left text-gray-400 hover:bg-green-500/10 hover:text-green-500 rounded-lg transition"
-      >
-        ← Back to Dashboard
-      </Link>
+      <div className="mt-8 pt-8 border-t border-gray-800">
+        <Link
+          href="/"
+          className="block w-full px-4 py-3 text-left text-gray-400 hover:bg-green-500/10 hover:text-green-500 rounded-lg transition"
+        >
+          ← Back to Site
+        </Link>
+
+        {session && (
+          <div className="mt-4 px-4">
+            <p className="text-xs text-gray-500 truncate mb-2">{session.email}</p>
+            <button
+              onClick={handleLogout}
+              className="w-full px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-500 rounded-lg transition text-left"
+            >
+              Sign Out
+            </button>
+          </div>
+        )}
+      </div>
     </aside>
   )
 }
