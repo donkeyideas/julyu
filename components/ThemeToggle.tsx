@@ -44,7 +44,7 @@ export default function ThemeToggle() {
         <button
           key={t.value}
           onClick={() => setTheme(t.value)}
-          className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+          className={`flex items-center justify-center w-10 h-10 rounded-md transition-all ${
             theme === t.value
               ? 'bg-green-500 text-black'
               : 'hover:opacity-80'
@@ -55,7 +55,6 @@ export default function ThemeToggle() {
           title={t.label}
         >
           {t.icon}
-          <span className="hidden sm:inline">{t.label}</span>
         </button>
       ))}
     </div>

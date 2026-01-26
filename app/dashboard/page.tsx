@@ -226,10 +226,10 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-10 pb-6 border-b border-gray-800">
+      <div className="flex justify-between items-center mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
         <div>
-          <h1 className="text-4xl font-black mb-2">My Dashboard</h1>
-          <p className="text-gray-500 text-sm">
+          <h1 className="text-4xl font-black mb-2" style={{ color: 'var(--text-primary)' }}>My Dashboard</h1>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
             Last updated: {lastRefresh.toLocaleTimeString()}
           </p>
         </div>
@@ -242,70 +242,70 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6 hover:border-green-500 transition">
-          <div className="text-sm text-gray-500 mb-4">Total Savings This Month</div>
-          <div className="text-5xl font-black text-green-500 mb-2">
+        <div className="rounded-2xl p-6 transition" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>Total Savings This Month</div>
+          <div className="text-5xl font-black mb-2" style={{ color: 'var(--accent-primary)' }}>
             ${(savings.total_saved || 0).toFixed(2)}
           </div>
           {hasHistoricalData && prevSavingsTotal > 0 ? (
             formatTrend(savings.total_saved, prevSavingsTotal, true)
           ) : (
-            <span className="inline-block px-3 py-1 bg-gray-800 text-gray-500 rounded-lg text-sm">
+            <span className="inline-block px-3 py-1 rounded-lg text-sm" style={{ backgroundColor: 'var(--bg-card-hover)', color: 'var(--text-muted)' }}>
               No historical data
             </span>
           )}
         </div>
 
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6 hover:border-green-500 transition">
-          <div className="text-sm text-gray-500 mb-4">Comparisons Run</div>
-          <div className="text-5xl font-black mb-2">{comparisons.length}</div>
+        <div className="rounded-2xl p-6 transition" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>Comparisons Run</div>
+          <div className="text-5xl font-black mb-2" style={{ color: 'var(--text-primary)' }}>{comparisons.length}</div>
           {hasHistoricalData && prevComparisons > 0 ? (
             formatTrend(comparisons.length, prevComparisons, false)
           ) : (
-            <span className="inline-block px-3 py-1 bg-gray-800 text-gray-500 rounded-lg text-sm">
+            <span className="inline-block px-3 py-1 rounded-lg text-sm" style={{ backgroundColor: 'var(--bg-card-hover)', color: 'var(--text-muted)' }}>
               No historical data
             </span>
           )}
         </div>
 
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6 hover:border-green-500 transition">
-          <div className="text-sm text-gray-500 mb-4">Receipts Scanned</div>
-          <div className="text-5xl font-black mb-2">{receiptsCount}</div>
+        <div className="rounded-2xl p-6 transition" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>Receipts Scanned</div>
+          <div className="text-5xl font-black mb-2" style={{ color: 'var(--text-primary)' }}>{receiptsCount}</div>
           {hasHistoricalData && prevReceipts > 0 ? (
             formatTrend(receiptsCount, prevReceipts, false)
           ) : (
-            <span className="inline-block px-3 py-1 bg-gray-800 text-gray-500 rounded-lg text-sm">
+            <span className="inline-block px-3 py-1 rounded-lg text-sm" style={{ backgroundColor: 'var(--bg-card-hover)', color: 'var(--text-muted)' }}>
               No historical data
             </span>
           )}
         </div>
 
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6 hover:border-green-500 transition">
-          <div className="text-sm text-gray-500 mb-4">Average Savings Per Trip</div>
-          <div className="text-3xl font-black mb-2">
+        <div className="rounded-2xl p-6 transition" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>Average Savings Per Trip</div>
+          <div className="text-3xl font-black mb-2" style={{ color: 'var(--accent-primary)' }}>
             ${(savings.avg_savings_per_trip || 0).toFixed(2)}
           </div>
           {hasHistoricalData && prevAvgSavings > 0 ? (
             formatTrend(savings.avg_savings_per_trip, prevAvgSavings, true)
           ) : (
-            <span className="inline-block px-3 py-1 bg-gray-800 text-gray-500 rounded-lg text-sm">
+            <span className="inline-block px-3 py-1 rounded-lg text-sm" style={{ backgroundColor: 'var(--bg-card-hover)', color: 'var(--text-muted)' }}>
               No historical data
             </span>
           )}
         </div>
       </div>
 
-      <h2 className="text-3xl font-bold mb-6">Recent Comparisons</h2>
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+      <h2 className="text-3xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>Recent Comparisons</h2>
+      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <table className="w-full">
-          <thead className="bg-black">
+          <thead style={{ backgroundColor: 'var(--bg-secondary)' }}>
             <tr>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Date</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Items</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Best Store</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Total</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Savings</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Actions</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Date</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Items</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Best Store</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Total</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Savings</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -314,27 +314,27 @@ export default function DashboardPage() {
                 const bestStore = comp.best_option?.store?.name || 'N/A'
                 const itemCount = getItemCount(comp)
                 const total = comp.best_option?.total || 0
-                const hasItems = getComparisonItems(comp).length > 0
 
                 return (
-                  <tr key={comp.id} className="border-t border-gray-800 hover:bg-black/50">
-                    <td className="p-4">{new Date(comp.created_at).toLocaleDateString()}</td>
-                    <td className="p-4 font-medium">{itemCount}</td>
+                  <tr key={comp.id} className="hover:opacity-80 transition" style={{ borderTop: '1px solid var(--border-color)' }}>
+                    <td className="p-4" style={{ color: 'var(--text-secondary)' }}>{new Date(comp.created_at).toLocaleDateString()}</td>
+                    <td className="p-4 font-medium" style={{ color: 'var(--text-primary)' }}>{itemCount}</td>
                     <td className="p-4">
                       <span className="px-3 py-1 bg-green-500/15 text-green-500 rounded-full text-sm font-semibold">
                         {bestStore}
                       </span>
                     </td>
-                    <td className="p-4 font-bold">
+                    <td className="p-4 font-bold" style={{ color: 'var(--text-primary)' }}>
                       ${total.toFixed(2)}
                     </td>
-                    <td className="p-4 text-green-500 font-bold">
+                    <td className="p-4 font-bold" style={{ color: 'var(--accent-primary)' }}>
                       ${(comp.total_savings || 0).toFixed(2)}
                     </td>
                     <td className="p-4">
                       <button
                         onClick={() => setSelectedComparison(comp)}
-                        className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium transition"
+                        className="px-4 py-2 rounded-lg text-sm font-medium transition hover:opacity-80"
+                        style={{ backgroundColor: 'var(--bg-card-hover)', color: 'var(--text-primary)' }}
                       >
                         View Details
                       </button>
@@ -344,7 +344,7 @@ export default function DashboardPage() {
               })
             ) : (
               <tr>
-                <td colSpan={6} className="p-8 text-center text-gray-500">
+                <td colSpan={6} className="p-8 text-center" style={{ color: 'var(--text-muted)' }}>
                   No comparisons yet. Start comparing prices to see your savings!
                 </td>
               </tr>
@@ -356,11 +356,11 @@ export default function DashboardPage() {
       {/* Comparison Details Modal */}
       {selectedComparison && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+          <div className="rounded-2xl p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h2 className="text-2xl font-bold mb-2">Comparison Details</h2>
-                <p className="text-gray-500">
+                <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Comparison Details</h2>
+                <p style={{ color: 'var(--text-muted)' }}>
                   {new Date(selectedComparison.created_at).toLocaleDateString('en-US', {
                     weekday: 'long',
                     year: 'numeric',
@@ -371,7 +371,8 @@ export default function DashboardPage() {
               </div>
               <button
                 onClick={() => setSelectedComparison(null)}
-                className="text-gray-500 hover:text-white transition p-2"
+                className="hover:opacity-70 transition p-2"
+                style={{ color: 'var(--text-muted)' }}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -381,49 +382,49 @@ export default function DashboardPage() {
 
             {/* Summary */}
             <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="bg-black rounded-xl p-4 text-center">
-                <div className="text-sm text-gray-500 mb-1">Best Store</div>
-                <div className="text-green-500 font-bold">
+              <div className="rounded-xl p-4 text-center" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Best Store</div>
+                <div className="font-bold" style={{ color: 'var(--accent-primary)' }}>
                   {selectedComparison.best_option?.store?.name || 'N/A'}
                 </div>
               </div>
-              <div className="bg-black rounded-xl p-4 text-center">
-                <div className="text-sm text-gray-500 mb-1">Total</div>
-                <div className="font-bold text-xl">
+              <div className="rounded-xl p-4 text-center" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Total</div>
+                <div className="font-bold text-xl" style={{ color: 'var(--text-primary)' }}>
                   ${(selectedComparison.best_option?.total || 0).toFixed(2)}
                 </div>
               </div>
-              <div className="bg-black rounded-xl p-4 text-center">
-                <div className="text-sm text-gray-500 mb-1">Savings</div>
-                <div className="text-green-500 font-bold text-xl">
+              <div className="rounded-xl p-4 text-center" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Savings</div>
+                <div className="font-bold text-xl" style={{ color: 'var(--accent-primary)' }}>
                   ${(selectedComparison.total_savings || 0).toFixed(2)}
                 </div>
               </div>
             </div>
 
             {/* Items List */}
-            <h3 className="text-lg font-bold mb-4">Items Compared</h3>
+            <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Items Compared</h3>
             {getComparisonItems(selectedComparison).length > 0 ? (
               <div className="space-y-2">
                 {getComparisonItems(selectedComparison).map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center bg-black rounded-lg p-3">
+                  <div key={idx} className="flex justify-between items-center rounded-lg p-3" style={{ backgroundColor: 'var(--bg-secondary)' }}>
                     <div className="flex items-center gap-3">
                       <span className="w-6 h-6 bg-green-500/15 text-green-500 rounded-full flex items-center justify-center text-sm font-bold">
                         {idx + 1}
                       </span>
-                      <span>{item.name}</span>
+                      <span style={{ color: 'var(--text-primary)' }}>{item.name}</span>
                       {item.quantity && item.quantity > 1 && (
-                        <span className="text-gray-500 text-sm">x{item.quantity}</span>
+                        <span className="text-sm" style={{ color: 'var(--text-muted)' }}>x{item.quantity}</span>
                       )}
                     </div>
                     {item.price && (
-                      <span className="font-medium">${item.price.toFixed(2)}</span>
+                      <span className="font-medium" style={{ color: 'var(--text-primary)' }}>${item.price.toFixed(2)}</span>
                     )}
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="bg-black rounded-xl p-6 text-center text-gray-500">
+              <div className="rounded-xl p-6 text-center" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>
                 <p>Item details not available for this comparison.</p>
                 <p className="text-sm mt-2">
                   {getItemCount(selectedComparison) !== '-'
@@ -436,7 +437,7 @@ export default function DashboardPage() {
             {/* Store Comparison */}
             {selectedComparison.results?.stores && selectedComparison.results.stores.length > 0 && (
               <>
-                <h3 className="text-lg font-bold mb-4 mt-6">Store Comparison</h3>
+                <h3 className="text-lg font-bold mb-4 mt-6" style={{ color: 'var(--text-primary)' }}>Store Comparison</h3>
                 <div className="space-y-2">
                   {selectedComparison.results.stores.map((store, idx) => (
                     <div
@@ -444,18 +445,19 @@ export default function DashboardPage() {
                       className={`flex justify-between items-center rounded-lg p-3 ${
                         store.name === selectedComparison.best_option?.store?.name
                           ? 'bg-green-500/15 border border-green-500/30'
-                          : 'bg-black'
+                          : ''
                       }`}
+                      style={store.name !== selectedComparison.best_option?.store?.name ? { backgroundColor: 'var(--bg-secondary)' } : undefined}
                     >
                       <div className="flex items-center gap-3">
-                        <span>{store.name}</span>
+                        <span style={{ color: 'var(--text-primary)' }}>{store.name}</span>
                         {store.name === selectedComparison.best_option?.store?.name && (
                           <span className="text-xs px-2 py-0.5 bg-green-500 text-black rounded-full font-bold">
                             BEST
                           </span>
                         )}
                       </div>
-                      <span className="font-bold">${store.total.toFixed(2)}</span>
+                      <span className="font-bold" style={{ color: 'var(--text-primary)' }}>${store.total.toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
@@ -464,7 +466,8 @@ export default function DashboardPage() {
 
             <button
               onClick={() => setSelectedComparison(null)}
-              className="w-full mt-6 px-4 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium transition"
+              className="w-full mt-6 px-4 py-3 rounded-lg font-medium transition hover:opacity-80"
+              style={{ backgroundColor: 'var(--bg-card-hover)', color: 'var(--text-primary)' }}
             >
               Close
             </button>
