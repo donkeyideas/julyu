@@ -11,6 +11,10 @@ type ShoppingListRow = {
   id: string
 }
 
+type ShoppingListItemRow = {
+  user_input: string | null
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = createServerClient()
@@ -139,8 +143,11 @@ async function getUserContext(supabase: ReturnType<typeof createServerClient>, u
         .in('list_id', listIds)
         .limit(20)
 
-      if (items) {
-        context.recent_lists = items.map(i => i.user_input)
+      const listItems: ShoppingListItemRow[] = items ?? []
+      if (listItems.length > 0) {
+        context.recent_lists = listItems
+          .map(i => i.user_input)
+          .filter((input): input is string => Boolean(input))
       }
     }
 
