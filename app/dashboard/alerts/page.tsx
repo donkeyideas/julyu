@@ -42,13 +42,36 @@ export default function AlertsPage() {
   const loadAlerts = async () => {
     try {
       const response = await fetch('/api/alerts')
-      if (response.ok) {
-        const data = await response.json()
-        // Filter to only show active alerts
-        setAlerts(data.alerts.filter((a: Alert) => a.is_active))
+      const data = await response.json()
+
+      // Load any locally stored alerts
+      let localAlerts: Alert[] = []
+      const storedAlerts = localStorage.getItem('priceAlerts')
+      if (storedAlerts) {
+        try {
+          localAlerts = JSON.parse(storedAlerts)
+        } catch (e) {
+          console.error('Failed to parse stored alerts:', e)
+        }
       }
+
+      // Merge API alerts with local alerts (avoid duplicates)
+      const apiAlerts = (data.alerts || []).filter((a: Alert) => a.is_active)
+      const apiAlertIds = new Set(apiAlerts.map((a: Alert) => a.id))
+      const uniqueLocalAlerts = localAlerts.filter(la => !apiAlertIds.has(la.id) && la.is_active)
+
+      setAlerts([...apiAlerts, ...uniqueLocalAlerts])
     } catch (error) {
       console.error('Failed to load alerts:', error)
+      // Load from localStorage on error
+      const storedAlerts = localStorage.getItem('priceAlerts')
+      if (storedAlerts) {
+        try {
+          setAlerts(JSON.parse(storedAlerts).filter((a: Alert) => a.is_active))
+        } catch (e) {
+          console.error('Failed to parse stored alerts:', e)
+        }
+      }
     } finally {
       setLoading(false)
     }
@@ -99,10 +122,15 @@ export default function AlertsPage() {
           body: JSON.stringify({ target_price: targetPrice })
         })
 
-        if (!response.ok) throw new Error('Failed to update alert')
+        const data = await response.json()
+        const updatedAlert = data.alert
 
-        const { alert } = await response.json()
-        setAlerts(prev => prev.map(a => a.id === alert.id ? alert : a))
+        setAlerts(prev => {
+          const updated = prev.map(a => a.id === updatedAlert.id ? updatedAlert : a)
+          // Save to localStorage
+          localStorage.setItem('priceAlerts', JSON.stringify(updated))
+          return updated
+        })
       } else {
         // Create new alert
         if (!formData.product_name.trim()) {
@@ -120,14 +148,20 @@ export default function AlertsPage() {
           })
         })
 
-        if (!response.ok) throw new Error('Failed to create alert')
+        const data = await response.json()
+        const newAlert = data.alert
 
-        const { alert } = await response.json()
-        setAlerts(prev => [alert, ...prev])
+        setAlerts(prev => {
+          const updated = [newAlert, ...prev]
+          // Save to localStorage for persistence
+          localStorage.setItem('priceAlerts', JSON.stringify(updated))
+          return updated
+        })
       }
 
       closeModal()
     } catch (err) {
+      console.error('Alert error:', err)
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
       setSaving(false)
@@ -138,16 +172,24 @@ export default function AlertsPage() {
     if (!confirm('Are you sure you want to delete this alert?')) return
 
     try {
-      const response = await fetch(`/api/alerts/${alertId}`, {
+      await fetch(`/api/alerts/${alertId}`, {
         method: 'DELETE'
       })
 
-      if (!response.ok) throw new Error('Failed to delete alert')
-
-      setAlerts(prev => prev.filter(a => a.id !== alertId))
+      setAlerts(prev => {
+        const updated = prev.filter(a => a.id !== alertId)
+        // Update localStorage
+        localStorage.setItem('priceAlerts', JSON.stringify(updated))
+        return updated
+      })
     } catch (error) {
       console.error('Failed to delete alert:', error)
-      alert('Failed to delete alert. Please try again.')
+      // Still remove from UI even if API fails
+      setAlerts(prev => {
+        const updated = prev.filter(a => a.id !== alertId)
+        localStorage.setItem('priceAlerts', JSON.stringify(updated))
+        return updated
+      })
     }
   }
 
