@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 interface ProductResult {
@@ -61,7 +61,32 @@ interface StoreDetailsModal {
   products: ProductResult[]
 }
 
+interface ShopOptionsModal {
+  isOpen: boolean
+  store: StoreOption | null
+}
+
+// Wrap in Suspense for useSearchParams
 export default function ComparePage() {
+  return (
+    <Suspense fallback={<ComparePageLoading />}>
+      <ComparePageContent />
+    </Suspense>
+  )
+}
+
+function ComparePageLoading() {
+  return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <div className="text-center">
+        <div className="inline-block w-12 h-12 border-4 border-gray-800 border-t-green-500 rounded-full animate-spin mb-4"></div>
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    </div>
+  )
+}
+
+function ComparePageContent() {
   const searchParams = useSearchParams()
   const [list, setList] = useState('milk 2%\neggs organic\nbread whole wheat\napples gala\nchicken breast\npasta penne')
   const [zipCode, setZipCode] = useState('45202')
@@ -72,6 +97,7 @@ export default function ComparePage() {
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([])
   const [showHistory, setShowHistory] = useState(false)
   const [storeDetails, setStoreDetails] = useState<StoreDetailsModal>({ isOpen: false, store: null, products: [] })
+  const [shopOptions, setShopOptions] = useState<ShopOptionsModal>({ isOpen: false, store: null })
 
   // Load search history from localStorage
   useEffect(() => {
@@ -179,11 +205,48 @@ export default function ComparePage() {
   }
 
   const handleShopHere = (store: StoreOption) => {
-    // Open store location in Google Maps
-    const query = store.store.address
-      ? encodeURIComponent(store.store.address)
-      : encodeURIComponent(`${store.store.name} ${store.store.retailer} ${zipCode}`)
-    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank')
+    // Open shop options modal instead of directly going to maps
+    setShopOptions({ isOpen: true, store })
+  }
+
+  const handleShopOption = (option: 'directions' | 'instacart' | 'doordash' | 'walmart' | 'shipt' | 'amazon') => {
+    if (!shopOptions.store) return
+
+    const store = shopOptions.store
+    const storeName = store.store.name
+    const retailer = store.store.retailer
+    const storeAddress = store.store.address || `${storeName} ${retailer} ${zipCode}`
+
+    switch (option) {
+      case 'directions':
+        // Open Google Maps with the store location
+        const query = encodeURIComponent(storeAddress)
+        window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank')
+        break
+      case 'instacart':
+        // Open Instacart search for the store
+        const instacartStore = retailer.toLowerCase().includes('kroger') ? 'kroger' : retailer.toLowerCase()
+        window.open(`https://www.instacart.com/store/${instacartStore}/storefront`, '_blank')
+        break
+      case 'doordash':
+        // Open DoorDash grocery search
+        window.open(`https://www.doordash.com/convenience/`, '_blank')
+        break
+      case 'walmart':
+        // Open Walmart grocery delivery
+        window.open(`https://www.walmart.com/grocery`, '_blank')
+        break
+      case 'shipt':
+        // Open Shipt for delivery
+        window.open(`https://www.shipt.com/`, '_blank')
+        break
+      case 'amazon':
+        // Open Amazon Fresh
+        window.open(`https://www.amazon.com/alm/storefront?almBrandId=QW1hem9uIEZyZXNo`, '_blank')
+        break
+    }
+
+    setShopOptions({ isOpen: false, store: null })
   }
 
   const handleViewDetails = (store: StoreOption) => {
@@ -569,14 +632,155 @@ export default function ComparePage() {
               <div className="mt-6 flex gap-3">
                 <button
                   onClick={() => {
-                    handleShopHere(storeDetails.store!)
                     setStoreDetails({ isOpen: false, store: null, products: [] })
+                    handleShopHere(storeDetails.store!)
                   }}
                   className="flex-1 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition"
                 >
-                  Get Directions
+                  Shop Here
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Shop Options Modal */}
+      {shopOptions.isOpen && shopOptions.store && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl max-w-md w-full">
+            <div className="p-6 border-b border-gray-800 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold">Shop at {shopOptions.store.store.name}</h3>
+                <p className="text-sm text-gray-500">{shopOptions.store.store.retailer}</p>
+              </div>
+              <button
+                onClick={() => setShopOptions({ isOpen: false, store: null })}
+                className="text-gray-400 hover:text-white"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-6">
+              <p className="text-gray-400 text-sm mb-4">How would you like to shop?</p>
+
+              {/* In-Store Option */}
+              <div className="mb-6">
+                <h4 className="text-xs font-semibold text-gray-500 uppercase mb-3">Shop In-Store</h4>
+                <button
+                  onClick={() => handleShopOption('directions')}
+                  className="w-full flex items-center gap-4 p-4 bg-green-500/10 border border-green-500/30 rounded-xl hover:bg-green-500/20 transition group"
+                >
+                  <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center group-hover:scale-110 transition">
+                    <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="font-semibold text-white">Get Directions</div>
+                    <div className="text-xs text-gray-400">
+                      {shopOptions.store.store.address || `${shopOptions.store.store.name} near ${zipCode}`}
+                    </div>
+                  </div>
+                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Delivery Options */}
+              <div>
+                <h4 className="text-xs font-semibold text-gray-500 uppercase mb-3">Get it Delivered</h4>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => handleShopOption('instacart')}
+                    className="w-full flex items-center gap-4 p-4 bg-gray-800 border border-gray-700 rounded-xl hover:border-green-500/50 transition"
+                  >
+                    <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">I</span>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className="font-semibold text-white">Instacart</div>
+                      <div className="text-xs text-gray-400">Delivery in as fast as 1 hour</div>
+                    </div>
+                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </button>
+
+                  <button
+                    onClick={() => handleShopOption('shipt')}
+                    className="w-full flex items-center gap-4 p-4 bg-gray-800 border border-gray-700 rounded-xl hover:border-green-500/50 transition"
+                  >
+                    <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">S</span>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className="font-semibold text-white">Shipt</div>
+                      <div className="text-xs text-gray-400">Same-day delivery from local stores</div>
+                    </div>
+                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </button>
+
+                  <button
+                    onClick={() => handleShopOption('doordash')}
+                    className="w-full flex items-center gap-4 p-4 bg-gray-800 border border-gray-700 rounded-xl hover:border-green-500/50 transition"
+                  >
+                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">D</span>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className="font-semibold text-white">DoorDash</div>
+                      <div className="text-xs text-gray-400">Fast delivery from nearby stores</div>
+                    </div>
+                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </button>
+
+                  <button
+                    onClick={() => handleShopOption('walmart')}
+                    className="w-full flex items-center gap-4 p-4 bg-gray-800 border border-gray-700 rounded-xl hover:border-green-500/50 transition"
+                  >
+                    <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">W</span>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className="font-semibold text-white">Walmart Grocery</div>
+                      <div className="text-xs text-gray-400">Delivery & pickup available</div>
+                    </div>
+                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </button>
+
+                  <button
+                    onClick={() => handleShopOption('amazon')}
+                    className="w-full flex items-center gap-4 p-4 bg-gray-800 border border-gray-700 rounded-xl hover:border-green-500/50 transition"
+                  >
+                    <div className="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center">
+                      <span className="text-black font-bold text-lg">A</span>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className="font-semibold text-white">Amazon Fresh</div>
+                      <div className="text-xs text-gray-400">Free delivery with Prime</div>
+                    </div>
+                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <p className="text-center text-xs text-gray-600 mt-4">
+                Prices and availability may vary by delivery service
+              </p>
             </div>
           </div>
         </div>

@@ -316,11 +316,9 @@ async function analyzeWithKroger(
   }
 
   // Save comparison to database (don't await to avoid slowing down response)
-  if (userId !== 'test-user-id') {
-    saveComparison(supabase, userId, items, result).catch(err => {
-      console.error('[ListAnalyze] Failed to save comparison:', err)
-    })
-  }
+  saveComparison(supabase, userId, items, result).catch(err => {
+    console.error('[ListAnalyze] Failed to save comparison:', err)
+  })
 
   return NextResponse.json(result)
 }
