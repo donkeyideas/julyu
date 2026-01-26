@@ -1,6 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
+interface ClickStatRecord {
+  partner_id: string | null
+  converted: boolean | null
+  estimated_commission: number | null
+  actual_commission: number | null
+}
+
+interface PartnerRecord {
+  id: string
+  name: string
+  slug: string
+  [key: string]: unknown
+}
+
 // GET - List all delivery partners
 export async function GET(request: NextRequest) {
   try {
@@ -37,8 +51,9 @@ export async function GET(request: NextRequest) {
     // Calculate stats per partner
     const statsMap: Record<string, { clicks: number; conversions: number; revenue: number }> = {}
 
-    if (clickStats) {
-      clickStats.forEach((click) => {
+    const clickData = clickStats as ClickStatRecord[] | null
+    if (clickData) {
+      clickData.forEach((click: ClickStatRecord) => {
         if (!click.partner_id) return
         if (!statsMap[click.partner_id]) {
           statsMap[click.partner_id] = { clicks: 0, conversions: 0, revenue: 0 }
@@ -52,7 +67,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Attach stats to partners
-    const partnersWithStats = (partners || []).map((partner) => ({
+    const partnerData = partners as PartnerRecord[] | null
+    const partnersWithStats = (partnerData || []).map((partner: PartnerRecord) => ({
       ...partner,
       stats: statsMap[partner.id] || { clicks: 0, conversions: 0, revenue: 0 }
     }))
