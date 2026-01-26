@@ -3,10 +3,10 @@ import { createServerClient } from '@/lib/supabase/server'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params
+    const { id } = params
     const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -106,12 +106,12 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   let requestBody: { target_price?: number; is_active?: boolean; store_id?: string } = {}
 
   try {
-    const { id } = await params
+    const { id } = params
     const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -240,10 +240,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params
+    const { id } = params
     const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 

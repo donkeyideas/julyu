@@ -4,10 +4,10 @@ import { createServerClient } from '@/lib/supabase/server'
 // PUT - Accept or decline a friend request
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params
+    const { id } = params
     const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -110,10 +110,10 @@ export async function PUT(
 // DELETE - Cancel a sent friend request (by the sender)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params
+    const { id } = params
     const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 

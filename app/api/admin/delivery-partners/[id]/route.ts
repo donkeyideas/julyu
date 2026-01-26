@@ -12,10 +12,10 @@ interface ClickRecord {
 // GET - Get single delivery partner
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params
+    const { id } = params
     const supabase = createServerClient()
 
     const { data: partner, error } = await supabase
@@ -74,10 +74,10 @@ export async function GET(
 // PUT - Update single delivery partner
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params
+    const { id } = params
     const supabase = createServerClient()
     const body = await request.json()
 
@@ -141,10 +141,10 @@ export async function PUT(
 // DELETE - Hard delete delivery partner
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params
+    const { id } = params
     const supabase = createServerClient()
     const { searchParams } = new URL(request.url)
     const hardDelete = searchParams.get('hard') === 'true'
