@@ -175,7 +175,7 @@ export default function NewListPage() {
       </div>
 
       <h1 className="text-4xl font-black mb-2">New Shopping List</h1>
-      <p className="text-gray-500 mb-8">Add items naturally - we'll parse quantities and units automatically</p>
+      <p className="text-gray-500 mb-8">Add items naturally - we&apos;ll parse quantities and units automatically</p>
 
       {error && (
         <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400">
@@ -217,7 +217,7 @@ chicken breast 2 lbs"
               className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white focus:outline-none focus:border-green-500 font-mono text-sm"
             />
             <p className="text-xs text-gray-600 mt-2">
-              Tip: Include quantities like "2 gallons", "3 lbs", "1 dozen" for better organization
+              Tip: Include quantities like &quot;2 gallons&quot;, &quot;3 lbs&quot;, &quot;1 dozen&quot; for better organization
             </p>
           </div>
 
