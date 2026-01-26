@@ -34,7 +34,7 @@ export default function AdminV2Dashboard() {
       // Load all stats
       const [usersResult, retailersResult, usageResult, configResult] = await Promise.all([
         supabase.from('users').select('*', { count: 'exact', head: true }),
-        supabase.from('retailers').select('*', { count: 'exact', head: true }),
+        supabase.from('partner_retailers').select('*', { count: 'exact', head: true }),
         supabase.from('ai_model_usage').select('*').order('created_at', { ascending: false }).limit(1000),
         supabase.from('ai_model_config').select('*').eq('is_active', true),
       ])

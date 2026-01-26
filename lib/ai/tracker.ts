@@ -51,6 +51,7 @@ class AITracker {
             cost: record.cost,
             success: record.success,
             error_message: record.error_message,
+            user_id: record.user_id,
           }),
         })
         
@@ -164,10 +165,10 @@ class AITracker {
   /**
    * Get usage statistics
    */
-  async getUsageStats(timeRange: '24h' | '7d' | '30d' | 'all' = '30d') {
+  async getUsageStats(timeRange: '24h' | '7d' | '30d' | 'all' = '30d', userId?: string) {
     try {
       const supabase = createClient()
-      
+
       const now = new Date()
       let startDate: Date
       switch (timeRange) {
@@ -184,10 +185,16 @@ class AITracker {
           startDate = new Date(0)
       }
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('ai_model_usage')
         .select('*')
         .gte('created_at', startDate.toISOString())
+
+      if (userId) {
+        query = query.eq('user_id', userId)
+      }
+
+      const { data, error } = await query
 
       if (error) {
         console.error('Error getting usage stats:', error)
@@ -197,6 +204,52 @@ class AITracker {
       return data || []
     } catch (error) {
       console.error('Failed to get usage stats:', error)
+      return []
+    }
+  }
+
+  /**
+   * Get usage statistics grouped by user
+   */
+  async getUsageByUser(timeRange: '24h' | '7d' | '30d' | 'all' = '30d') {
+    try {
+      const allUsage = await this.getUsageStats(timeRange)
+
+      // Group by user_id
+      const byUser = allUsage.reduce((acc: Record<string, any>, record: any) => {
+        const userId = record.user_id || 'anonymous'
+        if (!acc[userId]) {
+          acc[userId] = {
+            user_id: userId,
+            total_requests: 0,
+            total_tokens: 0,
+            total_cost: 0,
+            successful_requests: 0,
+            failed_requests: 0,
+            by_model: {} as Record<string, number>,
+          }
+        }
+
+        acc[userId].total_requests++
+        acc[userId].total_tokens += (record.input_tokens || 0) + (record.output_tokens || 0)
+        acc[userId].total_cost += record.cost || 0
+
+        if (record.success) {
+          acc[userId].successful_requests++
+        } else {
+          acc[userId].failed_requests++
+        }
+
+        if (record.model_name) {
+          acc[userId].by_model[record.model_name] = (acc[userId].by_model[record.model_name] || 0) + 1
+        }
+
+        return acc
+      }, {})
+
+      return Object.values(byUser)
+    } catch (error) {
+      console.error('Failed to get usage by user:', error)
       return []
     }
   }

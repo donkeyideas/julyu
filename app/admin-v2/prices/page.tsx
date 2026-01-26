@@ -30,7 +30,7 @@ export default function PricesPage() {
       const [productsResult, pricesResult, retailersResult] = await Promise.all([
         supabase.from('products').select('*', { count: 'exact', head: true }),
         supabase.from('prices').select('*', { count: 'exact', head: true }),
-        supabase.from('retailers').select('*', { count: 'exact', head: true }),
+        supabase.from('partner_retailers').select('*', { count: 'exact', head: true }),
       ])
 
       const totalProducts = productsResult.count || 0

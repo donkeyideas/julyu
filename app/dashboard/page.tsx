@@ -8,12 +8,14 @@ interface SavingsData {
   total_spent: number
   trips_count: number
   avg_savings_per_trip: number
+  month?: string
 }
 
 interface Comparison {
   id: string
   created_at: string
   total_savings?: number
+  total_spent?: number
   best_store?: string
   item_count?: number
 }
@@ -25,8 +27,11 @@ export default function DashboardPage() {
     trips_count: 0,
     avg_savings_per_trip: 0,
   })
+  const [previousMonthSavings, setPreviousMonthSavings] = useState<SavingsData | null>(null)
   const [comparisons, setComparisons] = useState<Comparison[]>([])
   const [receiptsCount, setReceiptsCount] = useState(0)
+  const [previousComparisonsCount, setPreviousComparisonsCount] = useState(0)
+  const [previousReceiptsCount, setPreviousReceiptsCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date())
   const [hasHistoricalData, setHasHistoricalData] = useState(false)
@@ -54,9 +59,13 @@ export default function DashboardPage() {
           .order('month', { ascending: false })
           .limit(2)
 
-        // Check if we have historical data
+        // Check if we have historical data and extract previous month
         const hasHistory = previousSavings && previousSavings.length >= 2
         setHasHistoricalData(hasHistory || false)
+
+        if (hasHistory && previousSavings[1]) {
+          setPreviousMonthSavings(previousSavings[1])
+        }
 
         // Get comparisons
         const { data: comparisonsData } = await supabase
@@ -66,11 +75,38 @@ export default function DashboardPage() {
           .order('created_at', { ascending: false })
           .limit(5)
 
+        // Get current month comparisons count
+        const currentMonthStart = new Date()
+        currentMonthStart.setDate(1)
+        currentMonthStart.setHours(0, 0, 0, 0)
+
+        const previousMonthStart = new Date(currentMonthStart)
+        previousMonthStart.setMonth(previousMonthStart.getMonth() - 1)
+
+        const previousMonthEnd = new Date(currentMonthStart)
+        previousMonthEnd.setSeconds(previousMonthEnd.getSeconds() - 1)
+
+        // Get previous month comparisons count
+        const { count: prevComparisons } = await supabase
+          .from('comparisons')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .gte('created_at', previousMonthStart.toISOString())
+          .lt('created_at', currentMonthStart.toISOString())
+
         // Get receipts count
         const { count: receipts } = await supabase
           .from('receipts')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id)
+
+        // Get previous month receipts count
+        const { count: prevReceipts } = await supabase
+          .from('receipts')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .gte('created_at', previousMonthStart.toISOString())
+          .lt('created_at', currentMonthStart.toISOString())
 
         setSavings(
           currentSavings || {
@@ -82,6 +118,8 @@ export default function DashboardPage() {
         )
         setComparisons(comparisonsData || [])
         setReceiptsCount(receipts || 0)
+        setPreviousComparisonsCount(prevComparisons || 0)
+        setPreviousReceiptsCount(prevReceipts || 0)
         setLastRefresh(new Date())
       }
     } catch (error) {
@@ -137,11 +175,11 @@ export default function DashboardPage() {
     )
   }
 
-  // Get previous month data for trends (would need to fetch this properly)
-  const previousSavings = 0 // This would come from previous month data
-  const previousComparisons = 0
-  const previousReceipts = 0
-  const previousAvgSavings = 0
+  // Get previous month data for trends (now properly fetched)
+  const prevSavingsTotal = previousMonthSavings?.total_saved || 0
+  const prevComparisons = previousComparisonsCount
+  const prevReceipts = previousReceiptsCount
+  const prevAvgSavings = previousMonthSavings?.avg_savings_per_trip || 0
 
   return (
     <div>
@@ -166,8 +204,8 @@ export default function DashboardPage() {
           <div className="text-5xl font-black text-green-500 mb-2">
             ${(savings.total_saved || 0).toFixed(2)}
           </div>
-          {hasHistoricalData && previousSavings > 0 ? (
-            formatTrend(savings.total_saved, previousSavings, true)
+          {hasHistoricalData && prevSavingsTotal > 0 ? (
+            formatTrend(savings.total_saved, prevSavingsTotal, true)
           ) : (
             <span className="inline-block px-3 py-1 bg-gray-800 text-gray-500 rounded-lg text-sm">
               No historical data
@@ -178,8 +216,8 @@ export default function DashboardPage() {
         <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6 hover:border-green-500 transition">
           <div className="text-sm text-gray-500 mb-4">Comparisons Run</div>
           <div className="text-5xl font-black mb-2">{comparisons.length}</div>
-          {hasHistoricalData && previousComparisons > 0 ? (
-            formatTrend(comparisons.length, previousComparisons, false)
+          {hasHistoricalData && prevComparisons > 0 ? (
+            formatTrend(comparisons.length, prevComparisons, false)
           ) : (
             <span className="inline-block px-3 py-1 bg-gray-800 text-gray-500 rounded-lg text-sm">
               No historical data
@@ -190,8 +228,8 @@ export default function DashboardPage() {
         <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6 hover:border-green-500 transition">
           <div className="text-sm text-gray-500 mb-4">Receipts Scanned</div>
           <div className="text-5xl font-black mb-2">{receiptsCount}</div>
-          {hasHistoricalData && previousReceipts > 0 ? (
-            formatTrend(receiptsCount, previousReceipts, false)
+          {hasHistoricalData && prevReceipts > 0 ? (
+            formatTrend(receiptsCount, prevReceipts, false)
           ) : (
             <span className="inline-block px-3 py-1 bg-gray-800 text-gray-500 rounded-lg text-sm">
               No historical data
@@ -204,8 +242,8 @@ export default function DashboardPage() {
           <div className="text-3xl font-black mb-2">
             ${(savings.avg_savings_per_trip || 0).toFixed(2)}
           </div>
-          {hasHistoricalData && previousAvgSavings > 0 ? (
-            formatTrend(savings.avg_savings_per_trip, previousAvgSavings, true)
+          {hasHistoricalData && prevAvgSavings > 0 ? (
+            formatTrend(savings.avg_savings_per_trip, prevAvgSavings, true)
           ) : (
             <span className="inline-block px-3 py-1 bg-gray-800 text-gray-500 rounded-lg text-sm">
               No historical data
@@ -238,7 +276,7 @@ export default function DashboardPage() {
                     </span>
                   </td>
                   <td className="p-4 font-bold">
-                    ${((comp.total_savings || 0) + (comp.total_savings || 0)).toFixed(2)}
+                    ${(comp.total_spent || 0).toFixed(2)}
                   </td>
                   <td className="p-4 text-green-500 font-bold">
                     ${(comp.total_savings || 0).toFixed(2)}

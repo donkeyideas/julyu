@@ -30,6 +30,8 @@ export default function AdminSidebar() {
     { href: '/admin-v2/ai-models', label: 'AI Models', icon: '', section: 'AI/LLM Systems' },
     { href: '/admin-v2/ai-performance', label: 'AI Performance', icon: '', section: 'AI/LLM Systems' },
     { href: '/admin-v2/usage', label: 'Usage & Costs', icon: '', section: 'AI/LLM Systems' },
+    { href: '/admin-v2/ai-training', label: 'Training Data', icon: '', section: 'AI/LLM Systems' },
+    { href: '/admin-v2/features', label: 'Feature Flags', icon: '', section: 'AI/LLM Systems' },
     { href: '/admin-v2/partnerships-costs', label: 'Partnerships AI Costs', icon: '', section: 'Partnerships' },
     { href: '/admin-v2/retailers', label: 'Retailer Partnerships', icon: '', section: 'Partnerships' },
     { href: '/admin-v2/instacart', label: 'Instacart API', icon: '', section: 'Partnerships' },

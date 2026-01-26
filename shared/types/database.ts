@@ -571,9 +571,14 @@ export interface Database {
       ai_model_usage: {
         Row: {
           id?: string
+          user_id: string | null
           model_name: string | null
           provider: string | null
           request_type: string | null
+          use_case: string | null
+          input_tokens: number | null
+          output_tokens: number | null
+          total_tokens: number | null
           tokens_used: number | null
           cost: number | null
           response_time_ms: number | null
@@ -583,9 +588,14 @@ export interface Database {
         }
         Insert: {
           id?: string
+          user_id?: string | null
           model_name?: string | null
           provider?: string | null
           request_type?: string | null
+          use_case?: string | null
+          input_tokens?: number | null
+          output_tokens?: number | null
+          total_tokens?: number | null
           tokens_used?: number | null
           cost?: number | null
           response_time_ms?: number | null
@@ -595,9 +605,14 @@ export interface Database {
         }
         Update: {
           id?: string
+          user_id?: string | null
           model_name?: string | null
           provider?: string | null
           request_type?: string | null
+          use_case?: string | null
+          input_tokens?: number | null
+          output_tokens?: number | null
+          total_tokens?: number | null
           tokens_used?: number | null
           cost?: number | null
           response_time_ms?: number | null
@@ -627,6 +642,346 @@ export interface Database {
           output_text?: string | null
           metadata?: Json | null
           created_at?: string
+        }
+      }
+      // AI Conversations (Chat Assistant)
+      ai_conversations: {
+        Row: {
+          id: string
+          user_id: string
+          title: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      ai_messages: {
+        Row: {
+          id: string
+          conversation_id: string
+          role: 'user' | 'assistant' | 'system'
+          content: string
+          metadata: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          conversation_id: string
+          role: 'user' | 'assistant' | 'system'
+          content: string
+          metadata?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          conversation_id?: string
+          role?: 'user' | 'assistant' | 'system'
+          content?: string
+          metadata?: Json | null
+          created_at?: string
+        }
+      }
+      // AI Insights
+      ai_insights: {
+        Row: {
+          id: string
+          user_id: string
+          insight_type: 'savings' | 'spending' | 'prediction' | 'recommendation' | 'alert'
+          title: string
+          content: string
+          metadata: Json | null
+          priority: number | null
+          dismissed: boolean | null
+          action_url: string | null
+          created_at: string
+          expires_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          insight_type: 'savings' | 'spending' | 'prediction' | 'recommendation' | 'alert'
+          title: string
+          content: string
+          metadata?: Json | null
+          priority?: number | null
+          dismissed?: boolean | null
+          action_url?: string | null
+          created_at?: string
+          expires_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          insight_type?: 'savings' | 'spending' | 'prediction' | 'recommendation' | 'alert'
+          title?: string
+          content?: string
+          metadata?: Json | null
+          priority?: number | null
+          dismissed?: boolean | null
+          action_url?: string | null
+          created_at?: string
+          expires_at?: string | null
+        }
+      }
+      // User Budgets
+      user_budgets: {
+        Row: {
+          id: string
+          user_id: string
+          category: string | null
+          monthly_limit: number | null
+          current_spent: number | null
+          month: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          category?: string | null
+          monthly_limit?: number | null
+          current_spent?: number | null
+          month: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          category?: string | null
+          monthly_limit?: number | null
+          current_spent?: number | null
+          month?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      budget_recommendations: {
+        Row: {
+          id: string
+          user_id: string
+          recommendation_type: string | null
+          title: string | null
+          description: string | null
+          potential_savings: number | null
+          metadata: Json | null
+          implemented: boolean | null
+          dismissed: boolean | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          recommendation_type?: string | null
+          title?: string | null
+          description?: string | null
+          potential_savings?: number | null
+          metadata?: Json | null
+          implemented?: boolean | null
+          dismissed?: boolean | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          recommendation_type?: string | null
+          title?: string | null
+          description?: string | null
+          potential_savings?: number | null
+          metadata?: Json | null
+          implemented?: boolean | null
+          dismissed?: boolean | null
+          created_at?: string
+        }
+      }
+      // Feature Flags
+      feature_flags: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          is_enabled: boolean | null
+          rollout_percentage: number | null
+          user_segment: Json | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          is_enabled?: boolean | null
+          rollout_percentage?: number | null
+          user_segment?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          is_enabled?: boolean | null
+          rollout_percentage?: number | null
+          user_segment?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      // AI Feedback
+      ai_feedback: {
+        Row: {
+          id: string
+          user_id: string
+          interaction_type: string | null
+          interaction_id: string | null
+          feedback_type: string | null
+          rating: number | null
+          comment: string | null
+          metadata: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          interaction_type?: string | null
+          interaction_id?: string | null
+          feedback_type?: string | null
+          rating?: number | null
+          comment?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          interaction_type?: string | null
+          interaction_id?: string | null
+          feedback_type?: string | null
+          rating?: number | null
+          comment?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+      }
+      // Alert Notifications
+      alert_notifications: {
+        Row: {
+          id: string
+          alert_id: string | null
+          user_id: string | null
+          sent_at: string
+          method: string | null
+          status: string | null
+          current_price: number | null
+          target_price: number | null
+        }
+        Insert: {
+          id?: string
+          alert_id?: string | null
+          user_id?: string | null
+          sent_at?: string
+          method?: string | null
+          status?: string | null
+          current_price?: number | null
+          target_price?: number | null
+        }
+        Update: {
+          id?: string
+          alert_id?: string | null
+          user_id?: string | null
+          sent_at?: string
+          method?: string | null
+          status?: string | null
+          current_price?: number | null
+          target_price?: number | null
+        }
+      }
+      // Training Data Exports
+      training_data_exports: {
+        Row: {
+          id: string
+          export_date: string
+          record_count: number | null
+          file_url: string | null
+          format: string | null
+          use_case: string | null
+          filters: Json | null
+          exported_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          export_date?: string
+          record_count?: number | null
+          file_url?: string | null
+          format?: string | null
+          use_case?: string | null
+          filters?: Json | null
+          exported_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          export_date?: string
+          record_count?: number | null
+          file_url?: string | null
+          format?: string | null
+          use_case?: string | null
+          filters?: Json | null
+          exported_by?: string | null
+          created_at?: string
+        }
+      }
+      // Model Registry
+      model_registry: {
+        Row: {
+          id: string
+          name: string
+          version: string
+          base_model: string | null
+          training_data_export_id: string | null
+          status: 'training' | 'ready' | 'deployed' | 'retired'
+          performance_metrics: Json | null
+          config: Json | null
+          created_at: string
+          deployed_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          version: string
+          base_model?: string | null
+          training_data_export_id?: string | null
+          status?: 'training' | 'ready' | 'deployed' | 'retired'
+          performance_metrics?: Json | null
+          config?: Json | null
+          created_at?: string
+          deployed_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          version?: string
+          base_model?: string | null
+          training_data_export_id?: string | null
+          status?: 'training' | 'ready' | 'deployed' | 'retired'
+          performance_metrics?: Json | null
+          config?: Json | null
+          created_at?: string
+          deployed_at?: string | null
         }
       }
       // Alias for retailers (used in admin dashboard)

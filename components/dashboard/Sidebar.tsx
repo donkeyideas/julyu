@@ -53,6 +53,10 @@ export default function Sidebar() {
     { href: '/dashboard/receipts', label: 'Receipt History', icon: '' },
     { href: '/dashboard/savings', label: 'Savings Tracker', icon: '' },
     { href: '/dashboard/alerts', label: 'Price Alerts', icon: '' },
+    // AI Features
+    { href: '/dashboard/assistant', label: 'AI Assistant', icon: '' },
+    { href: '/dashboard/insights', label: 'Smart Insights', icon: '' },
+    { href: '/dashboard/budget', label: 'Budget Optimizer', icon: '' },
     { href: '/dashboard/settings', label: 'Settings', icon: '' },
   ]
 

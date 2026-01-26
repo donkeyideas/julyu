@@ -14,10 +14,27 @@ export async function POST(request: NextRequest) {
       cost,
       success,
       error_message,
+      user_id: providedUserId,
     } = body
 
     const supabase = createServerClient()
-    
+
+    // Get user_id from auth or use provided
+    let userId = providedUserId
+    if (!userId) {
+      const { data: { user } } = await supabase.auth.getUser()
+      userId = user?.id
+    }
+
+    // In test mode, use test user id
+    const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+                       process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
+                       process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
+
+    if (!userId && isTestMode) {
+      userId = 'test-user-id'
+    }
+
     // Store usage record
     const { error } = await supabase
       .from('ai_model_usage')
@@ -32,6 +49,7 @@ export async function POST(request: NextRequest) {
         cost: cost || 0,
         success: success !== false,
         error_message,
+        user_id: userId,
       })
 
     if (error) {
