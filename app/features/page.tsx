@@ -4,7 +4,7 @@ import Footer from '@/components/shared/Footer'
 
 export default function FeaturesPage() {
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-gradient-to-b from-black via-black to-green-900/40 text-white">
       <Header />
 
       <div className="pt-32 pb-16 px-[5%]">

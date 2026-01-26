@@ -19,7 +19,7 @@ export default async function ContactPage() {
   const email = pageContent?.content?.email || defaultContent.email
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-black via-black to-green-900/40 text-white flex flex-col">
       <Header />
 
       <div className="flex-1 pt-32 pb-16 px-[5%]">

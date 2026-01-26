@@ -94,6 +94,25 @@ export default function InteractiveDemo() {
         }),
       })
 
+      // Handle auth required - show signup prompt instead of error
+      if (response.status === 401) {
+        setResults({
+          success: true,
+          dataSource: 'demo',
+          bestOption: null,
+          alternatives: [],
+          products: [],
+          summary: {
+            totalItems: items.length,
+            itemsFound: 0,
+            itemsMissing: items.length,
+            estimatedTotal: 0,
+          },
+          message: 'Sign up for free to compare real prices across 50+ stores in your area!'
+        })
+        return
+      }
+
       const data = await response.json()
 
       if (data.error) {
