@@ -1,6 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
+interface PartnerRecord {
+  id: string
+  name: string
+  display_name: string | null
+  slug: string
+  description: string | null
+  logo_url: string | null
+  icon_letter: string | null
+  brand_color: string | null
+  base_url: string
+  deep_link_template: string | null
+  supports_deep_linking: boolean | null
+  supports_search_url: boolean | null
+  supported_retailers: string[] | null
+}
+
 // GET - List active delivery partners for frontend
 export async function GET(request: NextRequest) {
   try {
@@ -34,14 +50,15 @@ export async function GET(request: NextRequest) {
     if (error) throw error
 
     // Filter by retailer if provided
-    let filteredPartners = partners || []
+    const partnerData = partners as PartnerRecord[] | null
+    let filteredPartners: PartnerRecord[] = partnerData || []
     if (retailer && filteredPartners.length > 0) {
-      filteredPartners = filteredPartners.filter(partner => {
-        const supportedRetailers = partner.supported_retailers as string[] | null
+      filteredPartners = filteredPartners.filter((partner: PartnerRecord) => {
+        const supportedRetailers = partner.supported_retailers
         // If no retailers specified, assume it supports all
         if (!supportedRetailers || supportedRetailers.length === 0) return true
         // Check if the retailer is in the supported list
-        return supportedRetailers.some(r =>
+        return supportedRetailers.some((r: string) =>
           r.toLowerCase() === retailer ||
           retailer.includes(r.toLowerCase()) ||
           r.toLowerCase().includes(retailer)
