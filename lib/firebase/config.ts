@@ -1,5 +1,5 @@
-import { initializeApp, getApps, getApp } from 'firebase/app'
-import { getAuth, GoogleAuthProvider } from 'firebase/auth'
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app'
+import { getAuth, GoogleAuthProvider, Auth } from 'firebase/auth'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -11,16 +11,43 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 }
 
-// Initialize Firebase only if not already initialized
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp()
+// Lazy initialization to avoid errors during build/SSR
+let app: FirebaseApp | null = null
+let auth: Auth | null = null
+let googleProvider: GoogleAuthProvider | null = null
 
-// Initialize Firebase Auth
-const auth = getAuth(app)
+function getFirebaseApp(): FirebaseApp | null {
+  // Don't initialize if API key is missing (e.g., during build)
+  if (!firebaseConfig.apiKey || firebaseConfig.apiKey === 'your_firebase_api_key') {
+    return null
+  }
 
-// Google Auth Provider
-const googleProvider = new GoogleAuthProvider()
-googleProvider.setCustomParameters({
-  prompt: 'select_account'
-})
+  if (!app) {
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp()
+  }
+  return app
+}
 
-export { app, auth, googleProvider }
+function getFirebaseAuth(): Auth | null {
+  const firebaseApp = getFirebaseApp()
+  if (!firebaseApp) return null
+
+  if (!auth) {
+    auth = getAuth(firebaseApp)
+  }
+  return auth
+}
+
+function getGoogleProvider(): GoogleAuthProvider | null {
+  if (!getFirebaseApp()) return null
+
+  if (!googleProvider) {
+    googleProvider = new GoogleAuthProvider()
+    googleProvider.setCustomParameters({
+      prompt: 'select_account'
+    })
+  }
+  return googleProvider
+}
+
+export { getFirebaseApp, getFirebaseAuth, getGoogleProvider }

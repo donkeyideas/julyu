@@ -1,5 +1,5 @@
 import { signInWithPopup, signOut as firebaseSignOut, UserCredential } from 'firebase/auth'
-import { auth, googleProvider } from './config'
+import { getFirebaseAuth, getGoogleProvider } from './config'
 
 export interface FirebaseUser {
   uid: string
@@ -10,6 +10,14 @@ export interface FirebaseUser {
 
 // Sign in with Google popup
 export const signInWithGoogle = async (): Promise<{ user: FirebaseUser; credential: UserCredential } | null> => {
+  const auth = getFirebaseAuth()
+  const googleProvider = getGoogleProvider()
+
+  if (!auth || !googleProvider) {
+    console.error('Firebase not configured. Please set NEXT_PUBLIC_FIREBASE_* environment variables.')
+    throw new Error('Google Sign-In is not configured. Please contact support.')
+  }
+
   try {
     const result = await signInWithPopup(auth, googleProvider)
     const user = result.user
@@ -40,6 +48,9 @@ export const signInWithGoogle = async (): Promise<{ user: FirebaseUser; credenti
 
 // Sign out from Firebase
 export const signOutFromFirebase = async (): Promise<void> => {
+  const auth = getFirebaseAuth()
+  if (!auth) return
+
   try {
     await firebaseSignOut(auth)
   } catch (error) {
@@ -50,6 +61,9 @@ export const signOutFromFirebase = async (): Promise<void> => {
 
 // Get current Firebase user
 export const getCurrentFirebaseUser = (): FirebaseUser | null => {
+  const auth = getFirebaseAuth()
+  if (!auth) return null
+
   const user = auth.currentUser
   if (!user) return null
 
