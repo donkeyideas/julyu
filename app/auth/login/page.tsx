@@ -99,6 +99,8 @@ export default function LoginPage() {
         email: data.user.email,
         full_name: data.user.full_name,
         avatar_url: data.user.avatar_url,
+        auth_provider: 'google',
+        subscription_tier: data.user.subscription_tier || 'free'
       }))
 
       // Success - redirect to dashboard

@@ -36,9 +36,12 @@ const SUPPORTED_LANGUAGES = [
 ]
 
 interface UserInfo {
+  id?: string
   email: string
   full_name: string | null
   subscription_tier: 'free' | 'premium' | 'enterprise'
+  auth_provider?: 'email' | 'google'
+  avatar_url?: string | null
 }
 
 export default function SettingsPage() {
@@ -59,6 +62,7 @@ export default function SettingsPage() {
   const [clearingDemo, setClearingDemo] = useState(false)
   const [editingName, setEditingName] = useState(false)
   const [editedName, setEditedName] = useState('')
+  const [savingName, setSavingName] = useState(false)
 
   useEffect(() => {
     loadSettings()
@@ -80,7 +84,24 @@ export default function SettingsPage() {
         }
       }
 
-      const response = await fetch('/api/settings')
+      // Check for Firebase/Google user in localStorage
+      let firebaseUser: { id: string; email: string; full_name: string | null; avatar_url: string | null; auth_provider?: string; subscription_tier?: string } | null = null
+      const storedUser = localStorage.getItem('julyu_user')
+      if (storedUser) {
+        try {
+          firebaseUser = JSON.parse(storedUser)
+        } catch (e) {
+          console.error('Failed to parse stored user:', e)
+        }
+      }
+
+      // Build request headers - include user ID for Firebase users
+      const headers: HeadersInit = {}
+      if (firebaseUser?.id) {
+        headers['x-user-id'] = firebaseUser.id
+      }
+
+      const response = await fetch('/api/settings', { headers })
       if (response.ok) {
         const data = await response.json()
         const newSettings = {
@@ -97,13 +118,54 @@ export default function SettingsPage() {
           auto_translate_chat: data.preferences?.auto_translate_chat ?? true
         }
         setSettings(newSettings)
-        setUser(data.user)
+
+        // Merge API user data with Firebase user data (Firebase data takes priority for email/name if API returns empty)
+        const apiUser = data.user
+        const mergedUser: UserInfo = {
+          id: apiUser?.id || firebaseUser?.id,
+          email: apiUser?.email || firebaseUser?.email || '',
+          full_name: apiUser?.full_name || firebaseUser?.full_name || null,
+          subscription_tier: apiUser?.subscription_tier || 'free',
+          auth_provider: apiUser?.auth_provider || (firebaseUser ? 'google' : 'email'),
+          avatar_url: apiUser?.avatar_url || firebaseUser?.avatar_url || null
+        }
+        setUser(mergedUser)
+        setEditedName(mergedUser.full_name || '')
+
         // Cache settings in localStorage
         localStorage.setItem('userSettings', JSON.stringify(newSettings))
+      } else if (firebaseUser) {
+        // API failed but we have Firebase user data - use it directly
+        setUser({
+          id: firebaseUser.id,
+          email: firebaseUser.email,
+          full_name: firebaseUser.full_name,
+          subscription_tier: (firebaseUser.subscription_tier as 'free' | 'premium' | 'enterprise') || 'free',
+          auth_provider: (firebaseUser.auth_provider as 'email' | 'google') || 'google',
+          avatar_url: firebaseUser.avatar_url
+        })
+        setEditedName(firebaseUser.full_name || '')
       }
     } catch (error) {
       console.error('Failed to load settings:', error)
-      // Settings will use localStorage cache if available
+      // Try to load Firebase user from localStorage as fallback
+      const storedUser = localStorage.getItem('julyu_user')
+      if (storedUser) {
+        try {
+          const firebaseUser = JSON.parse(storedUser)
+          setUser({
+            id: firebaseUser.id,
+            email: firebaseUser.email,
+            full_name: firebaseUser.full_name,
+            subscription_tier: firebaseUser.subscription_tier || 'free',
+            auth_provider: firebaseUser.auth_provider || 'google',
+            avatar_url: firebaseUser.avatar_url
+          })
+          setEditedName(firebaseUser.full_name || '')
+        } catch (e) {
+          console.error('Failed to parse stored user:', e)
+        }
+      }
     } finally {
       setLoading(false)
     }
@@ -117,9 +179,18 @@ export default function SettingsPage() {
       // Always save to localStorage as a backup
       localStorage.setItem('userSettings', JSON.stringify(settings))
 
+      // Get user ID from state or localStorage for Firebase users
+      const storedUser = localStorage.getItem('julyu_user')
+      const userId = user?.id || (storedUser ? JSON.parse(storedUser).id : null)
+
+      const headers: HeadersInit = { 'Content-Type': 'application/json' }
+      if (userId) {
+        headers['x-user-id'] = userId
+      }
+
       const response = await fetch('/api/settings', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(settings)
       })
 
@@ -233,9 +304,40 @@ export default function SettingsPage() {
       <div className="rounded-2xl p-8 mb-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <h3 className="text-2xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>Account</h3>
         <div className="space-y-6">
+          {/* Avatar for Google users */}
+          {user?.avatar_url && (
+            <div className="flex items-center gap-4">
+              <img
+                src={user.avatar_url}
+                alt="Profile"
+                className="w-16 h-16 rounded-full border-2 border-green-500"
+              />
+              {user.auth_provider === 'google' && (
+                <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-muted)' }}>
+                  <svg className="w-4 h-4" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                  <span>Signed in with Google</span>
+                </div>
+              )}
+            </div>
+          )}
           <div>
             <div className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Email</div>
-            <div style={{ color: 'var(--text-muted)' }}>{user?.email || 'Not available'}</div>
+            <div className="flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+              <span>{user?.email || 'Not available'}</span>
+              {user?.auth_provider === 'google' && !user?.avatar_url && (
+                <svg className="w-4 h-4" viewBox="0 0 24 24" title="Signed in with Google">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+              )}
+            </div>
           </div>
           <div>
             <div className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Name</div>
@@ -250,20 +352,62 @@ export default function SettingsPage() {
                   style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
                 <button
-                  onClick={() => {
-                    setUser(prev => prev ? { ...prev, full_name: editedName || null } : null)
-                    setEditingName(false)
+                  onClick={async () => {
+                    setSavingName(true)
+                    try {
+                      // Get user ID from state or localStorage
+                      const storedUser = localStorage.getItem('julyu_user')
+                      const userId = user?.id || (storedUser ? JSON.parse(storedUser).id : null)
+
+                      const headers: HeadersInit = { 'Content-Type': 'application/json' }
+                      if (userId) {
+                        headers['x-user-id'] = userId
+                      }
+
+                      const response = await fetch('/api/settings', {
+                        method: 'PUT',
+                        headers,
+                        body: JSON.stringify({ ...settings, full_name: editedName || null })
+                      })
+
+                      if (response.ok) {
+                        // Update local state
+                        setUser(prev => prev ? { ...prev, full_name: editedName || null } : null)
+                        // Update localStorage for Firebase users
+                        if (storedUser) {
+                          const parsedUser = JSON.parse(storedUser)
+                          localStorage.setItem('julyu_user', JSON.stringify({
+                            ...parsedUser,
+                            full_name: editedName || null
+                          }))
+                        }
+                        setSaveMessage({ type: 'success', text: 'Name updated successfully!' })
+                        setTimeout(() => setSaveMessage(null), 3000)
+                      } else {
+                        setSaveMessage({ type: 'error', text: 'Failed to update name' })
+                        setTimeout(() => setSaveMessage(null), 3000)
+                      }
+                    } catch (error) {
+                      console.error('Failed to save name:', error)
+                      setSaveMessage({ type: 'error', text: 'Failed to update name' })
+                      setTimeout(() => setSaveMessage(null), 3000)
+                    } finally {
+                      setSavingName(false)
+                      setEditingName(false)
+                    }
                   }}
-                  className="px-3 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition text-sm"
+                  disabled={savingName}
+                  className="px-3 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition text-sm disabled:opacity-50"
                 >
-                  Save
+                  {savingName ? 'Saving...' : 'Save'}
                 </button>
                 <button
                   onClick={() => {
                     setEditedName(user?.full_name || '')
                     setEditingName(false)
                   }}
-                  className="px-3 py-2 rounded-lg hover:opacity-80 transition text-sm"
+                  disabled={savingName}
+                  className="px-3 py-2 rounded-lg hover:opacity-80 transition text-sm disabled:opacity-50"
                   style={{ border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
                 >
                   Cancel

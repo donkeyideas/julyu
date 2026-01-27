@@ -1,17 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
+
+    // Check for Firebase user ID in header (for Google sign-in users)
+    const firebaseUserId = request.headers.get('x-user-id')
 
     // In test mode, allow requests even if auth fails
     const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
                        process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
                        process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
 
-    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
+    const userId = user?.id || firebaseUserId || (isTestMode ? 'test-user-id' : null)
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -29,28 +32,30 @@ export async function GET() {
       throw error
     }
 
-    // Get user subscription info (only if we have a real user)
+    // Get user data from users table (works for both Supabase and Firebase users)
     let userData = null
-    if (user) {
-      const { data } = await supabase
-        .from('users')
-        .select('subscription_tier, email, full_name')
-        .eq('id', userId)
-        .single()
-      userData = data
-    }
+    const { data } = await supabase
+      .from('users')
+      .select('subscription_tier, email, full_name, auth_provider, avatar_url')
+      .eq('id', userId)
+      .single()
+    userData = data
 
     // For test mode, return test user info with premium tier
-    const userInfo = isTestMode && !user ? {
+    const userInfo = isTestMode && !user && !firebaseUserId ? {
       id: 'test-user-id',
       email: 'test@example.com',
       full_name: 'Test User',
-      subscription_tier: 'premium' as const
+      subscription_tier: 'premium' as const,
+      auth_provider: 'email' as const,
+      avatar_url: null
     } : {
       id: userId,
       email: userData?.email || user?.email || '',
       full_name: userData?.full_name || null,
-      subscription_tier: userData?.subscription_tier || 'free' as const
+      subscription_tier: userData?.subscription_tier || 'free' as const,
+      auth_provider: userData?.auth_provider || 'email' as const,
+      avatar_url: userData?.avatar_url || null
     }
 
     return NextResponse.json({
@@ -93,12 +98,15 @@ export async function PUT(request: NextRequest) {
     const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
+    // Check for Firebase user ID in header (for Google sign-in users)
+    const firebaseUserId = request.headers.get('x-user-id')
+
     // In test mode, allow requests even if auth fails
     const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
                        process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
                        process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
 
-    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
+    const userId = user?.id || firebaseUserId || (isTestMode ? 'test-user-id' : null)
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -112,8 +120,21 @@ export async function PUT(request: NextRequest) {
       favorite_stores,
       shopping_frequency,
       preferred_language,
-      auto_translate_chat
+      auto_translate_chat,
+      full_name // Allow updating user name
     } = body
+
+    // If full_name is provided, update the users table
+    if (full_name !== undefined) {
+      const { error: userUpdateError } = await supabase
+        .from('users')
+        .update({ full_name, updated_at: new Date().toISOString() })
+        .eq('id', userId)
+
+      if (userUpdateError) {
+        console.error('[Settings] User update error:', userUpdateError)
+      }
+    }
 
     // Check if preferences exist
     const { data: existing, error: checkError } = await supabase
