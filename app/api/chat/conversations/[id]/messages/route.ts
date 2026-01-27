@@ -39,10 +39,7 @@ export async function GET(
     // Fetch messages
     const { data: messages, error } = await supabase
       .from('chat_messages')
-      .select(`
-        *,
-        sender:users(id, email, full_name)
-      `)
+      .select('*')
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: true })
 
@@ -52,7 +49,21 @@ export async function GET(
       return NextResponse.json({ messages: getTestMessages(conversationId) })
     }
 
-    return NextResponse.json({ messages: messages || [] })
+    // Fetch sender details for each unique sender
+    const senderIds = [...new Set((messages || []).map((m: { sender_id: string }) => m.sender_id))]
+    const { data: senders } = await supabase
+      .from('users')
+      .select('id, email, full_name')
+      .in('id', senderIds)
+
+    // Map senders to messages
+    const senderMap = new Map((senders || []).map((s: { id: string; email: string; full_name: string | null }) => [s.id, s]))
+    const messagesWithSender = (messages || []).map((m: { sender_id: string }) => ({
+      ...m,
+      sender: senderMap.get(m.sender_id) || { id: m.sender_id, email: 'Unknown', full_name: 'Unknown' }
+    }))
+
+    return NextResponse.json({ messages: messagesWithSender })
   } catch (error: any) {
     console.error('[Chat] Error:', error)
     // Return test data on any error
@@ -129,10 +140,7 @@ export async function POST(
         content: content.trim(),
         created_at: new Date().toISOString()
       })
-      .select(`
-        *,
-        sender:users(id, email, full_name)
-      `)
+      .select('*')
       .single()
 
     if (error) {
@@ -150,6 +158,18 @@ export async function POST(
       })
     }
 
+    // Fetch sender details
+    const { data: sender } = await supabase
+      .from('users')
+      .select('id, email, full_name')
+      .eq('id', userId)
+      .single()
+
+    const messageWithSender = {
+      ...message,
+      sender: sender || { id: userId, email: 'Unknown', full_name: 'Unknown' }
+    }
+
     // Update conversation last message (ignore errors)
     await supabase
       .from('chat_conversations')
@@ -160,7 +180,7 @@ export async function POST(
       .eq('id', conversationId)
       .catch(() => {})
 
-    return NextResponse.json({ message })
+    return NextResponse.json({ message: messageWithSender })
   } catch (error: any) {
     console.error('[Chat] Error:', error)
     // Return mock message on any error for demo

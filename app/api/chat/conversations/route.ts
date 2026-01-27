@@ -32,14 +32,9 @@ export async function GET() {
     // Fetch conversations where user is a participant
     const { data: conversations, error } = await supabase
       .from('chat_conversations')
-      .select(`
-        *,
-        participants:chat_participants(
-          user:users(id, email, full_name)
-        )
-      `)
+      .select('*')
       .contains('participant_ids', [userId])
-      .order('last_message_at', { ascending: false })
+      .order('last_message_at', { ascending: false, nullsFirst: false })
 
     if (error) {
       console.error('[Chat] Conversations error:', error)
@@ -51,11 +46,21 @@ export async function GET() {
       return NextResponse.json({ conversations: getTestConversations() })
     }
 
-    // Transform participants
-    const transformed = (conversations as ConversationRow[] | null)?.map((conv: ConversationRow) => ({
-      ...conv,
-      participants: conv.participants?.map((p) => p.user).filter(Boolean) || []
-    })) || []
+    // Fetch participants for each conversation using participant_ids directly
+    const transformed = await Promise.all(
+      (conversations || []).map(async (conv: { id: string; participant_ids: string[]; last_message: string | null; last_message_at: string | null; created_at: string }) => {
+        // Fetch user details for all participants
+        const { data: participants } = await supabase
+          .from('users')
+          .select('id, email, full_name')
+          .in('id', conv.participant_ids || [])
+
+        return {
+          ...conv,
+          participants: participants || []
+        }
+      })
+    )
 
     return NextResponse.json({ conversations: transformed })
   } catch (error: any) {

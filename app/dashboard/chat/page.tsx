@@ -78,6 +78,57 @@ export default function ChatPage() {
     fetchFriendRequests()
   }, [])
 
+  // Poll for new messages every 2 seconds when conversation is active
+  useEffect(() => {
+    if (!activeConversation) return
+
+    const pollMessages = async () => {
+      try {
+        const response = await fetch(`/api/chat/conversations/${activeConversation.id}/messages`)
+        if (response.ok) {
+          const data = await response.json()
+          const newMessages = data.messages || []
+          // Only update if there are new messages
+          setMessages(prev => {
+            if (newMessages.length !== prev.length) {
+              return newMessages
+            }
+            // Check if last message is different
+            const lastNew = newMessages[newMessages.length - 1]
+            const lastPrev = prev[prev.length - 1]
+            if (lastNew?.id !== lastPrev?.id) {
+              return newMessages
+            }
+            return prev
+          })
+        }
+      } catch (error) {
+        // Silently fail polling errors
+      }
+    }
+
+    const interval = setInterval(pollMessages, 2000)
+    return () => clearInterval(interval)
+  }, [activeConversation?.id])
+
+  // Poll for conversation list updates every 5 seconds
+  useEffect(() => {
+    const pollConversations = async () => {
+      try {
+        const response = await fetch('/api/chat/conversations')
+        if (response.ok) {
+          const data = await response.json()
+          setConversations(data.conversations || [])
+        }
+      } catch (error) {
+        // Silently fail polling errors
+      }
+    }
+
+    const interval = setInterval(pollConversations, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
   useEffect(() => {
     scrollToBottom()
   }, [messages])
