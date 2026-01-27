@@ -6,8 +6,8 @@ import { getPageContent } from '@/lib/content/getPageContent'
 // Default content - used if no database content exists
 const defaultContent = {
   headline: 'About Julyu',
-  subheadline: 'The Bloomberg Terminal for Grocery Consumers',
-  about_text: 'Julyu is an AI-powered grocery price comparison platform that helps consumers save money by comparing prices across 50+ retailers. Our mission is to make grocery shopping more transparent and affordable for everyone.',
+  subheadline: 'Making Grocery Shopping Smarter',
+  about_text: 'Julyu is an AI-powered grocery price comparison platform designed to help you save money and shop smarter. We believe everyone deserves access to transparent pricing information.',
 }
 
 export default async function AboutPage() {
@@ -25,6 +25,10 @@ export default async function AboutPage() {
 
       <div className="flex-1 pt-32 pb-16 px-[5%]">
         <div className="max-w-4xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/30 rounded-full text-green-400 text-sm mb-6">
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            Early Access
+          </div>
           <h1 className="text-5xl font-black mb-6">{headline}</h1>
           <p className="text-xl text-gray-400 mb-12">{subheadline}</p>
 
@@ -39,27 +43,58 @@ export default async function AboutPage() {
             <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8">
               <h2 className="text-2xl font-bold text-green-500 mb-4">What We Do</h2>
               <p className="text-gray-300 leading-relaxed mb-4">
-                We use advanced AI technology to scan receipts, track prices, and find the best deals
-                at stores near you. Our users save an average of $287 per month on groceries.
+                We use AI technology to scan receipts, track prices, and help you find the best deals
+                at stores near you. Our goal is to make grocery shopping transparent and help you keep more money in your pocket.
               </p>
               <ul className="space-y-2 text-gray-400">
-                <li>• AI-powered receipt scanning and price extraction</li>
-                <li>• Real-time price comparison across 50+ retailers</li>
-                <li>• Smart shopping list optimization</li>
-                <li>• Price drop alerts and savings analytics</li>
+                <li className="flex items-start gap-2">
+                  <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>AI-powered receipt scanning and price extraction</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>Real-time price comparison across major retailers</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>Smart shopping list optimization</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>Price drop alerts and spending analytics</span>
+                </li>
               </ul>
             </div>
 
             <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8">
-              <h2 className="text-2xl font-bold text-green-500 mb-4">Join Us</h2>
+              <h2 className="text-2xl font-bold text-green-500 mb-4">Why We Built This</h2>
+              <p className="text-gray-300 leading-relaxed">
+                Grocery prices vary significantly between stores—often 15-25% for the exact same items.
+                We built Julyu because we believe you shouldn&apos;t have to spend hours comparing prices
+                or second-guessing your shopping choices. With AI doing the heavy lifting, you can make
+                informed decisions in seconds.
+              </p>
+            </div>
+
+            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8">
+              <h2 className="text-2xl font-bold text-green-500 mb-4">Get Early Access</h2>
               <p className="text-gray-300 leading-relaxed mb-6">
-                Join over 127,000 smart shoppers who are already saving money with Julyu.
+                Julyu is currently in early access. Sign up today to be among the first to experience
+                smarter grocery shopping and help shape the future of the platform.
               </p>
               <Link
                 href="/auth/signup"
                 className="inline-block px-8 py-4 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition"
               >
-                Get Started Free
+                Join Early Access
               </Link>
             </div>
           </div>
