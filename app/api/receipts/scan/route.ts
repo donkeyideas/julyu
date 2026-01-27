@@ -15,7 +15,8 @@ export async function POST(request: NextRequest) {
                        process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
 
     // For test mode, create a mock user ID
-    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
+    const firebaseUserId = request.headers.get('x-user-id')
+    const userId = user?.id || firebaseUserId || (isTestMode ? 'test-user-id' : null)
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

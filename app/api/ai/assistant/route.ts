@@ -31,7 +31,11 @@ export async function POST(request: NextRequest) {
     const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) {
+    // Check for Firebase user ID in header (for Google sign-in users)
+    const firebaseUserId = request.headers.get('x-user-id')
+    const userId = user?.id || firebaseUserId
+
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -43,11 +47,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user context for better responses
-    const context = await getUserContext(supabase, user.id)
+    const context = await getUserContext(supabase, userId)
 
     // Get AI response
     const { response, tokens } = await aiAssistant.chat(messages, {
-      user_id: user.id,
+      user_id: userId,
       ...context
     })
 
@@ -58,7 +62,7 @@ export async function POST(request: NextRequest) {
       const { data: newConv, error: convError } = await supabase
         .from('ai_conversations')
         .insert({
-          user_id: user.id,
+          user_id: userId,
           title
         })
         .select('id')
@@ -199,7 +203,11 @@ export async function GET(request: NextRequest) {
     const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) {
+    // Check for Firebase user ID in header (for Google sign-in users)
+    const firebaseUserId = request.headers.get('x-user-id')
+    const userId = user?.id || firebaseUserId
+
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -212,7 +220,7 @@ export async function GET(request: NextRequest) {
         .from('ai_conversations')
         .select('*')
         .eq('id', conversationId)
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .single()
 
       if (!conversation) {
@@ -232,7 +240,7 @@ export async function GET(request: NextRequest) {
     const { data: conversations } = await supabase
       .from('ai_conversations')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .order('updated_at', { ascending: false })
       .limit(20)
 

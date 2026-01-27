@@ -44,7 +44,7 @@ function categorizeItem(description: string): string {
   return 'Other'
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -54,7 +54,8 @@ export async function GET() {
                        process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
                        process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
 
-    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
+    const firebaseUserId = request.headers.get('x-user-id')
+    const userId = user?.id || firebaseUserId || (isTestMode ? 'test-user-id' : null)
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

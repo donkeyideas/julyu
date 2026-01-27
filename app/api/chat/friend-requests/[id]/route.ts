@@ -75,13 +75,7 @@ export async function PUT(
 
     if (updateError) {
       console.error('[Friend Requests] Update error:', updateError)
-      // Return success anyway with sender info
-      return NextResponse.json({
-        success: true,
-        action: 'accept',
-        message: 'Friend request accepted!',
-        friend: senderInfo
-      })
+      return NextResponse.json({ error: 'Failed to accept friend request. Please try again.' }, { status: 500 })
     }
 
     // 2. Create reverse relationship (so both users see each other as friends)
@@ -139,8 +133,7 @@ export async function DELETE(
 
     if (error) {
       console.error('[Friend Requests] Delete error:', error)
-      // Return success anyway
-      return NextResponse.json({ success: true })
+      return NextResponse.json({ error: 'Failed to cancel friend request.' }, { status: 500 })
     }
 
     return NextResponse.json({ success: true, message: 'Friend request cancelled.' })

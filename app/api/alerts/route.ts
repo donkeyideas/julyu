@@ -56,7 +56,7 @@ function getDemoAlerts() {
   ]
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -66,7 +66,8 @@ export async function GET() {
                        process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
                        process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
 
-    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
+    const firebaseUserId = request.headers.get('x-user-id')
+    const userId = user?.id || firebaseUserId || (isTestMode ? 'test-user-id' : null)
 
     if (!userId) {
       // Return demo alerts for unauthenticated users
@@ -114,7 +115,8 @@ export async function POST(request: NextRequest) {
                        process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
                        process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
 
-    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
+    const firebaseUserId = request.headers.get('x-user-id')
+    const userId = user?.id || firebaseUserId || (isTestMode ? 'test-user-id' : null)
 
     requestBody = await request.json()
     const { product_id, product_name, target_price, store_id } = requestBody

@@ -3,6 +3,25 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
+// Helper to get auth headers for API calls (supports Firebase/Google users)
+function getAuthHeaders(): HeadersInit {
+  const headers: HeadersInit = { 'Content-Type': 'application/json' }
+  if (typeof window !== 'undefined') {
+    const storedUser = localStorage.getItem('julyu_user')
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser)
+        if (user.id) headers['x-user-id'] = user.id
+        if (user.email) headers['x-user-email'] = user.email
+        if (user.full_name) headers['x-user-name'] = user.full_name
+      } catch (e) {
+        // Ignore parsing errors
+      }
+    }
+  }
+  return headers
+}
+
 interface Message {
   id: string
   role: 'user' | 'assistant'
@@ -242,7 +261,7 @@ export default function AssistantPage() {
 
   const loadConversations = async () => {
     try {
-      const response = await fetch('/api/ai/assistant')
+      const response = await fetch('/api/ai/assistant', { headers: getAuthHeaders() })
       if (response.ok) {
         const data = await response.json()
         setConversations(data.conversations || [])
@@ -254,7 +273,7 @@ export default function AssistantPage() {
 
   const loadConversation = async (convId: string) => {
     try {
-      const response = await fetch(`/api/ai/assistant?conversation_id=${convId}`)
+      const response = await fetch(`/api/ai/assistant?conversation_id=${convId}`, { headers: getAuthHeaders() })
       if (response.ok) {
         const data = await response.json()
         setConversationId(convId)
@@ -295,7 +314,7 @@ export default function AssistantPage() {
     try {
       const response = await fetch('/api/ai/assistant', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           messages: [...messages, userMessage].map(m => ({
             role: m.role,

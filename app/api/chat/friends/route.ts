@@ -45,9 +45,9 @@ export async function GET(request: NextRequest) {
     const friendIds = new Set<string>()
 
     // For sent requests, the friend is friend_id
-    ;(sentRequests || []).forEach(req => friendIds.add(req.friend_id))
+    ;(sentRequests || []).forEach((req: Record<string, unknown>) => friendIds.add(req.friend_id as string))
     // For received requests, the friend is user_id (the sender)
-    ;(receivedRequests || []).forEach(req => friendIds.add(req.user_id))
+    ;(receivedRequests || []).forEach((req: Record<string, unknown>) => friendIds.add(req.user_id as string))
 
     // Fetch all friend user info at once
     let friendsMap = new Map<string, { id: string; email: string; full_name: string | null }>()
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
       if (usersError) {
         console.error('[Friends] Error fetching friend users:', usersError)
       } else {
-        friendsMap = new Map((friendUsers || []).map(u => [u.id, u]))
+        friendsMap = new Map((friendUsers || []).map((u: { id: string; email: string; full_name: string | null }) => [u.id, u]))
       }
     }
 
@@ -112,15 +112,50 @@ export async function POST(request: NextRequest) {
     // Use service role client for database operations (bypasses RLS)
     const supabase = createServiceRoleClient()
 
-    // Get user email from database if Firebase user
+    // Get user email from database - ensure user exists first
     let userEmail = user?.email
-    if (!userEmail && firebaseUserId) {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('email')
-        .eq('id', firebaseUserId)
-        .single()
-      userEmail = userData?.email
+    let currentUserRecord = null
+
+    // Check if current user exists in users table
+    const { data: existingUserRecord, error: userLookupError } = await supabase
+      .from('users')
+      .select('id, email, full_name')
+      .eq('id', userId)
+      .single()
+
+    if (existingUserRecord) {
+      currentUserRecord = existingUserRecord
+      userEmail = existingUserRecord.email
+    } else if (firebaseUserId) {
+      // Firebase user doesn't exist in users table - we need to create them
+      // Get their info from localStorage data passed in headers
+      const userFullName = request.headers.get('x-user-name') || 'User'
+      const userEmailHeader = request.headers.get('x-user-email')
+
+      if (userEmailHeader) {
+        // Create the user record
+        const { data: newUser, error: createError } = await supabase
+          .from('users')
+          .insert({
+            id: firebaseUserId,
+            email: userEmailHeader,
+            full_name: userFullName,
+            created_at: new Date().toISOString()
+          })
+          .select('id, email, full_name')
+          .single()
+
+        if (newUser) {
+          currentUserRecord = newUser
+          userEmail = newUser.email
+          console.log('[Friends] Created user record for Firebase user:', firebaseUserId)
+        } else {
+          console.error('[Friends] Failed to create user record:', createError)
+          return NextResponse.json({ error: 'Failed to initialize user. Please try logging out and back in.' }, { status: 500 })
+        }
+      } else {
+        return NextResponse.json({ error: 'User email not available. Please try logging out and back in.' }, { status: 400 })
+      }
     }
 
     const body = await request.json()
@@ -149,27 +184,7 @@ export async function POST(request: NextRequest) {
     if (existingUser && !findError) {
       friendUser = existingUser
     } else {
-      // User not in our users table - create an invite-style friend request
-      console.log('[Friends] User not in users table, creating pending request with email:', normalizedEmail)
-
-      const friendId = `pending-${Buffer.from(normalizedEmail).toString('base64').substring(0, 20)}`
-
-      return NextResponse.json({
-        friend: {
-          id: `friend-${Date.now()}`,
-          user_id: userId,
-          friend_id: friendId,
-          status: 'pending',
-          friend: {
-            id: friendId,
-            email: normalizedEmail,
-            full_name: normalizedEmail.split('@')[0]
-          },
-          created_at: new Date().toISOString()
-        },
-        message: 'Friend request sent! They will see it when they join Julyu.',
-        requestSent: true
-      })
+      return NextResponse.json({ error: 'User not found. They need to create a Julyu account first.' }, { status: 404 })
     }
 
     if (!friendUser) {
@@ -215,23 +230,7 @@ export async function POST(request: NextRequest) {
 
     if (insertError) {
       console.error('[Friends] Insert error:', insertError)
-      // Return response with friend info we already have
-      return NextResponse.json({
-        friend: {
-          id: `friend-${Date.now()}`,
-          user_id: userId,
-          friend_id: friendUser.id,
-          status: 'pending',
-          friend: {
-            id: friendUser.id,
-            email: friendUser.email,
-            full_name: friendUser.full_name || friendUser.email.split('@')[0]
-          },
-          created_at: new Date().toISOString()
-        },
-        message: 'Friend request sent!',
-        requestSent: true
-      })
+      return NextResponse.json({ error: 'Failed to send friend request. Please try again.' }, { status: 500 })
     }
 
     return NextResponse.json({

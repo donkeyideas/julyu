@@ -58,6 +58,12 @@ function getAuthHeaders(): HeadersInit {
         if (user.id) {
           headers['x-user-id'] = user.id
         }
+        if (user.email) {
+          headers['x-user-email'] = user.email
+        }
+        if (user.full_name) {
+          headers['x-user-name'] = user.full_name
+        }
       } catch (e) {
         console.error('Failed to parse stored user:', e)
       }

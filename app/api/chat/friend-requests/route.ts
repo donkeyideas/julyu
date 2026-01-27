@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch sender info for all requests
-    const senderIds = incomingRequests.map(req => req.user_id)
+    const senderIds = incomingRequests.map((req: { user_id: string }) => req.user_id)
     const { data: senders, error: sendersError } = await supabase
       .from('users')
       .select('id, email, full_name')
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Create a map of senders
-    const senderMap = new Map((senders || []).map(s => [s.id, s]))
+    const senderMap = new Map((senders || []).map((s: { id: string; email: string; full_name: string | null }) => [s.id, s]))
 
     // Transform to a cleaner format with sender info
     const requests = incomingRequests.map((req: { id: string; user_id: string; friend_id: string; status: string; created_at: string }) => ({
@@ -86,15 +86,43 @@ export async function POST(request: NextRequest) {
     // Use service role client for database operations (bypasses RLS)
     const supabase = createServiceRoleClient()
 
-    // Get user email from database if Firebase user
+    // Ensure current user exists in users table
     let userEmail = user?.email
-    if (!userEmail && firebaseUserId) {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('email')
-        .eq('id', firebaseUserId)
-        .single()
-      userEmail = userData?.email
+    const { data: existingUserRecord } = await supabase
+      .from('users')
+      .select('id, email, full_name')
+      .eq('id', userId)
+      .single()
+
+    if (existingUserRecord) {
+      userEmail = existingUserRecord.email
+    } else if (firebaseUserId) {
+      // Firebase user doesn't exist in users table - create them
+      const userFullName = request.headers.get('x-user-name') || 'User'
+      const userEmailHeader = request.headers.get('x-user-email')
+
+      if (userEmailHeader) {
+        const { data: newUser, error: createError } = await supabase
+          .from('users')
+          .insert({
+            id: firebaseUserId,
+            email: userEmailHeader,
+            full_name: userFullName,
+            created_at: new Date().toISOString()
+          })
+          .select('id, email, full_name')
+          .single()
+
+        if (newUser) {
+          userEmail = newUser.email
+          console.log('[Friend Requests] Created user record for Firebase user:', firebaseUserId)
+        } else {
+          console.error('[Friend Requests] Failed to create user record:', createError)
+          return NextResponse.json({ error: 'Failed to initialize user. Please try logging out and back in.' }, { status: 500 })
+        }
+      } else {
+        return NextResponse.json({ error: 'User email not available. Please try logging out and back in.' }, { status: 400 })
+      }
     }
 
     const body = await request.json()
@@ -119,25 +147,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (findError || !recipientUser) {
-      // User not in system - create a pending request anyway
-      // When they sign up, they'll see the request
-      const pendingId = `pending-${Buffer.from(normalizedEmail).toString('base64').substring(0, 20)}`
-
-      return NextResponse.json({
-        request: {
-          id: `request-${Date.now()}`,
-          sender_id: userId,
-          recipient_id: pendingId,
-          status: 'pending',
-          created_at: new Date().toISOString(),
-          recipient: {
-            id: pendingId,
-            email: normalizedEmail,
-            full_name: normalizedEmail.split('@')[0]
-          }
-        },
-        message: 'Friend request sent! They will see it when they join Julyu.'
-      })
+      return NextResponse.json({ error: 'User not found. They need to create a Julyu account first.' }, { status: 404 })
     }
 
     // Check if already friends or request exists
@@ -178,18 +188,7 @@ export async function POST(request: NextRequest) {
 
     if (insertError) {
       console.error('[Friend Requests] Insert error:', insertError)
-      // Return response with recipient info we already have
-      return NextResponse.json({
-        request: {
-          id: `request-${Date.now()}`,
-          sender_id: userId,
-          recipient_id: recipientUser.id,
-          status: 'pending',
-          created_at: new Date().toISOString(),
-          recipient: recipientUser
-        },
-        message: 'Friend request sent!'
-      })
+      return NextResponse.json({ error: 'Failed to send friend request. Please try again.' }, { status: 500 })
     }
 
     return NextResponse.json({

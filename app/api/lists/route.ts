@@ -6,11 +6,14 @@ export async function GET(request: NextRequest) {
     const supabase = createServerClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
+    // Check for Firebase user ID in header (for Google sign-in users)
+    const firebaseUserId = request.headers.get('x-user-id')
+
     const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
                        process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
                        process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
 
-    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
+    const userId = user?.id || firebaseUserId || (isTestMode ? 'test-user-id' : null)
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -53,11 +56,14 @@ export async function POST(request: NextRequest) {
     const supabase = createServerClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
+    // Check for Firebase user ID in header (for Google sign-in users)
+    const firebaseUserId = request.headers.get('x-user-id')
+
     const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
                        process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
                        process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
 
-    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
+    const userId = user?.id || firebaseUserId || (isTestMode ? 'test-user-id' : null)
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

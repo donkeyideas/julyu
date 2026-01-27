@@ -13,7 +13,9 @@ export async function GET(
                        process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
                        process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
 
-    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
+    // Check for Firebase user ID in header (for Google sign-in users)
+    const firebaseUserId = request.headers.get('x-user-id')
+    const userId = user?.id || firebaseUserId || (isTestMode ? 'test-user-id' : null)
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -68,7 +70,9 @@ export async function PATCH(
                        process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
                        process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
 
-    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
+    // Check for Firebase user ID in header (for Google sign-in users)
+    const firebaseUserId = request.headers.get('x-user-id')
+    const userId = user?.id || firebaseUserId || (isTestMode ? 'test-user-id' : null)
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -130,7 +134,9 @@ export async function DELETE(
                        process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
                        process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
 
-    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
+    // Check for Firebase user ID in header (for Google sign-in users)
+    const firebaseUserId = request.headers.get('x-user-id')
+    const userId = user?.id || firebaseUserId || (isTestMode ? 'test-user-id' : null)
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
