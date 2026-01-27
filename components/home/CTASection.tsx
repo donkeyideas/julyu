@@ -13,10 +13,10 @@ export default function CTASection() {
 
           <div className="relative z-10">
             <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
-              Start Saving Today
+              Ready to Save?
             </h2>
             <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-              Join 127,000+ smart shoppers who save an average of $287 every month on groceries.
+              Join Julyu today and take control of your grocery spending. Compare prices, track receipts, and discover savings with AI.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

@@ -40,7 +40,7 @@ export default function FeatureShowcase() {
         </svg>
       ),
       title: 'Price Comparison',
-      description: 'Compare prices across 50+ retailers to find the absolute best deals in your area.',
+      description: 'Compare prices across major retailers like Kroger and Walmart to find the best deals.',
       color: 'orange',
     },
     {
