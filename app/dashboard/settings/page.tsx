@@ -66,10 +66,24 @@ export default function SettingsPage() {
 
   const loadSettings = async () => {
     try {
+      // First check localStorage for cached settings
+      const cachedSettings = localStorage.getItem('userSettings')
+      if (cachedSettings) {
+        try {
+          const cached = JSON.parse(cachedSettings)
+          setSettings(prev => ({
+            ...prev,
+            ...cached
+          }))
+        } catch (e) {
+          console.error('Failed to parse cached settings:', e)
+        }
+      }
+
       const response = await fetch('/api/settings')
       if (response.ok) {
         const data = await response.json()
-        setSettings({
+        const newSettings = {
           notification_preferences: {
             price_alerts: data.preferences?.notification_preferences?.price_alerts ?? true,
             weekly_summary: data.preferences?.notification_preferences?.weekly_summary ?? true,
@@ -81,11 +95,15 @@ export default function SettingsPage() {
           shopping_frequency: data.preferences?.shopping_frequency ?? 'weekly',
           preferred_language: data.preferences?.preferred_language ?? 'en',
           auto_translate_chat: data.preferences?.auto_translate_chat ?? true
-        })
+        }
+        setSettings(newSettings)
         setUser(data.user)
+        // Cache settings in localStorage
+        localStorage.setItem('userSettings', JSON.stringify(newSettings))
       }
     } catch (error) {
       console.error('Failed to load settings:', error)
+      // Settings will use localStorage cache if available
     } finally {
       setLoading(false)
     }
@@ -96,6 +114,9 @@ export default function SettingsPage() {
     setSaveMessage(null)
 
     try {
+      // Always save to localStorage as a backup
+      localStorage.setItem('userSettings', JSON.stringify(settings))
+
       const response = await fetch('/api/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -106,11 +127,15 @@ export default function SettingsPage() {
         setSaveMessage({ type: 'success', text: 'Settings saved successfully!' })
         setTimeout(() => setSaveMessage(null), 3000)
       } else {
-        setSaveMessage({ type: 'error', text: 'Failed to save settings. Please try again.' })
+        // API failed but localStorage succeeded
+        setSaveMessage({ type: 'success', text: 'Settings saved locally!' })
+        setTimeout(() => setSaveMessage(null), 3000)
       }
     } catch (error) {
       console.error('Failed to save settings:', error)
-      setSaveMessage({ type: 'error', text: 'Failed to save settings. Please try again.' })
+      // Still saved to localStorage
+      setSaveMessage({ type: 'success', text: 'Settings saved locally!' })
+      setTimeout(() => setSaveMessage(null), 3000)
     } finally {
       setSaving(false)
     }
