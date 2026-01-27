@@ -2,6 +2,25 @@
 
 import { useState, useEffect } from 'react'
 
+// Helper to get auth headers for API calls (supports Firebase/Google users)
+function getAuthHeaders(): HeadersInit {
+  const headers: HeadersInit = { 'Content-Type': 'application/json' }
+  if (typeof window !== 'undefined') {
+    const storedUser = localStorage.getItem('julyu_user')
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser)
+        if (user.id) headers['x-user-id'] = user.id
+        if (user.email) headers['x-user-email'] = user.email
+        if (user.full_name) headers['x-user-name'] = user.full_name
+      } catch (e) {
+        // Ignore parsing errors
+      }
+    }
+  }
+  return headers
+}
+
 interface Product {
   id: string
   name: string
@@ -41,7 +60,7 @@ export default function AlertsPage() {
 
   const loadAlerts = async () => {
     try {
-      const response = await fetch('/api/alerts')
+      const response = await fetch('/api/alerts', { headers: getAuthHeaders() })
       const data = await response.json()
 
       // Load any locally stored alerts
@@ -118,7 +137,7 @@ export default function AlertsPage() {
         // Update existing alert
         const response = await fetch(`/api/alerts/${editingAlert.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ target_price: targetPrice })
         })
 
@@ -141,7 +160,7 @@ export default function AlertsPage() {
 
         const response = await fetch('/api/alerts', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify({
             product_name: formData.product_name,
             target_price: targetPrice
@@ -173,7 +192,8 @@ export default function AlertsPage() {
 
     try {
       await fetch(`/api/alerts/${alertId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: getAuthHeaders()
       })
 
       setAlerts(prev => {

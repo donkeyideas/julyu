@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { aiAssistant } from '@/lib/ai/assistant'
 
 interface Message {
@@ -39,6 +39,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Use service role client for database operations (bypasses RLS for Firebase users)
+    const dbClient = createServiceRoleClient()
+
     const body = await request.json()
     const { messages, conversation_id } = body as { messages: Message[]; conversation_id?: string }
 
@@ -47,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user context for better responses
-    const context = await getUserContext(supabase, userId)
+    const context = await getUserContext(dbClient, userId)
 
     // Get AI response
     const { response, tokens } = await aiAssistant.chat(messages, {
@@ -59,7 +62,7 @@ export async function POST(request: NextRequest) {
     let convId = conversation_id
     if (!convId) {
       const title = await aiAssistant.generateTitle(messages)
-      const { data: newConv, error: convError } = await supabase
+      const { data: newConv, error: convError } = await dbClient
         .from('ai_conversations')
         .insert({
           user_id: userId,
@@ -80,7 +83,7 @@ export async function POST(request: NextRequest) {
       // Store user message
       const lastUserMessage = messages[messages.length - 1]
       if (lastUserMessage && lastUserMessage.role === 'user') {
-        await supabase.from('ai_messages').insert({
+        await dbClient.from('ai_messages').insert({
           conversation_id: convId,
           role: 'user',
           content: lastUserMessage.content
@@ -88,7 +91,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Store assistant response
-      await supabase.from('ai_messages').insert({
+      await dbClient.from('ai_messages').insert({
         conversation_id: convId,
         role: 'assistant',
         content: response,
@@ -96,7 +99,7 @@ export async function POST(request: NextRequest) {
       })
 
       // Update conversation timestamp
-      await supabase
+      await dbClient
         .from('ai_conversations')
         .update({ updated_at: new Date().toISOString() })
         .eq('id', convId)
@@ -114,7 +117,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function getUserContext(supabase: ReturnType<typeof createServerClient>, userId: string) {
+async function getUserContext(supabase: ReturnType<typeof createServiceRoleClient>, userId: string) {
   const context: {
     preferences?: {
       dietary_restrictions?: string[]
@@ -211,12 +214,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Use service role client for database operations (bypasses RLS for Firebase users)
+    const dbClient = createServiceRoleClient()
+
     const { searchParams } = new URL(request.url)
     const conversationId = searchParams.get('conversation_id')
 
     if (conversationId) {
       // Get specific conversation with messages
-      const { data: conversation } = await supabase
+      const { data: conversation } = await dbClient
         .from('ai_conversations')
         .select('*')
         .eq('id', conversationId)
@@ -227,7 +233,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Conversation not found' }, { status: 404 })
       }
 
-      const { data: messages } = await supabase
+      const { data: messages } = await dbClient
         .from('ai_messages')
         .select('*')
         .eq('conversation_id', conversationId)
@@ -237,7 +243,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all conversations
-    const { data: conversations } = await supabase
+    const { data: conversations } = await dbClient
       .from('ai_conversations')
       .select('*')
       .eq('user_id', userId)

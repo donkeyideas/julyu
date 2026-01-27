@@ -3,6 +3,25 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
+// Helper to get auth headers for API calls (supports Firebase/Google users)
+function getAuthHeaders(): HeadersInit {
+  const headers: HeadersInit = { 'Content-Type': 'application/json' }
+  if (typeof window !== 'undefined') {
+    const storedUser = localStorage.getItem('julyu_user')
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser)
+        if (user.id) headers['x-user-id'] = user.id
+        if (user.email) headers['x-user-email'] = user.email
+        if (user.full_name) headers['x-user-name'] = user.full_name
+      } catch (e) {
+        // Ignore parsing errors
+      }
+    }
+  }
+  return headers
+}
+
 interface Insight {
   id: string
   insight_type: 'savings' | 'spending' | 'prediction' | 'recommendation' | 'alert'
@@ -59,7 +78,7 @@ export default function InsightsPage() {
 
   const loadInsights = async () => {
     try {
-      const response = await fetch('/api/ai/insights')
+      const response = await fetch('/api/ai/insights', { headers: getAuthHeaders() })
       if (response.ok) {
         const data = await response.json()
         setInsights(data.insights || [])
@@ -75,7 +94,7 @@ export default function InsightsPage() {
     try {
       await fetch('/api/ai/insights', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ insight_id: insightId })
       })
       setInsights(prev => prev.filter(i => i.id !== insightId))

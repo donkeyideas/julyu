@@ -52,10 +52,12 @@ function extractIngredients(content: string): string[] {
   const tipPhrases = ['on sale', 'for a cheaper', 'instead of', 'if available', 'or use', 'you can', 'to save', 'for broth', 'tangy bite', 'bouillon']
 
   for (const line of lines) {
-    // Match bullet points with ingredients
-    if (line.trim().startsWith('-') || line.trim().startsWith('*') || line.trim().startsWith('•')) {
+    // Match bullet points with ingredients (including numbered lists like "1.", "*1.", etc.)
+    const trimmedLine = line.trim()
+    if (trimmedLine.startsWith('-') || trimmedLine.startsWith('*') || trimmedLine.startsWith('•') || /^\d+\./.test(trimmedLine)) {
       let item = line.replace(/^\s*[-*•]\s*/, '').trim()
       item = item.replace(/\*\*/g, '') // Remove bold markers
+      item = item.replace(/^\d+[\.\)]\s*/, '') // Remove numbered prefixes like "1. " or "2) "
 
       const lowerItem = item.toLowerCase()
 

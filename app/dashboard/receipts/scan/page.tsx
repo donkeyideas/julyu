@@ -4,6 +4,25 @@ import { useState, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
+// Helper to get auth headers for API calls (supports Firebase/Google users)
+function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {}
+  if (typeof window !== 'undefined') {
+    const storedUser = localStorage.getItem('julyu_user')
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser)
+        if (user.id) headers['x-user-id'] = user.id
+        if (user.email) headers['x-user-email'] = user.email
+        if (user.full_name) headers['x-user-name'] = user.full_name
+      } catch (e) {
+        // Ignore parsing errors
+      }
+    }
+  }
+  return headers
+}
+
 interface ExtractedItem {
   name: string
   quantity: number
@@ -82,6 +101,7 @@ export default function ScanReceiptPage() {
 
       const response = await fetch('/api/receipts/scan', {
         method: 'POST',
+        headers: getAuthHeaders(),
         body: formData,
       })
 
@@ -112,7 +132,7 @@ export default function ScanReceiptPage() {
 
     const checkStatus = async () => {
       try {
-        const response = await fetch(`/api/receipts/${id}`)
+        const response = await fetch(`/api/receipts/${id}`, { headers: getAuthHeaders() })
         const data = await response.json()
 
         if (!response.ok) {
@@ -166,7 +186,7 @@ export default function ScanReceiptPage() {
     try {
       const response = await fetch('/api/lists', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: `Receipt from ${ocrResult.storeName || 'Unknown Store'} - ${new Date().toLocaleDateString()}`,
           items: ocrResult.items.map(item => ({

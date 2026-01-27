@@ -3,6 +3,25 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
+// Helper to get auth headers for API calls (supports Firebase/Google users)
+function getAuthHeaders(): HeadersInit {
+  const headers: HeadersInit = { 'Content-Type': 'application/json' }
+  if (typeof window !== 'undefined') {
+    const storedUser = localStorage.getItem('julyu_user')
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser)
+        if (user.id) headers['x-user-id'] = user.id
+        if (user.email) headers['x-user-email'] = user.email
+        if (user.full_name) headers['x-user-name'] = user.full_name
+      } catch (e) {
+        // Ignore parsing errors
+      }
+    }
+  }
+  return headers
+}
+
 interface BudgetCategory {
   category: string
   monthly_limit: number
@@ -35,7 +54,7 @@ export default function BudgetPage() {
   const loadBudgetData = async () => {
     try {
       // Load budget settings
-      const settingsResponse = await fetch('/api/settings')
+      const settingsResponse = await fetch('/api/settings', { headers: getAuthHeaders() })
       if (settingsResponse.ok) {
         const data = await settingsResponse.json()
         if (data.preferences?.budget_monthly) {
@@ -45,7 +64,7 @@ export default function BudgetPage() {
       }
 
       // Load real spending data from budget API
-      const budgetResponse = await fetch('/api/budget')
+      const budgetResponse = await fetch('/api/budget', { headers: getAuthHeaders() })
       if (budgetResponse.ok) {
         const budgetData = await budgetResponse.json()
 
@@ -73,7 +92,7 @@ export default function BudgetPage() {
     try {
       const response = await fetch('/api/settings', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ budget_monthly: budget })
       })
 
@@ -90,7 +109,7 @@ export default function BudgetPage() {
     try {
       await fetch('/api/budget/recommendations', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ id, implemented: true })
       })
       setRecommendations(prev =>
