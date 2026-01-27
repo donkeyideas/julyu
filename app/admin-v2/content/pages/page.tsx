@@ -54,6 +54,22 @@ export default function ContentPagesPage() {
       is_published: true,
       updated_at: new Date().toISOString(),
     },
+    {
+      id: '6',
+      page_slug: 'privacy',
+      title: 'Privacy Policy',
+      meta_description: 'How Julyu collects, uses, and protects your personal information.',
+      is_published: true,
+      updated_at: new Date().toISOString(),
+    },
+    {
+      id: '7',
+      page_slug: 'terms',
+      title: 'Terms of Service',
+      meta_description: 'Terms and conditions for using Julyu services.',
+      is_published: true,
+      updated_at: new Date().toISOString(),
+    },
   ])
 
   return (

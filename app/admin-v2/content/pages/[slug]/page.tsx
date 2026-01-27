@@ -12,6 +12,8 @@ interface PageData {
   content: {
     email?: string
     about_text?: string
+    last_updated?: string
+    contact_email?: string
   }
 }
 
@@ -47,6 +49,26 @@ const defaultPageData: Record<string, PageData> = {
     meta_description: 'Get in touch with the Julyu team.',
     content: {
       email: 'contact@julyu.com',
+    },
+  },
+  privacy: {
+    title: 'Privacy Policy',
+    headline: 'Privacy Policy',
+    subheadline: 'How we collect, use, and protect your information',
+    meta_description: 'How Julyu collects, uses, and protects your personal information.',
+    content: {
+      last_updated: 'January 26, 2025',
+      contact_email: 'privacy@julyu.com',
+    },
+  },
+  terms: {
+    title: 'Terms of Service',
+    headline: 'Terms of Service',
+    subheadline: 'Terms and conditions for using Julyu',
+    meta_description: 'Terms and conditions for using Julyu services.',
+    content: {
+      last_updated: 'January 26, 2025',
+      contact_email: 'legal@julyu.com',
     },
   },
 }
@@ -293,6 +315,80 @@ export default function EditPagePage() {
             The {slug} page content (feature cards, pricing tiers) is managed in the codebase.
             You can edit the page title, headline, and SEO settings above.
           </p>
+        </div>
+      )}
+
+      {/* Privacy Policy Editor */}
+      {slug === 'privacy' && (
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
+          <h3 className="text-xl font-semibold mb-6">Privacy Policy Settings</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">Last Updated Date</label>
+              <input
+                type="text"
+                value={pageData.content.last_updated || ''}
+                onChange={(e) => updateContent('last_updated', e.target.value)}
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                placeholder="January 26, 2025"
+              />
+              <p className="text-sm text-gray-500 mt-2">Displayed at the top of the Privacy Policy page.</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">Privacy Contact Email</label>
+              <input
+                type="email"
+                value={pageData.content.contact_email || ''}
+                onChange={(e) => updateContent('contact_email', e.target.value)}
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                placeholder="privacy@julyu.com"
+              />
+              <p className="text-sm text-gray-500 mt-2">Email address for privacy-related inquiries.</p>
+            </div>
+          </div>
+          <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+            <p className="text-yellow-400 text-sm">
+              <strong>Note:</strong> The detailed privacy policy content is managed in the codebase at <code className="bg-gray-800 px-1 rounded">app/privacy/page.tsx</code>.
+              Contact your developer to update the policy sections.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Terms of Service Editor */}
+      {slug === 'terms' && (
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
+          <h3 className="text-xl font-semibold mb-6">Terms of Service Settings</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">Last Updated Date</label>
+              <input
+                type="text"
+                value={pageData.content.last_updated || ''}
+                onChange={(e) => updateContent('last_updated', e.target.value)}
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                placeholder="January 26, 2025"
+              />
+              <p className="text-sm text-gray-500 mt-2">Displayed at the top of the Terms of Service page.</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">Legal Contact Email</label>
+              <input
+                type="email"
+                value={pageData.content.contact_email || ''}
+                onChange={(e) => updateContent('contact_email', e.target.value)}
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                placeholder="legal@julyu.com"
+              />
+              <p className="text-sm text-gray-500 mt-2">Email address for legal inquiries.</p>
+            </div>
+          </div>
+          <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+            <p className="text-yellow-400 text-sm">
+              <strong>Note:</strong> The detailed terms content is managed in the codebase at <code className="bg-gray-800 px-1 rounded">app/terms/page.tsx</code>.
+              Contact your developer to update the terms sections.
+            </p>
+          </div>
         </div>
       )}
 
