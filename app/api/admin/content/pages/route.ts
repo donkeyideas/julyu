@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 
 export interface PageContent {
   slug: string
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const slug = searchParams.get('slug')
 
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
 
     if (slug) {
       // Fetch specific page
@@ -72,7 +72,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Slug is required' }, { status: 400 })
     }
 
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
 
     const content: PageContent = {
       slug,
