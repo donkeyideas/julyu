@@ -8,10 +8,13 @@ export default function AIModelsPage() {
   const [krogerClientId, setKrogerClientId] = useState('')
   const [krogerClientSecret, setKrogerClientSecret] = useState('')
   const [spoonacularKey, setSpoonacularKey] = useState('')
+  const [stripeSecretKey, setStripeSecretKey] = useState('')
+  const [stripePublishableKey, setStripePublishableKey] = useState('')
+  const [stripeWebhookSecret, setStripeWebhookSecret] = useState('')
   const [saving, setSaving] = useState(false)
   const [testing, setTesting] = useState<string | null>(null)
   const [testResult, setTestResult] = useState<{ success: boolean; message: string; details?: any } | null>(null)
-  const [apiKeyStatus, setApiKeyStatus] = useState({ deepseek: false, openai: false, kroger: false, spoonacular: false })
+  const [apiKeyStatus, setApiKeyStatus] = useState({ deepseek: false, openai: false, kroger: false, spoonacular: false, stripe: false })
 
   const loadApiKeyStatus = async () => {
     try {
@@ -22,6 +25,7 @@ export default function AIModelsPage() {
         openai: data.openaiConfigured || false,
         kroger: data.krogerConfigured || false,
         spoonacular: data.spoonacularConfigured || false,
+        stripe: data.stripeConfigured || false,
       })
     } catch (error) {
       console.error('Error loading API key status:', error)
@@ -640,6 +644,117 @@ export default function AIModelsPage() {
           <div className="mt-4 p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg">
             <p className="text-purple-400 text-sm">
               <strong>Features:</strong> Grocery product search, UPC lookup, nutrition data, price estimates, product classification.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Stripe API Keys */}
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 mt-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold mb-2">Stripe</h2>
+            <p className="text-gray-500 text-sm">Payment processing for subscriptions</p>
+            <a
+              href="https://dashboard.stripe.com/apikeys"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 text-sm hover:underline"
+            >
+              Get API keys from dashboard.stripe.com
+            </a>
+          </div>
+          <div>
+            {apiKeyStatus.stripe ? (
+              <span className="px-4 py-2 bg-green-500/15 text-green-500 rounded-lg text-sm font-semibold">
+                ✓ Configured
+              </span>
+            ) : (
+              <span className="px-4 py-2 bg-red-500/15 text-red-500 rounded-lg text-sm font-semibold">
+                ✗ Not Set
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Secret Key</label>
+            <input
+              type="password"
+              value={stripeSecretKey}
+              onChange={(e) => setStripeSecretKey(e.target.value)}
+              placeholder={apiKeyStatus.stripe ? "Enter new key to update" : "sk_live_... or sk_test_..."}
+              className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white focus:border-green-500 focus:outline-none font-mono text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Publishable Key</label>
+            <input
+              type="text"
+              value={stripePublishableKey}
+              onChange={(e) => setStripePublishableKey(e.target.value)}
+              placeholder="pk_live_... or pk_test_..."
+              className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white focus:border-green-500 focus:outline-none font-mono text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Webhook Secret</label>
+            <input
+              type="password"
+              value={stripeWebhookSecret}
+              onChange={(e) => setStripeWebhookSecret(e.target.value)}
+              placeholder="whsec_..."
+              className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white focus:border-green-500 focus:outline-none font-mono text-sm"
+            />
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={async () => {
+                if (!stripeSecretKey.trim()) {
+                  alert('Please enter at least the Secret Key')
+                  return
+                }
+                setSaving(true)
+                try {
+                  const response = await fetch('/api/admin/save-api-keys', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      stripeSecretKey: stripeSecretKey.trim(),
+                      stripePublishableKey: stripePublishableKey.trim() || null,
+                      stripeWebhookSecret: stripeWebhookSecret.trim() || null,
+                    }),
+                  })
+                  const data = await response.json()
+                  if (data.success) {
+                    alert('Stripe API keys saved successfully!')
+                    setStripeSecretKey('')
+                    setStripePublishableKey('')
+                    setStripeWebhookSecret('')
+                    await loadApiKeyStatus()
+                  } else {
+                    alert(`Failed to save: ${data.error || 'Unknown error'}`)
+                  }
+                } catch (error: any) {
+                  alert(`Error: ${error.message || 'Unknown error'}`)
+                } finally {
+                  setSaving(false)
+                }
+              }}
+              disabled={saving || !stripeSecretKey.trim()}
+              className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Save Keys'}
+            </button>
+          </div>
+
+          <div className="mt-4 p-4 bg-indigo-500/10 border border-indigo-500/30 rounded-lg">
+            <p className="text-indigo-400 text-sm">
+              <strong>Features:</strong> Subscription billing, checkout sessions, customer portal, webhook events, promo code discounts.
             </p>
           </div>
         </div>

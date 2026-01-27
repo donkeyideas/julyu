@@ -39,6 +39,7 @@ export default function AdminSidebar() {
     { href: '/admin-v2/instacart', label: 'Instacart API', icon: '', section: 'Partnerships' },
     { href: '/admin-v2/users', label: 'Users', icon: '', section: 'Operations' },
     { href: '/admin-v2/prices', label: 'Price Database', icon: '', section: 'Operations' },
+    { href: '/admin-v2/subscriptions', label: 'Subscriptions', icon: '', section: 'Operations' },
   ]
 
   const sections = [

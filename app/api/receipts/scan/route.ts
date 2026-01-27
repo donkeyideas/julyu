@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
-import { openaiClient } from '@/lib/api/openai'
+import { llmOrchestrator } from '@/lib/llm/orchestrator'
 import { uploadReceiptImage } from '@/lib/storage/receipts'
 import { extractPricesFromReceipt } from '@/lib/services/price-extractor'
 
@@ -72,9 +72,16 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Process receipt with GPT-4 Vision (async - don't await to return quickly)
+    // Process receipt with vision model via orchestrator (async - don't await to return quickly)
     // Fire and forget, but handle errors properly
-    openaiClient.scanReceipt(base64)
+    llmOrchestrator.scanReceipt(base64)
+      .then(async (llmResponse) => {
+        // Parse JSON from LLM response
+        const jsonMatch = llmResponse.content.match(/\{[\s\S]*\}/)?.[0]
+        if (!jsonMatch) throw new Error('No JSON found in OCR response')
+        const result = JSON.parse(jsonMatch)
+        return result
+      })
       .then(async (result) => {
         try {
           // Update receipt with OCR results

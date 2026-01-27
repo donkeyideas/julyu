@@ -1319,6 +1319,183 @@ export interface Database {
           updated_at?: string
         }
       }
+      // Subscription Plans
+      subscription_plans: {
+        Row: {
+          id: string
+          name: string
+          slug: string
+          stripe_price_id: string | null
+          price: number
+          billing_interval: 'month' | 'year'
+          features: Json
+          description: string | null
+          is_active: boolean
+          is_self_serve: boolean
+          sort_order: number
+          max_calls_per_day: number
+          max_calls_per_minute: number
+          max_tokens_per_day: number
+          highlight: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          slug: string
+          stripe_price_id?: string | null
+          price?: number
+          billing_interval?: 'month' | 'year'
+          features?: Json
+          description?: string | null
+          is_active?: boolean
+          is_self_serve?: boolean
+          sort_order?: number
+          max_calls_per_day?: number
+          max_calls_per_minute?: number
+          max_tokens_per_day?: number
+          highlight?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          slug?: string
+          stripe_price_id?: string | null
+          price?: number
+          billing_interval?: 'month' | 'year'
+          features?: Json
+          description?: string | null
+          is_active?: boolean
+          is_self_serve?: boolean
+          sort_order?: number
+          max_calls_per_day?: number
+          max_calls_per_minute?: number
+          max_tokens_per_day?: number
+          highlight?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      // Promo Codes
+      promo_codes: {
+        Row: {
+          id: string
+          code: string
+          description: string | null
+          type: 'percentage' | 'fixed' | 'free_months'
+          value: number
+          max_uses: number | null
+          current_uses: number
+          valid_from: string | null
+          valid_until: string | null
+          applicable_plans: Json
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          code: string
+          description?: string | null
+          type: 'percentage' | 'fixed' | 'free_months'
+          value: number
+          max_uses?: number | null
+          current_uses?: number
+          valid_from?: string | null
+          valid_until?: string | null
+          applicable_plans?: Json
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          code?: string
+          description?: string | null
+          type?: 'percentage' | 'fixed' | 'free_months'
+          value?: number
+          max_uses?: number | null
+          current_uses?: number
+          valid_from?: string | null
+          valid_until?: string | null
+          applicable_plans?: Json
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      // User Subscriptions
+      user_subscriptions: {
+        Row: {
+          id: string
+          user_id: string
+          plan_id: string
+          stripe_subscription_id: string | null
+          stripe_customer_id: string | null
+          status: 'active' | 'past_due' | 'canceled' | 'incomplete' | 'trialing' | 'free'
+          current_period_start: string | null
+          current_period_end: string | null
+          cancel_at_period_end: boolean
+          promo_code_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          plan_id: string
+          stripe_subscription_id?: string | null
+          stripe_customer_id?: string | null
+          status?: 'active' | 'past_due' | 'canceled' | 'incomplete' | 'trialing' | 'free'
+          current_period_start?: string | null
+          current_period_end?: string | null
+          cancel_at_period_end?: boolean
+          promo_code_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          plan_id?: string
+          stripe_subscription_id?: string | null
+          stripe_customer_id?: string | null
+          status?: 'active' | 'past_due' | 'canceled' | 'incomplete' | 'trialing' | 'free'
+          current_period_start?: string | null
+          current_period_end?: string | null
+          cancel_at_period_end?: boolean
+          promo_code_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      // Promo Code Redemptions
+      promo_code_redemptions: {
+        Row: {
+          id: string
+          user_id: string
+          promo_code_id: string
+          subscription_id: string | null
+          redeemed_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          promo_code_id: string
+          subscription_id?: string | null
+          redeemed_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          promo_code_id?: string
+          subscription_id?: string | null
+          redeemed_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never

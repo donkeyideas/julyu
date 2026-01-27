@@ -22,11 +22,19 @@ function getAuthHeaders(): HeadersInit {
   return headers
 }
 
+interface ActionResult {
+  success: boolean
+  action: string
+  message: string
+  data?: Record<string, unknown>
+}
+
 interface Message {
   id: string
   role: 'user' | 'assistant'
   content: string
   timestamp: Date
+  actions?: ActionResult[]
 }
 
 interface Conversation {
@@ -337,7 +345,8 @@ export default function AssistantPage() {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
         content: data.response,
-        timestamp: new Date()
+        timestamp: new Date(),
+        actions: data.actions || undefined,
       }
 
       setMessages(prev => [...prev, assistantMessage])
@@ -520,6 +529,32 @@ export default function AssistantPage() {
                         {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </div>
+                    {/* Action results from AI */}
+                    {message.role === 'assistant' && message.actions && message.actions.length > 0 && (
+                      <div className="flex flex-col gap-1.5">
+                        {message.actions.map((action, idx) => (
+                          <div
+                            key={idx}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${
+                              action.success
+                                ? 'bg-green-500/15 text-green-400 border border-green-500/30'
+                                : 'bg-red-500/15 text-red-400 border border-red-500/30'
+                            }`}
+                          >
+                            {action.success ? (
+                              <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            ) : (
+                              <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                              </svg>
+                            )}
+                            <span>{action.message}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     {/* Compare Prices button for messages with ingredients */}
                     {message.role === 'assistant' && hasIngredients(message.content) && (
                       <button

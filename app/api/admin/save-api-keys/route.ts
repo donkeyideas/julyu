@@ -156,9 +156,9 @@ export async function POST(request: NextRequest) {
     // Proceed to save keys (auth already checked or skipped)
 
     const body = await request.json()
-    const { deepseek, openai, krogerClientId, krogerClientSecret, spoonacular } = body
+    const { deepseek, openai, krogerClientId, krogerClientSecret, spoonacular, stripeSecretKey, stripePublishableKey, stripeWebhookSecret } = body
 
-    if (!deepseek && !openai && !(krogerClientId && krogerClientSecret) && !spoonacular) {
+    if (!deepseek && !openai && !(krogerClientId && krogerClientSecret) && !spoonacular && !stripeSecretKey) {
       return NextResponse.json({ success: false, error: 'At least one API key required' }, { status: 400 })
     }
 
@@ -407,6 +407,77 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Save Stripe API keys
+    if (stripeSecretKey) {
+      const trimmedKey = stripeSecretKey.trim()
+      if (!trimmedKey || trimmedKey.length < 10) {
+        return NextResponse.json({ success: false, error: 'Invalid Stripe Secret Key format' }, { status: 400 })
+      }
+
+      console.log('[Save API Keys] Saving Stripe keys')
+      const encryptedSecret = encrypt(trimmedKey)
+
+      const { error: stripeError } = await supabase
+        .from('ai_model_config')
+        .upsert({
+          model_name: 'stripe-secret',
+          provider: 'Stripe',
+          api_key_encrypted: encryptedSecret,
+          api_endpoint: 'https://api.stripe.com',
+          model_version: 'v1',
+          is_active: true,
+          config: {},
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'model_name',
+        })
+
+      if (stripeError && !stripeError.message?.includes('relation') && !stripeError.message?.includes('does not exist')) {
+        console.error('[Save API Keys] Error saving Stripe secret key:', stripeError)
+        return NextResponse.json({ success: false, error: 'Failed to save Stripe Secret Key' }, { status: 500 })
+      }
+
+      // Save publishable key if provided
+      if (stripePublishableKey) {
+        const encryptedPub = encrypt(stripePublishableKey.trim())
+        await supabase
+          .from('ai_model_config')
+          .upsert({
+            model_name: 'stripe-publishable',
+            provider: 'Stripe',
+            api_key_encrypted: encryptedPub,
+            api_endpoint: 'https://api.stripe.com',
+            model_version: 'v1',
+            is_active: true,
+            config: {},
+            updated_at: new Date().toISOString(),
+          }, {
+            onConflict: 'model_name',
+          })
+      }
+
+      // Save webhook secret if provided
+      if (stripeWebhookSecret) {
+        const encryptedWebhook = encrypt(stripeWebhookSecret.trim())
+        await supabase
+          .from('ai_model_config')
+          .upsert({
+            model_name: 'stripe-webhook',
+            provider: 'Stripe',
+            api_key_encrypted: encryptedWebhook,
+            api_endpoint: 'https://api.stripe.com',
+            model_version: 'v1',
+            is_active: true,
+            config: {},
+            updated_at: new Date().toISOString(),
+          }, {
+            onConflict: 'model_name',
+          })
+      }
+
+      console.log('[Save API Keys] Stripe keys saved successfully')
+    }
+
     console.log('[Save API Keys] All keys processed successfully')
     return NextResponse.json({
       success: true,
@@ -415,6 +486,7 @@ export async function POST(request: NextRequest) {
       openaiConfigured: !!openai,
       krogerConfigured: !!(krogerClientId && krogerClientSecret),
       spoonacularConfigured: !!spoonacular,
+      stripeConfigured: !!stripeSecretKey,
     })
   } catch (error: any) {
     console.error('[Save API Keys] Error saving API keys:', error)
@@ -431,7 +503,7 @@ export async function GET() {
     const { data: configs, error } = await supabase
       .from('ai_model_config')
       .select('model_name, api_key_encrypted, is_active')
-      .in('model_name', ['deepseek-chat', 'gpt-4-vision', 'kroger', 'spoonacular'])
+      .in('model_name', ['deepseek-chat', 'gpt-4-vision', 'kroger', 'spoonacular', 'stripe-secret'])
 
     if (error) {
       // If table doesn't exist, check environment variables as fallback
@@ -439,12 +511,14 @@ export async function GET() {
       const hasOpenaiEnv = !!(process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.trim() !== '')
       const hasKrogerEnv = !!(process.env.KROGER_CLIENT_ID && process.env.KROGER_CLIENT_SECRET)
       const hasSpoonacularEnv = !!(process.env.SPOONACULAR_API_KEY && process.env.SPOONACULAR_API_KEY.trim() !== '')
+      const hasStripeEnv = !!(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.trim() !== '')
 
       return NextResponse.json({
         deepseekConfigured: hasDeepseekEnv,
         openaiConfigured: hasOpenaiEnv,
         krogerConfigured: hasKrogerEnv,
         spoonacularConfigured: hasSpoonacularEnv,
+        stripeConfigured: hasStripeEnv,
       })
     }
 
@@ -452,18 +526,21 @@ export async function GET() {
     const openaiConfigured = configs?.some((c: any) => c.model_name === 'gpt-4-vision' && c.api_key_encrypted && c.is_active) || false
     const krogerConfigured = configs?.some((c: any) => c.model_name === 'kroger' && c.api_key_encrypted && c.is_active) || false
     const spoonacularConfigured = configs?.some((c: any) => c.model_name === 'spoonacular' && c.api_key_encrypted && c.is_active) || false
+    const stripeConfigured = configs?.some((c: any) => c.model_name === 'stripe-secret' && c.api_key_encrypted && c.is_active) || false
 
     // Also check environment variables as fallback
     const hasDeepseekEnv = !!(process.env.DEEPSEEK_API_KEY && process.env.DEEPSEEK_API_KEY.trim() !== '')
     const hasOpenaiEnv = !!(process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.trim() !== '')
     const hasKrogerEnv = !!(process.env.KROGER_CLIENT_ID && process.env.KROGER_CLIENT_SECRET)
     const hasSpoonacularEnv = !!(process.env.SPOONACULAR_API_KEY && process.env.SPOONACULAR_API_KEY.trim() !== '')
+    const hasStripeEnv = !!(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.trim() !== '')
 
     return NextResponse.json({
       deepseekConfigured: deepseekConfigured || hasDeepseekEnv,
       openaiConfigured: openaiConfigured || hasOpenaiEnv,
       krogerConfigured: krogerConfigured || hasKrogerEnv,
       spoonacularConfigured: spoonacularConfigured || hasSpoonacularEnv,
+      stripeConfigured: stripeConfigured || hasStripeEnv,
     })
   } catch (error) {
     // Fallback to environment variables

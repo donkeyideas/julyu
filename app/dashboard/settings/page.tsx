@@ -61,9 +61,34 @@ export default function SettingsPage() {
   const [editingName, setEditingName] = useState(false)
   const [editedName, setEditedName] = useState('')
   const [savingName, setSavingName] = useState(false)
+  const [subscription, setSubscription] = useState<any>(null)
+  const [subscriptionPlan, setSubscriptionPlan] = useState<any>(null)
+  const [subscriptionPromo, setSubscriptionPromo] = useState<any>(null)
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true)
+  const [consent, setConsent] = useState({
+    data_aggregation: false,
+    ai_training: false,
+    marketing: false,
+    analytics: false,
+  })
+  const [consentLoading, setConsentLoading] = useState(true)
+  const [exporting, setExporting] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   useEffect(() => {
     loadSettings()
+    loadConsent()
+    loadSubscription()
+
+    // Check for subscription success
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('subscription') === 'success') {
+      setSaveMessage({ type: 'success', text: 'Subscription activated successfully!' })
+      // Clean URL
+      window.history.replaceState({}, '', '/dashboard/settings')
+      setTimeout(() => setSaveMessage(null), 5000)
+    }
   }, [])
 
   const loadSettings = async () => {
@@ -218,6 +243,152 @@ export default function SettingsPage() {
         [key]: !prev.notification_preferences[key]
       }
     }))
+  }
+
+  const getHeaders = (): HeadersInit => {
+    const headers: HeadersInit = { 'Content-Type': 'application/json' }
+    const storedUser = localStorage.getItem('julyu_user')
+    const userId = user?.id || (storedUser ? JSON.parse(storedUser).id : null)
+    if (userId) headers['x-user-id'] = userId
+    return headers
+  }
+
+  const loadConsent = async () => {
+    try {
+      const headers = getHeaders()
+      const res = await fetch('/api/privacy/consent', { headers })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.consent) setConsent(data.consent)
+      }
+    } catch (error) {
+      console.error('Failed to load consent:', error)
+    } finally {
+      setConsentLoading(false)
+    }
+  }
+
+  const loadSubscription = async () => {
+    try {
+      const headers = getHeaders()
+      const res = await fetch('/api/subscriptions/manage', { headers })
+      if (res.ok) {
+        const data = await res.json()
+        setSubscription(data.subscription)
+        setSubscriptionPlan(data.plan)
+        setSubscriptionPromo(data.promo)
+      }
+    } catch (error) {
+      console.error('Failed to load subscription:', error)
+    } finally {
+      setSubscriptionLoading(false)
+    }
+  }
+
+  const handleSubscriptionAction = async (action: 'cancel' | 'reactivate' | 'portal') => {
+    try {
+      const headers = getHeaders()
+      const res = await fetch('/api/subscriptions/manage', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ action }),
+      })
+      const data = await res.json()
+
+      if (action === 'portal' && data.url) {
+        window.location.href = data.url
+        return
+      }
+
+      if (data.message) {
+        setSaveMessage({ type: 'success', text: data.message })
+        setTimeout(() => setSaveMessage(null), 5000)
+        loadSubscription()
+      } else if (data.error) {
+        setSaveMessage({ type: 'error', text: data.error })
+        setTimeout(() => setSaveMessage(null), 5000)
+      }
+    } catch (error) {
+      console.error('Subscription action failed:', error)
+      setSaveMessage({ type: 'error', text: 'Failed to process action' })
+      setTimeout(() => setSaveMessage(null), 5000)
+    }
+  }
+
+  const handleConsentChange = async (key: keyof typeof consent) => {
+    const newValue = !consent[key]
+    setConsent(prev => ({ ...prev, [key]: newValue }))
+
+    try {
+      const headers = getHeaders()
+      await fetch('/api/privacy/consent', {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ consent: { [key]: newValue } }),
+      })
+    } catch (error) {
+      console.error('Failed to update consent:', error)
+      // Revert on failure
+      setConsent(prev => ({ ...prev, [key]: !newValue }))
+    }
+  }
+
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      const headers = getHeaders()
+      const res = await fetch('/api/privacy/export', { method: 'POST', headers })
+      if (res.ok) {
+        const blob = await res.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `julyu-data-export-${new Date().toISOString().split('T')[0]}.json`
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+        window.URL.revokeObjectURL(url)
+        setSaveMessage({ type: 'success', text: 'Data exported successfully!' })
+        setTimeout(() => setSaveMessage(null), 3000)
+      } else {
+        setSaveMessage({ type: 'error', text: 'Failed to export data' })
+        setTimeout(() => setSaveMessage(null), 3000)
+      }
+    } catch (error) {
+      console.error('Export failed:', error)
+      setSaveMessage({ type: 'error', text: 'Failed to export data' })
+      setTimeout(() => setSaveMessage(null), 3000)
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    setDeleting(true)
+    try {
+      const headers = getHeaders()
+      const res = await fetch('/api/privacy/delete', {
+        method: 'DELETE',
+        headers,
+        body: JSON.stringify({ confirmation: 'DELETE_MY_ACCOUNT' }),
+      })
+      if (res.ok) {
+        // Clear local storage and redirect
+        localStorage.clear()
+        window.location.href = '/'
+      } else {
+        const data = await res.json()
+        setSaveMessage({ type: 'error', text: data.error || 'Failed to delete account' })
+        setTimeout(() => setSaveMessage(null), 5000)
+      }
+    } catch (error) {
+      console.error('Delete failed:', error)
+      setSaveMessage({ type: 'error', text: 'Failed to delete account' })
+      setTimeout(() => setSaveMessage(null), 5000)
+    } finally {
+      setDeleting(false)
+      setShowDeleteConfirm(false)
+    }
   }
 
   const subscriptionDisplay = {
@@ -386,13 +557,101 @@ export default function SettingsPage() {
               </div>
             )}
           </div>
-          <div>
-            <div className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Subscription</div>
-            <div className={subscriptionDisplay[user?.subscription_tier || 'free'].color}>
-              {subscriptionDisplay[user?.subscription_tier || 'free'].label}
+        </div>
+      </div>
+
+      {/* Subscription Management */}
+      <div className="rounded-2xl p-8 mb-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <h3 className="text-2xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>Subscription</h3>
+        {subscriptionLoading ? (
+          <div style={{ color: 'var(--text-muted)' }}>Loading subscription info...</div>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-semibold text-lg" style={{ color: 'var(--text-primary)' }}>
+                  {subscriptionPlan?.name || 'Free Plan'}
+                </div>
+                <div style={{ color: 'var(--text-muted)' }}>
+                  {subscriptionPlan?.price > 0
+                    ? `$${subscriptionPlan.price}/${subscriptionPlan.billing_interval}`
+                    : 'Free forever'}
+                </div>
+              </div>
+              <span className={`px-3 py-1 rounded-lg text-sm font-semibold ${
+                subscription?.status === 'active' ? 'bg-green-500/15 text-green-500' :
+                subscription?.status === 'trialing' ? 'bg-blue-500/15 text-blue-500' :
+                subscription?.status === 'past_due' ? 'bg-yellow-500/15 text-yellow-500' :
+                subscription?.status === 'canceled' ? 'bg-red-500/15 text-red-500' :
+                'bg-gray-500/15 text-gray-400'
+              }`}>
+                {subscription?.status === 'active' ? 'Active' :
+                 subscription?.status === 'trialing' ? 'Trial' :
+                 subscription?.status === 'past_due' ? 'Past Due' :
+                 subscription?.status === 'canceled' ? 'Canceled' :
+                 'Free'}
+              </span>
+            </div>
+
+            {subscription?.current_period_end && (
+              <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                {subscription.cancel_at_period_end
+                  ? `Cancels on ${new Date(subscription.current_period_end).toLocaleDateString()}`
+                  : `Renews on ${new Date(subscription.current_period_end).toLocaleDateString()}`}
+              </div>
+            )}
+
+            {subscriptionPromo && (
+              <div className="text-sm text-green-400">
+                Promo applied: {subscriptionPromo.code}
+                {subscriptionPromo.type === 'free_months' && ` (${subscriptionPromo.value} months free)`}
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-3 pt-2">
+              {(!subscription || subscription.status === 'free' || subscription.status === 'canceled') && (
+                <a
+                  href="/pricing"
+                  className="px-4 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition text-sm"
+                >
+                  Upgrade Plan
+                </a>
+              )}
+
+              {subscription?.stripe_customer_id && (
+                <button
+                  onClick={() => handleSubscriptionAction('portal')}
+                  className="px-4 py-2 rounded-lg hover:opacity-80 transition text-sm"
+                  style={{ border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
+                >
+                  Manage Billing
+                </button>
+              )}
+
+              {subscription?.status === 'active' && !subscription?.cancel_at_period_end && (
+                <button
+                  onClick={() => {
+                    if (confirm('Are you sure you want to cancel your subscription? You will still have access until the end of your billing period.')) {
+                      handleSubscriptionAction('cancel')
+                    }
+                  }}
+                  className="px-4 py-2 border border-red-500/50 text-red-400 rounded-lg hover:bg-red-500/10 transition text-sm"
+                >
+                  Cancel Subscription
+                </button>
+              )}
+
+              {subscription?.cancel_at_period_end && (
+                <button
+                  onClick={() => handleSubscriptionAction('reactivate')}
+                  className="px-4 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition text-sm"
+                >
+                  Reactivate Subscription
+                </button>
+              )}
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Notification Preferences */}
@@ -548,6 +807,80 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {/* Privacy & Data */}
+      <div className="rounded-2xl p-8 mb-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <h3 className="text-2xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>Privacy & Data</h3>
+        <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
+          Control how your data is used. Changes take effect immediately.
+        </p>
+        <div className="space-y-4">
+          <label className="flex justify-between items-center cursor-pointer">
+            <div>
+              <span className="font-medium" style={{ color: 'var(--text-primary)' }}>Analytics</span>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Help us improve Julyu by sharing anonymous usage data</p>
+            </div>
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={consent.analytics}
+                onChange={() => handleConsentChange('analytics')}
+                disabled={consentLoading}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500 bg-gray-600"></div>
+            </div>
+          </label>
+          <label className="flex justify-between items-center cursor-pointer">
+            <div>
+              <span className="font-medium" style={{ color: 'var(--text-primary)' }}>Aggregated data sharing</span>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Allow your anonymized data to be included in aggregated price insights</p>
+            </div>
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={consent.data_aggregation}
+                onChange={() => handleConsentChange('data_aggregation')}
+                disabled={consentLoading}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500 bg-gray-600"></div>
+            </div>
+          </label>
+          <label className="flex justify-between items-center cursor-pointer">
+            <div>
+              <span className="font-medium" style={{ color: 'var(--text-primary)' }}>AI model training</span>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Help improve AI recommendations by allowing your interactions to train our models</p>
+            </div>
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={consent.ai_training}
+                onChange={() => handleConsentChange('ai_training')}
+                disabled={consentLoading}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500 bg-gray-600"></div>
+            </div>
+          </label>
+          <label className="flex justify-between items-center cursor-pointer">
+            <div>
+              <span className="font-medium" style={{ color: 'var(--text-primary)' }}>Marketing communications</span>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Receive promotional emails about deals and new features</p>
+            </div>
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={consent.marketing}
+                onChange={() => handleConsentChange('marketing')}
+                disabled={consentLoading}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500 bg-gray-600"></div>
+            </div>
+          </label>
+        </div>
+      </div>
+
       {/* Danger Zone */}
       <div className="rounded-2xl p-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
         <h3 className="text-2xl font-bold mb-6 text-red-500">Danger Zone</h3>
@@ -557,8 +890,13 @@ export default function SettingsPage() {
               <span className="font-medium" style={{ color: 'var(--text-primary)' }}>Export my data</span>
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Download all your data including shopping lists, receipts, and preferences</p>
             </div>
-            <button className="px-4 py-2 rounded-lg hover:border-green-500 transition" style={{ border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
-              Export
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="px-4 py-2 rounded-lg hover:border-green-500 transition disabled:opacity-50"
+              style={{ border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
+            >
+              {exporting ? 'Exporting...' : 'Export'}
             </button>
           </div>
           <div className="flex justify-between items-center pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
@@ -566,9 +904,33 @@ export default function SettingsPage() {
               <span className="font-medium text-red-500">Delete account</span>
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Permanently delete your account and all associated data</p>
             </div>
-            <button className="px-4 py-2 border border-red-500 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition">
-              Delete
-            </button>
+            {showDeleteConfirm ? (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-red-400">Are you sure?</span>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition disabled:opacity-50"
+                >
+                  {deleting ? 'Deleting...' : 'Confirm Delete'}
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={deleting}
+                  className="px-4 py-2 rounded-lg transition disabled:opacity-50"
+                  style={{ border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="px-4 py-2 border border-red-500 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition"
+              >
+                Delete
+              </button>
+            )}
           </div>
         </div>
       </div>

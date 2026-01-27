@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
+import { hasFeature } from '@/lib/subscriptions/feature-gate'
 
 // Demo alerts for when database isn't available
 function getDemoAlerts() {
@@ -74,6 +75,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ alerts: getDemoAlerts() })
     }
 
+    if (!isTestMode) {
+      const allowed = await hasFeature(userId, 'price_alerts')
+      if (!allowed) {
+        return NextResponse.json({ error: 'Upgrade required', upgradeUrl: '/pricing' }, { status: 403 })
+      }
+    }
+
     const { data: alerts, error } = await supabase
       .from('price_alerts')
       .select(`
@@ -123,6 +131,13 @@ export async function POST(request: NextRequest) {
 
     if (!target_price) {
       return NextResponse.json({ error: 'Target price is required' }, { status: 400 })
+    }
+
+    if (!isTestMode && userId) {
+      const allowed = await hasFeature(userId, 'price_alerts')
+      if (!allowed) {
+        return NextResponse.json({ error: 'Upgrade required', upgradeUrl: '/pricing' }, { status: 403 })
+      }
     }
 
     // For demo mode or if user not authenticated, return a demo alert

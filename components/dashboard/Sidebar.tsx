@@ -164,6 +164,14 @@ export default function Sidebar() {
              userInfo?.subscription_tier === 'enterprise' ? 'Enterprise Member' :
              'Free Plan'}
           </div>
+          {userInfo?.subscription_tier === 'free' && (
+            <Link
+              href="/pricing"
+              className="mt-2 inline-block text-xs text-green-500 hover:text-green-400 font-semibold"
+            >
+              Upgrade Plan →
+            </Link>
+          )}
         </div>
       )}
 
