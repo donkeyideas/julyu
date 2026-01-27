@@ -10,20 +10,18 @@ interface ConversationRow {
   participants?: { user: { id: string; email: string; full_name: string | null } | null }[]
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const authClient = createServerClient()
-    const { data: { user }, error: authError } = await authClient.auth.getUser()
+    const { data: { user } } = await authClient.auth.getUser()
 
-    const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
+    // Check for Firebase user ID in header (for Google sign-in users)
+    const firebaseUserId = request.headers.get('x-user-id')
 
-    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
+    const userId = user?.id || firebaseUserId
 
     if (!userId) {
-      // Return test data for demo purposes when not authenticated
-      return NextResponse.json({ conversations: getTestConversations() })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Use service role client for database operations (bypasses RLS)
@@ -38,12 +36,7 @@ export async function GET() {
 
     if (error) {
       console.error('[Chat] Conversations error:', error)
-      // Fall back to test data if table doesn't exist or other errors
-      if (isTestMode || error.message?.includes('relation') || error.code === '42P01') {
-        return NextResponse.json({ conversations: getTestConversations() })
-      }
-      // Return test data for any database error to allow demo functionality
-      return NextResponse.json({ conversations: getTestConversations() })
+      return NextResponse.json({ conversations: [] })
     }
 
     // Fetch participants for each conversation using participant_ids directly
@@ -65,8 +58,7 @@ export async function GET() {
     return NextResponse.json({ conversations: transformed })
   } catch (error: any) {
     console.error('[Chat] Error:', error)
-    // Return test data on any error to keep the app functional
-    return NextResponse.json({ conversations: getTestConversations() })
+    return NextResponse.json({ error: 'Failed to fetch conversations' }, { status: 500 })
   }
 }
 
@@ -76,9 +68,12 @@ export async function POST(request: NextRequest) {
 
   try {
     const authClient = createServerClient()
-    const { data: { user }, error: authError } = await authClient.auth.getUser()
+    const { data: { user } } = await authClient.auth.getUser()
 
-    const userId = user?.id || null
+    // Check for Firebase user ID in header (for Google sign-in users)
+    const firebaseUserId = request.headers.get('x-user-id')
+
+    const userId = user?.id || firebaseUserId
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -128,20 +123,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('[Chat] Create conversation error:', error)
-      // Fall back to demo conversation on any error
-      return NextResponse.json({
-        conversation: {
-          id: `conv-${Date.now()}`,
-          participant_ids: [userId, participantId],
-          participants: [
-            { id: userId, email: user?.email || 'you@example.com', full_name: 'You' },
-            { id: participantId, email: requestBody.participant_email || 'friend@example.com', full_name: requestBody.participant_name || 'Friend' }
-          ],
-          last_message: null,
-          last_message_at: null,
-          created_at: new Date().toISOString()
-        }
-      })
+      return NextResponse.json({ error: 'Failed to create conversation' }, { status: 500 })
     }
 
     // Create participant records (ignore errors)
@@ -159,54 +141,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       conversation: {
         ...conversation,
-        participants: participants || [
-          { id: userId, email: user?.email || 'you@example.com', full_name: 'You' },
-          { id: participantId, email: requestBody.participant_email || 'friend@example.com', full_name: requestBody.participant_name || 'Friend' }
-        ]
+        participants: participants || []
       }
     })
   } catch (error: any) {
     console.error('[Chat] Error:', error)
-    // Return a demo conversation on any error to keep the feature working
-    return NextResponse.json({
-      conversation: {
-        id: `conv-${Date.now()}`,
-        participant_ids: ['current-user', participantId || 'friend'],
-        participants: [
-          { id: 'current-user', email: 'you@example.com', full_name: 'You' },
-          { id: participantId || 'friend', email: requestBody.participant_email || 'friend@example.com', full_name: requestBody.participant_name || 'Friend' }
-        ],
-        last_message: null,
-        last_message_at: null,
-        created_at: new Date().toISOString()
-      }
-    })
+    return NextResponse.json({ error: 'Failed to create conversation' }, { status: 500 })
   }
-}
-
-function getTestConversations() {
-  return [
-    {
-      id: 'test-conv-1',
-      participant_ids: ['test-user-id', 'friend-1'],
-      participants: [
-        { id: 'test-user-id', email: 'demo@julyu.com', full_name: 'Demo User' },
-        { id: 'friend-1', email: 'sarah@example.com', full_name: 'Sarah Johnson' }
-      ],
-      last_message: "Hey! Did you try that chicken recipe?",
-      last_message_at: new Date().toISOString(),
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 'test-conv-2',
-      participant_ids: ['test-user-id', 'friend-2'],
-      participants: [
-        { id: 'test-user-id', email: 'demo@julyu.com', full_name: 'Demo User' },
-        { id: 'friend-2', email: 'mike@example.com', full_name: 'Mike Chen' }
-      ],
-      last_message: "Kroger has eggs on sale this week!",
-      last_message_at: new Date(Date.now() - 3600000).toISOString(),
-      created_at: new Date().toISOString()
-    }
-  ]
 }

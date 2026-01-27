@@ -47,6 +47,25 @@ interface FriendRequest {
   sender: User
 }
 
+// Helper to get auth headers for API calls (supports Firebase/Google users)
+function getAuthHeaders(): HeadersInit {
+  const headers: HeadersInit = { 'Content-Type': 'application/json' }
+  if (typeof window !== 'undefined') {
+    const storedUser = localStorage.getItem('julyu_user')
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser)
+        if (user.id) {
+          headers['x-user-id'] = user.id
+        }
+      } catch (e) {
+        console.error('Failed to parse stored user:', e)
+      }
+    }
+  }
+  return headers
+}
+
 export default function ChatPage() {
   const router = useRouter()
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -84,7 +103,7 @@ export default function ChatPage() {
 
     const pollMessages = async () => {
       try {
-        const response = await fetch(`/api/chat/conversations/${activeConversation.id}/messages`)
+        const response = await fetch(`/api/chat/conversations/${activeConversation.id}/messages`, { headers: getAuthHeaders() })
         if (response.ok) {
           const data = await response.json()
           const newMessages = data.messages || []
@@ -115,7 +134,7 @@ export default function ChatPage() {
   useEffect(() => {
     const pollConversations = async () => {
       try {
-        const response = await fetch('/api/chat/conversations')
+        const response = await fetch('/api/chat/conversations', { headers: getAuthHeaders() })
         if (response.ok) {
           const data = await response.json()
           setConversations(data.conversations || [])
@@ -139,7 +158,7 @@ export default function ChatPage() {
 
   const fetchCurrentUser = async () => {
     try {
-      const response = await fetch('/api/settings')
+      const response = await fetch('/api/settings', { headers: getAuthHeaders() })
       if (response.ok) {
         const data = await response.json()
         if (data.user) {
@@ -202,7 +221,7 @@ export default function ChatPage() {
 
   const fetchConversations = async () => {
     try {
-      const response = await fetch('/api/chat/conversations')
+      const response = await fetch('/api/chat/conversations', { headers: getAuthHeaders() })
       if (response.ok) {
         const data = await response.json()
         setConversations(data.conversations || [])
@@ -216,7 +235,7 @@ export default function ChatPage() {
 
   const fetchFriends = async () => {
     try {
-      const response = await fetch('/api/chat/friends')
+      const response = await fetch('/api/chat/friends', { headers: getAuthHeaders() })
       if (response.ok) {
         const data = await response.json()
         const apiFriends = data.friends || []
@@ -256,7 +275,7 @@ export default function ChatPage() {
 
   const fetchFriendRequests = async () => {
     try {
-      const response = await fetch('/api/chat/friend-requests')
+      const response = await fetch('/api/chat/friend-requests', { headers: getAuthHeaders() })
       if (response.ok) {
         const data = await response.json()
         setFriendRequests(data.requests || [])
@@ -271,7 +290,7 @@ export default function ChatPage() {
     try {
       const response = await fetch(`/api/chat/friend-requests/${requestId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ action })
       })
 
@@ -296,7 +315,7 @@ export default function ChatPage() {
   const loadConversation = async (conversation: ChatConversation) => {
     setActiveConversation(conversation)
     try {
-      const response = await fetch(`/api/chat/conversations/${conversation.id}/messages`)
+      const response = await fetch(`/api/chat/conversations/${conversation.id}/messages`, { headers: getAuthHeaders() })
       if (response.ok) {
         const data = await response.json()
         setMessages(data.messages || [])
@@ -310,7 +329,7 @@ export default function ChatPage() {
     try {
       const response = await fetch('/api/chat/conversations', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           participant_id: friend.friend_id,
           participant_email: friend.friend.email,
@@ -349,7 +368,7 @@ export default function ChatPage() {
     try {
       const response = await fetch(`/api/chat/conversations/${activeConversation.id}/messages`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ content: messageContent })
       })
 
@@ -382,7 +401,7 @@ export default function ChatPage() {
     try {
       const response = await fetch('/api/chat/friends', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ email: friendEmail.trim() })
       })
 

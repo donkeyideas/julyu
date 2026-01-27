@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const supabase = createServerClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
 
-    const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
+    // Check for Firebase user ID in header (for Google sign-in users)
+    const firebaseUserId = request.headers.get('x-user-id')
 
-    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
+    const userId = user?.id || firebaseUserId
 
     if (!userId) {
-      // Return test data for demo purposes when not authenticated
-      return NextResponse.json({ friends: getTestFriends() })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Fetch friends in BOTH directions:
@@ -43,13 +41,7 @@ export async function GET() {
 
     if (error1 || error2) {
       console.error('[Friends] Error:', error1 || error2)
-      // Fall back to test data if table doesn't exist or other errors
-      const err = error1 || error2
-      if (isTestMode || err?.message?.includes('relation') || err?.code === '42P01') {
-        return NextResponse.json({ friends: getTestFriends() })
-      }
-      // Return test data for any database error to allow demo functionality
-      return NextResponse.json({ friends: getTestFriends() })
+      return NextResponse.json({ friends: [] })
     }
 
     // Combine and normalize the results
@@ -71,24 +63,33 @@ export async function GET() {
     return NextResponse.json({ friends: allFriends })
   } catch (error: unknown) {
     console.error('[Friends] Error:', error)
-    // Return test data on any error to keep the app functional
-    return NextResponse.json({ friends: getTestFriends() })
+    return NextResponse.json({ error: 'Failed to fetch friends' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = createServerClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
 
-    const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
+    // Check for Firebase user ID in header (for Google sign-in users)
+    const firebaseUserId = request.headers.get('x-user-id')
 
-    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
+    const userId = user?.id || firebaseUserId
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Get user email from database if Firebase user
+    let userEmail = user?.email
+    if (!userEmail && firebaseUserId) {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('email')
+        .eq('id', firebaseUserId)
+        .single()
+      userEmail = userData?.email
     }
 
     const body = await request.json()
@@ -101,7 +102,7 @@ export async function POST(request: NextRequest) {
     const normalizedEmail = email.trim().toLowerCase()
 
     // Can't add yourself
-    if (user?.email?.toLowerCase() === normalizedEmail) {
+    if (userEmail?.toLowerCase() === normalizedEmail) {
       return NextResponse.json({ error: 'Cannot add yourself as a friend' }, { status: 400 })
     }
 
@@ -211,66 +212,6 @@ export async function POST(request: NextRequest) {
     })
   } catch (error: any) {
     console.error('[Friends] Error:', error)
-
-    const body = await request.json().catch(() => ({}))
-    const email = body.email || 'friend@example.com'
-
-    return NextResponse.json({
-      friend: {
-        id: `friend-${Date.now()}`,
-        user_id: 'current-user',
-        friend_id: `demo-friend-${Date.now()}`,
-        status: 'pending',
-        friend: {
-          id: `demo-friend-${Date.now()}`,
-          email: email,
-          full_name: email.split('@')[0]
-        },
-        created_at: new Date().toISOString()
-      },
-      message: 'Friend request sent!',
-      requestSent: true
-    })
+    return NextResponse.json({ error: 'Failed to add friend' }, { status: 500 })
   }
-}
-
-function getTestFriends() {
-  return [
-    {
-      id: 'friend-rel-1',
-      user_id: 'test-user-id',
-      friend_id: 'friend-1',
-      status: 'accepted',
-      friend: {
-        id: 'friend-1',
-        email: 'sarah@example.com',
-        full_name: 'Sarah Johnson'
-      },
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 'friend-rel-2',
-      user_id: 'test-user-id',
-      friend_id: 'friend-2',
-      status: 'accepted',
-      friend: {
-        id: 'friend-2',
-        email: 'mike@example.com',
-        full_name: 'Mike Chen'
-      },
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 'friend-rel-3',
-      user_id: 'test-user-id',
-      friend_id: 'friend-3',
-      status: 'accepted',
-      friend: {
-        id: 'friend-3',
-        email: 'emily@example.com',
-        full_name: 'Emily Davis'
-      },
-      created_at: new Date().toISOString()
-    }
-  ]
 }

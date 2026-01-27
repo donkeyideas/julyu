@@ -7,18 +7,16 @@ export async function GET(
 ) {
   try {
     const authClient = createServerClient()
-    const { data: { user }, error: authError } = await authClient.auth.getUser()
+    const { data: { user } } = await authClient.auth.getUser()
 
-    const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
+    // Check for Firebase user ID in header (for Google sign-in users)
+    const firebaseUserId = request.headers.get('x-user-id')
 
-    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
+    const userId = user?.id || firebaseUserId
     const conversationId = params.id
 
     if (!userId) {
-      // Return test data for demo purposes
-      return NextResponse.json({ messages: getTestMessages(conversationId) })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Use service role client for database operations
@@ -32,8 +30,7 @@ export async function GET(
       .single()
 
     if (convError || !conversation?.participant_ids?.includes(userId)) {
-      // Return test data if table doesn't exist or user not participant
-      return NextResponse.json({ messages: getTestMessages(conversationId) })
+      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 })
     }
 
     // Fetch messages
@@ -45,8 +42,7 @@ export async function GET(
 
     if (error) {
       console.error('[Chat] Messages error:', error)
-      // Return test data on any error
-      return NextResponse.json({ messages: getTestMessages(conversationId) })
+      return NextResponse.json({ messages: [] })
     }
 
     // Fetch sender details for each unique sender
@@ -66,8 +62,7 @@ export async function GET(
     return NextResponse.json({ messages: messagesWithSender })
   } catch (error: any) {
     console.error('[Chat] Error:', error)
-    // Return test data on any error
-    return NextResponse.json({ messages: getTestMessages(params.id) })
+    return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 })
   }
 }
 
@@ -77,13 +72,12 @@ export async function POST(
 ) {
   try {
     const authClient = createServerClient()
-    const { data: { user }, error: authError } = await authClient.auth.getUser()
+    const { data: { user } } = await authClient.auth.getUser()
 
-    const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
+    // Check for Firebase user ID in header (for Google sign-in users)
+    const firebaseUserId = request.headers.get('x-user-id')
 
-    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
+    const userId = user?.id || firebaseUserId
     const conversationId = params.id
 
     const body = await request.json()
@@ -93,18 +87,8 @@ export async function POST(
       return NextResponse.json({ error: 'Message content required' }, { status: 400 })
     }
 
-    // For demo/test mode, just return a mock message
     if (!userId) {
-      return NextResponse.json({
-        message: {
-          id: `msg-${Date.now()}`,
-          conversation_id: conversationId,
-          sender_id: 'test-user-id',
-          content: content.trim(),
-          created_at: new Date().toISOString(),
-          sender: { id: 'test-user-id', email: 'demo@julyu.com', full_name: 'Demo User' }
-        }
-      })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Use service role client for database operations
@@ -117,18 +101,8 @@ export async function POST(
       .eq('id', conversationId)
       .single()
 
-    if (convError || (!conversation?.participant_ids?.includes(userId) && !isTestMode)) {
-      // Return mock message for demo
-      return NextResponse.json({
-        message: {
-          id: `msg-${Date.now()}`,
-          conversation_id: conversationId,
-          sender_id: userId,
-          content: content.trim(),
-          created_at: new Date().toISOString(),
-          sender: { id: userId, email: 'demo@julyu.com', full_name: 'Demo User' }
-        }
-      })
+    if (convError || !conversation?.participant_ids?.includes(userId)) {
+      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 })
     }
 
     // Create message
@@ -145,17 +119,7 @@ export async function POST(
 
     if (error) {
       console.error('[Chat] Send message error:', error)
-      // Return mock message on error for demo functionality
-      return NextResponse.json({
-        message: {
-          id: `msg-${Date.now()}`,
-          conversation_id: conversationId,
-          sender_id: userId,
-          content: content.trim(),
-          created_at: new Date().toISOString(),
-          sender: { id: userId, email: 'demo@julyu.com', full_name: 'Demo User' }
-        }
-      })
+      return NextResponse.json({ error: 'Failed to send message' }, { status: 500 })
     }
 
     // Fetch sender details
@@ -183,91 +147,6 @@ export async function POST(
     return NextResponse.json({ message: messageWithSender })
   } catch (error: any) {
     console.error('[Chat] Error:', error)
-    // Return mock message on any error for demo
-    const body = await request.json().catch(() => ({ content: '' }))
-    return NextResponse.json({
-      message: {
-        id: `msg-${Date.now()}`,
-        conversation_id: params.id,
-        sender_id: 'test-user-id',
-        content: body.content?.trim() || '',
-        created_at: new Date().toISOString(),
-        sender: { id: 'test-user-id', email: 'demo@julyu.com', full_name: 'Demo User' }
-      }
-    })
+    return NextResponse.json({ error: 'Failed to send message' }, { status: 500 })
   }
-}
-
-function getTestMessages(conversationId: string) {
-  if (conversationId === 'test-conv-1') {
-    return [
-      {
-        id: 'msg-1',
-        conversation_id: conversationId,
-        sender_id: 'friend-1',
-        content: "Hi! I just found this amazing pasta recipe. It uses fresh tomatoes, garlic, basil, and parmesan cheese.",
-        created_at: new Date(Date.now() - 7200000).toISOString(),
-        sender: { id: 'friend-1', email: 'sarah@example.com', full_name: 'Sarah Johnson' }
-      },
-      {
-        id: 'msg-2',
-        conversation_id: conversationId,
-        sender_id: 'test-user-id',
-        content: "That sounds delicious! What kind of pasta do you use?",
-        created_at: new Date(Date.now() - 6900000).toISOString(),
-        sender: { id: 'test-user-id', email: 'demo@julyu.com', full_name: 'Demo User' }
-      },
-      {
-        id: 'msg-3',
-        conversation_id: conversationId,
-        sender_id: 'friend-1',
-        content: "I usually go with penne or rigatoni. You'll also need olive oil and some red pepper flakes if you like it spicy!",
-        created_at: new Date(Date.now() - 6600000).toISOString(),
-        sender: { id: 'friend-1', email: 'sarah@example.com', full_name: 'Sarah Johnson' }
-      },
-      {
-        id: 'msg-4',
-        conversation_id: conversationId,
-        sender_id: 'test-user-id',
-        content: "Perfect! I need to get milk, eggs, and bread anyway. I'll add those ingredients to my list.",
-        created_at: new Date(Date.now() - 6300000).toISOString(),
-        sender: { id: 'test-user-id', email: 'demo@julyu.com', full_name: 'Demo User' }
-      },
-      {
-        id: 'msg-5',
-        conversation_id: conversationId,
-        sender_id: 'friend-1',
-        content: "Hey! Did you try that chicken recipe?",
-        created_at: new Date(Date.now() - 3600000).toISOString(),
-        sender: { id: 'friend-1', email: 'sarah@example.com', full_name: 'Sarah Johnson' }
-      }
-    ]
-  }
-
-  return [
-    {
-      id: 'msg-a',
-      conversation_id: conversationId,
-      sender_id: 'friend-2',
-      content: "Hey! Kroger has eggs on sale this week - only $2.49 a dozen!",
-      created_at: new Date(Date.now() - 3600000).toISOString(),
-      sender: { id: 'friend-2', email: 'mike@example.com', full_name: 'Mike Chen' }
-    },
-    {
-      id: 'msg-b',
-      conversation_id: conversationId,
-      sender_id: 'test-user-id',
-      content: "Thanks for the tip! I was just about to go shopping.",
-      created_at: new Date(Date.now() - 3300000).toISOString(),
-      sender: { id: 'test-user-id', email: 'demo@julyu.com', full_name: 'Demo User' }
-    },
-    {
-      id: 'msg-c',
-      conversation_id: conversationId,
-      sender_id: 'friend-2',
-      content: "Kroger has eggs on sale this week!",
-      created_at: new Date(Date.now() - 3600000).toISOString(),
-      sender: { id: 'friend-2', email: 'mike@example.com', full_name: 'Mike Chen' }
-    }
-  ]
 }

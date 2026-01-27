@@ -2,19 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
 // GET - Get incoming friend requests for the current user
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
+    // Check for Firebase user ID in header (for Google sign-in users)
+    const firebaseUserId = request.headers.get('x-user-id')
 
-    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
+    const userId = user?.id || firebaseUserId
 
     if (!userId) {
-      return NextResponse.json({ requests: [] })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Get incoming friend requests (where current user is the recipient)
@@ -31,10 +30,6 @@ export async function GET() {
 
     if (error) {
       console.error('[Friend Requests] Error:', error)
-      // Return demo requests on error
-      if (isTestMode) {
-        return NextResponse.json({ requests: getDemoRequests() })
-      }
       return NextResponse.json({ requests: [] })
     }
 
@@ -61,14 +56,24 @@ export async function POST(request: NextRequest) {
     const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
+    // Check for Firebase user ID in header (for Google sign-in users)
+    const firebaseUserId = request.headers.get('x-user-id')
 
-    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
+    const userId = user?.id || firebaseUserId
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Get user email from database if Firebase user
+    let userEmail = user?.email
+    if (!userEmail && firebaseUserId) {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('email')
+        .eq('id', firebaseUserId)
+        .single()
+      userEmail = userData?.email
     }
 
     const body = await request.json()
@@ -81,7 +86,7 @@ export async function POST(request: NextRequest) {
     const normalizedEmail = email.trim().toLowerCase()
 
     // Can't add yourself
-    if (user?.email?.toLowerCase() === normalizedEmail) {
+    if (userEmail?.toLowerCase() === normalizedEmail) {
       return NextResponse.json({ error: 'Cannot send a friend request to yourself' }, { status: 400 })
     }
 
@@ -183,33 +188,4 @@ export async function POST(request: NextRequest) {
     console.error('[Friend Requests] Error:', error)
     return NextResponse.json({ error: 'Failed to send friend request' }, { status: 500 })
   }
-}
-
-function getDemoRequests() {
-  return [
-    {
-      id: 'request-1',
-      sender_id: 'demo-user-1',
-      recipient_id: 'test-user-id',
-      status: 'pending',
-      created_at: new Date(Date.now() - 3600000).toISOString(),
-      sender: {
-        id: 'demo-user-1',
-        email: 'alex@example.com',
-        full_name: 'Alex Thompson'
-      }
-    },
-    {
-      id: 'request-2',
-      sender_id: 'demo-user-2',
-      recipient_id: 'test-user-id',
-      status: 'pending',
-      created_at: new Date(Date.now() - 86400000).toISOString(),
-      sender: {
-        id: 'demo-user-2',
-        email: 'jordan@example.com',
-        full_name: 'Jordan Lee'
-      }
-    }
-  ]
 }

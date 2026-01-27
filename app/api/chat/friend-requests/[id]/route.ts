@@ -11,11 +11,10 @@ export async function PUT(
     const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
+    // Check for Firebase user ID in header (for Google sign-in users)
+    const firebaseUserId = request.headers.get('x-user-id')
 
-    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
+    const userId = user?.id || firebaseUserId
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -41,14 +40,6 @@ export async function PUT(
       .single()
 
     if (findError || !friendRequest) {
-      // For demo mode, return success anyway
-      if (isTestMode || id.startsWith('request-')) {
-        return NextResponse.json({
-          success: true,
-          action,
-          message: action === 'accept' ? 'Friend request accepted!' : 'Friend request declined.'
-        })
-      }
       return NextResponse.json({ error: 'Friend request not found' }, { status: 404 })
     }
 
@@ -117,11 +108,10 @@ export async function DELETE(
     const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
+    // Check for Firebase user ID in header (for Google sign-in users)
+    const firebaseUserId = request.headers.get('x-user-id')
 
-    const userId = user?.id || (isTestMode ? 'test-user-id' : null)
+    const userId = user?.id || firebaseUserId
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
