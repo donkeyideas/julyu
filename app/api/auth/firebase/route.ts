@@ -1,6 +1,129 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
+// Try to insert user with progressively fewer columns if some don't exist
+async function createUserWithFallback(
+  supabase: ReturnType<typeof createServiceRoleClient>,
+  userData: {
+    email: string
+    full_name: string
+    firebase_uid?: string
+    avatar_url?: string
+    auth_provider?: string
+  }
+) {
+  // Try with all columns first
+  const fullData = {
+    email: userData.email,
+    full_name: userData.full_name,
+    firebase_uid: userData.firebase_uid,
+    avatar_url: userData.avatar_url,
+    auth_provider: userData.auth_provider || 'google',
+    subscription_tier: 'free',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }
+
+  let result = await supabase.from('users').insert(fullData).select().single()
+
+  // If error due to missing columns, try progressively simpler inserts
+  if (result.error) {
+    console.log('[Firebase Auth] Full insert failed:', result.error.message)
+
+    // Try without auth_provider
+    const withoutAuthProvider = {
+      email: userData.email,
+      full_name: userData.full_name,
+      firebase_uid: userData.firebase_uid,
+      avatar_url: userData.avatar_url,
+      subscription_tier: 'free',
+      created_at: new Date().toISOString()
+    }
+
+    result = await supabase.from('users').insert(withoutAuthProvider).select().single()
+
+    if (result.error) {
+      console.log('[Firebase Auth] Without auth_provider failed:', result.error.message)
+
+      // Try without firebase_uid and avatar_url
+      const minimalData = {
+        email: userData.email,
+        full_name: userData.full_name,
+        subscription_tier: 'free',
+        created_at: new Date().toISOString()
+      }
+
+      result = await supabase.from('users').insert(minimalData).select().single()
+    }
+  }
+
+  return result
+}
+
+async function updateUserWithFallback(
+  supabase: ReturnType<typeof createServiceRoleClient>,
+  userId: string,
+  userData: {
+    full_name?: string
+    firebase_uid?: string
+    avatar_url?: string
+    auth_provider?: string
+  }
+) {
+  // Try with all columns first
+  const fullUpdate = {
+    full_name: userData.full_name,
+    firebase_uid: userData.firebase_uid,
+    avatar_url: userData.avatar_url,
+    auth_provider: userData.auth_provider || 'google',
+    updated_at: new Date().toISOString()
+  }
+
+  let result = await supabase
+    .from('users')
+    .update(fullUpdate)
+    .eq('id', userId)
+    .select()
+    .single()
+
+  // If error due to missing columns, try simpler updates
+  if (result.error) {
+    console.log('[Firebase Auth] Full update failed:', result.error.message)
+
+    // Try without auth_provider
+    const withoutAuthProvider = {
+      full_name: userData.full_name,
+      firebase_uid: userData.firebase_uid,
+      avatar_url: userData.avatar_url
+    }
+
+    result = await supabase
+      .from('users')
+      .update(withoutAuthProvider)
+      .eq('id', userId)
+      .select()
+      .single()
+
+    if (result.error) {
+      console.log('[Firebase Auth] Without auth_provider update failed:', result.error.message)
+
+      // Try just full_name
+      const minimalUpdate = {
+        full_name: userData.full_name
+      }
+
+      result = await supabase
+        .from('users')
+        .update(minimalUpdate)
+        .eq('id', userId)
+        .select()
+        .single()
+    }
+  }
+
+  return result
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -20,75 +143,59 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (existingUser && !findError) {
-      // User exists - update their Firebase UID and return
-      const { data: updatedUser, error: updateError } = await supabase
-        .from('users')
-        .update({
-          firebase_uid: uid,
+      // User exists - update their info
+      const { data: updatedUser, error: updateError } = await updateUserWithFallback(
+        supabase,
+        existingUser.id,
+        {
           full_name: displayName || existingUser.full_name,
+          firebase_uid: uid,
           avatar_url: photoURL || existingUser.avatar_url,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', existingUser.id)
-        .select()
-        .single()
+          auth_provider: 'google'
+        }
+      )
 
       if (updateError) {
         console.error('[Firebase Auth] Update user error:', updateError)
       }
 
+      // Return user with auth_provider set for frontend to track
+      const userWithProvider = {
+        ...(updatedUser || existingUser),
+        auth_provider: 'google'
+      }
+
       return NextResponse.json({
-        user: updatedUser || existingUser,
+        user: userWithProvider,
         isNewUser: false
       })
     }
 
     // Create new user
-    const { data: newUser, error: createError } = await supabase
-      .from('users')
-      .insert({
+    const { data: newUser, error: createError } = await createUserWithFallback(
+      supabase,
+      {
         email,
         full_name: displayName || email.split('@')[0],
         firebase_uid: uid,
         avatar_url: photoURL,
-        subscription_tier: 'free',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
-      .select()
-      .single()
+        auth_provider: 'google'
+      }
+    )
 
     if (createError) {
       console.error('[Firebase Auth] Create user error:', createError)
-      // If error is due to missing column, try without firebase_uid
-      if (createError.message?.includes('firebase_uid')) {
-        const { data: userWithoutFirebase, error: retryError } = await supabase
-          .from('users')
-          .insert({
-            email,
-            full_name: displayName || email.split('@')[0],
-            avatar_url: photoURL,
-            subscription_tier: 'free',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .select()
-          .single()
+      return NextResponse.json({ error: 'Failed to create user: ' + createError.message }, { status: 500 })
+    }
 
-        if (retryError) {
-          return NextResponse.json({ error: 'Failed to create user' }, { status: 500 })
-        }
-
-        return NextResponse.json({
-          user: userWithoutFirebase,
-          isNewUser: true
-        })
-      }
-      return NextResponse.json({ error: 'Failed to create user' }, { status: 500 })
+    // Return user with auth_provider set
+    const userWithProvider = {
+      ...newUser,
+      auth_provider: 'google'
     }
 
     return NextResponse.json({
-      user: newUser,
+      user: userWithProvider,
       isNewUser: true
     })
   } catch (error: any) {

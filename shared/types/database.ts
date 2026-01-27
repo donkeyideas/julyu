@@ -26,6 +26,10 @@ export interface Database {
           last_login: string | null
           subscription_tier: 'free' | 'premium' | 'enterprise'
           stripe_customer_id: string | null
+          avatar_url: string | null
+          auth_provider: 'email' | 'google' | null
+          firebase_uid: string | null
+          updated_at: string | null
         }
         Insert: {
           id?: string
@@ -37,6 +41,10 @@ export interface Database {
           last_login?: string | null
           subscription_tier?: 'free' | 'premium' | 'enterprise'
           stripe_customer_id?: string | null
+          avatar_url?: string | null
+          auth_provider?: 'email' | 'google' | null
+          firebase_uid?: string | null
+          updated_at?: string | null
         }
         Update: {
           id?: string
@@ -48,6 +56,10 @@ export interface Database {
           last_login?: string | null
           subscription_tier?: 'free' | 'premium' | 'enterprise'
           stripe_customer_id?: string | null
+          avatar_url?: string | null
+          auth_provider?: 'email' | 'google' | null
+          firebase_uid?: string | null
+          updated_at?: string | null
         }
       }
       user_preferences: {

@@ -10,6 +10,9 @@ interface UserRecord {
   last_login: string | null
   subscription_tier: string
   stripe_customer_id: string | null
+  auth_provider: 'email' | 'google' | null
+  avatar_url: string | null
+  firebase_uid: string | null
 }
 
 // GET - List all users (for admin dashboard)
