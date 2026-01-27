@@ -19,17 +19,32 @@ export default function DashboardLayout({
       try {
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
-        
+
         if (user) {
           setAuthenticated(true)
-        } else {
-          router.push('/auth/login')
+          setLoading(false)
+          return
         }
-      } catch (error) {
-        // Check localStorage for test auth
+
+        // Check localStorage for test auth or Firebase auth
         if (typeof window !== 'undefined') {
           const testUser = localStorage.getItem('test_user')
-          if (testUser) {
+          const firebaseUser = localStorage.getItem('julyu_user')
+          if (testUser || firebaseUser) {
+            setAuthenticated(true)
+            setLoading(false)
+            return
+          }
+        }
+
+        // No auth found, redirect to login
+        router.push('/auth/login')
+      } catch (error) {
+        // Check localStorage for test auth or Firebase auth
+        if (typeof window !== 'undefined') {
+          const testUser = localStorage.getItem('test_user')
+          const firebaseUser = localStorage.getItem('julyu_user')
+          if (testUser || firebaseUser) {
             setAuthenticated(true)
           } else {
             router.push('/auth/login')
