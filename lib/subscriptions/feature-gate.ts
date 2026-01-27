@@ -55,7 +55,7 @@ export async function getUserPlan(userId: string): Promise<SubscriptionPlan> {
     stripe_price_id: null,
     price: 0,
     billing_interval: 'month',
-    features: ['basic_comparisons', 'basic_price_tracking', 'basic_receipts'],
+    features: ['basic_comparisons', 'basic_price_tracking', 'basic_receipts', 'ai_chat', 'price_alerts'],
     description: 'Free plan',
     is_active: true,
     is_self_serve: true,

@@ -80,7 +80,7 @@ VALUES
     'free',
     0,
     'month',
-    '["basic_comparisons", "basic_price_tracking", "basic_receipts"]'::jsonb,
+    '["basic_comparisons", "basic_price_tracking", "basic_receipts", "ai_chat", "price_alerts"]'::jsonb,
     'Get started with basic grocery price comparison',
     true,
     true,
@@ -121,3 +121,10 @@ VALUES
     false
   )
 ON CONFLICT (slug) DO NOTHING;
+
+-- Ensure free plan has ai_chat and price_alerts (in case migration was already run)
+UPDATE subscription_plans
+SET features = '["basic_comparisons", "basic_price_tracking", "basic_receipts", "ai_chat", "price_alerts"]'::jsonb,
+    updated_at = now()
+WHERE slug = 'free'
+  AND NOT (features @> '"ai_chat"'::jsonb);

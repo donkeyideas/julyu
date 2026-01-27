@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { llmOrchestrator } from '@/lib/llm/orchestrator'
-import { hasFeature } from '@/lib/subscriptions/feature-gate'
 import { buildShoppingAssistantPrompt } from '@/lib/llm/prompt-templates/shopping-assistant'
 import { buildUserContext, formatContextForPrompt } from '@/lib/ai/context-builder'
 import {
@@ -28,11 +27,6 @@ export async function POST(request: NextRequest) {
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const allowed = await hasFeature(userId, 'ai_chat')
-    if (!allowed) {
-      return NextResponse.json({ error: 'Upgrade required', upgradeUrl: '/pricing' }, { status: 403 })
     }
 
     const body = await request.json()
