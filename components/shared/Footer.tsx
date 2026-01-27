@@ -9,7 +9,7 @@ export default function Footer() {
         <div>
           <h3 className="text-2xl font-bold text-green-500 mb-4">Julyu</h3>
           <p className="text-gray-500 mb-4">
-            AI-powered grocery intelligence that saves you hundreds monthly.
+            AI-powered grocery price comparison. Shop smarter, save more.
           </p>
           <div className="flex gap-4">
             <a
@@ -51,8 +51,8 @@ export default function Footer() {
               </Link>
             </li>
             <li>
-              <Link href="/dashboard" className="text-gray-500 hover:text-green-500 transition">
-                Dashboard
+              <Link href="/auth/signup" className="text-gray-500 hover:text-green-500 transition">
+                Get Started
               </Link>
             </li>
           </ul>
@@ -69,11 +69,6 @@ export default function Footer() {
             <li>
               <Link href="/contact" className="text-gray-500 hover:text-green-500 transition">
                 Contact
-              </Link>
-            </li>
-            <li>
-              <Link href="/careers" className="text-gray-500 hover:text-green-500 transition">
-                Careers
               </Link>
             </li>
           </ul>
