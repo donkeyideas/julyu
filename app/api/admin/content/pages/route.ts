@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 
 export interface PageContent {
   slug: string
@@ -99,6 +100,18 @@ export async function PUT(request: NextRequest) {
     if (error) {
       console.error('[Pages API] Error updating:', error)
       return NextResponse.json({ error: 'Failed to update page' }, { status: 500 })
+    }
+
+    // Revalidate the page to ensure changes appear immediately
+    try {
+      revalidatePath(`/${slug}`)
+      // Also revalidate home page if it's the home slug
+      if (slug === 'home') {
+        revalidatePath('/')
+      }
+    } catch (revalidateError) {
+      console.error('[Pages API] Error revalidating:', revalidateError)
+      // Continue anyway - the save was successful
     }
 
     return NextResponse.json({ success: true, page: content })

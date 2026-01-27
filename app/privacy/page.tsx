@@ -2,6 +2,10 @@ import Header from '@/components/shared/Header'
 import Footer from '@/components/shared/Footer'
 import { getPageContent } from '@/lib/content/getPageContent'
 
+// Force dynamic rendering to ensure fresh content
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 // Default content
 const defaultContent = {
   headline: 'Privacy Policy',
@@ -13,14 +17,27 @@ const defaultContent = {
   info_collect_lists: 'We store the shopping lists you create, including item names and quantities, to provide price comparison features.',
   info_collect_location: 'With your permission, we may collect your zip code or general location to show relevant store prices in your area. We do not track your precise GPS location.',
   info_collect_usage: 'We collect information about how you use our service, including pages visited, features used, and interactions with the platform.',
+  how_we_use_intro: 'We use your information to:',
+  how_we_use_1: 'Provide and improve our price comparison services',
+  how_we_use_2: 'Process and analyze your receipts for savings insights',
+  how_we_use_3: 'Send you price alerts and notifications you\'ve requested',
+  how_we_use_4: 'Communicate with you about your account and our services',
+  how_we_use_5: 'Analyze usage patterns to improve the platform',
   data_sharing_intro: 'We do not sell your personal information. We may share your information only in the following circumstances:',
   data_sharing_providers: 'We use third-party services (hosting, analytics, AI processing) that may process your data on our behalf.',
   data_sharing_legal: 'We may disclose information if required by law or to protect our rights.',
   data_sharing_transfers: 'If Julyu is acquired or merged, your information may be transferred to the new entity.',
   data_security: 'We implement industry-standard security measures to protect your data, including encryption in transit (HTTPS/TLS) and at rest. However, no method of transmission over the internet is 100% secure, and we cannot guarantee absolute security.',
+  your_rights_intro: 'You have the right to:',
+  your_rights_1: 'Access and download your personal data',
+  your_rights_2: 'Correct inaccurate information',
+  your_rights_3: 'Delete your account and associated data',
+  your_rights_4: 'Opt out of marketing communications',
+  your_rights_contact_text: 'To exercise these rights, contact us at',
   cookies: 'We use essential cookies to maintain your session and remember your preferences. We may also use analytics cookies to understand how users interact with our platform. You can control cookies through your browser settings.',
   children_privacy: 'Julyu is not intended for users under 13 years of age. We do not knowingly collect personal information from children under 13.',
   changes_policy: 'We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the new policy on this page and updating the "Last updated" date.',
+  contact_us_text: 'If you have questions about this Privacy Policy, please contact us at:',
 }
 
 export default async function PrivacyPage() {
@@ -38,14 +55,27 @@ export default async function PrivacyPage() {
   const infoCollectLists = c.info_collect_lists || defaultContent.info_collect_lists
   const infoCollectLocation = c.info_collect_location || defaultContent.info_collect_location
   const infoCollectUsage = c.info_collect_usage || defaultContent.info_collect_usage
+  const howWeUseIntro = c.how_we_use_intro || defaultContent.how_we_use_intro
+  const howWeUse1 = c.how_we_use_1 || defaultContent.how_we_use_1
+  const howWeUse2 = c.how_we_use_2 || defaultContent.how_we_use_2
+  const howWeUse3 = c.how_we_use_3 || defaultContent.how_we_use_3
+  const howWeUse4 = c.how_we_use_4 || defaultContent.how_we_use_4
+  const howWeUse5 = c.how_we_use_5 || defaultContent.how_we_use_5
   const dataSharingIntro = c.data_sharing_intro || defaultContent.data_sharing_intro
   const dataSharingProviders = c.data_sharing_providers || defaultContent.data_sharing_providers
   const dataSharingLegal = c.data_sharing_legal || defaultContent.data_sharing_legal
   const dataSharingTransfers = c.data_sharing_transfers || defaultContent.data_sharing_transfers
   const dataSecurity = c.data_security || defaultContent.data_security
+  const yourRightsIntro = c.your_rights_intro || defaultContent.your_rights_intro
+  const yourRights1 = c.your_rights_1 || defaultContent.your_rights_1
+  const yourRights2 = c.your_rights_2 || defaultContent.your_rights_2
+  const yourRights3 = c.your_rights_3 || defaultContent.your_rights_3
+  const yourRights4 = c.your_rights_4 || defaultContent.your_rights_4
+  const yourRightsContactText = c.your_rights_contact_text || defaultContent.your_rights_contact_text
   const cookies = c.cookies || defaultContent.cookies
   const childrenPrivacy = c.children_privacy || defaultContent.children_privacy
   const changesPolicy = c.changes_policy || defaultContent.changes_policy
+  const contactUsText = c.contact_us_text || defaultContent.contact_us_text
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-green-900/20 to-black text-white flex flex-col">
@@ -95,31 +125,31 @@ export default async function PrivacyPage() {
                   <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <span>Provide and improve our price comparison services</span>
+                  <span>{howWeUse1}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <span>Process and analyze your receipts for savings insights</span>
+                  <span>{howWeUse2}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <span>Send you price alerts and notifications you&apos;ve requested</span>
+                  <span>{howWeUse3}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <span>Communicate with you about your account and our services</span>
+                  <span>{howWeUse4}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <span>Analyze usage patterns to improve the platform</span>
+                  <span>{howWeUse5}</span>
                 </li>
               </ul>
             </section>
@@ -152,27 +182,27 @@ export default async function PrivacyPage() {
 
             <section className="bg-gray-900 border border-gray-800 rounded-2xl p-8">
               <h2 className="text-2xl font-bold text-green-500 mb-4">Your Rights</h2>
-              <p className="text-gray-300 leading-relaxed mb-4">You have the right to:</p>
+              <p className="text-gray-300 leading-relaxed mb-4">{yourRightsIntro}</p>
               <ul className="space-y-2 text-gray-300">
                 <li className="flex items-start gap-3">
                   <span className="text-green-500 font-bold">•</span>
-                  <span>Access and download your personal data</span>
+                  <span>{yourRights1}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-green-500 font-bold">•</span>
-                  <span>Correct inaccurate information</span>
+                  <span>{yourRights2}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-green-500 font-bold">•</span>
-                  <span>Delete your account and associated data</span>
+                  <span>{yourRights3}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-green-500 font-bold">•</span>
-                  <span>Opt out of marketing communications</span>
+                  <span>{yourRights4}</span>
                 </li>
               </ul>
               <p className="text-gray-300 leading-relaxed mt-4">
-                To exercise these rights, contact us at <a href={`mailto:${contactEmail}`} className="text-green-500 hover:underline">{contactEmail}</a>.
+                {yourRightsContactText} <a href={`mailto:${contactEmail}`} className="text-green-500 hover:underline">{contactEmail}</a>.
               </p>
             </section>
 
@@ -194,7 +224,7 @@ export default async function PrivacyPage() {
             <section className="bg-gray-900 border border-gray-800 rounded-2xl p-8">
               <h2 className="text-2xl font-bold text-green-500 mb-4">Contact Us</h2>
               <p className="text-gray-300 leading-relaxed">
-                If you have questions about this Privacy Policy, please contact us at:
+                {contactUsText}
               </p>
               <p className="text-gray-300 mt-4">
                 <strong className="text-white">Email:</strong>{' '}
