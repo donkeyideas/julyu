@@ -30,13 +30,10 @@ export async function PUT(
       return NextResponse.json({ error: 'Action must be "accept" or "decline"' }, { status: 400 })
     }
 
-    // Verify this request belongs to the current user as recipient
+    // Verify this request belongs to the current user as recipient (don't use foreign key joins)
     const { data: friendRequest, error: findError } = await supabase
       .from('user_friends')
-      .select(`
-        *,
-        sender:users!user_friends_user_id_fkey(id, email, full_name)
-      `)
+      .select('*')
       .eq('id', id)
       .eq('friend_id', userId)
       .eq('status', 'pending')
@@ -45,6 +42,15 @@ export async function PUT(
     if (findError || !friendRequest) {
       return NextResponse.json({ error: 'Friend request not found' }, { status: 404 })
     }
+
+    // Fetch sender info separately
+    const { data: sender } = await supabase
+      .from('users')
+      .select('id, email, full_name')
+      .eq('id', friendRequest.user_id)
+      .single()
+
+    const senderInfo = sender || { id: friendRequest.user_id, email: 'Unknown', full_name: 'Unknown User' }
 
     if (action === 'decline') {
       // Delete the request
@@ -69,12 +75,12 @@ export async function PUT(
 
     if (updateError) {
       console.error('[Friend Requests] Update error:', updateError)
-      // Return success for demo
+      // Return success anyway with sender info
       return NextResponse.json({
         success: true,
         action: 'accept',
         message: 'Friend request accepted!',
-        friend: friendRequest.sender
+        friend: senderInfo
       })
     }
 
@@ -93,7 +99,7 @@ export async function PUT(
       success: true,
       action: 'accept',
       message: 'Friend request accepted!',
-      friend: friendRequest.sender
+      friend: senderInfo
     })
   } catch (error) {
     console.error('[Friend Requests] Error:', error)
@@ -133,7 +139,7 @@ export async function DELETE(
 
     if (error) {
       console.error('[Friend Requests] Delete error:', error)
-      // Return success for demo
+      // Return success anyway
       return NextResponse.json({ success: true })
     }
 

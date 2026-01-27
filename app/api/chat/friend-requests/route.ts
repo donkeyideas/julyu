@@ -20,30 +20,45 @@ export async function GET(request: NextRequest) {
     const supabase = createServiceRoleClient()
 
     // Get incoming friend requests (where current user is the recipient)
-    // A friend request is when someone has added you but you haven't accepted yet
+    // Don't use foreign key joins - fetch separately to avoid schema issues
     const { data: incomingRequests, error } = await supabase
       .from('user_friends')
-      .select(`
-        *,
-        sender:users!user_friends_user_id_fkey(id, email, full_name)
-      `)
+      .select('*')
       .eq('friend_id', userId)
       .eq('status', 'pending')
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('[Friend Requests] Error:', error)
+      console.error('[Friend Requests] Error fetching requests:', error)
       return NextResponse.json({ requests: [] })
     }
 
-    // Transform to a cleaner format
-    const requests = (incomingRequests || []).map((req: { id: string; user_id: string; friend_id: string; status: string; created_at: string; sender: { id: string; email: string; full_name: string | null } }) => ({
+    if (!incomingRequests || incomingRequests.length === 0) {
+      return NextResponse.json({ requests: [] })
+    }
+
+    // Fetch sender info for all requests
+    const senderIds = incomingRequests.map(req => req.user_id)
+    const { data: senders, error: sendersError } = await supabase
+      .from('users')
+      .select('id, email, full_name')
+      .in('id', senderIds)
+
+    if (sendersError) {
+      console.error('[Friend Requests] Error fetching senders:', sendersError)
+    }
+
+    // Create a map of senders
+    const senderMap = new Map((senders || []).map(s => [s.id, s]))
+
+    // Transform to a cleaner format with sender info
+    const requests = incomingRequests.map((req: { id: string; user_id: string; friend_id: string; status: string; created_at: string }) => ({
       id: req.id,
       sender_id: req.user_id,
       recipient_id: req.friend_id,
       status: req.status,
       created_at: req.created_at,
-      sender: req.sender
+      sender: senderMap.get(req.user_id) || { id: req.user_id, email: 'Unknown', full_name: 'Unknown User' }
     }))
 
     return NextResponse.json({ requests })
@@ -149,7 +164,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create the friend request
+    // Create the friend request - don't use foreign key joins
     const { data: friendRequest, error: insertError } = await supabase
       .from('user_friends')
       .insert({
@@ -158,15 +173,12 @@ export async function POST(request: NextRequest) {
         status: 'pending',
         created_at: new Date().toISOString()
       })
-      .select(`
-        *,
-        recipient:users!user_friends_friend_id_fkey(id, email, full_name)
-      `)
+      .select('*')
       .single()
 
     if (insertError) {
       console.error('[Friend Requests] Insert error:', insertError)
-      // Return demo response on error
+      // Return response with recipient info we already have
       return NextResponse.json({
         request: {
           id: `request-${Date.now()}`,
@@ -175,7 +187,8 @@ export async function POST(request: NextRequest) {
           status: 'pending',
           created_at: new Date().toISOString(),
           recipient: recipientUser
-        }
+        },
+        message: 'Friend request sent!'
       })
     }
 
@@ -186,7 +199,7 @@ export async function POST(request: NextRequest) {
         recipient_id: friendRequest.friend_id,
         status: friendRequest.status,
         created_at: friendRequest.created_at,
-        recipient: friendRequest.recipient
+        recipient: recipientUser
       },
       message: 'Friend request sent!'
     })

@@ -18,47 +18,72 @@ export async function GET(request: NextRequest) {
     // Use service role client for database operations (bypasses RLS)
     const supabase = createServiceRoleClient()
 
-    // Fetch friends in BOTH directions:
+    // Fetch friends in BOTH directions (don't use foreign key joins):
     // 1. Where current user sent the request (user_id = me, friend is in friend_id)
     // 2. Where current user received the request (friend_id = me, friend is in user_id)
 
     // Query 1: I sent the request - get friend info from friend_id
     const { data: sentRequests, error: error1 } = await supabase
       .from('user_friends')
-      .select(`
-        *,
-        friend:users!user_friends_friend_id_fkey(id, email, full_name)
-      `)
+      .select('*')
       .eq('user_id', userId)
       .eq('status', 'accepted')
 
     // Query 2: I received the request - get friend info from user_id (the sender)
     const { data: receivedRequests, error: error2 } = await supabase
       .from('user_friends')
-      .select(`
-        *,
-        sender:users!user_friends_user_id_fkey(id, email, full_name)
-      `)
+      .select('*')
       .eq('friend_id', userId)
       .eq('status', 'accepted')
 
     if (error1 || error2) {
-      console.error('[Friends] Error:', error1 || error2)
+      console.error('[Friends] Error fetching friends:', error1 || error2)
       return NextResponse.json({ friends: [] })
     }
 
+    // Collect all unique friend IDs we need to look up
+    const friendIds = new Set<string>()
+
+    // For sent requests, the friend is friend_id
+    ;(sentRequests || []).forEach(req => friendIds.add(req.friend_id))
+    // For received requests, the friend is user_id (the sender)
+    ;(receivedRequests || []).forEach(req => friendIds.add(req.user_id))
+
+    // Fetch all friend user info at once
+    let friendsMap = new Map<string, { id: string; email: string; full_name: string | null }>()
+
+    if (friendIds.size > 0) {
+      const { data: friendUsers, error: usersError } = await supabase
+        .from('users')
+        .select('id, email, full_name')
+        .in('id', Array.from(friendIds))
+
+      if (usersError) {
+        console.error('[Friends] Error fetching friend users:', usersError)
+      } else {
+        friendsMap = new Map((friendUsers || []).map(u => [u.id, u]))
+      }
+    }
+
     // Combine and normalize the results
-    // For sent requests, friend info is in 'friend' field
-    // For received requests, friend info is in 'sender' field - rename to 'friend' for consistency
     const friendsFromSent = (sentRequests || []).map((f: Record<string, unknown>) => ({
       ...f,
-      friend: f.friend
+      friend_id: f.friend_id,
+      friend: friendsMap.get(f.friend_id as string) || {
+        id: f.friend_id as string,
+        email: 'Unknown',
+        full_name: 'Unknown User'
+      }
     }))
 
     const friendsFromReceived = (receivedRequests || []).map((f: Record<string, unknown>) => ({
       ...f,
-      friend: f.sender, // The sender is the friend for received requests
-      sender: undefined
+      friend_id: f.user_id, // For received requests, the friend is the sender
+      friend: friendsMap.get(f.user_id as string) || {
+        id: f.user_id as string,
+        email: 'Unknown',
+        full_name: 'Unknown User'
+      }
     }))
 
     const allFriends = [...friendsFromSent, ...friendsFromReceived]
@@ -176,7 +201,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create friend request (pending status - recipient must accept)
+    // Create friend request (pending status - recipient must accept) - don't use foreign key joins
     const { data: friend, error: insertError } = await supabase
       .from('user_friends')
       .insert({
@@ -185,14 +210,12 @@ export async function POST(request: NextRequest) {
         status: 'pending',
         created_at: new Date().toISOString()
       })
-      .select(`
-        *,
-        friend:users!user_friends_friend_id_fkey(id, email, full_name)
-      `)
+      .select('*')
       .single()
 
     if (insertError) {
       console.error('[Friends] Insert error:', insertError)
+      // Return response with friend info we already have
       return NextResponse.json({
         friend: {
           id: `friend-${Date.now()}`,
@@ -212,11 +235,18 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      friend,
+      friend: {
+        ...friend,
+        friend: {
+          id: friendUser.id,
+          email: friendUser.email,
+          full_name: friendUser.full_name || friendUser.email.split('@')[0]
+        }
+      },
       message: 'Friend request sent! Waiting for them to accept.',
       requestSent: true
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[Friends] Error:', error)
     return NextResponse.json({ error: 'Failed to add friend' }, { status: 500 })
   }
