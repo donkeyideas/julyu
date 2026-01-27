@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient, createServiceRoleClient } from '@/lib/supabase/server'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const authClient = createServerClient()
+    const { data: { user } } = await authClient.auth.getUser()
 
     // Check for Firebase user ID in header (for Google sign-in users)
     const firebaseUserId = request.headers.get('x-user-id')
@@ -14,6 +14,9 @@ export async function GET(request: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // Use service role client for database operations (bypasses RLS)
+    const supabase = createServiceRoleClient()
 
     // Fetch friends in BOTH directions:
     // 1. Where current user sent the request (user_id = me, friend is in friend_id)
@@ -69,8 +72,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const authClient = createServerClient()
+    const { data: { user } } = await authClient.auth.getUser()
 
     // Check for Firebase user ID in header (for Google sign-in users)
     const firebaseUserId = request.headers.get('x-user-id')
@@ -80,6 +83,9 @@ export async function POST(request: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // Use service role client for database operations (bypasses RLS)
+    const supabase = createServiceRoleClient()
 
     // Get user email from database if Firebase user
     let userEmail = user?.email

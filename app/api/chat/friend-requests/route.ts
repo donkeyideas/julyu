@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient, createServiceRoleClient } from '@/lib/supabase/server'
 
 // GET - Get incoming friend requests for the current user
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const authClient = createServerClient()
+    const { data: { user } } = await authClient.auth.getUser()
 
     // Check for Firebase user ID in header (for Google sign-in users)
     const firebaseUserId = request.headers.get('x-user-id')
@@ -15,6 +15,9 @@ export async function GET(request: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // Use service role client for database operations (bypasses RLS)
+    const supabase = createServiceRoleClient()
 
     // Get incoming friend requests (where current user is the recipient)
     // A friend request is when someone has added you but you haven't accepted yet
@@ -53,8 +56,8 @@ export async function GET(request: NextRequest) {
 // POST - Send a friend request
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const authClient = createServerClient()
+    const { data: { user } } = await authClient.auth.getUser()
 
     // Check for Firebase user ID in header (for Google sign-in users)
     const firebaseUserId = request.headers.get('x-user-id')
@@ -64,6 +67,9 @@ export async function POST(request: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // Use service role client for database operations (bypasses RLS)
+    const supabase = createServiceRoleClient()
 
     // Get user email from database if Firebase user
     let userEmail = user?.email

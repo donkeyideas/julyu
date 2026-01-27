@@ -21,11 +21,31 @@ interface UserInfo {
   subscription_tier: 'free' | 'premium' | 'enterprise'
 }
 
+// Helper to get auth headers for API calls (supports Firebase/Google users)
+function getAuthHeaders(): HeadersInit {
+  const headers: HeadersInit = { 'Content-Type': 'application/json' }
+  if (typeof window !== 'undefined') {
+    const storedUser = localStorage.getItem('julyu_user')
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser)
+        if (user.id) {
+          headers['x-user-id'] = user.id
+        }
+      } catch (e) {
+        // Ignore parsing errors
+      }
+    }
+  }
+  return headers
+}
+
 export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
+  const [friendRequestCount, setFriendRequestCount] = useState(0)
 
   useEffect(() => {
     const supabase = createClient()
@@ -44,11 +64,21 @@ export default function Sidebar() {
             // Invalid JSON, ignore
           }
         }
+        // Also check for Firebase user
+        const firebaseUser = localStorage.getItem('julyu_user')
+        if (firebaseUser) {
+          try {
+            const parsed = JSON.parse(firebaseUser)
+            setUser({ id: parsed.id, email: parsed.email, user_metadata: { full_name: parsed.full_name } })
+          } catch {
+            // Invalid JSON, ignore
+          }
+        }
       }
     })
 
     // Fetch user info including subscription tier
-    fetch('/api/settings')
+    fetch('/api/settings', { headers: getAuthHeaders() })
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data?.user) {
@@ -58,11 +88,35 @@ export default function Sidebar() {
       .catch(() => {
         // Ignore errors
       })
+
+    // Fetch friend request count
+    const fetchFriendRequests = () => {
+      fetch('/api/chat/friend-requests', { headers: getAuthHeaders() })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data?.requests) {
+            setFriendRequestCount(data.requests.length)
+          }
+        })
+        .catch(() => {
+          // Ignore errors
+        })
+    }
+
+    fetchFriendRequests()
+    // Poll for new friend requests every 30 seconds
+    const interval = setInterval(fetchFriendRequests, 30000)
+    return () => clearInterval(interval)
   }, [])
 
   const handleLogout = async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
+    // Clear Firebase user data from localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('julyu_user')
+      localStorage.removeItem('pendingFriends')
+    }
     router.push('/auth/login')
   }
 
@@ -110,6 +164,7 @@ export default function Sidebar() {
       <nav className="space-y-2">
         {navItems.map((item) => {
           const isActive = pathname === item.href
+          const showBadge = item.href === '/dashboard/chat' && friendRequestCount > 0
           return (
             <Link
               key={item.href}
@@ -126,7 +181,12 @@ export default function Sidebar() {
               }}
             >
               <span>{item.icon}</span>
-              <span>{item.label}</span>
+              <span className="flex-1">{item.label}</span>
+              {showBadge && (
+                <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
+                  {friendRequestCount}
+                </span>
+              )}
             </Link>
           )
         })}

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient, createServiceRoleClient } from '@/lib/supabase/server'
 
 // PUT - Accept or decline a friend request
 export async function PUT(
@@ -8,8 +8,8 @@ export async function PUT(
 ) {
   try {
     const { id } = params
-    const supabase = createServerClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const authClient = createServerClient()
+    const { data: { user } } = await authClient.auth.getUser()
 
     // Check for Firebase user ID in header (for Google sign-in users)
     const firebaseUserId = request.headers.get('x-user-id')
@@ -19,6 +19,9 @@ export async function PUT(
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // Use service role client for database operations (bypasses RLS)
+    const supabase = createServiceRoleClient()
 
     const body = await request.json()
     const { action } = body // 'accept' or 'decline'
@@ -105,8 +108,8 @@ export async function DELETE(
 ) {
   try {
     const { id } = params
-    const supabase = createServerClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const authClient = createServerClient()
+    const { data: { user } } = await authClient.auth.getUser()
 
     // Check for Firebase user ID in header (for Google sign-in users)
     const firebaseUserId = request.headers.get('x-user-id')
@@ -116,6 +119,9 @@ export async function DELETE(
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // Use service role client for database operations (bypasses RLS)
+    const supabase = createServiceRoleClient()
 
     // Delete the request (only if user is the sender)
     const { error } = await supabase
