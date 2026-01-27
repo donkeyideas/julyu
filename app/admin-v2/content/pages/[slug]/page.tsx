@@ -150,27 +150,34 @@ export default function EditPagePage() {
   const loadPageData = async () => {
     setLoading(true)
     try {
+      // Get defaults for this page
+      const defaults = defaultPageData[slug] || {
+        title: slug.charAt(0).toUpperCase() + slug.slice(1),
+        headline: '',
+        subheadline: '',
+        meta_description: '',
+        content: {},
+      }
+
       // Fetch from database
       const response = await fetch(`/api/admin/content/pages?slug=${slug}`)
       const result = await response.json()
 
       if (result.page) {
+        // Merge database content with defaults - database values override defaults
         setPageData({
-          title: result.page.title,
-          headline: result.page.headline,
-          subheadline: result.page.subheadline,
-          meta_description: result.page.meta_description,
-          content: result.page.content || {},
+          title: result.page.title || defaults.title,
+          headline: result.page.headline || defaults.headline,
+          subheadline: result.page.subheadline || defaults.subheadline,
+          meta_description: result.page.meta_description || defaults.meta_description,
+          content: {
+            ...defaults.content,  // Start with defaults
+            ...(result.page.content || {}),  // Override with database values
+          },
         })
       } else {
         // Use default data
-        setPageData(defaultPageData[slug] || {
-          title: slug.charAt(0).toUpperCase() + slug.slice(1),
-          headline: '',
-          subheadline: '',
-          meta_description: '',
-          content: {},
-        })
+        setPageData(defaults)
       }
     } catch (error) {
       console.error('Error loading page:', error)
