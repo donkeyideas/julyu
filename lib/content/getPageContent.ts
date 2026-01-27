@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 
 export interface PageContent {
   slug: string
@@ -12,7 +12,7 @@ export interface PageContent {
 
 export async function getPageContent(slug: string): Promise<PageContent | null> {
   try {
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
 
     const { data, error } = await supabase
       .from('site_settings')

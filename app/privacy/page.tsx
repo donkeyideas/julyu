@@ -1,16 +1,32 @@
 import Link from 'next/link'
 import Header from '@/components/shared/Header'
 import Footer from '@/components/shared/Footer'
+import { getPageContent } from '@/lib/content/getPageContent'
 
-export default function PrivacyPage() {
+// Default content
+const defaultContent = {
+  headline: 'Privacy Policy',
+  last_updated: 'January 26, 2025',
+  contact_email: 'privacy@julyu.com',
+}
+
+export default async function PrivacyPage() {
+  // Fetch dynamic content from database
+  const pageContent = await getPageContent('privacy')
+
+  // Use database content if available, otherwise use defaults
+  const headline = pageContent?.headline || defaultContent.headline
+  const lastUpdated = pageContent?.content?.last_updated || defaultContent.last_updated
+  const contactEmail = pageContent?.content?.contact_email || defaultContent.contact_email
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-green-900/20 to-black text-white flex flex-col">
       <Header />
 
       <div className="flex-1 pt-32 pb-16 px-[5%]">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-5xl font-black mb-4">Privacy Policy</h1>
-          <p className="text-gray-400 mb-12">Last updated: January 26, 2025</p>
+          <h1 className="text-5xl font-black mb-4">{headline}</h1>
+          <p className="text-gray-400 mb-12">Last updated: {lastUpdated}</p>
 
           <div className="space-y-8">
             <section className="bg-gray-900 border border-gray-800 rounded-2xl p-8">
@@ -156,7 +172,7 @@ export default function PrivacyPage() {
                 </li>
               </ul>
               <p className="text-gray-300 leading-relaxed mt-4">
-                To exercise these rights, contact us at <a href="mailto:privacy@julyu.com" className="text-green-500 hover:underline">privacy@julyu.com</a>.
+                To exercise these rights, contact us at <a href={`mailto:${contactEmail}`} className="text-green-500 hover:underline">{contactEmail}</a>.
               </p>
             </section>
 
@@ -192,7 +208,7 @@ export default function PrivacyPage() {
               </p>
               <p className="text-gray-300 mt-4">
                 <strong className="text-white">Email:</strong>{' '}
-                <a href="mailto:privacy@julyu.com" className="text-green-500 hover:underline">privacy@julyu.com</a>
+                <a href={`mailto:${contactEmail}`} className="text-green-500 hover:underline">{contactEmail}</a>
               </p>
             </section>
           </div>
