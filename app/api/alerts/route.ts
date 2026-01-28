@@ -92,9 +92,14 @@ export async function POST(request: NextRequest) {
     const userName = user?.user_metadata?.full_name || request.headers.get('x-user-name')
     await ensureUserExists(userId, userEmail, userName as string | null)
 
-    const allowed = await hasFeature(userId, 'price_alerts')
-    if (!allowed) {
-      return NextResponse.json({ error: 'Upgrade required', upgradeUrl: '/pricing' }, { status: 403 })
+    // Feature gate check (non-blocking if subscription tables are missing)
+    try {
+      const allowed = await hasFeature(userId, 'price_alerts')
+      if (!allowed) {
+        return NextResponse.json({ error: 'Upgrade required', upgradeUrl: '/pricing' }, { status: 403 })
+      }
+    } catch (featureError) {
+      console.error('[Alerts] Feature gate check failed (allowing access):', featureError)
     }
 
     const body = await request.json()
