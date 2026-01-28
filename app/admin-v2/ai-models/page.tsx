@@ -8,13 +8,14 @@ export default function AIModelsPage() {
   const [krogerClientId, setKrogerClientId] = useState('')
   const [krogerClientSecret, setKrogerClientSecret] = useState('')
   const [spoonacularKey, setSpoonacularKey] = useState('')
+  const [positionstackKey, setPositionstackKey] = useState('')
   const [stripeSecretKey, setStripeSecretKey] = useState('')
   const [stripePublishableKey, setStripePublishableKey] = useState('')
   const [stripeWebhookSecret, setStripeWebhookSecret] = useState('')
   const [saving, setSaving] = useState(false)
   const [testing, setTesting] = useState<string | null>(null)
   const [testResult, setTestResult] = useState<{ success: boolean; message: string; details?: any } | null>(null)
-  const [apiKeyStatus, setApiKeyStatus] = useState({ deepseek: false, openai: false, kroger: false, spoonacular: false, stripe: false })
+  const [apiKeyStatus, setApiKeyStatus] = useState({ deepseek: false, openai: false, kroger: false, spoonacular: false, positionstack: false, stripe: false })
 
   const loadApiKeyStatus = async () => {
     try {
@@ -25,6 +26,7 @@ export default function AIModelsPage() {
         openai: data.openaiConfigured || false,
         kroger: data.krogerConfigured || false,
         spoonacular: data.spoonacularConfigured || false,
+        positionstack: data.positionstackConfigured || false,
         stripe: data.stripeConfigured || false,
       })
     } catch (error) {
@@ -202,6 +204,40 @@ export default function AIModelsPage() {
       }
     } catch (error: any) {
       console.error('[Save] Spoonacular Error:', error)
+      alert(`Error: ${error.message || 'Unknown error'}`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleSavePositionstack = async () => {
+    if (!positionstackKey.trim()) {
+      alert('Please enter a Positionstack API key')
+      return
+    }
+
+    setSaving(true)
+    try {
+      const response = await fetch('/api/admin/save-api-keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          positionstack: positionstackKey.trim(),
+        }),
+      })
+
+      const data = await response.json()
+      console.log('[Save] Positionstack Response:', data)
+
+      if (data.success) {
+        alert('Positionstack API key saved successfully!')
+        setPositionstackKey('')
+        await loadApiKeyStatus()
+      } else {
+        alert(`Failed to save: ${data.error || 'Unknown error'}`)
+      }
+    } catch (error: any) {
+      console.error('[Save] Positionstack Error:', error)
       alert(`Error: ${error.message || 'Unknown error'}`)
     } finally {
       setSaving(false)
@@ -644,6 +680,67 @@ export default function AIModelsPage() {
           <div className="mt-4 p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg">
             <p className="text-purple-400 text-sm">
               <strong>Features:</strong> Grocery product search, UPC lookup, nutrition data, price estimates, product classification.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Positionstack API Key */}
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 mt-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold mb-2">Positionstack Geocoding API</h2>
+            <p className="text-gray-500 text-sm">Converts addresses and zip codes to coordinates for accurate store searches</p>
+            <a
+              href="https://positionstack.com/signup/free"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 text-sm hover:underline"
+            >
+              Get FREE API key from positionstack.com (25,000 requests/month)
+            </a>
+          </div>
+          <div>
+            {apiKeyStatus.positionstack ? (
+              <span className="px-4 py-2 bg-green-500/15 text-green-500 rounded-lg text-sm font-semibold">
+                ✓ Configured
+              </span>
+            ) : (
+              <span className="px-4 py-2 bg-red-500/15 text-red-500 rounded-lg text-sm font-semibold">
+                ✗ Not Set
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">API Key</label>
+            <input
+              type="text"
+              value={positionstackKey}
+              onChange={(e) => setPositionstackKey(e.target.value)}
+              placeholder={apiKeyStatus.positionstack ? "Enter new key to update" : "your-api-key"}
+              className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white focus:border-green-500 focus:outline-none font-mono text-sm"
+            />
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={handleSavePositionstack}
+              disabled={saving || !positionstackKey.trim()}
+              className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Save Key'}
+            </button>
+          </div>
+
+          <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+            <p className="text-blue-400 text-sm">
+              <strong>Features:</strong> Address to coordinates conversion, zip code lookup, distance calculations. Required for accurate store search by address.
+            </p>
+            <p className="text-blue-400 text-sm mt-2">
+              <strong>Without this key:</strong> System will extract zip codes from addresses and search by zip only (less accurate distances).
             </p>
           </div>
         </div>
