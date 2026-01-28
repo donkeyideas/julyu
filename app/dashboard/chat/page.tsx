@@ -93,6 +93,7 @@ export default function ChatPage() {
   const [processingRequest, setProcessingRequest] = useState<string | null>(null)
   const [extractedItems, setExtractedItems] = useState<string[]>([])
   const [showExtractModal, setShowExtractModal] = useState(false)
+  const [isExtracting, setIsExtracting] = useState(false)
   const [userLanguage, setUserLanguage] = useState('en')
   const [autoTranslate, setAutoTranslate] = useState(true)
   const [typingUsers, setTypingUsers] = useState<string[]>([])
@@ -503,39 +504,40 @@ export default function ChatPage() {
     }
   }
 
-  const extractItemsFromChat = () => {
-    // Parse messages for food items (simple pattern matching)
-    const items: string[] = []
-    const foodPatterns = [
-      /(\d+)?\s*(lbs?|pounds?|oz|ounces?|gallons?|gal|dozen|doz|cups?|packages?|packs?|bags?|cans?|bottles?|jars?|boxes?)?\s*(of\s+)?([a-zA-Z\s]+(?:chicken|beef|pork|fish|salmon|shrimp|milk|eggs?|bread|cheese|butter|yogurt|fruit|vegetables?|apples?|bananas?|oranges?|tomatoes?|potatoes?|onions?|carrots?|lettuce|spinach|rice|pasta|noodles?|flour|sugar|salt|pepper|oil|sauce|soup|cereal|oatmeal|coffee|tea|juice))/gi,
-      /(?:need|buy|get|grab|pick up)\s+(?:some\s+)?([a-zA-Z\s]+)/gi,
-      /(?:recipe|ingredients?)[\s:]+([^.!?]+)/gi
-    ]
+  const extractItemsFromChat = async () => {
+    // Combine all message content for AI extraction
+    const allContent = messages
+      .map(msg => msg.content)
+      .join('\n')
 
-    messages.forEach(msg => {
-      const content = msg.content
-      // Simple extraction - look for common food items
-      const words = content.toLowerCase().split(/[\s,;]+/)
-      const commonItems = ['milk', 'eggs', 'bread', 'butter', 'cheese', 'chicken', 'beef', 'fish', 'rice',
-                          'pasta', 'tomatoes', 'onions', 'potatoes', 'apples', 'bananas', 'oranges',
-                          'lettuce', 'spinach', 'carrots', 'yogurt', 'cereal', 'flour', 'sugar', 'oil']
+    if (!allContent.trim()) {
+      setExtractedItems([])
+      setShowExtractModal(true)
+      return
+    }
 
-      words.forEach((word, idx) => {
-        const cleanWord = word.replace(/[^a-z]/g, '')
-        if (commonItems.includes(cleanWord) && !items.includes(cleanWord)) {
-          // Check for quantity before
-          const prevWord = words[idx - 1]
-          if (prevWord && /^\d+$/.test(prevWord)) {
-            items.push(`${prevWord} ${cleanWord}`)
-          } else {
-            items.push(cleanWord)
-          }
-        }
-      })
-    })
-
-    setExtractedItems([...new Set(items)])
+    setIsExtracting(true)
     setShowExtractModal(true)
+
+    try {
+      const response = await fetch('/api/ai/extract-ingredients', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ content: allContent }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to extract ingredients')
+      }
+
+      const data = await response.json()
+      setExtractedItems(data.ingredients || [])
+    } catch (error) {
+      console.error('Failed to extract items:', error)
+      setExtractedItems([])
+    } finally {
+      setIsExtracting(false)
+    }
   }
 
   const compareExtractedItems = () => {
@@ -598,12 +600,20 @@ export default function ChatPage() {
           {activeConversation && messages.length > 0 && (
             <button
               onClick={extractItemsFromChat}
-              className="px-4 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition text-sm flex items-center gap-2"
+              disabled={isExtracting}
+              className="px-4 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-              Extract Items
+              {isExtracting ? (
+                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              )}
+              {isExtracting ? 'Extracting...' : 'Extract Items'}
             </button>
           )}
         </div>
@@ -993,7 +1003,15 @@ export default function ChatPage() {
             </div>
 
             <div className="p-6">
-              {extractedItems.length > 0 ? (
+              {isExtracting ? (
+                <div className="text-center py-8">
+                  <svg className="w-8 h-8 animate-spin mx-auto mb-3 text-green-500" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Analyzing conversation for ingredients...</p>
+                </div>
+              ) : extractedItems.length > 0 ? (
                 <>
                   <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
                     Found {extractedItems.length} items from your conversation
@@ -1028,7 +1046,7 @@ export default function ChatPage() {
               ) : (
                 <div className="text-center py-8" style={{ color: 'var(--text-muted)' }}>
                   <p className="text-sm">No food items found in the conversation</p>
-                  <p className="text-xs mt-1">Try mentioning specific grocery items like milk, eggs, bread, etc.</p>
+                  <p className="text-xs mt-1">Try sharing recipes or ingredient lists in the chat</p>
                 </div>
               )}
             </div>

@@ -4,11 +4,20 @@ import { llmOrchestrator } from '@/lib/llm/orchestrator'
 
 export async function POST(request: NextRequest) {
   try {
-    const authClient = createServerClient()
-    const { data: { user } } = await authClient.auth.getUser()
+    // Auth: try Supabase first, fall back to Firebase headers
+    let userId: string | null = null
 
-    const firebaseUserId = request.headers.get('x-user-id')
-    const userId = user?.id || firebaseUserId
+    try {
+      const authClient = createServerClient()
+      const { data: { user } } = await authClient.auth.getUser()
+      if (user) userId = user.id
+    } catch {
+      // Supabase auth failed, try Firebase
+    }
+
+    if (!userId) {
+      userId = request.headers.get('x-user-id')
+    }
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
