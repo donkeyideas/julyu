@@ -131,7 +131,6 @@ export default function Sidebar() {
     { href: '/dashboard/compare', label: 'Compare Prices', icon: '' },
     { href: '/dashboard/lists', label: 'My Lists', icon: '' },
     { href: '/dashboard/receipts', label: 'Receipt History', icon: '' },
-    { href: '/dashboard/savings', label: 'Savings Tracker', icon: '' },
     { href: '/dashboard/alerts', label: 'Price Alerts', icon: '' },
     // AI Features
     { href: '/dashboard/assistant', label: 'AI Assistant', icon: '' },

@@ -149,7 +149,12 @@ export default function ScanReceiptPage() {
         }
 
         if (receipt.ocr_status === 'failed') {
-          setError('OCR processing failed. Please try again with a clearer image.')
+          // Extract specific error message if available
+          const ocrError = receipt.ocr_result?.error
+          const errorMsg = ocrError
+            ? `OCR failed: ${ocrError}`
+            : 'OCR processing failed. Please try again with a clearer image.'
+          setError(errorMsg)
           setStatus('failed')
           setProcessing(false)
           return
@@ -238,8 +243,16 @@ export default function ScanReceiptPage() {
       </p>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400">
-          {error}
+        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 flex items-center justify-between">
+          <span>{error}</span>
+          {status === 'failed' && selectedFile && (
+            <button
+              onClick={handleUpload}
+              className="ml-4 px-4 py-1.5 bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30 transition text-sm font-medium whitespace-nowrap"
+            >
+              Retry
+            </button>
+          )}
         </div>
       )}
 

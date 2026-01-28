@@ -322,7 +322,41 @@ export class LLMOrchestrator {
   /**
    * Convenience method: Receipt OCR (requires vision model)
    */
-  async scanReceipt(imageBase64: string): Promise<LLMResponse> {
+  async scanReceipt(imageBase64: string, mimeType: string = 'image/jpeg'): Promise<LLMResponse> {
+    // Use the detailed prompt for better extraction accuracy
+    const prompt = `Extract all information from this grocery receipt image.
+
+Return JSON with this EXACT structure (no nesting for store):
+{
+  "storeName": "Store Name",
+  "storeAddress": "Full Address",
+  "items": [
+    {
+      "name": "Product Name (clean, readable name)",
+      "price": 5.99,
+      "quantity": 1,
+      "category": "dairy|produce|meat|bakery|snacks|beverages|pantry|frozen|household|other",
+      "discount": 0.00
+    }
+  ],
+  "subtotal": 80.19,
+  "total": 87.43,
+  "tax": 7.24,
+  "purchaseDate": "2025-11-22",
+  "paymentMethod": "credit|debit|cash|ebt|other",
+  "confidence": 0.95
+}
+
+Rules:
+- Extract ALL items visible on receipt
+- Clean up item names (remove codes, abbreviations — make them readable)
+- Use format XX.XX for prices (always 2 decimals)
+- Parse date to YYYY-MM-DD format
+- If text is unclear, mark confidence lower (0.0 to 1.0)
+- Ignore savings/discount lines that are not actual items
+- Capture any discounts/coupons as negative discount values on the relevant item
+- Return valid JSON only, no markdown formatting`
+
     return this.execute({
       type: 'receipt_ocr',
       messages: [
@@ -331,21 +365,12 @@ export class LLMOrchestrator {
           content: [
             {
               type: 'text',
-              text: `Extract all information from this grocery receipt image.
-
-Return JSON with: storeName, storeAddress, items (name, price, quantity, category, discount), subtotal, total, tax, purchaseDate, paymentMethod, confidence.
-
-Rules:
-- Extract ALL items visible on receipt
-- Clean up item names (remove codes, abbreviations)
-- Use XX.XX format for prices
-- Parse date to YYYY-MM-DD
-- Return valid JSON only`,
+              text: prompt,
             },
             {
               type: 'image_url',
               image_url: {
-                url: `data:image/jpeg;base64,${imageBase64}`,
+                url: `data:${mimeType};base64,${imageBase64}`,
                 detail: 'high',
               },
             },

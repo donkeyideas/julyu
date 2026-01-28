@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient, createServiceRoleClient } from '@/lib/supabase/server'
 
 export async function GET(
   request: NextRequest,
@@ -7,30 +7,31 @@ export async function GET(
 ) {
   try {
     const { id: receiptId } = params
-    const supabase = createServerClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-    const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
+    // Auth: try Supabase first, fall back to Firebase headers
+    let userId: string | null = null
 
-    const firebaseUserId = request.headers.get('x-user-id')
-    const userId = user?.id || firebaseUserId || (isTestMode ? 'test-user-id' : null)
+    try {
+      const supabase = createServerClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        userId = user.id
+      }
+    } catch (authError) {
+      console.error('[Receipt] Supabase auth failed (trying Firebase):', authError)
+    }
+
+    if (!userId) {
+      userId = request.headers.get('x-user-id')
+    }
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Handle demo receipt IDs - return mock data immediately
-    if (receiptId.startsWith('demo-receipt-')) {
-      console.log('[Receipt] Returning demo receipt for ID:', receiptId)
-      return NextResponse.json({
-        success: true,
-        receipt: getMockReceipt(receiptId),
-      })
-    }
+    const dbClient = createServiceRoleClient()
 
-    const { data: receipt, error } = await supabase
+    const { data: receipt, error } = await dbClient
       .from('receipts')
       .select('*')
       .eq('id', receiptId)
@@ -38,12 +39,14 @@ export async function GET(
       .single()
 
     if (error) {
-      console.error('[Receipt] Get error:', error)
-      // Return mock data on any error to keep feature working
-      return NextResponse.json({
-        success: true,
-        receipt: getMockReceipt(receiptId),
-      })
+      console.error('[Receipt] Get error:', JSON.stringify(error))
+      if (error.code === 'PGRST116') {
+        return NextResponse.json({ error: 'Receipt not found' }, { status: 404 })
+      }
+      return NextResponse.json(
+        { error: 'Failed to load receipt', details: error.message },
+        { status: 500 }
+      )
     }
 
     if (!receipt) {
@@ -69,42 +72,12 @@ export async function GET(
       success: true,
       receipt,
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error('[Receipt] Error:', error)
-    // Return demo data on any error to keep the feature working
-    return NextResponse.json({
-      success: true,
-      receipt: getMockReceipt('demo-receipt'),
-    })
-  }
-}
-
-function getMockReceipt(id: string) {
-  return {
-    id,
-    user_id: 'test-user-id',
-    image_url: null,
-    ocr_status: 'complete',
-    ocr_result: {
-      storeName: 'Kroger',
-      storeAddress: '123 Main St, Cincinnati, OH 45202',
-      items: [
-        { name: 'Milk 2%', quantity: 1, price: 3.49 },
-        { name: 'Eggs Large', quantity: 1, price: 4.29 },
-        { name: 'Bread Whole Wheat', quantity: 1, price: 2.99 },
-        { name: 'Bananas', quantity: 1, price: 1.49 },
-      ],
-      subtotal: 12.26,
-      tax: 0.74,
-      total: 13.00,
-      purchaseDate: new Date().toISOString().split('T')[0],
-      confidence: 0.92,
-    },
-    ocr_confidence: 0.92,
-    total_amount: 13.00,
-    tax_amount: 0.74,
-    purchase_date: new Date().toISOString(),
-    created_at: new Date().toISOString(),
-    processed_at: new Date().toISOString(),
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json(
+      { error: 'Failed to load receipt', details: message },
+      { status: 500 }
+    )
   }
 }
