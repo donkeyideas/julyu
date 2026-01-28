@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
+import { FEATURE_LABELS } from '@/shared/types/subscriptions'
+import type { SubscriptionPlan, FeatureKey } from '@/shared/types/subscriptions'
 
 interface NotificationPreferences {
   price_alerts: boolean
@@ -76,6 +77,14 @@ export default function SettingsPage() {
   const [exporting, setExporting] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [upgradePlans, setUpgradePlans] = useState<SubscriptionPlan[]>([])
+  const [upgradePromoCode, setUpgradePromoCode] = useState('')
+  const [upgradePromoResult, setUpgradePromoResult] = useState<{
+    valid: boolean; error?: string; promo?: { type: string; value: number; description: string | null }
+  } | null>(null)
+  const [validatingPromo, setValidatingPromo] = useState(false)
+  const [checkingOut, setCheckingOut] = useState<string | null>(null)
 
   useEffect(() => {
     loadSettings()
@@ -319,6 +328,60 @@ export default function SettingsPage() {
       console.error('Subscription action failed:', error)
       setSaveMessage({ type: 'error', text: 'Failed to process action' })
       setTimeout(() => setSaveMessage(null), 5000)
+    }
+  }
+
+  const openUpgradeModal = async () => {
+    setShowUpgradeModal(true)
+    try {
+      const res = await fetch('/api/subscriptions/plans')
+      const data = await res.json()
+      setUpgradePlans(data.plans || [])
+    } catch (error) {
+      console.error('Failed to load plans:', error)
+    }
+  }
+
+  const handleUpgradeValidatePromo = async (planSlug: string) => {
+    if (!upgradePromoCode.trim()) return
+    setValidatingPromo(true)
+    setUpgradePromoResult(null)
+    try {
+      const res = await fetch('/api/subscriptions/validate-promo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: upgradePromoCode.trim(), planSlug }),
+      })
+      setUpgradePromoResult(await res.json())
+    } catch {
+      setUpgradePromoResult({ valid: false, error: 'Failed to validate promo code' })
+    } finally {
+      setValidatingPromo(false)
+    }
+  }
+
+  const handleUpgradeCheckout = async (planSlug: string) => {
+    setCheckingOut(planSlug)
+    try {
+      const headers = getHeaders()
+      const res = await fetch('/api/subscriptions/checkout', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          planSlug,
+          promoCode: upgradePromoResult?.valid ? upgradePromoCode.trim() : undefined,
+        }),
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        alert(data.error || 'Failed to start checkout')
+      }
+    } catch (error: any) {
+      alert(error.message || 'Checkout failed')
+    } finally {
+      setCheckingOut(null)
     }
   }
 
@@ -627,12 +690,12 @@ export default function SettingsPage() {
 
             <div className="flex flex-wrap gap-3 pt-2">
               {(!subscription || subscription.status === 'free' || subscription.status === 'canceled') && (
-                <Link
-                  href="/pricing"
+                <button
+                  onClick={openUpgradeModal}
                   className="px-4 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition text-sm"
                 >
                   Upgrade Plan
-                </Link>
+                </button>
               )}
 
               {subscription?.stripe_customer_id && (
@@ -951,6 +1014,123 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Upgrade Plan Modal */}
+      {showUpgradeModal && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={() => setShowUpgradeModal(false)}>
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-8" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-white">Choose a Plan</h2>
+              <button onClick={() => setShowUpgradeModal(false)} className="text-gray-400 hover:text-white text-2xl">&times;</button>
+            </div>
+
+            {upgradePlans.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">Loading plans...</div>
+            ) : (
+              <>
+                <div className="grid md:grid-cols-3 gap-6">
+                  {upgradePlans.map(plan => {
+                    const features = Array.isArray(plan.features) ? plan.features : []
+                    const isFree = plan.price === 0 && plan.is_self_serve
+                    const isEnterprise = !plan.is_self_serve
+                    const isHighlighted = plan.highlight
+                    const isCurrent = subscriptionPlan?.slug === plan.slug
+
+                    return (
+                      <div
+                        key={plan.id}
+                        className={`rounded-2xl p-6 text-center ${
+                          isHighlighted
+                            ? 'border-2 border-green-500 bg-green-500/5'
+                            : 'border border-gray-700'
+                        }`}
+                      >
+                        {isHighlighted && (
+                          <div className="text-green-400 text-xs font-semibold mb-2 uppercase tracking-wider">Most Popular</div>
+                        )}
+                        <div className="text-xl font-bold text-white mb-2">{plan.name}</div>
+                        <div className="text-3xl font-black text-green-500 mb-1">
+                          {isEnterprise ? 'Custom' : `$${plan.price}`}
+                        </div>
+                        <div className="text-gray-500 text-sm mb-4">
+                          {isFree ? 'Forever free' : isEnterprise ? 'Contact sales' : `per ${plan.billing_interval}`}
+                        </div>
+
+                        <ul className="text-left space-y-2 mb-6 text-sm">
+                          {features.slice(0, 6).map(feature => (
+                            <li key={feature} className="text-gray-300">
+                              <span className="text-green-500 mr-2">&#10003;</span>
+                              {FEATURE_LABELS[feature as FeatureKey] || feature}
+                            </li>
+                          ))}
+                          {features.length > 6 && (
+                            <li className="text-gray-500">+{features.length - 6} more features</li>
+                          )}
+                        </ul>
+
+                        {isCurrent ? (
+                          <div className="py-2 rounded-lg border border-gray-600 text-gray-400 text-sm">Current Plan</div>
+                        ) : isFree ? (
+                          <div className="py-2 rounded-lg border border-gray-700 text-gray-500 text-sm">Free</div>
+                        ) : plan.is_self_serve && plan.price > 0 ? (
+                          <button
+                            onClick={() => handleUpgradeCheckout(plan.slug)}
+                            disabled={checkingOut === plan.slug}
+                            className="w-full py-2 rounded-lg bg-green-500 text-black font-semibold hover:bg-green-600 disabled:opacity-50 text-sm"
+                          >
+                            {checkingOut === plan.slug ? 'Loading...' : 'Subscribe'}
+                          </button>
+                        ) : isEnterprise ? (
+                          <a href="/contact" className="block w-full py-2 rounded-lg border border-gray-700 text-white hover:border-green-500 text-center text-sm">
+                            Contact Sales
+                          </a>
+                        ) : null}
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Promo Code */}
+                <div className="mt-6 border-t border-gray-700 pt-6">
+                  <div className="max-w-sm mx-auto text-center">
+                    <h3 className="text-sm font-semibold text-white mb-3">Have a promo code?</h3>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={upgradePromoCode}
+                        onChange={(e) => {
+                          setUpgradePromoCode(e.target.value.toUpperCase())
+                          setUpgradePromoResult(null)
+                        }}
+                        placeholder="Enter code"
+                        className="flex-1 px-3 py-2 bg-black border border-gray-700 rounded-lg text-white text-sm focus:border-green-500 focus:outline-none font-mono"
+                      />
+                      <button
+                        onClick={() => handleUpgradeValidatePromo('premium')}
+                        disabled={validatingPromo || !upgradePromoCode.trim()}
+                        className="px-4 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 disabled:opacity-50 text-sm"
+                      >
+                        {validatingPromo ? '...' : 'Apply'}
+                      </button>
+                    </div>
+                    {upgradePromoResult && (
+                      <div className={`mt-2 text-sm ${upgradePromoResult.valid ? 'text-green-400' : 'text-red-400'}`}>
+                        {upgradePromoResult.valid
+                          ? `Code applied! ${upgradePromoResult.promo?.type === 'free_months'
+                              ? `${upgradePromoResult.promo.value} month(s) free`
+                              : upgradePromoResult.promo?.type === 'percentage'
+                              ? `${upgradePromoResult.promo.value}% off`
+                              : `$${upgradePromoResult.promo?.value} off`}`
+                          : upgradePromoResult.error || 'Invalid code'}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

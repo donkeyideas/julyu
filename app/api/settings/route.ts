@@ -188,13 +188,10 @@ export async function PUT(request: NextRequest) {
 
     if (result.error) {
       console.error('[Settings] Database error:', result.error)
-      // Fall back to returning success with the data we tried to save
-      // This allows the feature to work even if database isn't set up
       return NextResponse.json({
-        success: true,
-        preferences: preferencesData,
-        message: 'Settings saved locally (database unavailable)'
-      })
+        success: false,
+        error: `Database error: ${result.error.message}`,
+      }, { status: 500 })
     }
 
     return NextResponse.json({
@@ -203,12 +200,9 @@ export async function PUT(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error updating settings:', error)
-    // Return success anyway to allow the feature to work
-    // The client can store settings in localStorage as a fallback
     return NextResponse.json({
-      success: true,
-      message: 'Settings saved locally',
-      preferences: {}
-    })
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to save settings',
+    }, { status: 500 })
   }
 }
