@@ -347,7 +347,11 @@ export default function AssistantPage() {
       const response = await fetch('/api/ai/assistant', { headers: getAuthHeaders() })
       if (response.ok) {
         const data = await response.json()
+        console.log('[AI Assistant] Loaded conversations:', data.conversations?.length || 0)
         setConversations(data.conversations || [])
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        console.error('[AI Assistant] Failed to load conversations:', response.status, errorData)
       }
     } catch (error) {
       console.error('Failed to load conversations:', error)
@@ -425,9 +429,19 @@ export default function AssistantPage() {
 
       setMessages(prev => [...prev, assistantMessage])
 
-      if (data.conversation_id && !conversationId) {
-        setConversationId(data.conversation_id)
-        loadConversations()
+      // Debug: log conversation creation issues
+      if (data._debug) {
+        console.warn('[AI Assistant] Conversation debug:', data._debug)
+      }
+
+      if (data.conversation_id) {
+        if (!conversationId) {
+          setConversationId(data.conversation_id)
+        }
+        // Always reload conversations after getting a response to keep history updated
+        setTimeout(() => loadConversations(), 500)
+      } else {
+        console.warn('[AI Assistant] No conversation_id returned - history will not be saved')
       }
     } catch (error) {
       console.error('Failed to send message:', error)

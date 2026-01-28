@@ -36,6 +36,17 @@ export default function SignupPage() {
         throw error
       }
 
+      // Store user in localStorage for consistent auth across API calls
+      if (data.user) {
+        localStorage.setItem('julyu_user', JSON.stringify({
+          id: data.user.id,
+          email: data.user.email,
+          full_name: data.user.user_metadata?.full_name || fullName || email.split('@')[0],
+          auth_provider: 'email',
+          subscription_tier: 'free',
+        }))
+      }
+
       // Success - redirect to dashboard
       router.push('/dashboard')
       router.refresh()

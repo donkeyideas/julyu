@@ -145,8 +145,28 @@ export async function POST(request: NextRequest) {
     // Create or update conversation
     if (!convId) {
       convId = await createConversation(userId, lastUserMessage.content)
+
+      // Fallback: direct insert if createConversation failed
       if (!convId) {
-        console.error('[AI Assistant] Failed to create conversation for user:', userId)
+        console.error('[AI Assistant] createConversation returned null, trying direct insert for user:', userId)
+        try {
+          const dbClient = createServiceRoleClient()
+          const fallbackTitle = lastUserMessage.content.slice(0, 60).replace(/\s+/g, ' ').trim() || 'New Conversation'
+          const { data: directConv, error: directError } = await dbClient
+            .from('ai_conversations')
+            .insert({ user_id: userId, title: fallbackTitle })
+            .select('id')
+            .single()
+
+          if (directError) {
+            console.error('[AI Assistant] Direct conversation insert also failed:', directError)
+          } else if (directConv) {
+            convId = directConv.id
+            console.log('[AI Assistant] Direct insert succeeded, convId:', convId)
+          }
+        } catch (directErr) {
+          console.error('[AI Assistant] Direct insert exception:', directErr)
+        }
       }
     }
 
@@ -162,6 +182,16 @@ export async function POST(request: NextRequest) {
         )
       } catch (memoryError) {
         console.error('[AI Assistant] Failed to save conversation memory:', memoryError)
+        // Fallback: try direct message inserts
+        try {
+          const dbClient = createServiceRoleClient()
+          await dbClient.from('ai_messages').insert([
+            { conversation_id: convId, role: 'user', content: lastUserMessage.content },
+            { conversation_id: convId, role: 'assistant', content: response, metadata: { tokens, actions: actionResults.length > 0 ? actionResults : undefined } },
+          ])
+        } catch {
+          console.error('[AI Assistant] Direct message insert also failed')
+        }
       }
     }
 
@@ -170,6 +200,7 @@ export async function POST(request: NextRequest) {
       conversation_id: convId,
       tokens,
       actions: actionResults.length > 0 ? actionResults : undefined,
+      _debug: !convId ? { error: 'conversation_creation_failed', userId } : undefined,
     })
   } catch (error) {
     console.error('AI Assistant error:', error)

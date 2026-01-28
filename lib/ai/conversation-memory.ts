@@ -189,7 +189,12 @@ export async function createConversation(
     .single()
 
   if (error) {
-    console.error('[ConversationMemory] Failed to create conversation:', error, 'userId:', userId)
+    console.error('[ConversationMemory] Failed to create conversation:', JSON.stringify(error), 'userId:', userId, 'title:', fallbackTitle)
+    return null
+  }
+
+  if (!data?.id) {
+    console.error('[ConversationMemory] Insert succeeded but no ID returned. data:', JSON.stringify(data))
     return null
   }
 
