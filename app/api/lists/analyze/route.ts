@@ -223,22 +223,33 @@ async function analyzeWithKroger(
         lng: geocodeResult.longitude
       }
       console.log('[ListAnalyze] Geocoded to:', coordinates, 'source:', geocodeResult.source)
-    } else if (!zipCode) {
+    } else if (!zipCode && !address) {
       // No location provided at all - return error
       return NextResponse.json({
         success: false,
         error: 'Please provide either an address or zip code to find nearby stores.',
       }, { status: 400 })
+    } else if (!zipCode && address) {
+      // Address provided but geocoding failed (probably no API key) - extract zip from address
+      const zipMatch = address.match(/\b\d{5}\b/)
+      if (zipMatch) {
+        searchZip = zipMatch[0]
+        console.log('[ListAnalyze] Extracted zip from address:', searchZip)
+      } else {
+        console.log('[ListAnalyze] Geocoding failed and no zip code - will search without distance')
+      }
     }
   } catch (geocodeError: any) {
     console.error('[ListAnalyze] Geocoding failed:', geocodeError.message)
-    // Continue with zip code only if available
-    if (!zipCode) {
-      return NextResponse.json({
-        success: false,
-        error: 'Location lookup failed. Please check your address or zip code.',
-      }, { status: 400 })
+    // Extract zip from address if possible
+    if (!zipCode && address) {
+      const zipMatch = address.match(/\b\d{5}\b/)
+      if (zipMatch) {
+        searchZip = zipMatch[0]
+        console.log('[ListAnalyze] Extracted zip from address after error:', searchZip)
+      }
     }
+    // Continue even if geocoding fails - just won't have accurate distances
   }
 
   // Step 2: Find nearby Kroger stores (prefer coordinates over zip)
@@ -252,13 +263,19 @@ async function analyzeWithKroger(
         limit: 5
       })
       console.log('[ListAnalyze] Found', stores.length, 'Kroger stores using coordinates')
-    } else {
+    } else if (searchZip) {
       // Fallback to zip code search
       stores = await krogerClient.searchLocations({
         zipCode: searchZip,
         limit: 5
       })
       console.log('[ListAnalyze] Found', stores.length, 'Kroger stores using zip code')
+    } else {
+      // No coordinates or zip - return helpful error
+      return NextResponse.json({
+        success: false,
+        error: 'Unable to determine location. Please provide a zip code or a complete address with zip code.',
+      }, { status: 400 })
     }
   } catch (storeError: any) {
     console.error('[ListAnalyze] Failed to find stores:', storeError.message)

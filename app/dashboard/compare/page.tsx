@@ -356,23 +356,13 @@ function ComparePageContent() {
   }
 
   const handleShopHere = async (store: StoreOption) => {
-    // Check if this is a Kroger store
+    // Always open shop options modal (shows directions and delivery partners)
+    setShopOptions({ isOpen: true, store })
+
+    // Check if Kroger store and if user is connected (for showing cart option in modal)
     const isKroger = store.store.retailer?.toLowerCase().includes('kroger')
-
     if (isKroger) {
-      // Check if user has connected their Kroger account
-      const hasKrogerAuth = await checkKrogerConnection()
-
-      if (!hasKrogerAuth) {
-        // Show modal: "Connect Kroger Account to add items to cart"
-        setKrogerConnectModal({ isOpen: true, store })
-      } else {
-        // Add items to Kroger cart directly
-        await addItemsToKrogerCart(store)
-      }
-    } else {
-      // Open shop options modal for non-Kroger stores
-      setShopOptions({ isOpen: true, store })
+      await checkKrogerConnection()
     }
   }
 
@@ -440,13 +430,15 @@ function ComparePageContent() {
     const store = shopOptions.store
     const storeName = store.store.name
     const retailer = store.store.retailer
-    const storeAddress = store.store.address || `${storeName} ${retailer} ${zipCode}`
+    const storeAddress = store.store.address || `${storeName} ${retailer} ${zipCode || ''}`
 
     if (option === 'directions') {
       const destination = encodeURIComponent(storeAddress)
-      if (address) {
-        const origin = encodeURIComponent(address)
-        window.open(`https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`, '_blank')
+      // Use address if available, otherwise use zip code as origin
+      const origin = address || zipCode
+      if (origin) {
+        const encodedOrigin = encodeURIComponent(origin)
+        window.open(`https://www.google.com/maps/dir/?api=1&origin=${encodedOrigin}&destination=${destination}`, '_blank')
       } else {
         window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination}`, '_blank')
       }
@@ -459,11 +451,14 @@ function ComparePageContent() {
   const handleDirections = (store: StoreOption) => {
     const storeName = store.store.name
     const retailer = store.store.retailer
-    const storeAddress = store.store.address || `${storeName} ${retailer} ${zipCode}`
+    const storeAddress = store.store.address || `${storeName} ${retailer} ${zipCode || ''}`
     const destination = encodeURIComponent(storeAddress)
-    if (address) {
-      const origin = encodeURIComponent(address)
-      window.open(`https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`, '_blank')
+
+    // Use address if available, otherwise use zip code as origin
+    const origin = address || zipCode
+    if (origin) {
+      const encodedOrigin = encodeURIComponent(origin)
+      window.open(`https://www.google.com/maps/dir/?api=1&origin=${encodedOrigin}&destination=${destination}`, '_blank')
     } else {
       window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination}`, '_blank')
     }
@@ -991,6 +986,42 @@ function ComparePageContent() {
                   </svg>
                 </button>
               </div>
+
+              {/* Kroger Cart Option (for Kroger stores only) */}
+              {shopOptions.store && shopOptions.store.store.retailer?.toLowerCase().includes('kroger') && (
+                <div className="mb-6">
+                  <h4 className="text-xs font-semibold uppercase mb-3" style={{ color: 'var(--text-muted)' }}>Shop Online</h4>
+                  <button
+                    onClick={async () => {
+                      if (krogerConnected) {
+                        await addItemsToKrogerCart(shopOptions.store!)
+                        setShopOptions({ isOpen: false, store: null })
+                      } else {
+                        setShopOptions({ isOpen: false, store: null })
+                        setKrogerConnectModal({ isOpen: true, store: shopOptions.store })
+                      }
+                    }}
+                    className="w-full flex items-center gap-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl hover:bg-blue-500/20 transition group"
+                  >
+                    <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center group-hover:scale-110 transition">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                        {krogerConnected ? 'Add to Kroger Cart' : 'Connect Kroger Account'}
+                      </div>
+                      <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                        {krogerConnected ? 'Add all items to your online cart' : 'One-time setup for easy shopping'}
+                      </div>
+                    </div>
+                    <svg className="w-5 h-5" style={{ color: 'var(--text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+              )}
 
               {/* Delivery Options */}
               <div>
