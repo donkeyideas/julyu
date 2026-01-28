@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient, createServiceRoleClient } from '@/lib/supabase/server'
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,8 +20,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Use service role client to bypass RLS (needed for Firebase/Google users)
+    const adminSupabase = createServiceRoleClient()
+
     // Get user preferences
-    const { data: preferences, error } = await supabase
+    const { data: preferences, error } = await adminSupabase
       .from('user_preferences')
       .select('*')
       .eq('user_id', userId)
@@ -34,7 +37,7 @@ export async function GET(request: NextRequest) {
 
     // Get user data from users table (works for both Supabase and Firebase users)
     let userData = null
-    const { data } = await supabase
+    const { data } = await adminSupabase
       .from('users')
       .select('subscription_tier, email, full_name, auth_provider, avatar_url')
       .eq('id', userId)
@@ -112,6 +115,9 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Use service role client to bypass RLS (needed for Firebase/Google users)
+    const adminSupabase = createServiceRoleClient()
+
     const body = await request.json()
     const {
       notification_preferences,
@@ -126,7 +132,7 @@ export async function PUT(request: NextRequest) {
 
     // If full_name is provided, update the users table
     if (full_name !== undefined) {
-      const { error: userUpdateError } = await supabase
+      const { error: userUpdateError } = await adminSupabase
         .from('users')
         .update({ full_name, updated_at: new Date().toISOString() })
         .eq('id', userId)
@@ -137,28 +143,35 @@ export async function PUT(request: NextRequest) {
     }
 
     // Check if preferences exist
-    const { data: existing, error: checkError } = await supabase
+    const { data: existing, error: checkError } = await adminSupabase
       .from('user_preferences')
       .select('id')
       .eq('user_id', userId)
       .single()
 
-    const preferencesData = {
+    const preferencesData: Record<string, unknown> = {
       user_id: userId,
       notification_preferences,
       ai_features_enabled,
       budget_monthly,
       favorite_stores,
       shopping_frequency,
-      preferred_language,
-      auto_translate_chat,
       updated_at: new Date().toISOString()
+    }
+
+    // Only include columns that exist in the database
+    // preferred_language and auto_translate_chat may not exist yet
+    if (preferred_language !== undefined) {
+      preferencesData.preferred_language = preferred_language
+    }
+    if (auto_translate_chat !== undefined) {
+      preferencesData.auto_translate_chat = auto_translate_chat
     }
 
     let result
     if (existing && !checkError) {
       // Update existing preferences
-      result = await supabase
+      result = await adminSupabase
         .from('user_preferences')
         .update(preferencesData)
         .eq('user_id', userId)
@@ -166,7 +179,7 @@ export async function PUT(request: NextRequest) {
         .single()
     } else {
       // Insert new preferences
-      result = await supabase
+      result = await adminSupabase
         .from('user_preferences')
         .insert(preferencesData)
         .select()

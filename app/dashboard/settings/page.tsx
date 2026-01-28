@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 
 interface NotificationPreferences {
   price_alerts: boolean
@@ -217,13 +218,19 @@ export default function SettingsPage() {
         body: JSON.stringify(settings)
       })
 
-      if (response.ok) {
-        setSaveMessage({ type: 'success', text: 'Settings saved successfully!' })
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        if (data.message?.includes('locally')) {
+          setSaveMessage({ type: 'success', text: 'Settings saved locally (database sync pending)' })
+        } else {
+          setSaveMessage({ type: 'success', text: 'Settings saved successfully!' })
+        }
         setTimeout(() => setSaveMessage(null), 3000)
       } else {
-        // API failed but localStorage succeeded
-        setSaveMessage({ type: 'success', text: 'Settings saved locally!' })
-        setTimeout(() => setSaveMessage(null), 3000)
+        console.error('[Settings] Save failed:', data)
+        setSaveMessage({ type: 'error', text: data.error || 'Failed to save settings' })
+        setTimeout(() => setSaveMessage(null), 5000)
       }
     } catch (error) {
       console.error('Failed to save settings:', error)
@@ -321,15 +328,25 @@ export default function SettingsPage() {
 
     try {
       const headers = getHeaders()
-      await fetch('/api/privacy/consent', {
+      const res = await fetch('/api/privacy/consent', {
         method: 'PUT',
         headers,
         body: JSON.stringify({ consent: { [key]: newValue } }),
       })
+
+      if (!res.ok) {
+        console.error('Failed to update consent, status:', res.status)
+        // Revert on API error
+        setConsent(prev => ({ ...prev, [key]: !newValue }))
+        setSaveMessage({ type: 'error', text: 'Failed to save privacy setting' })
+        setTimeout(() => setSaveMessage(null), 3000)
+      }
     } catch (error) {
       console.error('Failed to update consent:', error)
       // Revert on failure
       setConsent(prev => ({ ...prev, [key]: !newValue }))
+      setSaveMessage({ type: 'error', text: 'Failed to save privacy setting' })
+      setTimeout(() => setSaveMessage(null), 3000)
     }
   }
 
@@ -610,12 +627,12 @@ export default function SettingsPage() {
 
             <div className="flex flex-wrap gap-3 pt-2">
               {(!subscription || subscription.status === 'free' || subscription.status === 'canceled') && (
-                <a
+                <Link
                   href="/pricing"
                   className="px-4 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition text-sm"
                 >
                   Upgrade Plan
-                </a>
+                </Link>
               )}
 
               {subscription?.stripe_customer_id && (
