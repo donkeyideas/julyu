@@ -15,6 +15,13 @@ ALTER TABLE user_consent DROP CONSTRAINT IF EXISTS user_consent_user_id_fkey;
 ALTER TABLE user_subscriptions DROP CONSTRAINT IF EXISTS user_subscriptions_user_id_fkey;
 ALTER TABLE promo_code_redemptions DROP CONSTRAINT IF EXISTS promo_code_redemptions_user_id_fkey;
 
--- Add missing columns to user_preferences if not already added
+-- Add ALL potentially missing columns to user_preferences
+ALTER TABLE user_preferences ADD COLUMN IF NOT EXISTS ai_features_enabled BOOLEAN DEFAULT TRUE;
+ALTER TABLE user_preferences ADD COLUMN IF NOT EXISTS budget_monthly DECIMAL(10,2);
+ALTER TABLE user_preferences ADD COLUMN IF NOT EXISTS favorite_stores JSONB DEFAULT '[]';
+ALTER TABLE user_preferences ADD COLUMN IF NOT EXISTS shopping_frequency VARCHAR(20) DEFAULT 'weekly';
 ALTER TABLE user_preferences ADD COLUMN IF NOT EXISTS preferred_language VARCHAR(10) DEFAULT 'en';
 ALTER TABLE user_preferences ADD COLUMN IF NOT EXISTS auto_translate_chat BOOLEAN DEFAULT TRUE;
+
+-- Notify PostgREST to reload the schema cache
+NOTIFY pgrst, 'reload schema';

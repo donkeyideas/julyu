@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { createCheckoutSession } from '@/lib/stripe/checkout'
 
 export async function POST(request: NextRequest) {
@@ -21,16 +21,26 @@ export async function POST(request: NextRequest) {
       userEmail = user.email || null
     } else {
       // Try Firebase/Google auth via headers
-      const firebaseUserId = request.headers.get('x-user-id')
-      const firebaseEmail = request.headers.get('x-user-email')
-      if (firebaseUserId) {
-        userId = firebaseUserId
-        userEmail = firebaseEmail
-      }
+      userId = request.headers.get('x-user-id')
     }
 
-    if (!userId || !userEmail) {
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Look up email from DB if not available from auth
+    if (!userEmail) {
+      const adminSupabase = createServiceRoleClient()
+      const { data: userData } = await adminSupabase
+        .from('users')
+        .select('email')
+        .eq('id', userId)
+        .single()
+      userEmail = userData?.email || null
+    }
+
+    if (!userEmail) {
+      return NextResponse.json({ error: 'User email not found' }, { status: 400 })
     }
 
     const body = await request.json()
