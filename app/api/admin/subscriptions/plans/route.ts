@@ -6,6 +6,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAllPlans, updatePlan } from '@/lib/subscriptions/plans'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const plans = await getAllPlans()
