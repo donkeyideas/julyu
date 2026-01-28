@@ -10,6 +10,8 @@ import { getUserPlan } from '@/lib/subscriptions/feature-gate'
 import { getStripeClient } from '@/lib/stripe/client'
 import { createPortalSession } from '@/lib/stripe/checkout'
 import { invalidateFeatureCache } from '@/lib/subscriptions/feature-gate'
+import { getPlanBySlug } from '@/lib/subscriptions/plans'
+import type Stripe from 'stripe'
 
 function resolveUserId(request: NextRequest, user: { id: string } | null): string | null {
   if (user) return user.id
@@ -23,14 +25,94 @@ export async function GET(request: NextRequest) {
     const userId = resolveUserId(request, user)
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const plan = await getUserPlan(userId)
-
     const adminSupabase = createServiceRoleClient()
-    const { data: subscription } = await adminSupabase
+
+    // Check for existing subscription
+    let { data: subscription } = await adminSupabase
       .from('user_subscriptions')
       .select('*')
       .eq('user_id', userId)
       .single()
+
+    // If no subscription record, check Stripe for active subscriptions (webhook may have failed)
+    if (!subscription || subscription.status !== 'active') {
+      const { data: userData } = await adminSupabase
+        .from('users')
+        .select('stripe_customer_id')
+        .eq('id', userId)
+        .single()
+
+      if (userData?.stripe_customer_id) {
+        try {
+          const stripe = await getStripeClient()
+          const stripeSubs = await stripe.subscriptions.list({
+            customer: userData.stripe_customer_id,
+            status: 'active',
+            limit: 1,
+          })
+
+          const activeSub = stripeSubs.data[0]
+          if (activeSub) {
+            // Find the plan by matching the price ID
+            const priceId = activeSub.items.data[0]?.price?.id
+            const planSlug = activeSub.metadata?.planSlug || 'premium'
+            const plan = await getPlanBySlug(planSlug)
+
+            if (plan) {
+              // Sync: create or update the subscription record
+              const subData = {
+                user_id: userId,
+                plan_id: plan.id,
+                stripe_subscription_id: activeSub.id,
+                stripe_customer_id: userData.stripe_customer_id,
+                status: 'active' as const,
+                current_period_start: activeSub.items.data[0]?.current_period_start
+                  ? new Date(activeSub.items.data[0].current_period_start * 1000).toISOString()
+                  : null,
+                current_period_end: activeSub.items.data[0]?.current_period_end
+                  ? new Date(activeSub.items.data[0].current_period_end * 1000).toISOString()
+                  : null,
+                cancel_at_period_end: activeSub.cancel_at_period_end,
+                updated_at: new Date().toISOString(),
+              }
+
+              if (subscription) {
+                await adminSupabase
+                  .from('user_subscriptions')
+                  .update(subData)
+                  .eq('user_id', userId)
+              } else {
+                await adminSupabase
+                  .from('user_subscriptions')
+                  .insert(subData)
+              }
+
+              // Dual-write: update users.subscription_tier
+              const tier = planSlug === 'enterprise' ? 'enterprise' : planSlug === 'free' ? 'free' : 'premium'
+              await adminSupabase
+                .from('users')
+                .update({ subscription_tier: tier })
+                .eq('id', userId)
+
+              invalidateFeatureCache(userId)
+              console.log(`[Manage] Synced subscription from Stripe for user ${userId}`)
+
+              // Re-fetch the subscription
+              const { data: refreshed } = await adminSupabase
+                .from('user_subscriptions')
+                .select('*')
+                .eq('user_id', userId)
+                .single()
+              subscription = refreshed
+            }
+          }
+        } catch (syncErr) {
+          console.error('[Manage] Stripe sync error:', syncErr)
+        }
+      }
+    }
+
+    const plan = await getUserPlan(userId)
 
     // Check for promo code info
     let promoInfo = null
