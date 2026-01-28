@@ -16,6 +16,46 @@ interface Message {
   content: string
 }
 
+// Ensure user exists in public.users table (required for FK constraints)
+async function ensureUserExists(userId: string, email?: string | null, fullName?: string | null): Promise<void> {
+  try {
+    const supabase = createServiceRoleClient()
+    const { data: existing } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', userId)
+      .single()
+
+    if (!existing) {
+      // User doesn't exist in public.users — create them
+      const { error: insertError } = await supabase
+        .from('users')
+        .insert({
+          id: userId,
+          email: email || `user-${userId.slice(0, 8)}@unknown`,
+          full_name: fullName || 'User',
+          subscription_tier: 'free',
+          created_at: new Date().toISOString(),
+        })
+
+      if (insertError) {
+        // Could be a race condition (another request created the user) — check if user now exists
+        const { data: recheckUser } = await supabase
+          .from('users')
+          .select('id')
+          .eq('id', userId)
+          .single()
+
+        if (!recheckUser) {
+          console.error('[ensureUserExists] Failed to create user:', insertError)
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[ensureUserExists] Unexpected error:', err)
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = createServerClient()
@@ -28,6 +68,11 @@ export async function POST(request: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // Ensure user exists in public.users (needed for ai_conversations FK)
+    const userEmail = user?.email || request.headers.get('x-user-email')
+    const userName = user?.user_metadata?.full_name || request.headers.get('x-user-name')
+    await ensureUserExists(userId, userEmail, userName as string | null)
 
     const body = await request.json()
     const { messages, conversation_id } = body as { messages: Message[]; conversation_id?: string }

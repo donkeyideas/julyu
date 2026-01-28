@@ -58,14 +58,14 @@ const SUGGESTED_PROMPTS = [
   "How can I save money on groceries?",
 ]
 
-// Extract ingredients from message content
+// Extract ingredients from message content (fallback when AI extraction is unavailable)
 function extractIngredients(content: string): string[] {
   const ingredients: string[] = []
-  const lines = content.split('\n')
 
-  // Non-ingredient phrases to skip entirely
-  const skipPhrases = ['cost per serving', 'would you like', 'quick tip', 'let me know', 'here are', 'here\'s']
-  const tipPhrases = ['on sale', 'for a cheaper', 'instead of', 'if available', 'or use', 'you can', 'to save', 'tangy bite', 'bouillon']
+  // Non-ingredient phrases to skip
+  const skipPhrases = ['cost per serving', 'cost:', 'would you like', 'quick tip', 'let me know',
+    'here are', 'here\'s', 'want me to', '/serving', 'per serving']
+  const tipPhrases = ['on sale', 'for a cheaper', 'instead of', 'if available', 'you can', 'to save']
 
   const addIngredient = (item: string) => {
     const simplified = simplifyIngredient(item)
@@ -74,19 +74,39 @@ function extractIngredients(content: string): string[] {
     }
   }
 
+  // Strategy 1: Extract bold ingredients from any format (**chicken breast**)
+  const boldMatches = content.match(/\*\*([^*]+)\*\*/g)
+  if (boldMatches && boldMatches.length >= 2) {
+    for (const match of boldMatches) {
+      const item = match.replace(/\*+/g, '').trim()
+      const lower = item.toLowerCase()
+      // Skip non-ingredient bold text (recipe titles, tips, etc.)
+      if (skipPhrases.some(p => lower.includes(p))) continue
+      if (lower.length > 30 || lower.length < 2) continue
+      // Skip recipe title-like bold text (starts with capital, contains multiple words with caps)
+      if (/^\d+\./.test(item)) continue
+      addIngredient(item)
+    }
+    if (ingredients.length >= 2) return ingredients.slice(0, 15)
+  }
+
+  // Strategy 2: Parse bullet and numbered list lines
+  const lines = content.split('\n')
+
   for (const line of lines) {
     const trimmedLine = line.trim()
 
     // Skip [ACTION:...] lines
     if (/^\[ACTION:/i.test(trimmedLine)) continue
 
-    // Match bullet points: "- item", "* item" (with space), "• item"
+    // Match bullet points or numbered lists
     const isBullet = trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ') || trimmedLine.startsWith('• ')
-    if (!isBullet) continue
+    const isNumbered = /^\d+[\.\)]\s/.test(trimmedLine)
+    if (!isBullet && !isNumbered) continue
 
-    let item = line.replace(/^\s*[-*•]\s*/, '').trim()
+    let item = line.replace(/^\s*[-*•]\s*/, '').replace(/^\s*\d+[\.\)]\s*/, '').trim()
     item = item.replace(/\*+/g, '') // Remove markdown bold/italic markers
-    item = item.replace(/~\$[\d.]+/g, '').trim() // Remove price estimates like ~$0.30
+    item = item.replace(/~?\$[\d.]+\S*/g, '').trim() // Remove price estimates
 
     const lowerItem = item.toLowerCase()
 
@@ -98,34 +118,28 @@ function extractIngredients(content: string): string[] {
     if (item.length < 2) continue
 
     // "Use chicken breast, rice, and onion" → extract each ingredient
-    const useMatch = item.match(/^Use\s+(.+)/i)
+    const useMatch = item.match(/^Use\s+(?:your\s+)?(.+)/i)
     if (useMatch) {
       const itemsStr = useMatch[1]
-        .replace(/\([^)]*\)/g, '') // Remove parentheticals
-        .replace(/\s+/g, ' ')
-      // Split on ", " and " and "
-      const parts = itemsStr.split(/,\s*|\s+and\s+/i).map(s => s.trim()).filter(Boolean)
-      for (const part of parts) {
-        addIngredient(part)
-      }
+        .replace(/\([^)]*\)/g, '').replace(/\([^)]*$/g, '').replace(/\s+/g, ' ')
+      const parts = itemsStr.split(/,\s*|\s+and\s+|\s*\+\s*/i).map(s => s.trim()).filter(Boolean)
+      for (const part of parts) { addIngredient(part) }
       continue
     }
 
-    // "Add canned crushed tomatoes ($0.89), garlic ($0.50), and dried herbs" → extract items
+    // "Add canned crushed tomatoes ($0.89)" → extract items
     const addMatch = item.match(/^Add\s+(.+)/i)
     if (addMatch) {
       const itemsStr = addMatch[1]
-        .replace(/\([^)]*\)/g, '') // Remove parentheticals like ($0.89)
-        .replace(/for\s+\w+$/i, '') // Remove trailing "for color" etc.
+        .replace(/\([^)]*\)/g, '').replace(/\([^)]*$/g, '')
+        .replace(/\s+for\s+\w+.*$/i, '').replace(/\s+if\s+.*$/i, '')
         .replace(/\s+/g, ' ')
       const parts = itemsStr.split(/,\s*|\s+and\s+/i).map(s => s.trim()).filter(Boolean)
-      for (const part of parts) {
-        if (part.length > 2) addIngredient(part)
-      }
+      for (const part of parts) { if (part.length > 2) addIngredient(part) }
       continue
     }
 
-    // If it has a colon, take the part before it (skip if it's a non-ingredient label)
+    // If it has a colon, take the part before it
     if (item.includes(':')) {
       item = item.split(':')[0].trim()
     }
@@ -145,9 +159,12 @@ function simplifyIngredient(item: string): string {
   let simplified = item
     .replace(/\*+/g, '') // Remove markdown bold/italic
     .replace(/^\d+[\d\/\.\s-]*\s*(?:cups?|tbsps?|tablespoons?|tsps?|teaspoons?|oz|ounces?|lbs?|pounds?|cans?|cloves?|pieces?|bunch|bunches|head|heads|bag|bags|package|packages|bottle|bottles|jar|jars|g|kg|ml|l)?\s*/i, '')
-    .replace(/\([^)]*\)/g, '')
-    .replace(/,.*$/, '')
-    .replace(/–.*$/, '') // Remove dash-separated price info like "– ~$0.30"
+    .replace(/\([^)]*\)/g, '') // Remove complete parentheticals like (diced)
+    .replace(/\([^)]*$/g, '') // Remove unclosed parentheticals like "(1:1 ratio" or "(1"
+    .replace(/[—–].*$/g, '') // Remove em-dash/en-dash descriptions like "— healthy fats"
+    .replace(/,.*$/, '') // Remove everything after first comma
+    .replace(/\.\s*$/, '') // Remove trailing period
+    .replace(/~?\$[\d.]+\S*/g, '') // Remove price estimates ($2.50, ~$2.50)
     .replace(/\s+/g, ' ')
     .trim()
   return simplified
@@ -167,9 +184,20 @@ function hasIngredients(content: string): boolean {
     lowerContent.includes('meal plan') ||
     lowerContent.includes('meal idea') ||
     lowerContent.includes('budget-friendly') ||
-    lowerContent.includes('here are')
+    lowerContent.includes('here are') ||
+    lowerContent.includes('substitute') ||
+    lowerContent.includes('butter alternative') ||
+    lowerContent.includes('cost per serving') ||
+    lowerContent.includes('cost:') ||
+    lowerContent.includes('/serving')
+
+  if (!hasIngredientKeywords) return false
+
+  // Check for bullet points OR numbered recipes with bold ingredients
   const bulletPoints = (content.match(/^\s*[-*•]\s*.+$/gm) || []).length
-  return hasIngredientKeywords && bulletPoints >= 3
+  const numberedItems = (content.match(/^\d+\.\s+/gm) || []).length
+  const boldWords = (content.match(/\*\*[^*]+\*\*/g) || []).length
+  return bulletPoints >= 3 || numberedItems >= 2 || boldWords >= 3
 }
 
 // Simple markdown renderer
@@ -289,6 +317,7 @@ export default function AssistantPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [conversationId, setConversationId] = useState<string | null>(null)
   const [conversations, setConversations] = useState<Conversation[]>([])
+  const [extractingIngredients, setExtractingIngredients] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -414,11 +443,45 @@ export default function AssistantPage() {
     }
   }
 
-  const handleCompareIngredients = (content: string) => {
-    const ingredients = extractIngredients(content)
-    if (ingredients.length > 0) {
-      localStorage.setItem('compareItems', JSON.stringify(ingredients))
-      router.push('/dashboard/compare?fromAssistant=true')
+  const handleCompareIngredients = async (content: string) => {
+    setExtractingIngredients(true)
+    try {
+      // Use AI to extract clean ingredient names
+      const response = await fetch('/api/ai/extract-ingredients', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ content }),
+      })
+
+      let ingredients: string[] = []
+      if (response.ok) {
+        const data = await response.json()
+        ingredients = data.ingredients || []
+      }
+
+      // Fallback to local extraction if AI fails
+      if (ingredients.length === 0) {
+        ingredients = extractIngredients(content)
+      }
+
+      if (ingredients.length > 0) {
+        localStorage.setItem('compareItems', JSON.stringify(ingredients))
+        router.push('/dashboard/compare?fromAssistant=true')
+      } else {
+        alert('Could not extract ingredients from this message. Try asking the AI for a specific recipe or ingredient list.')
+      }
+    } catch (error) {
+      console.error('Failed to extract ingredients:', error)
+      // Fallback to local extraction
+      const ingredients = extractIngredients(content)
+      if (ingredients.length > 0) {
+        localStorage.setItem('compareItems', JSON.stringify(ingredients))
+        router.push('/dashboard/compare?fromAssistant=true')
+      } else {
+        alert('Could not extract ingredients. Please try again.')
+      }
+    } finally {
+      setExtractingIngredients(false)
     }
   }
 
@@ -597,15 +660,25 @@ export default function AssistantPage() {
                     {message.role === 'assistant' && hasIngredients(message.content) && (
                       <button
                         onClick={() => handleCompareIngredients(message.content)}
-                        className="self-start flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500/20 to-green-600/20 border border-green-500/40 text-green-400 rounded-lg hover:from-green-500/30 hover:to-green-600/30 hover:border-green-500/60 transition-all duration-300 text-sm font-medium shadow-lg shadow-green-500/10 hover:shadow-green-500/20 animate-pulse hover:animate-none"
+                        disabled={extractingIngredients}
+                        className="self-start flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500/20 to-green-600/20 border border-green-500/40 text-green-400 rounded-lg hover:from-green-500/30 hover:to-green-600/30 hover:border-green-500/60 transition-all duration-300 text-sm font-medium shadow-lg shadow-green-500/10 hover:shadow-green-500/20 disabled:opacity-50 disabled:cursor-wait"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-                        </svg>
-                        Compare Ingredient Prices
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
+                        {extractingIngredients ? (
+                          <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                          </svg>
+                        )}
+                        {extractingIngredients ? 'Extracting Ingredients...' : 'Compare Ingredient Prices'}
+                        {!extractingIngredients && (
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        )}
                       </button>
                     )}
                   </div>
