@@ -20,9 +20,15 @@ export async function GET(request: NextRequest) {
     const userName = user?.user_metadata?.full_name || request.headers.get('x-user-name')
     await ensureUserExists(userId, userEmail, userName as string | null)
 
-    const allowed = await hasFeature(userId, 'price_alerts')
-    if (!allowed) {
-      return NextResponse.json({ error: 'Upgrade required', upgradeUrl: '/pricing' }, { status: 403 })
+    // Feature gate check (non-blocking if subscription tables are missing)
+    try {
+      const allowed = await hasFeature(userId, 'price_alerts')
+      if (!allowed) {
+        return NextResponse.json({ error: 'Upgrade required', upgradeUrl: '/pricing' }, { status: 403 })
+      }
+    } catch (featureError) {
+      console.error('[Alerts] Feature gate check failed (allowing access):', featureError)
+      // Allow access if feature gate fails — don't block users due to subscription table issues
     }
 
     const dbClient = createServiceRoleClient()
@@ -44,14 +50,29 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('[Alerts] Database error:', error)
+      console.error('[Alerts] Database error:', JSON.stringify(error))
+      // If the join to products fails, try without it
+      if (error.code === 'PGRST200') {
+        const { data: alertsNoJoin, error: fallbackError } = await dbClient
+          .from('price_alerts')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+
+        if (fallbackError) {
+          return NextResponse.json({ error: 'Failed to load alerts', details: fallbackError.message }, { status: 500 })
+        }
+        return NextResponse.json({ alerts: alertsNoJoin || [] })
+      }
       return NextResponse.json({ error: 'Failed to load alerts', details: error.message }, { status: 500 })
     }
 
     return NextResponse.json({ alerts: alerts || [] })
   } catch (error) {
-    console.error('[Alerts] Error:', error)
-    return NextResponse.json({ error: 'Failed to load alerts' }, { status: 500 })
+    console.error('[Alerts] Unhandled error:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({ error: 'Failed to load alerts', details: message }, { status: 500 })
   }
 }
 
