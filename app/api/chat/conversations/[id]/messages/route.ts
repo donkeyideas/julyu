@@ -22,10 +22,10 @@ export async function GET(
     // Use service role client for database operations
     const supabase = createServiceRoleClient()
 
-    // Verify user is participant and get typing status
+    // Verify user is participant
     const { data: conversation, error: convError } = await supabase
       .from('chat_conversations')
-      .select('participant_ids, typing_users')
+      .select('*')
       .eq('id', conversationId)
       .single()
 
@@ -61,7 +61,7 @@ export async function GET(
 
     // Determine who is currently typing (within last 4 seconds, excluding current user)
     const typingUsers: string[] = []
-    const typingData = conversation.typing_users as Record<string, string> | null
+    const typingData = (conversation as Record<string, unknown>).typing_users as Record<string, string> | null | undefined
     if (typingData) {
       const now = Date.now()
       for (const [uid, timestamp] of Object.entries(typingData)) {
@@ -146,23 +146,33 @@ export async function POST(
       sender: sender || { id: userId, email: 'Unknown', full_name: 'Unknown' }
     }
 
-    // Update conversation last message and clear typing status
-    const { data: convData } = await supabase
-      .from('chat_conversations')
-      .select('typing_users')
-      .eq('id', conversationId)
-      .single()
+    // Update conversation last message
+    const updateData: Record<string, unknown> = {
+      last_message: content.trim().substring(0, 100),
+      last_message_at: new Date().toISOString(),
+    }
 
-    const currentTyping = (convData?.typing_users as Record<string, string>) || {}
-    delete currentTyping[userId]
+    // Try to clear typing status if the column exists
+    try {
+      const { data: convData } = await supabase
+        .from('chat_conversations')
+        .select('*')
+        .eq('id', conversationId)
+        .single()
+
+      const typingUsersData = (convData as Record<string, unknown> | null)?.typing_users as Record<string, string> | undefined
+      if (typingUsersData) {
+        const currentTyping = { ...typingUsersData }
+        delete currentTyping[userId]
+        updateData.typing_users = currentTyping
+      }
+    } catch {
+      // typing_users column may not exist yet
+    }
 
     await supabase
       .from('chat_conversations')
-      .update({
-        last_message: content.trim().substring(0, 100),
-        last_message_at: new Date().toISOString(),
-        typing_users: currentTyping,
-      })
+      .update(updateData)
       .eq('id', conversationId)
       .catch(() => {})
 
@@ -196,7 +206,7 @@ export async function PATCH(
     // Verify user is participant
     const { data: conversation, error: convError } = await supabase
       .from('chat_conversations')
-      .select('participant_ids, typing_users')
+      .select('*')
       .eq('id', conversationId)
       .single()
 
@@ -204,7 +214,8 @@ export async function PATCH(
       return NextResponse.json({ error: 'Conversation not found' }, { status: 404 })
     }
 
-    const currentTyping = (conversation.typing_users as Record<string, string>) || {}
+    const convRecord = conversation as Record<string, unknown>
+    const currentTyping = (convRecord.typing_users as Record<string, string>) || {}
 
     if (typing) {
       currentTyping[userId] = new Date().toISOString()
@@ -214,8 +225,9 @@ export async function PATCH(
 
     await supabase
       .from('chat_conversations')
-      .update({ typing_users: currentTyping })
+      .update({ typing_users: currentTyping } as Record<string, unknown>)
       .eq('id', conversationId)
+      .catch(() => {})
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
