@@ -100,17 +100,24 @@ export async function POST(request: NextRequest) {
     // Create or update conversation
     if (!convId) {
       convId = await createConversation(userId, lastUserMessage.content)
+      if (!convId) {
+        console.error('[AI Assistant] Failed to create conversation for user:', userId)
+      }
     }
 
     // Store messages via conversation memory (handles summarization in background)
     if (convId) {
-      await updateConversationMemory(
-        convId,
-        userId,
-        lastUserMessage.content,
-        response,
-        { tokens, actions: actionResults.length > 0 ? actionResults : undefined }
-      )
+      try {
+        await updateConversationMemory(
+          convId,
+          userId,
+          lastUserMessage.content,
+          response,
+          { tokens, actions: actionResults.length > 0 ? actionResults : undefined }
+        )
+      } catch (memoryError) {
+        console.error('[AI Assistant] Failed to save conversation memory:', memoryError)
+      }
     }
 
     return NextResponse.json({

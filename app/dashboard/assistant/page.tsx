@@ -63,9 +63,16 @@ function extractIngredients(content: string): string[] {
   const ingredients: string[] = []
   const lines = content.split('\n')
 
-  // Words that indicate a tip/suggestion, not an ingredient
-  const tipStarters = ['use', 'skip', 'substitute', 'try', 'serve', 'check', 'look', 'buy', 'get', 'find', 'switching', 'consider']
-  const tipPhrases = ['on sale', 'for a cheaper', 'instead of', 'if available', 'or use', 'you can', 'to save', 'for broth', 'tangy bite', 'bouillon']
+  // Non-ingredient phrases to skip entirely
+  const skipPhrases = ['cost per serving', 'would you like', 'quick tip', 'let me know', 'here are', 'here\'s']
+  const tipPhrases = ['on sale', 'for a cheaper', 'instead of', 'if available', 'or use', 'you can', 'to save', 'tangy bite', 'bouillon']
+
+  const addIngredient = (item: string) => {
+    const simplified = simplifyIngredient(item)
+    if (simplified && simplified.length > 2 && simplified.length < 40 && !ingredients.includes(simplified)) {
+      ingredients.push(simplified)
+    }
+  }
 
   for (const line of lines) {
     const trimmedLine = line.trim()
@@ -73,47 +80,61 @@ function extractIngredients(content: string): string[] {
     // Skip [ACTION:...] lines
     if (/^\[ACTION:/i.test(trimmedLine)) continue
 
-    // Match bullet points: "- item", "* item" (with space), "• item", "1. item"
-    // Note: "*text" without space is markdown italic, not a bullet
-    const isBullet = trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ') || trimmedLine.startsWith('• ') || /^\d+\.\s/.test(trimmedLine)
-    if (isBullet) {
-      let item = line.replace(/^\s*[-*•]\s*/, '').trim()
-      item = item.replace(/\*+/g, '') // Remove all markdown bold/italic markers
-      item = item.replace(/^\d+[\.\)]\s*/, '') // Remove numbered prefixes like "1. " or "2) "
-      item = item.replace(/~\$[\d.]+/g, '').trim() // Remove price estimates like ~$0.30
+    // Match bullet points: "- item", "* item" (with space), "• item"
+    const isBullet = trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ') || trimmedLine.startsWith('• ')
+    if (!isBullet) continue
 
-      const lowerItem = item.toLowerCase()
+    let item = line.replace(/^\s*[-*•]\s*/, '').trim()
+    item = item.replace(/\*+/g, '') // Remove markdown bold/italic markers
+    item = item.replace(/~\$[\d.]+/g, '').trim() // Remove price estimates like ~$0.30
 
-      // Skip if it starts with a tip word
-      const firstWord = lowerItem.split(' ')[0]
-      if (tipStarters.includes(firstWord)) {
-        continue
+    const lowerItem = item.toLowerCase()
+
+    // Skip non-ingredient lines
+    if (skipPhrases.some(p => lowerItem.includes(p))) continue
+    if (tipPhrases.some(p => lowerItem.includes(p))) continue
+    if (lowerItem.includes('step') || lowerItem.includes('minute') || lowerItem.includes('heat') ||
+        lowerItem.includes('stir') || lowerItem.includes('place') || lowerItem.includes('preheat')) continue
+    if (item.length < 2) continue
+
+    // "Use chicken breast, rice, and onion" → extract each ingredient
+    const useMatch = item.match(/^Use\s+(.+)/i)
+    if (useMatch) {
+      const itemsStr = useMatch[1]
+        .replace(/\([^)]*\)/g, '') // Remove parentheticals
+        .replace(/\s+/g, ' ')
+      // Split on ", " and " and "
+      const parts = itemsStr.split(/,\s*|\s+and\s+/i).map(s => s.trim()).filter(Boolean)
+      for (const part of parts) {
+        addIngredient(part)
       }
-
-      // Skip if it contains tip phrases
-      if (tipPhrases.some(phrase => lowerItem.includes(phrase))) {
-        continue
-      }
-
-      // If it has a colon, take the part before it (the ingredient name)
-      if (item.includes(':')) {
-        item = item.split(':')[0].trim()
-      }
-
-      // Skip if it looks like a step or instruction
-      if (lowerItem.includes('step') || lowerItem.includes('minute') || lowerItem.includes('heat') ||
-          lowerItem.includes('serve') || lowerItem.includes('stir') || lowerItem.includes('mix') ||
-          lowerItem.includes('cook') || lowerItem.includes('add') || lowerItem.includes('place') ||
-          item.length < 2 || item.length > 50) {
-        continue
-      }
-
-      // Simplify the ingredient
-      const simplified = simplifyIngredient(item)
-      if (simplified && simplified.length > 2 && !ingredients.includes(simplified)) {
-        ingredients.push(simplified)
-      }
+      continue
     }
+
+    // "Add canned crushed tomatoes ($0.89), garlic ($0.50), and dried herbs" → extract items
+    const addMatch = item.match(/^Add\s+(.+)/i)
+    if (addMatch) {
+      const itemsStr = addMatch[1]
+        .replace(/\([^)]*\)/g, '') // Remove parentheticals like ($0.89)
+        .replace(/for\s+\w+$/i, '') // Remove trailing "for color" etc.
+        .replace(/\s+/g, ' ')
+      const parts = itemsStr.split(/,\s*|\s+and\s+/i).map(s => s.trim()).filter(Boolean)
+      for (const part of parts) {
+        if (part.length > 2) addIngredient(part)
+      }
+      continue
+    }
+
+    // If it has a colon, take the part before it (skip if it's a non-ingredient label)
+    if (item.includes(':')) {
+      item = item.split(':')[0].trim()
+    }
+
+    // Skip instructional lines
+    const firstWord = lowerItem.split(' ')[0]
+    if (['skip', 'substitute', 'try', 'serve', 'check', 'look', 'find', 'switching', 'consider'].includes(firstWord)) continue
+
+    addIngredient(item)
   }
 
   return ingredients.slice(0, 15)
@@ -140,7 +161,13 @@ function hasIngredients(content: string): boolean {
     lowerContent.includes('you\'ll need') ||
     lowerContent.includes('shopping list') ||
     lowerContent.includes('what you need') ||
-    lowerContent.includes('here\'s what')
+    lowerContent.includes('here\'s what') ||
+    lowerContent.includes('dinner idea') ||
+    lowerContent.includes('recipe') ||
+    lowerContent.includes('meal plan') ||
+    lowerContent.includes('meal idea') ||
+    lowerContent.includes('budget-friendly') ||
+    lowerContent.includes('here are')
   const bulletPoints = (content.match(/^\s*[-*•]\s*.+$/gm) || []).length
   return hasIngredientKeywords && bulletPoints >= 3
 }

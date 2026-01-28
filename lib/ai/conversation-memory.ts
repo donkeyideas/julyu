@@ -175,46 +175,37 @@ export async function createConversation(
 ): Promise<string | null> {
   const supabase = createServiceRoleClient()
 
-  // Generate title from first message (non-blocking fallback)
-  let title = 'New Conversation'
-  try {
-    title = await llmOrchestrator.generateTitle(firstMessage)
-  } catch {
-    // Use first few words of the message as title
-    title = firstMessage.slice(0, 60).replace(/\s+/g, ' ').trim() || 'New Conversation'
-  }
-
-  // Ensure title fits column constraints
-  title = title.slice(0, 255)
+  // Use a simple title first to ensure conversation is created quickly
+  // Title generation can be slow/flaky — don't let it block conversation creation
+  const fallbackTitle = firstMessage.slice(0, 60).replace(/\s+/g, ' ').trim() || 'New Conversation'
 
   const { data, error } = await supabase
     .from('ai_conversations')
     .insert({
       user_id: userId,
-      title,
+      title: fallbackTitle,
     })
     .select('id')
     .single()
 
   if (error) {
-    console.error('[ConversationMemory] Failed to create conversation:', error)
-
-    // Retry once with a simple title in case the generated one had special chars
-    const { data: retryData, error: retryError } = await supabase
-      .from('ai_conversations')
-      .insert({
-        user_id: userId,
-        title: 'New Conversation',
-      })
-      .select('id')
-      .single()
-
-    if (retryError) {
-      console.error('[ConversationMemory] Retry also failed:', retryError)
-      return null
-    }
-    return retryData.id
+    console.error('[ConversationMemory] Failed to create conversation:', error, 'userId:', userId)
+    return null
   }
+
+  // Generate a better title in the background (non-blocking)
+  llmOrchestrator.generateTitle(firstMessage)
+    .then(async (title) => {
+      if (title && title.length > 0) {
+        await supabase
+          .from('ai_conversations')
+          .update({ title: title.slice(0, 255) })
+          .eq('id', data.id)
+      }
+    })
+    .catch(() => {
+      // Title generation failed — the fallback title is fine
+    })
 
   return data.id
 }
