@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
+import { resetStripeClient } from '@/lib/stripe/client'
 import crypto from 'crypto'
 
 // Simple encryption key (in production, use a proper key management system)
@@ -158,7 +159,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { deepseek, openai, krogerClientId, krogerClientSecret, spoonacular, stripeSecretKey, stripePublishableKey, stripeWebhookSecret } = body
 
-    if (!deepseek && !openai && !(krogerClientId && krogerClientSecret) && !spoonacular && !stripeSecretKey) {
+    if (!deepseek && !openai && !(krogerClientId && krogerClientSecret) && !spoonacular && !stripeSecretKey && !stripePublishableKey && !stripeWebhookSecret) {
       return NextResponse.json({ success: false, error: 'At least one API key required' }, { status: 400 })
     }
 
@@ -456,6 +457,8 @@ export async function POST(request: NextRequest) {
           })
       }
 
+      // Reset cached Stripe instance so it picks up the new key
+      resetStripeClient()
       console.log('[Save API Keys] Stripe keys saved successfully')
     }
 

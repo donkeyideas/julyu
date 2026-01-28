@@ -85,6 +85,11 @@ export async function updatePlan(
     highlight: boolean
   }>
 ): Promise<SubscriptionPlan> {
+  // Validate stripe_price_id format if provided
+  if (updates.stripe_price_id && !updates.stripe_price_id.startsWith('price_')) {
+    throw new Error(`Invalid Stripe Price ID. Must start with "price_" (you may have entered a Product ID starting with "prod_"). Go to Stripe > Product > click the price row to copy the Price ID.`)
+  }
+
   const supabase = createServiceRoleClient()
   const { data, error } = await supabase
     .from('subscription_plans')
