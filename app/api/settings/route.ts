@@ -69,7 +69,9 @@ export async function GET(request: NextRequest) {
         favorite_stores: [],
         shopping_frequency: 'weekly',
         preferred_language: 'en',
-        auto_translate_chat: true
+        auto_translate_chat: true,
+        default_zip_code: '',
+        default_address: ''
       },
       user: userInfo
     })
@@ -84,7 +86,9 @@ export async function GET(request: NextRequest) {
         favorite_stores: [],
         shopping_frequency: 'weekly',
         preferred_language: 'en',
-        auto_translate_chat: true
+        auto_translate_chat: true,
+        default_zip_code: '',
+        default_address: ''
       },
       user: {
         id: 'test-user-id',
@@ -127,6 +131,8 @@ export async function PUT(request: NextRequest) {
       shopping_frequency,
       preferred_language,
       auto_translate_chat,
+      default_zip_code,
+      default_address,
       full_name // Allow updating user name
     } = body
 
@@ -166,6 +172,12 @@ export async function PUT(request: NextRequest) {
     }
     if (auto_translate_chat !== undefined) {
       preferencesData.auto_translate_chat = auto_translate_chat
+    }
+    if (default_zip_code !== undefined) {
+      preferencesData.default_zip_code = default_zip_code
+    }
+    if (default_address !== undefined) {
+      preferencesData.default_address = default_address
     }
 
     let result

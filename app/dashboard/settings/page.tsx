@@ -18,6 +18,8 @@ interface Settings {
   shopping_frequency: string
   preferred_language: string
   auto_translate_chat: boolean
+  default_zip_code: string
+  default_address: string
 }
 
 const SUPPORTED_LANGUAGES = [
@@ -54,7 +56,9 @@ export default function SettingsPage() {
     favorite_stores: [],
     shopping_frequency: 'weekly',
     preferred_language: 'en',
-    auto_translate_chat: true
+    auto_translate_chat: true,
+    default_zip_code: '',
+    default_address: ''
   })
   const [user, setUser] = useState<UserInfo | null>(null)
   const [loading, setLoading] = useState(true)
@@ -149,7 +153,9 @@ export default function SettingsPage() {
           favorite_stores: data.preferences?.favorite_stores ?? [],
           shopping_frequency: data.preferences?.shopping_frequency ?? 'weekly',
           preferred_language: data.preferences?.preferred_language ?? 'en',
-          auto_translate_chat: data.preferences?.auto_translate_chat ?? true
+          auto_translate_chat: data.preferences?.auto_translate_chat ?? true,
+          default_zip_code: data.preferences?.default_zip_code ?? '',
+          default_address: data.preferences?.default_address ?? ''
         }
         setSettings(newSettings)
 
@@ -637,6 +643,39 @@ export default function SettingsPage() {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Address & Location */}
+      <div className="rounded-2xl p-8 mb-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <h3 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Address & Location</h3>
+        <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
+          Used for Get Directions and pre-filling the Compare Prices page
+        </p>
+        <div className="space-y-6">
+          <div>
+            <label className="font-medium mb-2 block" style={{ color: 'var(--text-primary)' }}>Zip Code</label>
+            <input
+              type="text"
+              value={settings.default_zip_code}
+              onChange={(e) => setSettings(prev => ({ ...prev, default_zip_code: e.target.value }))}
+              placeholder="45202"
+              maxLength={10}
+              className="rounded-lg px-4 py-2 w-40 focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+            />
+          </div>
+          <div>
+            <label className="font-medium mb-2 block" style={{ color: 'var(--text-primary)' }}>Full Address</label>
+            <input
+              type="text"
+              value={settings.default_address}
+              onChange={(e) => setSettings(prev => ({ ...prev, default_address: e.target.value }))}
+              placeholder="123 Main St, Cincinnati, OH 45202"
+              className="rounded-lg px-4 py-2 w-full focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+            />
           </div>
         </div>
       </div>

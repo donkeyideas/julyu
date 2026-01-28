@@ -129,6 +129,7 @@ export default function Sidebar() {
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: '' },
     { href: '/dashboard/compare', label: 'Compare Prices', icon: '' },
+    { href: '/dashboard/savings', label: 'Savings & Activity', icon: '' },
     { href: '/dashboard/lists', label: 'My Lists', icon: '' },
     { href: '/dashboard/alerts', label: 'Price Alerts', icon: '' },
     // AI Features

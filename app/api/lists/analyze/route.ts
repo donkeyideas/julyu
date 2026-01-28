@@ -13,6 +13,7 @@ async function saveComparison(
   items: string[],
   result: {
     bestOption: { store: { name: string }; total: number } | null
+    alternatives?: { total: number }[]
     summary: { totalItems: number; itemsFound: number; estimatedTotal: number }
   }
 ) {
@@ -46,7 +47,12 @@ async function saveComparison(
       user_id: userId,
       results: result,
       best_option: result.bestOption,
-      total_savings: 0, // Calculate actual savings when we have multi-store comparison
+      total_savings: (() => {
+        const bestTotal = result.bestOption?.total || 0
+        const altTotals = result.alternatives?.map(a => a.total) || []
+        const maxTotal = altTotals.length > 0 ? Math.max(...altTotals) : bestTotal
+        return Math.max(0, maxTotal - bestTotal)
+      })()
     })
 
     if (compError) {

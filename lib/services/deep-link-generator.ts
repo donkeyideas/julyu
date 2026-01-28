@@ -40,7 +40,10 @@ export function generateDeepLink(
   items: CartItem[]
 ): string {
   // Build search query from items
-  const searchTerms = items
+  // For Shipt, use only the first item (multi-item search breaks their URL)
+  const isShipt = partner.slug === 'shipt'
+  const itemsForSearch = isShipt ? items.slice(0, 1) : items
+  const searchTerms = itemsForSearch
     .map(item => {
       const name = item.userInput || item.name || ''
       // Include quantity if more than 1

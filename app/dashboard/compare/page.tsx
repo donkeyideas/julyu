@@ -149,6 +149,37 @@ function ComparePageContent() {
     }
   }, [])
 
+  // Pre-populate zip code and address from user profile settings
+  useEffect(() => {
+    const loadUserAddress = async () => {
+      try {
+        const headers: HeadersInit = {}
+        const storedUser = localStorage.getItem('julyu_user')
+        if (storedUser) {
+          try {
+            const user = JSON.parse(storedUser)
+            if (user.id) headers['x-user-id'] = user.id
+          } catch { /* ignore */ }
+        }
+        const response = await fetch('/api/settings', { headers })
+        if (response.ok) {
+          const data = await response.json()
+          const prefs = data.preferences
+          if (prefs?.default_zip_code && zipCode === '45202') {
+            setZipCode(prefs.default_zip_code)
+          }
+          if (prefs?.default_address && !address) {
+            setAddress(prefs.default_address)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load user address:', error)
+      }
+    }
+    loadUserAddress()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // Load items from AI Assistant if redirected
   useEffect(() => {
     if (searchParams.get('fromAssistant') === 'true') {
@@ -288,6 +319,39 @@ function ComparePageContent() {
     }
   }
 
+  // Fire-and-forget: record a shopping trip for activity tracking
+  const recordShoppingTrip = (store: StoreOption, method: string, partner?: string) => {
+    const items = results?.products?.map(p => ({
+      name: p.name,
+      userInput: p.userInput,
+      price: p.price,
+    })) || []
+
+    // Calculate savings: difference between most expensive alternative and this store
+    const allTotals = [
+      results?.bestOption?.total || 0,
+      ...(results?.alternatives?.map(a => a.total) || [])
+    ].filter(t => t > 0)
+    const maxTotal = allTotals.length > 0 ? Math.max(...allTotals) : store.total
+    const savings = Math.max(0, maxTotal - store.total)
+
+    fetch('/api/shopping-trips', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        store_name: store.store.name,
+        store_retailer: store.store.retailer,
+        store_address: store.store.address,
+        shopping_method: method,
+        delivery_partner: partner || null,
+        items_count: items.length,
+        estimated_total: store.total,
+        estimated_savings: savings,
+        items_json: items,
+      }),
+    }).catch(err => console.error('Failed to record shopping trip:', err))
+  }
+
   const handleShopHere = (store: StoreOption) => {
     // Open shop options modal instead of directly going to maps
     setShopOptions({ isOpen: true, store })
@@ -302,12 +366,31 @@ function ComparePageContent() {
     const storeAddress = store.store.address || `${storeName} ${retailer} ${zipCode}`
 
     if (option === 'directions') {
-      // Open Google Maps with the store location
-      const query = encodeURIComponent(storeAddress)
-      window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank')
+      const destination = encodeURIComponent(storeAddress)
+      if (address) {
+        const origin = encodeURIComponent(address)
+        window.open(`https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`, '_blank')
+      } else {
+        window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination}`, '_blank')
+      }
+      recordShoppingTrip(store, 'in_store')
     }
 
     setShopOptions({ isOpen: false, store: null })
+  }
+
+  const handleDirections = (store: StoreOption) => {
+    const storeName = store.store.name
+    const retailer = store.store.retailer
+    const storeAddress = store.store.address || `${storeName} ${retailer} ${zipCode}`
+    const destination = encodeURIComponent(storeAddress)
+    if (address) {
+      const origin = encodeURIComponent(address)
+      window.open(`https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`, '_blank')
+    } else {
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination}`, '_blank')
+    }
+    recordShoppingTrip(store, 'in_store')
   }
 
   const handlePartnerClick = async (partner: DeliveryPartner) => {
@@ -352,6 +435,7 @@ function ComparePageContent() {
       window.open(partner.base_url, '_blank')
     }
 
+    recordShoppingTrip(store, 'delivery', partner.name)
     setShopOptions({ isOpen: false, store: null })
   }
 
@@ -600,12 +684,28 @@ function ComparePageContent() {
                     <td className="p-4" style={{ color: 'var(--text-primary)' }}>{results.summary?.itemsFound || 0}/{results.summary?.totalItems || 0}</td>
                     <td className="p-4 font-bold text-xl" style={{ color: 'var(--accent-primary)' }}>${results.bestOption.total?.toFixed(2)}</td>
                     <td className="p-4">
-                      <button
-                        onClick={() => handleShopHere(results.bestOption!)}
-                        className="px-4 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition"
-                      >
-                        Shop Here
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleShopHere(results.bestOption!)}
+                          className="px-3 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition text-sm"
+                        >
+                          Shop Here
+                        </button>
+                        <button
+                          onClick={() => handleDirections(results.bestOption!)}
+                          className="px-3 py-2 rounded-lg transition text-sm"
+                          style={{ border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
+                        >
+                          Directions
+                        </button>
+                        <button
+                          onClick={() => handleViewDetails(results.bestOption!)}
+                          className="px-3 py-2 rounded-lg transition text-sm"
+                          style={{ border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
+                        >
+                          Details
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 )}
@@ -620,21 +720,29 @@ function ComparePageContent() {
                     </td>
                     <td className="p-4" style={{ color: 'var(--text-primary)' }}>{results.summary?.itemsFound || 0}/{results.summary?.totalItems || 0}</td>
                     <td className="p-4 font-bold" style={{ color: 'var(--text-primary)' }}>${alt.total?.toFixed(2)}</td>
-                    <td className="p-4 flex gap-2">
-                      <button
-                        onClick={() => handleShopHere(alt)}
-                        className="px-3 py-2 rounded-lg transition text-sm"
-                        style={{ border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
-                      >
-                        Directions
-                      </button>
-                      <button
-                        onClick={() => handleViewDetails(alt)}
-                        className="px-3 py-2 rounded-lg transition text-sm"
-                        style={{ border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
-                      >
-                        Details
-                      </button>
+                    <td className="p-4">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleShopHere(alt)}
+                          className="px-3 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition text-sm"
+                        >
+                          Shop Here
+                        </button>
+                        <button
+                          onClick={() => handleDirections(alt)}
+                          className="px-3 py-2 rounded-lg transition text-sm"
+                          style={{ border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
+                        >
+                          Directions
+                        </button>
+                        <button
+                          onClick={() => handleViewDetails(alt)}
+                          className="px-3 py-2 rounded-lg transition text-sm"
+                          style={{ border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
+                        >
+                          Details
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
