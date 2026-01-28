@@ -415,6 +415,14 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'Invalid Stripe Secret Key format' }, { status: 400 })
       }
 
+      // Validate key format to prevent swapping publishable/secret keys
+      if (trimmedKey.startsWith('pk_')) {
+        return NextResponse.json({ success: false, error: 'You entered a Publishable Key (pk_) in the Secret Key field. The Secret Key starts with "sk_test_" or "sk_live_". Please swap the keys.' }, { status: 400 })
+      }
+      if (!trimmedKey.startsWith('sk_test_') && !trimmedKey.startsWith('sk_live_') && !trimmedKey.startsWith('rk_')) {
+        return NextResponse.json({ success: false, error: 'Invalid Stripe Secret Key. It should start with "sk_test_" (sandbox) or "sk_live_" (production).' }, { status: 400 })
+      }
+
       console.log('[Save API Keys] Saving Stripe keys')
       const encryptedSecret = encrypt(trimmedKey)
 
