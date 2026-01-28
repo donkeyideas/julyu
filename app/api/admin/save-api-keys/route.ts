@@ -456,26 +456,65 @@ export async function POST(request: NextRequest) {
           })
       }
 
-      // Save webhook secret if provided
-      if (stripeWebhookSecret) {
-        const encryptedWebhook = encrypt(stripeWebhookSecret.trim())
-        await supabase
-          .from('ai_model_config')
-          .upsert({
-            model_name: 'stripe-webhook',
-            provider: 'Stripe',
-            api_key_encrypted: encryptedWebhook,
-            api_endpoint: 'https://api.stripe.com',
-            model_version: 'v1',
-            is_active: true,
-            config: {},
-            updated_at: new Date().toISOString(),
-          }, {
-            onConflict: 'model_name',
-          })
-      }
-
       console.log('[Save API Keys] Stripe keys saved successfully')
+    }
+
+    // Save Stripe webhook secret independently (doesn't require secret key)
+    if (stripeWebhookSecret && !stripeSecretKey) {
+      console.log('[Save API Keys] Saving Stripe webhook secret')
+      const encryptedWebhook = encrypt(stripeWebhookSecret.trim())
+      await supabase
+        .from('ai_model_config')
+        .upsert({
+          model_name: 'stripe-webhook',
+          provider: 'Stripe',
+          api_key_encrypted: encryptedWebhook,
+          api_endpoint: 'https://api.stripe.com',
+          model_version: 'v1',
+          is_active: true,
+          config: {},
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'model_name',
+        })
+      console.log('[Save API Keys] Stripe webhook secret saved successfully')
+    } else if (stripeWebhookSecret && stripeSecretKey) {
+      // Webhook secret provided alongside secret key - save it
+      const encryptedWebhook = encrypt(stripeWebhookSecret.trim())
+      await supabase
+        .from('ai_model_config')
+        .upsert({
+          model_name: 'stripe-webhook',
+          provider: 'Stripe',
+          api_key_encrypted: encryptedWebhook,
+          api_endpoint: 'https://api.stripe.com',
+          model_version: 'v1',
+          is_active: true,
+          config: {},
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'model_name',
+        })
+    }
+
+    // Save Stripe publishable key independently
+    if (stripePublishableKey && !stripeSecretKey) {
+      console.log('[Save API Keys] Saving Stripe publishable key')
+      const encryptedPub = encrypt(stripePublishableKey.trim())
+      await supabase
+        .from('ai_model_config')
+        .upsert({
+          model_name: 'stripe-publishable',
+          provider: 'Stripe',
+          api_key_encrypted: encryptedPub,
+          api_endpoint: 'https://api.stripe.com',
+          model_version: 'v1',
+          is_active: true,
+          config: {},
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'model_name',
+        })
     }
 
     console.log('[Save API Keys] All keys processed successfully')

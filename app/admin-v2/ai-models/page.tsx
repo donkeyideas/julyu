@@ -714,20 +714,22 @@ export default function AIModelsPage() {
           <div className="flex gap-3">
             <button
               onClick={async () => {
-                if (!stripeSecretKey.trim()) {
-                  alert('Please enter at least the Secret Key')
+                const hasAnyKey = stripeSecretKey.trim() || stripePublishableKey.trim() || stripeWebhookSecret.trim()
+                if (!hasAnyKey) {
+                  alert('Please enter at least one key to save')
                   return
                 }
                 setSaving(true)
                 try {
+                  const payload: Record<string, string | null> = {}
+                  if (stripeSecretKey.trim()) payload.stripeSecretKey = stripeSecretKey.trim()
+                  if (stripePublishableKey.trim()) payload.stripePublishableKey = stripePublishableKey.trim()
+                  if (stripeWebhookSecret.trim()) payload.stripeWebhookSecret = stripeWebhookSecret.trim()
+
                   const response = await fetch('/api/admin/save-api-keys', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      stripeSecretKey: stripeSecretKey.trim(),
-                      stripePublishableKey: stripePublishableKey.trim() || null,
-                      stripeWebhookSecret: stripeWebhookSecret.trim() || null,
-                    }),
+                    body: JSON.stringify(payload),
                   })
                   const data = await response.json()
                   if (data.success) {
@@ -745,7 +747,7 @@ export default function AIModelsPage() {
                   setSaving(false)
                 }
               }}
-              disabled={saving || !stripeSecretKey.trim()}
+              disabled={saving || (!stripeSecretKey.trim() && !stripePublishableKey.trim() && !stripeWebhookSecret.trim())}
               className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save Keys'}
