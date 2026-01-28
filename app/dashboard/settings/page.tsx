@@ -77,6 +77,7 @@ export default function SettingsPage() {
   const [exporting, setExporting] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [upgradePlans, setUpgradePlans] = useState<SubscriptionPlan[]>([])
   const [upgradePromoCode, setUpgradePromoCode] = useState('')
@@ -710,11 +711,7 @@ export default function SettingsPage() {
 
               {subscription?.status === 'active' && !subscription?.cancel_at_period_end && (
                 <button
-                  onClick={() => {
-                    if (confirm('Are you sure you want to cancel your subscription? You will still have access until the end of your billing period.')) {
-                      handleSubscriptionAction('cancel')
-                    }
-                  }}
+                  onClick={() => setShowCancelConfirm(true)}
                   className="px-4 py-2 border border-red-500/50 text-red-400 rounded-lg hover:bg-red-500/10 transition text-sm"
                 >
                   Cancel Subscription
@@ -1014,6 +1011,36 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Cancel Subscription Modal */}
+      {showCancelConfirm && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={() => setShowCancelConfirm(false)}>
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl max-w-md w-full p-8" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-2xl font-bold text-white mb-4">Cancel Subscription</h2>
+            <p className="text-gray-400 mb-6">
+              Are you sure you want to cancel your subscription? You will still have access to all premium features until the end of your current billing period.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowCancelConfirm(false)}
+                className="px-5 py-2.5 rounded-lg transition text-sm font-medium"
+                style={{ border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
+              >
+                Keep Subscription
+              </button>
+              <button
+                onClick={() => {
+                  setShowCancelConfirm(false)
+                  handleSubscriptionAction('cancel')
+                }}
+                className="px-5 py-2.5 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition text-sm"
+              >
+                Yes, Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Upgrade Plan Modal */}
       {showUpgradeModal && (
