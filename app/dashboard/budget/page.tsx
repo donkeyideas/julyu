@@ -37,6 +37,10 @@ interface Recommendation {
   implemented: boolean
 }
 
+function formatDollars(amount: number): string {
+  return amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
 export default function BudgetPage() {
   const [totalBudget, setTotalBudget] = useState<number | null>(null)
   const [totalSpent, setTotalSpent] = useState(0)
@@ -53,8 +57,14 @@ export default function BudgetPage() {
 
   const loadBudgetData = async () => {
     try {
-      // Load budget settings
-      const settingsResponse = await fetch('/api/settings', { headers: getAuthHeaders() })
+      const headers = getAuthHeaders()
+
+      // Fetch settings and budget data in parallel
+      const [settingsResponse, budgetResponse] = await Promise.all([
+        fetch('/api/settings', { headers }),
+        fetch('/api/budget', { headers }),
+      ])
+
       if (settingsResponse.ok) {
         const data = await settingsResponse.json()
         if (data.preferences?.budget_monthly) {
@@ -63,8 +73,6 @@ export default function BudgetPage() {
         }
       }
 
-      // Load real spending data from budget API
-      const budgetResponse = await fetch('/api/budget', { headers: getAuthHeaders() })
       if (budgetResponse.ok) {
         const budgetData = await budgetResponse.json()
 
@@ -225,7 +233,7 @@ export default function BudgetPage() {
               </button>
             </div>
           ) : totalBudget ? (
-            <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>${totalBudget.toFixed(2)}</div>
+            <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>${formatDollars(totalBudget)}</div>
           ) : (
             <button
               onClick={() => setEditingBudget(true)}
@@ -240,7 +248,7 @@ export default function BudgetPage() {
         <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <div className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>Spent This Month</div>
           <div className={`text-4xl font-black ${totalBudget && budgetUsed >= 80 ? 'text-yellow-500' : ''} ${totalBudget && budgetUsed >= 100 ? 'text-red-500' : ''}`} style={{ color: totalBudget && (budgetUsed >= 80 || budgetUsed >= 100) ? undefined : 'var(--text-primary)' }}>
-            ${totalSpent.toFixed(2)}
+            ${formatDollars(totalSpent)}
           </div>
           {totalBudget && (
             <div className="mt-3">
@@ -261,7 +269,7 @@ export default function BudgetPage() {
         <div className="bg-gradient-to-br from-green-500/20 to-green-600/10 border border-green-500/30 rounded-2xl p-6">
           <div className="text-sm text-green-400 mb-4">Potential Savings</div>
           <div className="text-4xl font-black text-green-500">
-            ${potentialSavings.toFixed(2)}
+            ${formatDollars(potentialSavings)}
           </div>
           <div className="text-sm text-green-400/70 mt-1">
             /month with recommendations
@@ -279,7 +287,7 @@ export default function BudgetPage() {
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{cat.category}</span>
                   <span className={getProgressTextColor(cat.current_spent, cat.monthly_limit)}>
-                    ${cat.current_spent.toFixed(2)} / ${cat.monthly_limit.toFixed(2)}
+                    ${formatDollars(cat.current_spent)} / ${formatDollars(cat.monthly_limit)}
                   </span>
                 </div>
                 <div className="w-full h-3 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)' }}>
@@ -290,7 +298,7 @@ export default function BudgetPage() {
                 </div>
                 {cat.current_spent > cat.monthly_limit && (
                   <div className="text-xs text-red-500 mt-1">
-                    Over budget by ${(cat.current_spent - cat.monthly_limit).toFixed(2)}
+                    Over budget by ${formatDollars(cat.current_spent - cat.monthly_limit)}
                   </div>
                 )}
               </div>
@@ -325,7 +333,7 @@ export default function BudgetPage() {
                     {rec.recommendation_type.replace('_', ' ')}
                   </span>
                   <span className="text-green-500 font-bold">
-                    Save ${rec.potential_savings.toFixed(2)}/mo
+                    Save ${formatDollars(rec.potential_savings)}/mo
                   </span>
                 </div>
                 <h3 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{rec.title}</h3>

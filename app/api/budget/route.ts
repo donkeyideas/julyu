@@ -66,13 +66,31 @@ export async function GET(request: NextRequest) {
     currentMonthStart.setDate(1)
     currentMonthStart.setHours(0, 0, 0, 0)
 
-    // Get receipts for current month
-    const { data: receipts, error: receiptsError } = await supabase
-      .from('receipts')
-      .select('id, total_amount, ocr_result, purchase_date')
-      .eq('user_id', userId)
-      .eq('ocr_status', 'complete')
-      .gte('purchase_date', currentMonthStart.toISOString())
+    // Fetch receipts, user budgets, and recommendations in parallel
+    const [receiptsResult, userBudgetsResult, recommendationsResult] = await Promise.all([
+      supabase
+        .from('receipts')
+        .select('id, total_amount, ocr_result, purchase_date')
+        .eq('user_id', userId)
+        .eq('ocr_status', 'complete')
+        .gte('purchase_date', currentMonthStart.toISOString()),
+      supabase
+        .from('user_budgets')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('month', currentMonthStart.toISOString().slice(0, 7) + '-01'),
+      supabase
+        .from('budget_recommendations')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('dismissed', false)
+        .order('potential_savings', { ascending: false })
+        .limit(6),
+    ])
+
+    const { data: receipts, error: receiptsError } = receiptsResult
+    const { data: userBudgets } = userBudgetsResult
+    const { data: recommendations } = recommendationsResult
 
     if (receiptsError) {
       console.error('Failed to fetch receipts:', receiptsError)
@@ -96,13 +114,6 @@ export async function GET(request: NextRequest) {
         }
       }
     }
-
-    // Get user's budget categories or use defaults
-    const { data: userBudgets } = await supabase
-      .from('user_budgets')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('month', currentMonthStart.toISOString().slice(0, 7) + '-01')
 
     // Build category list with limits
     const defaultLimits: Record<string, number> = {
@@ -137,15 +148,6 @@ export async function GET(request: NextRequest) {
         })
       }
     }
-
-    // Get recommendations
-    const { data: recommendations } = await supabase
-      .from('budget_recommendations')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('dismissed', false)
-      .order('potential_savings', { ascending: false })
-      .limit(6)
 
     return NextResponse.json({
       categories: categories.sort((a, b) => b.current_spent - a.current_spent),
