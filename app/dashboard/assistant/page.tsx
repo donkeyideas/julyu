@@ -43,6 +43,14 @@ interface Conversation {
   updated_at: string
 }
 
+// Strip [ACTION:...] tags from displayed text so user never sees them
+function stripActionTags(text: string): string {
+  return text
+    .split('\n')
+    .filter(line => !/^\s*\[ACTION:(ADD_TO_LIST|SET_ALERT|CHECK_BUDGET|SEARCH_PRICES|FIND_STORES)\]/i.test(line.trim()))
+    .join('\n')
+}
+
 const SUGGESTED_PROMPTS = [
   "What are some budget-friendly dinner ideas?",
   "Help me create a weekly meal plan",
@@ -60,12 +68,19 @@ function extractIngredients(content: string): string[] {
   const tipPhrases = ['on sale', 'for a cheaper', 'instead of', 'if available', 'or use', 'you can', 'to save', 'for broth', 'tangy bite', 'bouillon']
 
   for (const line of lines) {
-    // Match bullet points with ingredients (including numbered lists like "1.", "*1.", etc.)
     const trimmedLine = line.trim()
-    if (trimmedLine.startsWith('-') || trimmedLine.startsWith('*') || trimmedLine.startsWith('•') || /^\d+\./.test(trimmedLine)) {
+
+    // Skip [ACTION:...] lines
+    if (/^\[ACTION:/i.test(trimmedLine)) continue
+
+    // Match bullet points: "- item", "* item" (with space), "• item", "1. item"
+    // Note: "*text" without space is markdown italic, not a bullet
+    const isBullet = trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ') || trimmedLine.startsWith('• ') || /^\d+\.\s/.test(trimmedLine)
+    if (isBullet) {
       let item = line.replace(/^\s*[-*•]\s*/, '').trim()
-      item = item.replace(/\*\*/g, '') // Remove bold markers
+      item = item.replace(/\*+/g, '') // Remove all markdown bold/italic markers
       item = item.replace(/^\d+[\.\)]\s*/, '') // Remove numbered prefixes like "1. " or "2) "
+      item = item.replace(/~\$[\d.]+/g, '').trim() // Remove price estimates like ~$0.30
 
       const lowerItem = item.toLowerCase()
 
@@ -107,9 +122,11 @@ function extractIngredients(content: string): string[] {
 // Simplify ingredient to searchable form
 function simplifyIngredient(item: string): string {
   let simplified = item
+    .replace(/\*+/g, '') // Remove markdown bold/italic
     .replace(/^\d+[\d\/\.\s-]*\s*(?:cups?|tbsps?|tablespoons?|tsps?|teaspoons?|oz|ounces?|lbs?|pounds?|cans?|cloves?|pieces?|bunch|bunches|head|heads|bag|bags|package|packages|bottle|bottles|jar|jars|g|kg|ml|l)?\s*/i, '')
     .replace(/\([^)]*\)/g, '')
     .replace(/,.*$/, '')
+    .replace(/–.*$/, '') // Remove dash-separated price info like "– ~$0.30"
     .replace(/\s+/g, ' ')
     .trim()
   return simplified
@@ -287,11 +304,12 @@ export default function AssistantPage() {
       if (response.ok) {
         const data = await response.json()
         setConversationId(convId)
-        setMessages(data.messages.map((m: { id: string; role: 'user' | 'assistant'; content: string; created_at: string }) => ({
+        setMessages(data.messages.map((m: { id: string; role: 'user' | 'assistant'; content: string; created_at: string; metadata?: { actions?: ActionResult[] } | null }) => ({
           id: m.id,
           role: m.role,
           content: m.content,
-          timestamp: new Date(m.created_at)
+          timestamp: new Date(m.created_at),
+          actions: m.metadata?.actions || undefined,
         })))
         setShowHistory(false)
       }
@@ -520,7 +538,7 @@ export default function AssistantPage() {
                     >
                       {message.role === 'assistant' ? (
                         <div className="text-sm leading-relaxed text-gray-200">
-                          {renderMarkdown(message.content)}
+                          {renderMarkdown(stripActionTags(message.content))}
                         </div>
                       ) : (
                         <div className="text-sm text-white font-medium">{message.content}</div>
@@ -529,28 +547,21 @@ export default function AssistantPage() {
                         {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </div>
-                    {/* Action results from AI */}
+                    {/* Action results - shown as subtle inline text */}
                     {message.role === 'assistant' && message.actions && message.actions.length > 0 && (
-                      <div className="flex flex-col gap-1.5">
+                      <div className="text-xs space-y-0.5" style={{ color: 'var(--text-muted)' }}>
                         {message.actions.map((action, idx) => (
-                          <div
-                            key={idx}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${
-                              action.success
-                                ? 'bg-green-500/15 text-green-400 border border-green-500/30'
-                                : 'bg-red-500/15 text-red-400 border border-red-500/30'
-                            }`}
-                          >
+                          <div key={idx} className="flex items-center gap-1.5">
                             {action.success ? (
-                              <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="w-3 h-3 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                               </svg>
                             ) : (
-                              <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                              <svg className="w-3 h-3 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                               </svg>
                             )}
-                            <span>{action.message}</span>
+                            <span className={action.success ? 'text-green-500/70' : 'text-red-400/70'}>{action.message}</span>
                           </div>
                         ))}
                       </div>

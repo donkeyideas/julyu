@@ -175,13 +175,17 @@ export async function createConversation(
 ): Promise<string | null> {
   const supabase = createServiceRoleClient()
 
-  // Generate title from first message
+  // Generate title from first message (non-blocking fallback)
   let title = 'New Conversation'
   try {
     title = await llmOrchestrator.generateTitle(firstMessage)
   } catch {
-    // Use default title
+    // Use first few words of the message as title
+    title = firstMessage.slice(0, 60).replace(/\s+/g, ' ').trim() || 'New Conversation'
   }
+
+  // Ensure title fits column constraints
+  title = title.slice(0, 255)
 
   const { data, error } = await supabase
     .from('ai_conversations')
@@ -194,7 +198,22 @@ export async function createConversation(
 
   if (error) {
     console.error('[ConversationMemory] Failed to create conversation:', error)
-    return null
+
+    // Retry once with a simple title in case the generated one had special chars
+    const { data: retryData, error: retryError } = await supabase
+      .from('ai_conversations')
+      .insert({
+        user_id: userId,
+        title: 'New Conversation',
+      })
+      .select('id')
+      .single()
+
+    if (retryError) {
+      console.error('[ConversationMemory] Retry also failed:', retryError)
+      return null
+    }
+    return retryData.id
   }
 
   return data.id
