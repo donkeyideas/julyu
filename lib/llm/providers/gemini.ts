@@ -52,6 +52,51 @@ export class GeminiProvider extends BaseLLMProvider {
     const apiKey = await this.getApiKey()
     const model = options?.model || this.defaultModel
 
+    // Try primary model, then fallback to gemini-1.5-flash if 429
+    const modelsToTry = [model]
+    if (model !== 'gemini-1.5-flash') {
+      modelsToTry.push('gemini-1.5-flash')
+    }
+
+    let lastError: Error | null = null
+
+    for (const currentModel of modelsToTry) {
+      try {
+        const result = await this.callGeminiAPI(apiKey, currentModel, messages, options)
+        return result
+      } catch (error: unknown) {
+        lastError = error as Error
+
+        // Only retry with fallback model on 429 (rate limit / quota)
+        if (axios.isAxiosError(error) && error.response?.status === 429) {
+          const errorDetails = error.response?.data?.error?.message || 'Rate limit exceeded'
+          console.warn(
+            `[Gemini] Model ${currentModel} returned 429: ${errorDetails}. ` +
+            (currentModel !== modelsToTry[modelsToTry.length - 1]
+              ? `Trying next model...`
+              : `No more models to try.`)
+          )
+          continue
+        }
+
+        // Non-429 errors: don't retry, throw immediately
+        throw this.formatError(error)
+      }
+    }
+
+    // All models exhausted
+    throw lastError ? this.formatError(lastError) : new Error('Gemini API call failed')
+  }
+
+  /**
+   * Make a single API call to Gemini
+   */
+  private async callGeminiAPI(
+    apiKey: string,
+    model: string,
+    messages: LLMMessage[],
+    options?: LLMOptions & { model?: string }
+  ): Promise<LLMResponse> {
     // Separate system message from conversation messages
     let systemInstruction: string | undefined
     const conversationMessages: LLMMessage[] = []
@@ -121,6 +166,41 @@ export class GeminiProvider extends BaseLLMProvider {
       provider: this.id,
       finishReason,
     }
+  }
+
+  /**
+   * Extract meaningful error message from Gemini API errors
+   */
+  private formatError(error: unknown): Error {
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status
+      const googleMessage = error.response?.data?.error?.message || ''
+      const googleStatus = error.response?.data?.error?.status || ''
+
+      if (status === 429) {
+        // Clear cached key so it's re-fetched next time
+        this.cachedApiKey = null
+        return new Error(
+          `Gemini API quota exceeded (429). ${googleMessage || 'Your Google Cloud project may require billing to be enabled.'}` +
+          ` Fix: Use a personal Google account API key or enable billing (free trial) at console.cloud.google.com.`
+        )
+      }
+      if (status === 403) {
+        this.cachedApiKey = null
+        return new Error(
+          `Gemini API access denied (403). ${googleMessage || 'API key may be invalid or the Generative Language API is not enabled.'}`
+        )
+      }
+      if (status === 400) {
+        return new Error(`Gemini API bad request: ${googleMessage || error.message}`)
+      }
+
+      return new Error(
+        `Gemini API error (${status || 'unknown'}): ${googleMessage || googleStatus || error.message}`
+      )
+    }
+
+    return error instanceof Error ? error : new Error(String(error))
   }
 
   /**
