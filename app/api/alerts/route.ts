@@ -6,19 +6,35 @@ import { spoonacularClient } from '@/lib/api/spoonacular'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // Auth: try Supabase first, fall back to Firebase headers
+    let userId: string | null = null
+    let userEmail: string | null = null
+    let userName: string | null = null
 
-    const firebaseUserId = request.headers.get('x-user-id')
-    const userId = user?.id || firebaseUserId
+    try {
+      const supabase = createServerClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        userId = user.id
+        userEmail = user.email || null
+        userName = user.user_metadata?.full_name || null
+      }
+    } catch (authError) {
+      console.error('[Alerts] Supabase auth failed (trying Firebase):', authError)
+    }
+
+    // Fall back to Firebase headers
+    if (!userId) {
+      userId = request.headers.get('x-user-id')
+      userEmail = request.headers.get('x-user-email')
+      userName = request.headers.get('x-user-name')
+    }
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userEmail = user?.email || request.headers.get('x-user-email')
-    const userName = user?.user_metadata?.full_name || request.headers.get('x-user-name')
-    await ensureUserExists(userId, userEmail, userName as string | null)
+    await ensureUserExists(userId, userEmail, userName)
 
     // Feature gate check (non-blocking if subscription tables are missing)
     try {
@@ -28,11 +44,11 @@ export async function GET(request: NextRequest) {
       }
     } catch (featureError) {
       console.error('[Alerts] Feature gate check failed (allowing access):', featureError)
-      // Allow access if feature gate fails — don't block users due to subscription table issues
     }
 
     const dbClient = createServiceRoleClient()
 
+    // Try query with products join first
     const { data: alerts, error } = await dbClient
       .from('price_alerts')
       .select(`
@@ -51,21 +67,19 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('[Alerts] Database error:', JSON.stringify(error))
-      // If the join to products fails, try without it
-      if (error.code === 'PGRST200') {
-        const { data: alertsNoJoin, error: fallbackError } = await dbClient
-          .from('price_alerts')
-          .select('*')
-          .eq('user_id', userId)
-          .eq('is_active', true)
-          .order('created_at', { ascending: false })
+      // Fallback: query without products join
+      const { data: alertsNoJoin, error: fallbackError } = await dbClient
+        .from('price_alerts')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
 
-        if (fallbackError) {
-          return NextResponse.json({ error: 'Failed to load alerts', details: fallbackError.message }, { status: 500 })
-        }
-        return NextResponse.json({ alerts: alertsNoJoin || [] })
+      if (fallbackError) {
+        console.error('[Alerts] Fallback query also failed:', JSON.stringify(fallbackError))
+        return NextResponse.json({ error: 'Failed to load alerts', details: fallbackError.message }, { status: 500 })
       }
-      return NextResponse.json({ error: 'Failed to load alerts', details: error.message }, { status: 500 })
+      return NextResponse.json({ alerts: alertsNoJoin || [] })
     }
 
     return NextResponse.json({ alerts: alerts || [] })
@@ -78,19 +92,34 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // Auth: try Supabase first, fall back to Firebase headers
+    let userId: string | null = null
+    let userEmail: string | null = null
+    let userName: string | null = null
 
-    const firebaseUserId = request.headers.get('x-user-id')
-    const userId = user?.id || firebaseUserId
+    try {
+      const supabase = createServerClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        userId = user.id
+        userEmail = user.email || null
+        userName = user.user_metadata?.full_name || null
+      }
+    } catch (authError) {
+      console.error('[Alerts] Supabase auth failed (trying Firebase):', authError)
+    }
+
+    if (!userId) {
+      userId = request.headers.get('x-user-id')
+      userEmail = request.headers.get('x-user-email')
+      userName = request.headers.get('x-user-name')
+    }
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userEmail = user?.email || request.headers.get('x-user-email')
-    const userName = user?.user_metadata?.full_name || request.headers.get('x-user-name')
-    await ensureUserExists(userId, userEmail, userName as string | null)
+    await ensureUserExists(userId, userEmail, userName)
 
     // Feature gate check (non-blocking if subscription tables are missing)
     try {
