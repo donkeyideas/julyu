@@ -651,25 +651,6 @@ export default function AssistantPage() {
                         {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </div>
-                    {/* Action results - shown as subtle inline text */}
-                    {message.role === 'assistant' && message.actions && message.actions.length > 0 && (
-                      <div className="text-xs space-y-0.5" style={{ color: 'var(--text-muted)' }}>
-                        {message.actions.map((action, idx) => (
-                          <div key={idx} className="flex items-center gap-1.5">
-                            {action.success ? (
-                              <svg className="w-3 h-3 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                            ) : (
-                              <svg className="w-3 h-3 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            )}
-                            <span className={action.success ? 'text-green-500/70' : 'text-red-400/70'}>{action.message}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
                     {/* Compare Prices button for messages with ingredients */}
                     {message.role === 'assistant' && hasIngredients(message.content) && (
                       <button

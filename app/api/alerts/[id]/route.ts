@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient, createServiceRoleClient } from '@/lib/supabase/server'
+import { ensureUserExists } from '@/lib/auth/ensure-user'
 
 export async function GET(
   request: NextRequest,
@@ -10,36 +11,16 @@ export async function GET(
     const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
-
     const firebaseUserId = request.headers.get('x-user-id')
-    const userId = user?.id || firebaseUserId || (isTestMode ? 'test-user-id' : null)
+    const userId = user?.id || firebaseUserId
 
     if (!userId) {
-      // Return demo alert for unauthenticated users
-      return NextResponse.json({
-        alert: {
-          id,
-          user_id: 'test-user-id',
-          product_id: 'prod-1',
-          target_price: 3.99,
-          current_price: 4.49,
-          is_active: true,
-          created_at: new Date().toISOString(),
-          products: {
-            id: 'prod-1',
-            name: 'Demo Product',
-            brand: null,
-            category: 'General',
-            image_url: null
-          }
-        }
-      })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: alert, error } = await supabase
+    const dbClient = createServiceRoleClient()
+
+    const { data: alert, error } = await dbClient
       .from('price_alerts')
       .select(`
         *,
@@ -56,52 +37,17 @@ export async function GET(
       .single()
 
     if (error) {
-      console.error('[Alert] Error:', error)
       if (error.code === 'PGRST116') {
         return NextResponse.json({ error: 'Alert not found' }, { status: 404 })
       }
-      // Return demo alert on other errors
-      return NextResponse.json({
-        alert: {
-          id,
-          user_id: userId,
-          product_id: 'prod-1',
-          target_price: 3.99,
-          current_price: 4.49,
-          is_active: true,
-          created_at: new Date().toISOString(),
-          products: {
-            id: 'prod-1',
-            name: 'Demo Product',
-            brand: null,
-            category: 'General',
-            image_url: null
-          }
-        }
-      })
+      console.error('[Alert] Error:', error)
+      return NextResponse.json({ error: 'Failed to load alert' }, { status: 500 })
     }
 
     return NextResponse.json({ alert })
   } catch (error) {
-    console.error('Error fetching alert:', error)
-    return NextResponse.json({
-      alert: {
-        id: 'demo',
-        user_id: 'test-user-id',
-        product_id: 'prod-1',
-        target_price: 3.99,
-        current_price: 4.49,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        products: {
-          id: 'prod-1',
-          name: 'Demo Product',
-          brand: null,
-          category: 'General',
-          image_url: null
-        }
-      }
-    })
+    console.error('[Alert] Error:', error)
+    return NextResponse.json({ error: 'Failed to load alert' }, { status: 500 })
   }
 }
 
@@ -109,83 +55,58 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  let requestBody: { target_price?: number; is_active?: boolean; store_id?: string } = {}
-
   try {
     const { id } = params
     const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
-
     const firebaseUserId = request.headers.get('x-user-id')
-    const userId = user?.id || firebaseUserId || (isTestMode ? 'test-user-id' : null)
+    const userId = user?.id || firebaseUserId
 
-    requestBody = await request.json()
-    const { target_price, is_active, store_id } = requestBody
-
-    // For demo mode, return success with updated data
-    if (!userId || isTestMode) {
-      return NextResponse.json({
-        alert: {
-          id,
-          user_id: userId || 'test-user-id',
-          product_id: 'prod-1',
-          target_price: target_price ?? 3.99,
-          current_price: 4.49,
-          is_active: is_active ?? true,
-          store_id,
-          created_at: new Date().toISOString(),
-          products: {
-            id: 'prod-1',
-            name: 'Demo Product',
-            brand: null,
-            category: 'General',
-            image_url: null
-          }
-        }
-      })
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const userEmail = user?.email || request.headers.get('x-user-email')
+    const userName = user?.user_metadata?.full_name || request.headers.get('x-user-name')
+    await ensureUserExists(userId, userEmail, userName as string | null)
+
+    const dbClient = createServiceRoleClient()
+
     // Verify ownership
-    const { data: existing, error: existError } = await supabase
+    const { data: existing, error: existError } = await dbClient
       .from('price_alerts')
-      .select('id')
+      .select('id, current_price')
       .eq('id', id)
       .eq('user_id', userId)
       .single()
 
     if (existError || !existing) {
-      // Return demo response on error
-      return NextResponse.json({
-        alert: {
-          id,
-          user_id: userId,
-          product_id: 'prod-1',
-          target_price: target_price ?? 3.99,
-          current_price: 4.49,
-          is_active: is_active ?? true,
-          store_id,
-          created_at: new Date().toISOString(),
-          products: {
-            id: 'prod-1',
-            name: 'Demo Product',
-            brand: null,
-            category: 'General',
-            image_url: null
-          }
-        }
-      })
+      return NextResponse.json({ error: 'Alert not found' }, { status: 404 })
     }
 
-    const updateData: Record<string, unknown> = {}
-    if (target_price !== undefined) updateData.target_price = target_price
-    if (is_active !== undefined) updateData.is_active = is_active
-    if (store_id !== undefined) updateData.store_id = store_id
+    const body = await request.json()
+    const { target_price, store_id, notes } = body
 
-    const { data: alert, error } = await supabase
+    const updateData: Record<string, unknown> = {}
+    if (target_price !== undefined) {
+      if (typeof target_price !== 'number' || target_price <= 0) {
+        return NextResponse.json({ error: 'Valid target price is required' }, { status: 400 })
+      }
+      updateData.target_price = target_price
+      // Recalculate trigger status
+      if (existing.current_price !== null) {
+        if (existing.current_price <= target_price) {
+          updateData.triggered_at = new Date().toISOString()
+        } else {
+          updateData.triggered_at = null
+        }
+      }
+    }
+    if (store_id !== undefined) updateData.store_id = store_id
+    if (notes !== undefined) updateData.notes = notes
+
+    const { data: alert, error } = await dbClient
       .from('price_alerts')
       .update(updateData)
       .eq('id', id)
@@ -203,40 +124,13 @@ export async function PUT(
 
     if (error) {
       console.error('[Alert] Update error:', error)
-      // Return demo response on error
-      return NextResponse.json({
-        alert: {
-          id,
-          user_id: userId,
-          product_id: 'prod-1',
-          target_price: target_price ?? 3.99,
-          current_price: 4.49,
-          is_active: is_active ?? true,
-          store_id,
-          created_at: new Date().toISOString(),
-          products: {
-            id: 'prod-1',
-            name: 'Demo Product',
-            brand: null,
-            category: 'General',
-            image_url: null
-          }
-        }
-      })
+      return NextResponse.json({ error: 'Failed to update alert' }, { status: 500 })
     }
 
     return NextResponse.json({ alert })
   } catch (error) {
-    console.error('Error updating alert:', error)
-    return NextResponse.json({
-      alert: {
-        id: 'demo',
-        user_id: 'test-user-id',
-        target_price: requestBody.target_price ?? 3.99,
-        is_active: requestBody.is_active ?? true,
-        created_at: new Date().toISOString()
-      }
-    })
+    console.error('[Alert] Error:', error)
+    return NextResponse.json({ error: 'Failed to update alert' }, { status: 500 })
   }
 }
 
@@ -249,35 +143,30 @@ export async function DELETE(
     const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
-                       process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url'
-
     const firebaseUserId = request.headers.get('x-user-id')
-    const userId = user?.id || firebaseUserId || (isTestMode ? 'test-user-id' : null)
+    const userId = user?.id || firebaseUserId
 
-    // For demo mode, return success
-    if (!userId || isTestMode) {
-      return NextResponse.json({ success: true })
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Soft delete by setting is_active to false
-    const { error } = await supabase
+    const dbClient = createServiceRoleClient()
+
+    // Hard delete
+    const { error } = await dbClient
       .from('price_alerts')
-      .update({ is_active: false })
+      .delete()
       .eq('id', id)
       .eq('user_id', userId)
 
     if (error) {
       console.error('[Alert] Delete error:', error)
-      // Return success anyway for demo functionality
-      return NextResponse.json({ success: true })
+      return NextResponse.json({ error: 'Failed to delete alert' }, { status: 500 })
     }
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting alert:', error)
-    // Return success on any error to keep the feature working
-    return NextResponse.json({ success: true })
+    console.error('[Alert] Error:', error)
+    return NextResponse.json({ error: 'Failed to delete alert' }, { status: 500 })
   }
 }

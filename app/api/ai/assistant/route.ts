@@ -10,50 +10,11 @@ import {
   createConversation,
 } from '@/lib/ai/conversation-memory'
 import { parseActionsFromResponse, executeAction } from '@/lib/ai/tools'
+import { ensureUserExists } from '@/lib/auth/ensure-user'
 
 interface Message {
   role: 'user' | 'assistant' | 'system'
   content: string
-}
-
-// Ensure user exists in public.users table (required for FK constraints)
-async function ensureUserExists(userId: string, email?: string | null, fullName?: string | null): Promise<void> {
-  try {
-    const supabase = createServiceRoleClient()
-    const { data: existing } = await supabase
-      .from('users')
-      .select('id')
-      .eq('id', userId)
-      .single()
-
-    if (!existing) {
-      // User doesn't exist in public.users — create them
-      const { error: insertError } = await supabase
-        .from('users')
-        .insert({
-          id: userId,
-          email: email || `user-${userId.slice(0, 8)}@unknown`,
-          full_name: fullName || 'User',
-          subscription_tier: 'free',
-          created_at: new Date().toISOString(),
-        })
-
-      if (insertError) {
-        // Could be a race condition (another request created the user) — check if user now exists
-        const { data: recheckUser } = await supabase
-          .from('users')
-          .select('id')
-          .eq('id', userId)
-          .single()
-
-        if (!recheckUser) {
-          console.error('[ensureUserExists] Failed to create user:', insertError)
-        }
-      }
-    }
-  } catch (err) {
-    console.error('[ensureUserExists] Unexpected error:', err)
-  }
 }
 
 export async function POST(request: NextRequest) {
