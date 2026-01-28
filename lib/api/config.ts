@@ -151,6 +151,14 @@ export async function getApiKey(modelName: string): Promise<string | null> {
       }
     }
 
+    // Google Gemini API
+    if (modelName === 'gemini' || modelName.includes('gemini')) {
+      const envKey = process.env.GEMINI_API_KEY
+      if (envKey && envKey.trim() !== '') {
+        return envKey
+      }
+    }
+
     // Spoonacular API
     if (modelName === 'spoonacular' || modelName.includes('spoonacular')) {
       const envKey = process.env.SPOONACULAR_API_KEY
@@ -162,14 +170,19 @@ export async function getApiKey(modelName: string): Promise<string | null> {
     return null
   } catch (error: any) {
     console.error(`Error getting API key for ${modelName}:`, error)
-    
+
     // Final fallback to environment variables
     if (modelName === 'deepseek-chat' || modelName.includes('deepseek')) {
       return process.env.DEEPSEEK_API_KEY || null
     }
-    
+
     if (modelName === 'gpt-4-vision' || modelName.includes('openai') || modelName.includes('gpt')) {
       return process.env.OPENAI_API_KEY || null
+    }
+
+    // Google Gemini fallback
+    if (modelName === 'gemini' || modelName.includes('gemini')) {
+      return process.env.GEMINI_API_KEY || null
     }
 
     // Kroger API fallback

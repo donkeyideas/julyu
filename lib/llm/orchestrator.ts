@@ -22,6 +22,7 @@ import type { LLMProvider } from './providers/base'
 import { DeepSeekProvider } from './providers/deepseek'
 import { OpenAIProvider } from './providers/openai'
 import { AnthropicProvider } from './providers/anthropic'
+import { GeminiProvider } from './providers/gemini'
 import { generateCacheKey, getCachedResponse, setCachedResponse } from './cache'
 import { checkRateLimit, checkRateLimitDynamic, recordUsage } from './rate-limiter'
 import { trackLLMCall, trackLLMError, storeTrainingData } from './cost-tracker'
@@ -45,8 +46,8 @@ const ROUTE_CONFIG: Record<LLMTaskType, LLMRouteConfig> = {
   },
   receipt_ocr: {
     taskType: 'receipt_ocr',
-    primaryProvider: 'openai',
-    // No fallback — only OpenAI supports vision well enough
+    primaryProvider: 'gemini',
+    fallbackProvider: 'openai',
     defaultOptions: { temperature: 0.1, maxTokens: 4000, timeout: 60000 },
   },
   price_analysis: {
@@ -113,6 +114,7 @@ export class LLMOrchestrator {
     this.providers.set('deepseek', new DeepSeekProvider())
     this.providers.set('openai', new OpenAIProvider())
     this.providers.set('anthropic', new AnthropicProvider())
+    this.providers.set('gemini', new GeminiProvider())
   }
 
   /**

@@ -83,7 +83,7 @@ export interface LLMRouteConfig {
 // Provider Types
 // ============================================
 
-export type LLMProviderId = 'deepseek' | 'openai' | 'anthropic'
+export type LLMProviderId = 'deepseek' | 'openai' | 'anthropic' | 'gemini'
 
 export interface LLMProviderConfig {
   id: LLMProviderId
@@ -194,6 +194,10 @@ export const MODEL_PRICING: Record<string, { inputPerMillion: number; outputPerM
   // Anthropic (future)
   'claude-sonnet-4-20250514': { inputPerMillion: 3.00, outputPerMillion: 15.00 },
   'claude-haiku-3.5': { inputPerMillion: 0.80, outputPerMillion: 4.00 },
+  // Google Gemini (free tier available)
+  'gemini-2.0-flash': { inputPerMillion: 0.10, outputPerMillion: 0.40 },
+  'gemini-1.5-flash': { inputPerMillion: 0.075, outputPerMillion: 0.30 },
+  'gemini-1.5-pro': { inputPerMillion: 1.25, outputPerMillion: 5.00 },
 }
 
 // ============================================

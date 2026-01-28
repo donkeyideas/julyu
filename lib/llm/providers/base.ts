@@ -68,6 +68,9 @@ export abstract class BaseLLMProvider implements LLMProvider {
       'gpt-4o-mini': { inputPerMillion: 0.15, outputPerMillion: 0.60 },
       'claude-sonnet-4-20250514': { inputPerMillion: 3.00, outputPerMillion: 15.00 },
       'claude-haiku-3.5': { inputPerMillion: 0.80, outputPerMillion: 4.00 },
+      'gemini-2.0-flash': { inputPerMillion: 0.10, outputPerMillion: 0.40 },
+      'gemini-1.5-flash': { inputPerMillion: 0.075, outputPerMillion: 0.30 },
+      'gemini-1.5-pro': { inputPerMillion: 1.25, outputPerMillion: 5.00 },
     }
 
     const prices = pricing[model] || { inputPerMillion: 0, outputPerMillion: 0 }
