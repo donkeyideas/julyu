@@ -3,6 +3,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { deepseekClient } from '@/lib/api/deepseek'
 import { krogerClient, NormalizedKrogerProduct } from '@/lib/api/kroger'
 import { compareShoppingList, getAggregatedPrices } from '@/lib/services/price-aggregator'
+import { geocodeLocation } from '@/lib/services/geocoding'
 
 /**
  * Save comparison to database and update user savings
@@ -136,64 +137,8 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
  * Get approximate coordinates for a US zip code
  * Using a simple estimation - in production would use a geocoding API
  */
-async function getZipCodeCoordinates(zipCode: string): Promise<{ lat: number; lng: number } | null> {
-  // Common US zip codes with approximate coordinates
-  const zipCoords: Record<string, { lat: number; lng: number }> = {
-    '45202': { lat: 39.1031, lng: -84.5120 }, // Cincinnati
-    '45203': { lat: 39.1090, lng: -84.5280 },
-    '45204': { lat: 39.0960, lng: -84.5580 },
-    '45205': { lat: 39.1120, lng: -84.5790 },
-    '45206': { lat: 39.1280, lng: -84.4850 },
-    '45207': { lat: 39.1380, lng: -84.4720 },
-    '45208': { lat: 39.1360, lng: -84.4320 },
-    '45209': { lat: 39.1550, lng: -84.4270 },
-    '45210': { lat: 39.1150, lng: -84.5020 },
-    '45211': { lat: 39.1620, lng: -84.5970 },
-    '45212': { lat: 39.1670, lng: -84.4590 },
-    '45213': { lat: 39.1820, lng: -84.4190 },
-    '45214': { lat: 39.1180, lng: -84.5480 },
-    '45215': { lat: 39.2030, lng: -84.4620 },
-    '45216': { lat: 39.1950, lng: -84.4930 },
-    '45217': { lat: 39.1770, lng: -84.4920 },
-    '45218': { lat: 39.2330, lng: -84.4790 },
-    '45219': { lat: 39.1280, lng: -84.5130 },
-    '45220': { lat: 39.1430, lng: -84.5280 },
-    '45223': { lat: 39.1640, lng: -84.5660 },
-    '45224': { lat: 39.1930, lng: -84.5280 },
-    '45225': { lat: 39.1450, lng: -84.5650 },
-    '45226': { lat: 39.1120, lng: -84.4280 },
-    '45227': { lat: 39.1550, lng: -84.3850 },
-    '45229': { lat: 39.1500, lng: -84.4950 },
-    '45230': { lat: 39.0750, lng: -84.3940 },
-    '45231': { lat: 39.2150, lng: -84.5280 },
-    '45232': { lat: 39.1860, lng: -84.5150 },
-    '45233': { lat: 39.1120, lng: -84.6580 },
-    '45236': { lat: 39.2090, lng: -84.3900 },
-    '45237': { lat: 39.1970, lng: -84.4550 },
-    '45238': { lat: 39.0970, lng: -84.6120 },
-    '45239': { lat: 39.2000, lng: -84.5700 },
-    '45240': { lat: 39.2430, lng: -84.5370 },
-    '45241': { lat: 39.2650, lng: -84.4080 },
-    '45242': { lat: 39.2430, lng: -84.3520 },
-    '45243': { lat: 39.1810, lng: -84.3390 },
-    '45244': { lat: 39.1110, lng: -84.3320 },
-    '45245': { lat: 39.0690, lng: -84.2850 },
-    '45246': { lat: 39.2870, lng: -84.4700 },
-    '45247': { lat: 39.2070, lng: -84.6350 },
-    '45248': { lat: 39.1610, lng: -84.6700 },
-    '45249': { lat: 39.2720, lng: -84.3550 },
-    '45251': { lat: 39.2510, lng: -84.5880 },
-    '45252': { lat: 39.2660, lng: -84.6080 },
-    '45255': { lat: 39.0560, lng: -84.3240 },
-  }
-
-  if (zipCoords[zipCode]) {
-    return zipCoords[zipCode]
-  }
-
-  // For unknown zip codes, return null - we'll show N/A
-  return null
-}
+// Removed hardcoded Cincinnati-only geocoding function
+// Now using Positionstack geocoding service for all locations
 
 export async function POST(request: NextRequest) {
   try {
@@ -213,7 +158,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { items, listId, zipCode } = body
+    const { items, listId, zipCode, address } = body
 
     // If listId is provided, compare existing list
     if (listId) {
@@ -240,7 +185,7 @@ export async function POST(request: NextRequest) {
 
     if (krogerAvailable) {
       // Use Kroger API for real-time prices
-      return await analyzeWithKroger(items, zipCode || '45202', supabase, userId)
+      return await analyzeWithKroger(items, zipCode, address, supabase, userId)
     }
 
     // Fallback to database-based analysis
@@ -259,22 +204,67 @@ export async function POST(request: NextRequest) {
  */
 async function analyzeWithKroger(
   items: string[],
-  zipCode: string,
+  zipCode: string | undefined,
+  address: string | undefined,
   supabase: ReturnType<typeof createServerClient>,
   userId: string
 ) {
-  console.log('[ListAnalyze] Using Kroger API with zip:', zipCode)
+  console.log('[ListAnalyze] Using Kroger API with zip:', zipCode, 'address:', address)
 
-  // Step 1: Find nearby Kroger stores
+  // Step 1: Geocode the location (address first, then zip)
+  let coordinates: { lat: number; lng: number } | null = null
+  let searchZip: string | undefined = zipCode
+
+  try {
+    const geocodeResult = await geocodeLocation(address, zipCode)
+    if (geocodeResult) {
+      coordinates = {
+        lat: geocodeResult.latitude,
+        lng: geocodeResult.longitude
+      }
+      console.log('[ListAnalyze] Geocoded to:', coordinates, 'source:', geocodeResult.source)
+    } else if (!zipCode) {
+      // No location provided at all - return error
+      return NextResponse.json({
+        success: false,
+        error: 'Please provide either an address or zip code to find nearby stores.',
+      }, { status: 400 })
+    }
+  } catch (geocodeError: any) {
+    console.error('[ListAnalyze] Geocoding failed:', geocodeError.message)
+    // Continue with zip code only if available
+    if (!zipCode) {
+      return NextResponse.json({
+        success: false,
+        error: 'Location lookup failed. Please check your address or zip code.',
+      }, { status: 400 })
+    }
+  }
+
+  // Step 2: Find nearby Kroger stores (prefer coordinates over zip)
   let stores: any[] = []
   try {
-    stores = await krogerClient.searchLocations({ zipCode, limit: 5 })
-    console.log('[ListAnalyze] Found', stores.length, 'Kroger stores')
+    if (coordinates) {
+      // Use coordinate-based search (more accurate)
+      stores = await krogerClient.searchLocations({
+        lat: coordinates.lat,
+        lng: coordinates.lng,
+        limit: 5
+      })
+      console.log('[ListAnalyze] Found', stores.length, 'Kroger stores using coordinates')
+    } else {
+      // Fallback to zip code search
+      stores = await krogerClient.searchLocations({
+        zipCode: searchZip,
+        limit: 5
+      })
+      console.log('[ListAnalyze] Found', stores.length, 'Kroger stores using zip code')
+    }
   } catch (storeError: any) {
     console.error('[ListAnalyze] Failed to find stores:', storeError.message)
     return NextResponse.json({
       success: false,
-      error: 'Failed to find nearby stores. Please check your zip code.',
+      error: 'Failed to find nearby stores. Please check your location.',
     }, { status: 400 })
   }
 
@@ -344,8 +334,8 @@ async function analyzeWithKroger(
   const total = itemsWithPrices.reduce((sum, p) => sum + (p.price || 0), 0)
 
   // Step 4: Calculate distances for each store
-  const userCoords = await getZipCodeCoordinates(zipCode)
-  console.log('[ListAnalyze] User coordinates for zip', zipCode, ':', userCoords)
+  const userCoords = coordinates // Use the geocoded coordinates from above
+  console.log('[ListAnalyze] User coordinates:', userCoords)
 
   // Build store results with distances
   const storeResults: StoreResult[] = stores.map((store, index) => {

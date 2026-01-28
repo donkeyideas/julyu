@@ -539,6 +539,72 @@ export class KrogerClient {
       },
     }
   }
+
+  /**
+   * Add items to user's Kroger cart
+   * Requires user OAuth token (not client_credentials)
+   */
+  async addToCart(
+    userAccessToken: string,
+    items: Array<{
+      productId: string
+      quantity: number
+    }>
+  ): Promise<{ success: boolean; cartUrl?: string }> {
+    try {
+      const response = await fetch('https://api.kroger.com/v1/cart/add', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${userAccessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          items: items.map(item => ({
+            upc: item.productId,
+            quantity: item.quantity
+          }))
+        })
+      })
+
+      if (!response.ok) {
+        const error = await response.text()
+        console.error('[Kroger] Add to cart failed:', error)
+        return { success: false }
+      }
+
+      return {
+        success: true,
+        cartUrl: 'https://www.kroger.com/cart'
+      }
+    } catch (error: any) {
+      console.error('[Kroger] Add to cart exception:', error)
+      return { success: false }
+    }
+  }
+
+  /**
+   * Get user's cart (if needed for future features)
+   */
+  async getCart(userAccessToken: string): Promise<any | null> {
+    try {
+      const response = await fetch('https://api.kroger.com/v1/cart', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${userAccessToken}`,
+          'Accept': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        return null
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('[Kroger] Get cart error:', error)
+      return null
+    }
+  }
 }
 
 export const krogerClient = new KrogerClient()

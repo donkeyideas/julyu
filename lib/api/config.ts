@@ -167,6 +167,14 @@ export async function getApiKey(modelName: string): Promise<string | null> {
       }
     }
 
+    // Positionstack Geocoding API
+    if (modelName === 'positionstack' || modelName.includes('positionstack')) {
+      const envKey = process.env.POSITIONSTACK_API_KEY
+      if (envKey && envKey.trim() !== '') {
+        return envKey
+      }
+    }
+
     return null
   } catch (error: any) {
     console.error(`Error getting API key for ${modelName}:`, error)
@@ -197,6 +205,11 @@ export async function getApiKey(modelName: string): Promise<string | null> {
     // Spoonacular API fallback
     if (modelName === 'spoonacular' || modelName.includes('spoonacular')) {
       return process.env.SPOONACULAR_API_KEY || null
+    }
+
+    // Positionstack API fallback
+    if (modelName === 'positionstack' || modelName.includes('positionstack')) {
+      return process.env.POSITIONSTACK_API_KEY || null
     }
 
     return null

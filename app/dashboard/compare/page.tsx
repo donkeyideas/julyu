@@ -124,7 +124,7 @@ function ComparePageLoading() {
 function ComparePageContent() {
   const searchParams = useSearchParams()
   const [list, setList] = useState('milk 2%\neggs organic\nbread whole wheat\napples gala\nchicken breast\npasta penne')
-  const [zipCode, setZipCode] = useState('45202')
+  const [zipCode, setZipCode] = useState('') // Will be populated from user settings
   const [address, setAddress] = useState('')
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<AnalyzeResult | null>(null)
@@ -135,6 +135,8 @@ function ComparePageContent() {
   const [shopOptions, setShopOptions] = useState<ShopOptionsModal>({ isOpen: false, store: null })
   const [deliveryPartners, setDeliveryPartners] = useState<DeliveryPartner[]>([])
   const [loadingPartners, setLoadingPartners] = useState(false)
+  const [krogerConnectModal, setKrogerConnectModal] = useState<{ isOpen: boolean; store: any | null }>({ isOpen: false, store: null })
+  const [krogerConnected, setKrogerConnected] = useState(false)
 
   // Load search history from localStorage
   useEffect(() => {
@@ -165,10 +167,11 @@ function ComparePageContent() {
         if (response.ok) {
           const data = await response.json()
           const prefs = data.preferences
-          if (prefs?.default_zip_code && zipCode === '45202') {
+          // Load saved settings (removed conditional check that prevented loading)
+          if (prefs?.default_zip_code) {
             setZipCode(prefs.default_zip_code)
           }
-          if (prefs?.default_address && !address) {
+          if (prefs?.default_address) {
             setAddress(prefs.default_address)
           }
         }
@@ -352,9 +355,83 @@ function ComparePageContent() {
     }).catch(err => console.error('Failed to record shopping trip:', err))
   }
 
-  const handleShopHere = (store: StoreOption) => {
-    // Open shop options modal instead of directly going to maps
-    setShopOptions({ isOpen: true, store })
+  const handleShopHere = async (store: StoreOption) => {
+    // Check if this is a Kroger store
+    const isKroger = store.store.retailer?.toLowerCase().includes('kroger')
+
+    if (isKroger) {
+      // Check if user has connected their Kroger account
+      const hasKrogerAuth = await checkKrogerConnection()
+
+      if (!hasKrogerAuth) {
+        // Show modal: "Connect Kroger Account to add items to cart"
+        setKrogerConnectModal({ isOpen: true, store })
+      } else {
+        // Add items to Kroger cart directly
+        await addItemsToKrogerCart(store)
+      }
+    } else {
+      // Open shop options modal for non-Kroger stores
+      setShopOptions({ isOpen: true, store })
+    }
+  }
+
+  const checkKrogerConnection = async (): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/kroger/cart/add', {
+        method: 'GET',
+        headers: getAuthHeaders()
+      })
+
+      const data = await response.json()
+      setKrogerConnected(data.connected || false)
+      return data.connected || false
+    } catch (error) {
+      console.error('Failed to check Kroger connection:', error)
+      return false
+    }
+  }
+
+  const addItemsToKrogerCart = async (store: StoreOption) => {
+    // Get items from the store's items list (which includes krogerProduct data)
+    const items = store.items
+      ?.filter(item => item.price && item.product?.id) // Only items with valid Kroger product IDs
+      .map(item => ({
+        productId: item.product.id,
+        quantity: 1
+      })) || []
+
+    if (items.length === 0) {
+      alert('No items available to add to cart')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/kroger/cart/add', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ items })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        // Show success message with link to Kroger cart
+        alert(`Added ${items.length} items to your Kroger cart!`)
+        if (data.cartUrl) {
+          window.open(data.cartUrl, '_blank')
+        }
+        recordShoppingTrip(store, 'online', 'kroger_cart')
+      } else if (data.needsAuth) {
+        // Token expired, prompt to reconnect
+        setKrogerConnectModal({ isOpen: true, store })
+      } else {
+        alert('Failed to add items to Kroger cart. Please try again.')
+      }
+    } catch (error) {
+      console.error('Failed to add items to Kroger cart:', error)
+      alert('Failed to add items to Kroger cart. Please try again.')
+    }
   }
 
   const handleShopOption = (option: 'directions') => {
@@ -962,6 +1039,36 @@ function ComparePageContent() {
               <p className="text-center text-xs mt-4" style={{ color: 'var(--text-muted)' }}>
                 Prices and availability may vary by delivery service
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Kroger Connect Modal */}
+      {krogerConnectModal.isOpen && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="rounded-2xl max-w-md w-full p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Connect Your Kroger Account</h3>
+            <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
+              To add items directly to your Kroger cart, you need to connect your Kroger account.
+              This is a one-time setup that lets you skip manually adding items!
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  window.location.href = '/api/kroger/auth'
+                }}
+                className="flex-1 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition"
+              >
+                Connect Kroger Account
+              </button>
+              <button
+                onClick={() => setKrogerConnectModal({ isOpen: false, store: null })}
+                className="px-4 py-3 rounded-lg transition hover:opacity-70"
+                style={{ border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
