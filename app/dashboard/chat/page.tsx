@@ -95,6 +95,9 @@ export default function ChatPage() {
   const [showExtractModal, setShowExtractModal] = useState(false)
   const [userLanguage, setUserLanguage] = useState('en')
   const [autoTranslate, setAutoTranslate] = useState(true)
+  const [typingUsers, setTypingUsers] = useState<string[]>([])
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const lastTypingSentRef = useRef<number>(0)
 
   useEffect(() => {
     fetchCurrentUser()
@@ -113,12 +116,19 @@ export default function ChatPage() {
         if (response.ok) {
           const data = await response.json()
           const newMessages = data.messages || []
-          // Only update if there are new messages
+
+          // Update typing users
+          setTypingUsers(data.typingUsers || [])
+
+          // Only update messages if there's an actual change (avoid re-renders)
           setMessages(prev => {
+            // Skip update if we have a temp message being sent
+            const hasTempMessages = prev.some(m => m.id.startsWith('temp-'))
+            if (hasTempMessages) return prev
+
             if (newMessages.length !== prev.length) {
               return newMessages
             }
-            // Check if last message is different
             const lastNew = newMessages[newMessages.length - 1]
             const lastPrev = prev[prev.length - 1]
             if (lastNew?.id !== lastPrev?.id) {
@@ -320,11 +330,13 @@ export default function ChatPage() {
 
   const loadConversation = async (conversation: ChatConversation) => {
     setActiveConversation(conversation)
+    setTypingUsers([])
     try {
       const response = await fetch(`/api/chat/conversations/${conversation.id}/messages`, { headers: getAuthHeaders() })
       if (response.ok) {
         const data = await response.json()
         setMessages(data.messages || [])
+        setTypingUsers(data.typingUsers || [])
       }
     } catch (error) {
       console.error('Failed to load messages:', error)
@@ -361,6 +373,10 @@ export default function ChatPage() {
     setInput('')
     setSending(true)
 
+    // Clear typing status
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
+    sendTypingSignal(false)
+
     // Optimistically add message to UI
     const tempMessage: ChatMessage = {
       id: `temp-${Date.now()}`,
@@ -390,6 +406,36 @@ export default function ChatPage() {
       setMessages(prev => prev.filter(m => m.id !== tempMessage.id))
     } finally {
       setSending(false)
+    }
+  }
+
+  const sendTypingSignal = (isTyping: boolean) => {
+    if (!activeConversation) return
+    const now = Date.now()
+    // Throttle: only send typing=true at most every 2 seconds
+    if (isTyping && now - lastTypingSentRef.current < 2000) return
+    lastTypingSentRef.current = now
+
+    fetch(`/api/chat/conversations/${activeConversation.id}/messages`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ typing: isTyping })
+    }).catch(() => {})
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value)
+
+    if (e.target.value.trim()) {
+      sendTypingSignal(true)
+      // Clear previous timeout and set new one to stop typing after 3s of inactivity
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
+      typingTimeoutRef.current = setTimeout(() => {
+        sendTypingSignal(false)
+      }, 3000)
+    } else {
+      sendTypingSignal(false)
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
     }
   }
 
@@ -530,7 +576,7 @@ export default function ChatPage() {
       {/* Header */}
       <div className="mb-6 pb-6 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border-color)' }}>
         <div>
-          <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>Community Chat</h1>
+          <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>Chat</h1>
           <p className="mt-1" style={{ color: 'var(--text-muted)' }}>Share recipes and shopping tips with friends</p>
         </div>
         <div className="flex gap-2">
@@ -684,6 +730,23 @@ export default function ChatPage() {
                       </div>
                     )
                   })}
+                  {/* Typing Indicator */}
+                  {typingUsers.length > 0 && (
+                    <div className="flex justify-start">
+                      <div className="max-w-[75%]">
+                        <div
+                          className="px-4 py-3 rounded-2xl"
+                          style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
+                        >
+                          <div className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                            <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                            <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div ref={messagesEndRef} />
                 </div>
               </div>
@@ -694,7 +757,7 @@ export default function ChatPage() {
                   <textarea
                     ref={inputRef}
                     value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
                     placeholder="Type a message..."
                     rows={1}

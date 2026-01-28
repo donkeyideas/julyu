@@ -22,10 +22,10 @@ export async function GET(
     // Use service role client for database operations
     const supabase = createServiceRoleClient()
 
-    // Verify user is participant
+    // Verify user is participant and get typing status
     const { data: conversation, error: convError } = await supabase
       .from('chat_conversations')
-      .select('participant_ids')
+      .select('participant_ids, typing_users')
       .eq('id', conversationId)
       .single()
 
@@ -59,7 +59,19 @@ export async function GET(
       sender: senderMap.get(m.sender_id) || { id: m.sender_id, email: 'Unknown', full_name: 'Unknown' }
     }))
 
-    return NextResponse.json({ messages: messagesWithSender })
+    // Determine who is currently typing (within last 4 seconds, excluding current user)
+    const typingUsers: string[] = []
+    const typingData = conversation.typing_users as Record<string, string> | null
+    if (typingData) {
+      const now = Date.now()
+      for (const [uid, timestamp] of Object.entries(typingData)) {
+        if (uid !== userId && now - new Date(timestamp).getTime() < 4000) {
+          typingUsers.push(uid)
+        }
+      }
+    }
+
+    return NextResponse.json({ messages: messagesWithSender, typingUsers })
   } catch (error: any) {
     console.error('[Chat] Error:', error)
     return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 })
@@ -134,12 +146,22 @@ export async function POST(
       sender: sender || { id: userId, email: 'Unknown', full_name: 'Unknown' }
     }
 
-    // Update conversation last message (ignore errors)
+    // Update conversation last message and clear typing status
+    const { data: convData } = await supabase
+      .from('chat_conversations')
+      .select('typing_users')
+      .eq('id', conversationId)
+      .single()
+
+    const currentTyping = (convData?.typing_users as Record<string, string>) || {}
+    delete currentTyping[userId]
+
     await supabase
       .from('chat_conversations')
       .update({
         last_message: content.trim().substring(0, 100),
-        last_message_at: new Date().toISOString()
+        last_message_at: new Date().toISOString(),
+        typing_users: currentTyping,
       })
       .eq('id', conversationId)
       .catch(() => {})
@@ -148,5 +170,56 @@ export async function POST(
   } catch (error: any) {
     console.error('[Chat] Error:', error)
     return NextResponse.json({ error: 'Failed to send message' }, { status: 500 })
+  }
+}
+
+// Update typing status
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const authClient = createServerClient()
+    const { data: { user } } = await authClient.auth.getUser()
+
+    const firebaseUserId = request.headers.get('x-user-id')
+    const userId = user?.id || firebaseUserId
+    const conversationId = params.id
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { typing } = await request.json()
+    const supabase = createServiceRoleClient()
+
+    // Verify user is participant
+    const { data: conversation, error: convError } = await supabase
+      .from('chat_conversations')
+      .select('participant_ids, typing_users')
+      .eq('id', conversationId)
+      .single()
+
+    if (convError || !conversation?.participant_ids?.includes(userId)) {
+      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 })
+    }
+
+    const currentTyping = (conversation.typing_users as Record<string, string>) || {}
+
+    if (typing) {
+      currentTyping[userId] = new Date().toISOString()
+    } else {
+      delete currentTyping[userId]
+    }
+
+    await supabase
+      .from('chat_conversations')
+      .update({ typing_users: currentTyping })
+      .eq('id', conversationId)
+
+    return NextResponse.json({ success: true })
+  } catch (error: any) {
+    console.error('[Chat] Typing error:', error)
+    return NextResponse.json({ error: 'Failed to update typing status' }, { status: 500 })
   }
 }
