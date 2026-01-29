@@ -12,6 +12,20 @@ interface DashboardStats {
   avgResponseTime: number
 }
 
+interface RevenueData {
+  date: string
+  revenue: number
+  orders: number
+  commission: number
+}
+
+interface UserGrowthData {
+  date: string
+  newUsers: number
+  activeUsers: number
+  receiptsScanned: number
+}
+
 export default function AdminV2Dashboard() {
   const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
@@ -21,6 +35,8 @@ export default function AdminV2Dashboard() {
     activeModels: 0,
     avgResponseTime: 0,
   })
+  const [revenueData, setRevenueData] = useState<RevenueData[]>([])
+  const [userGrowthData, setUserGrowthData] = useState<UserGrowthData[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -31,12 +47,19 @@ export default function AdminV2Dashboard() {
     try {
       const supabase = createClient()
 
+      // Calculate date 30 days ago
+      const thirtyDaysAgo = new Date()
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
       // Load all stats
-      const [usersResult, retailersResult, usageResult, configResult] = await Promise.all([
+      const [usersResult, retailersResult, usageResult, configResult, ordersResult, recentUsersResult, receiptsResult] = await Promise.all([
         supabase.from('users').select('*', { count: 'exact', head: true }),
         supabase.from('partner_retailers').select('*', { count: 'exact', head: true }),
         supabase.from('ai_model_usage').select('*').order('created_at', { ascending: false }).limit(1000),
         supabase.from('ai_model_config').select('*').eq('is_active', true),
+        supabase.from('bodega_orders').select('total_amount, commission_amount, ordered_at').gte('ordered_at', thirtyDaysAgo.toISOString()),
+        supabase.from('users').select('created_at').gte('created_at', thirtyDaysAgo.toISOString()),
+        supabase.from('receipts').select('created_at').gte('created_at', thirtyDaysAgo.toISOString()),
       ])
 
       interface UsageRecord {
@@ -63,6 +86,53 @@ export default function AdminV2Dashboard() {
         activeModels: activeConfigs.length,
         avgResponseTime: Math.round(avgResponseTime),
       })
+
+      // Process revenue data (last 30 days)
+      const orders = ordersResult.data || []
+      const revenueByDate: { [key: string]: { revenue: number, orders: number, commission: number } } = {}
+
+      orders.forEach((order: any) => {
+        const date = new Date(order.ordered_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        if (!revenueByDate[date]) {
+          revenueByDate[date] = { revenue: 0, orders: 0, commission: 0 }
+        }
+        revenueByDate[date].revenue += parseFloat(order.total_amount || 0)
+        revenueByDate[date].commission += parseFloat(order.commission_amount || 0)
+        revenueByDate[date].orders += 1
+      })
+
+      const revenueChartData: RevenueData[] = Object.entries(revenueByDate)
+        .map(([date, data]) => ({ date, ...data }))
+        .slice(-14) // Last 14 days
+
+      setRevenueData(revenueChartData)
+
+      // Process user growth data (last 30 days)
+      const newUsers = recentUsersResult.data || []
+      const receipts = receiptsResult.data || []
+      const growthByDate: { [key: string]: { newUsers: number, receiptsScanned: number } } = {}
+
+      newUsers.forEach((user: any) => {
+        const date = new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        if (!growthByDate[date]) {
+          growthByDate[date] = { newUsers: 0, receiptsScanned: 0 }
+        }
+        growthByDate[date].newUsers += 1
+      })
+
+      receipts.forEach((receipt: any) => {
+        const date = new Date(receipt.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        if (!growthByDate[date]) {
+          growthByDate[date] = { newUsers: 0, receiptsScanned: 0 }
+        }
+        growthByDate[date].receiptsScanned += 1
+      })
+
+      const userGrowthChartData: UserGrowthData[] = Object.entries(growthByDate)
+        .map(([date, data]) => ({ date, ...data, activeUsers: 0 }))
+        .slice(-14) // Last 14 days
+
+      setUserGrowthData(userGrowthChartData)
     } catch (error) {
       console.error('Error loading stats:', error)
     } finally {
@@ -127,63 +197,156 @@ export default function AdminV2Dashboard() {
         </div>
       </div>
 
-      {/* Bodega System Quick Access */}
+      {/* Critical KPI Charts */}
       <div className="mb-10">
-        <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>🏪 Bodega System Management</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <a
-            href="/admin/stores/applications"
-            className="bg-gradient-to-br from-blue-900/50 to-blue-950/50 border-2 border-blue-500/30 rounded-2xl p-6 hover:border-blue-500 transition cursor-pointer group"
-          >
-            <div className="text-sm text-blue-400 mb-2">Review & Approve</div>
-            <div className="text-2xl font-black mb-2 group-hover:text-blue-400 transition" style={{ color: 'var(--text-primary)' }}>Store Applications</div>
-            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Manage pending store applications</div>
-          </a>
+        <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>📊 Critical Performance Metrics</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-          <a
-            href="/admin/stores"
-            className="bg-gradient-to-br from-green-900/50 to-green-950/50 border-2 border-green-500/30 rounded-2xl p-6 hover:border-green-500 transition cursor-pointer group"
-          >
-            <div className="text-sm text-green-400 mb-2">Manage</div>
-            <div className="text-2xl font-black mb-2 group-hover:text-green-400 transition" style={{ color: 'var(--text-primary)' }}>All Stores</div>
-            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>View and edit all bodega stores</div>
-          </a>
+          {/* Revenue & Financial Performance Chart */}
+          <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Revenue & Financial Performance</h3>
+                <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Last 14 days</p>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-black text-green-500">
+                  ${revenueData.reduce((sum, d) => sum + d.revenue, 0).toFixed(2)}
+                </div>
+                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Total Revenue</div>
+              </div>
+            </div>
 
-          <a
-            href="/admin/orders"
-            className="bg-gradient-to-br from-purple-900/50 to-purple-950/50 border-2 border-purple-500/30 rounded-2xl p-6 hover:border-purple-500 transition cursor-pointer group"
-          >
-            <div className="text-sm text-purple-400 mb-2">Monitor</div>
-            <div className="text-2xl font-black mb-2 group-hover:text-purple-400 transition" style={{ color: 'var(--text-primary)' }}>All Orders</div>
-            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Real-time order monitoring</div>
-          </a>
+            {revenueData.length > 0 ? (
+              <div className="space-y-6">
+                {/* Chart */}
+                <div className="h-48 flex items-end gap-2">
+                  {revenueData.map((day, i) => {
+                    const maxRevenue = Math.max(...revenueData.map(d => d.revenue), 1)
+                    const height = (day.revenue / maxRevenue) * 100
+                    return (
+                      <div key={i} className="flex-1 flex flex-col items-center group">
+                        <div className="relative w-full">
+                          <div
+                            className="w-full bg-green-500/30 hover:bg-green-500/50 rounded-t transition cursor-pointer"
+                            style={{ height: `${Math.max(height, 4)}px` }}
+                          >
+                            <div className="absolute -top-16 left-1/2 -translate-x-1/2 px-3 py-2 rounded-lg text-xs hidden group-hover:block whitespace-nowrap z-10" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                              <div className="font-bold text-green-500">${day.revenue.toFixed(2)}</div>
+                              <div style={{ color: 'var(--text-muted)' }}>{day.orders} orders</div>
+                              <div className="text-yellow-500">${day.commission.toFixed(2)} comm.</div>
+                            </div>
+                          </div>
+                        </div>
+                        {i % 2 === 0 && (
+                          <div className="text-xs mt-2 rotate-0" style={{ color: 'var(--text-muted)' }}>
+                            {day.date}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
 
-          <a
-            href="/admin/commission-tiers"
-            className="bg-gradient-to-br from-yellow-900/50 to-yellow-950/50 border-2 border-yellow-500/30 rounded-2xl p-6 hover:border-yellow-500 transition cursor-pointer group"
-          >
-            <div className="text-sm text-yellow-400 mb-2">Configure</div>
-            <div className="text-2xl font-black mb-2 group-hover:text-yellow-400 transition" style={{ color: 'var(--text-primary)' }}>Commission Tiers</div>
-            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Set pricing and commission rates</div>
-          </a>
+                {/* Legend */}
+                <div className="flex items-center justify-center gap-6 pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Revenue</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Commission</span>
+                  </div>
+                  <div className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
+                    {revenueData.reduce((sum, d) => sum + d.orders, 0)} total orders
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="h-48 flex items-center justify-center" style={{ color: 'var(--text-secondary)' }}>
+                No revenue data available
+              </div>
+            )}
+          </div>
 
-          <a
-            href="/admin/payouts"
-            className="bg-gradient-to-br from-emerald-900/50 to-emerald-950/50 border-2 border-emerald-500/30 rounded-2xl p-6 hover:border-emerald-500 transition cursor-pointer group"
-          >
-            <div className="text-sm text-emerald-400 mb-2">Financial</div>
-            <div className="text-2xl font-black mb-2 group-hover:text-emerald-400 transition" style={{ color: 'var(--text-primary)' }}>Payouts</div>
-            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Manage store payouts</div>
-          </a>
+          {/* User Growth & Engagement Chart */}
+          <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>User Growth & Engagement</h3>
+                <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Last 14 days</p>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-black text-blue-500">
+                  {userGrowthData.reduce((sum, d) => sum + d.newUsers, 0)}
+                </div>
+                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>New Users</div>
+              </div>
+            </div>
 
-          <a
-            href="/admin/analytics/bodega"
-            className="bg-gradient-to-br from-pink-900/50 to-pink-950/50 border-2 border-pink-500/30 rounded-2xl p-6 hover:border-pink-500 transition cursor-pointer group"
-          >
-            <div className="text-sm text-pink-400 mb-2">Insights</div>
-            <div className="text-2xl font-black mb-2 group-hover:text-pink-400 transition" style={{ color: 'var(--text-primary)' }}>Analytics</div>
-            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Bodega performance metrics</div>
-          </a>
+            {userGrowthData.length > 0 ? (
+              <div className="space-y-6">
+                {/* Chart */}
+                <div className="h-48 flex items-end gap-2">
+                  {userGrowthData.map((day, i) => {
+                    const maxValue = Math.max(
+                      ...userGrowthData.map(d => Math.max(d.newUsers, d.receiptsScanned)),
+                      1
+                    )
+                    const usersHeight = (day.newUsers / maxValue) * 100
+                    const receiptsHeight = (day.receiptsScanned / maxValue) * 100
+                    return (
+                      <div key={i} className="flex-1 flex flex-col items-center group">
+                        <div className="relative w-full flex items-end justify-center gap-1">
+                          {/* New Users Bar */}
+                          <div
+                            className="flex-1 bg-blue-500/30 hover:bg-blue-500/50 rounded-t transition cursor-pointer"
+                            style={{ height: `${Math.max(usersHeight, 4)}px` }}
+                          >
+                            <div className="absolute -top-16 left-1/2 -translate-x-1/2 px-3 py-2 rounded-lg text-xs hidden group-hover:block whitespace-nowrap z-10" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                              <div className="font-bold text-blue-500">{day.newUsers} new users</div>
+                              <div className="text-purple-500">{day.receiptsScanned} receipts</div>
+                            </div>
+                          </div>
+                          {/* Receipts Scanned Bar */}
+                          <div
+                            className="flex-1 bg-purple-500/30 hover:bg-purple-500/50 rounded-t transition cursor-pointer"
+                            style={{ height: `${Math.max(receiptsHeight, 4)}px` }}
+                          ></div>
+                        </div>
+                        {i % 2 === 0 && (
+                          <div className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
+                            {day.date}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Legend */}
+                <div className="flex items-center justify-center gap-6 pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>New Users</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Receipts Scanned</span>
+                  </div>
+                  <div className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
+                    {userGrowthData.reduce((sum, d) => sum + d.receiptsScanned, 0)} total scans
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="h-48 flex items-center justify-center" style={{ color: 'var(--text-secondary)' }}>
+                No user growth data available
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
 
