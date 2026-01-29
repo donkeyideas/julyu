@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { getAdminSession } from '@/lib/auth/admin-auth'
 import AdminSidebar from '@/components/admin-v2/Sidebar'
 
@@ -11,22 +11,35 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
-  const [isChecking, setIsChecking] = useState(true)
+  const pathname = usePathname()
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
 
   useEffect(() => {
-    // Check if user has admin session
+    console.log('[Admin Layout] Checking auth for path:', pathname)
+
     const session = getAdminSession()
+    console.log('[Admin Layout] Session found:', session ? 'YES' : 'NO')
+
     if (!session) {
-      // Redirect to admin login
+      console.log('[Admin Layout] No session, redirecting to login')
       router.push('/admin-v2/login')
       return
     }
-    setIsChecking(false)
-  }, [router])
 
-  // Show nothing while checking auth
-  if (isChecking) {
-    return null
+    console.log('[Admin Layout] Session valid, rendering page')
+    setIsAuthenticated(true)
+  }, [pathname, router])
+
+  // Show loading state while checking auth
+  if (isAuthenticated === null) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="text-center">
+          <div className="inline-block w-12 h-12 border-4 border-gray-800 border-t-green-500 rounded-full animate-spin mb-4"></div>
+          <div className="text-gray-500">Verifying admin access...</div>
+        </div>
+      </div>
+    )
   }
 
   return (
