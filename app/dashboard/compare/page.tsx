@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import BodegaCard from '@/components/dashboard/BodegaCard'
+import OrderPlacementModal from '@/components/dashboard/OrderPlacementModal'
 
 // Helper to get auth headers for API calls (supports Firebase/Google users)
 function getAuthHeaders(): HeadersInit {
@@ -141,6 +142,7 @@ function ComparePageContent() {
   const [bodegaResults, setBodegaResults] = useState<any[]>([])
   const [bodegaLoading, setBodegaLoading] = useState(false)
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
+  const [orderModal, setOrderModal] = useState<{ isOpen: boolean; bodega: any | null }>({ isOpen: false, bodega: null })
 
   // Load search history from localStorage
   useEffect(() => {
@@ -549,8 +551,7 @@ function ComparePageContent() {
   }
 
   const handleBodegaOrder = (bodega: any) => {
-    // TODO: Implement order placement modal for bodega orders (Phase 3)
-    alert(`Order placement from ${bodega.store.name} will be available in Phase 3. For now, you can call them at ${bodega.store.phone}`)
+    setOrderModal({ isOpen: true, bodega })
   }
 
   const handleBodegaDirections = (bodega: any) => {
@@ -1301,6 +1302,14 @@ function ComparePageContent() {
           onClick={() => setShowHistory(false)}
         />
       )}
+
+      {/* Order Placement Modal */}
+      <OrderPlacementModal
+        isOpen={orderModal.isOpen}
+        bodega={orderModal.bodega}
+        userAddress={address}
+        onClose={() => setOrderModal({ isOpen: false, bodega: null })}
+      />
     </div>
   )
 }
