@@ -280,7 +280,7 @@ export default async function BodegaAnalyticsPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {storePerformance.map((store, index) => (
+              {storePerformance.map((store: any, index: number) => (
                 <tr key={store.id}>
                   <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
                     #{index + 1}
