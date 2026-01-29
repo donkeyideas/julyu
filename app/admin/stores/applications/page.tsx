@@ -7,6 +7,8 @@ export default function StoreApplicationsPage() {
   const [applications, setApplications] = useState<any[]>([])
   const [selectedApplication, setSelectedApplication] = useState<any | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [actionLoading, setActionLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     loadApplications()
@@ -59,16 +61,26 @@ export default function StoreApplicationsPage() {
   }
 
   const handleApprove = async (id: string) => {
+    setActionLoading(true)
+    setError(null)
     try {
       const response = await fetch(`/api/admin/store-applications/${id}/approve`, {
         method: 'POST',
       })
+
+      const data = await response.json()
+
       if (response.ok) {
-        loadApplications()
+        await loadApplications()
         setIsModalOpen(false)
+      } else {
+        setError(data.error || 'Failed to approve application')
       }
     } catch (error) {
       console.error('Error approving application:', error)
+      setError('Network error. Please try again.')
+    } finally {
+      setActionLoading(false)
     }
   }
 
@@ -76,29 +88,41 @@ export default function StoreApplicationsPage() {
     const reason = prompt('Rejection reason:')
     if (!reason) return
 
+    setActionLoading(true)
+    setError(null)
     try {
       const response = await fetch(`/api/admin/store-applications/${id}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason }),
       })
+
+      const data = await response.json()
+
       if (response.ok) {
-        loadApplications()
+        await loadApplications()
         setIsModalOpen(false)
+      } else {
+        setError(data.error || 'Failed to reject application')
       }
     } catch (error) {
       console.error('Error rejecting application:', error)
+      setError('Network error. Please try again.')
+    } finally {
+      setActionLoading(false)
     }
   }
 
   const openModal = (app: any) => {
     setSelectedApplication(app)
     setIsModalOpen(true)
+    setError(null)
   }
 
   const closeModal = () => {
     setIsModalOpen(false)
     setSelectedApplication(null)
+    setError(null)
   }
 
   return (
@@ -380,25 +404,34 @@ export default function StoreApplicationsPage() {
 
             {/* Actions */}
             {selectedApplication.application_status === 'pending' && (
-              <div className="sticky bottom-0 px-8 py-6 flex gap-4" style={{ backgroundColor: 'var(--bg-card)', borderTop: '1px solid var(--border-color)' }}>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleApprove(selectedApplication.id)
-                  }}
-                  className="flex-1 px-6 py-3 rounded-xl font-bold text-white bg-green-500 hover:bg-green-600 transition"
-                >
-                  Approve Application
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleReject(selectedApplication.id)
-                  }}
-                  className="flex-1 px-6 py-3 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 transition"
-                >
-                  Reject Application
-                </button>
+              <div className="sticky bottom-0 px-8 py-6 space-y-4" style={{ backgroundColor: 'var(--bg-card)', borderTop: '1px solid var(--border-color)' }}>
+                {error && (
+                  <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3">
+                    <p className="text-sm text-red-500">{error}</p>
+                  </div>
+                )}
+                <div className="flex gap-4">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleApprove(selectedApplication.id)
+                    }}
+                    disabled={actionLoading}
+                    className="flex-1 px-6 py-3 rounded-xl font-bold text-white bg-green-500 hover:bg-green-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {actionLoading ? 'Processing...' : 'Approve Application'}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleReject(selectedApplication.id)
+                    }}
+                    disabled={actionLoading}
+                    className="flex-1 px-6 py-3 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {actionLoading ? 'Processing...' : 'Reject Application'}
+                  </button>
+                </div>
               </div>
             )}
           </div>
