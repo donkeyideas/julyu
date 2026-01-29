@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export default function StoreOwnerCTA() {
   return (
-    <section className="py-24 px-[5%]">
+    <section className="py-24 px-[5%] bg-green-950/60">
       <div className="max-w-7xl mx-auto">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
