@@ -1004,27 +1004,33 @@ export default function DashboardPage() {
               <>
                 <h3 className="text-lg font-bold mb-4 mt-6" style={{ color: 'var(--text-primary)' }}>Store Comparison</h3>
                 <div className="space-y-2">
-                  {selectedComparison.results.stores.map((store, idx) => (
-                    <div
-                      key={idx}
-                      className={`flex justify-between items-center rounded-lg p-3 ${
-                        store.name === selectedComparison.best_option?.store?.name
-                          ? 'bg-green-500/15 border border-green-500/30'
-                          : ''
-                      }`}
-                      style={store.name !== selectedComparison.best_option?.store?.name ? { backgroundColor: 'var(--bg-secondary)' } : undefined}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span style={{ color: 'var(--text-primary)' }}>{store.name}</span>
-                        {store.name === selectedComparison.best_option?.store?.name && (
-                          <span className="text-xs px-2 py-0.5 bg-green-500 text-black rounded-full font-bold">
-                            BEST
-                          </span>
-                        )}
+                  {selectedComparison.results.stores.map((store, idx) => {
+                    const storeName = store.name || store.storeName || 'Unknown Store'
+                    const bestStoreName = selectedComparison.best_option?.store?.name || selectedComparison.best_option?.store?.retailer
+                    const isBest = storeName === bestStoreName
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`flex justify-between items-center rounded-lg p-3 ${
+                          isBest
+                            ? 'bg-green-500/15 border border-green-500/30'
+                            : ''
+                        }`}
+                        style={!isBest ? { backgroundColor: 'var(--bg-secondary)' } : undefined}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span style={{ color: 'var(--text-primary)' }}>{storeName}</span>
+                          {isBest && (
+                            <span className="text-xs px-2 py-0.5 bg-green-500 text-black rounded-full font-bold">
+                              BEST
+                            </span>
+                          )}
+                        </div>
+                        <span className="font-bold" style={{ color: 'var(--text-primary)' }}>${store.total.toFixed(2)}</span>
                       </div>
-                      <span className="font-bold" style={{ color: 'var(--text-primary)' }}>${store.total.toFixed(2)}</span>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </>
             )}
