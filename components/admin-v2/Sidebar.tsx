@@ -59,7 +59,7 @@ export default function AdminSidebar() {
   ]
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-[280px] bg-gray-900 border-r border-gray-800 p-8 overflow-y-auto">
+    <aside className="fixed left-0 top-0 bottom-0 w-[280px] p-8 overflow-y-auto" style={{ backgroundColor: 'var(--bg-secondary)', borderRight: '1px solid var(--border-color)' }}>
       <Link href="/admin-v2" className="text-3xl font-black text-green-500 mb-12 block">
         Julyu Admin
       </Link>
@@ -67,7 +67,7 @@ export default function AdminSidebar() {
       <nav className="space-y-6">
         {sections.map((section) => (
           <div key={section.name}>
-            <div className="text-xs text-gray-500 uppercase font-semibold mb-3 px-4">
+            <div className="text-xs uppercase font-semibold mb-3 px-4" style={{ color: 'var(--text-secondary)' }}>
               {section.name}
             </div>
             <div className="space-y-2">
@@ -80,8 +80,9 @@ export default function AdminSidebar() {
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
                       isActive
                         ? 'bg-green-500/15 text-green-500 border-l-4 border-green-500 font-semibold'
-                        : 'text-gray-400 hover:bg-green-500/10 hover:text-white'
+                        : 'hover:bg-green-500/10 hover:text-green-500'
                     }`}
+                    style={!isActive ? { color: 'var(--text-secondary)' } : undefined}
                   >
                     <span>{item.icon}</span>
                     <span>{item.label}</span>
@@ -93,22 +94,23 @@ export default function AdminSidebar() {
         ))}
       </nav>
 
-      <div className="mt-8 pt-8 border-t border-gray-800">
+      <div className="mt-8 pt-8" style={{ borderTop: '1px solid var(--border-color)' }}>
         <div className="px-4 mb-4">
-          <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Theme</p>
+          <p className="text-xs uppercase font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Theme</p>
           <ThemeToggle />
         </div>
 
         <Link
           href="/"
-          className="block w-full px-4 py-3 text-left text-gray-400 hover:bg-green-500/10 hover:text-green-500 rounded-lg transition"
+          className="block w-full px-4 py-3 text-left hover:bg-green-500/10 hover:text-green-500 rounded-lg transition"
+          style={{ color: 'var(--text-secondary)' }}
         >
           ← Back to Site
         </Link>
 
         {session && (
           <div className="mt-4 px-4">
-            <p className="text-xs text-gray-500 truncate mb-2">{session.email}</p>
+            <p className="text-xs truncate mb-2" style={{ color: 'var(--text-secondary)' }}>{session.email}</p>
             <button
               onClick={handleLogout}
               className="w-full px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-500 rounded-lg transition text-left"

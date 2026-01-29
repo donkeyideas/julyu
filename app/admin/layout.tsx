@@ -33,19 +33,19 @@ export default function AdminLayout({
   // Show loading state while checking auth
   if (isAuthenticated === null) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black">
+      <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
         <div className="text-center">
           <div className="inline-block w-12 h-12 border-4 border-gray-800 border-t-green-500 rounded-full animate-spin mb-4"></div>
-          <div className="text-gray-500">Verifying admin access...</div>
+          <div style={{ color: 'var(--text-secondary)' }}>Verifying admin access...</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-screen bg-black">
+    <div className="flex min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
       <AdminSidebar />
-      <main className="flex-1 ml-[280px] p-8 text-white">
+      <main className="flex-1 ml-[280px] p-8" style={{ color: 'var(--text-primary)' }}>
         {children}
       </main>
     </div>
