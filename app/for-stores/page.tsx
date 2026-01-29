@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function ForStoresPage() {
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-blue-950 text-white">
       <Header transparent />
 
       {/* Hero Section */}
@@ -63,7 +63,7 @@ export default function ForStoresPage() {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="bg-gradient-to-b from-gray-900 to-black py-24 px-[5%]">
+      <section id="how-it-works" className="py-24 px-[5%]">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-black text-center mb-16">
             How <span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">It Works</span>
@@ -114,7 +114,7 @@ export default function ForStoresPage() {
       </section>
 
       {/* Benefits */}
-      <section className="bg-black py-24 px-[5%]">
+      <section className="py-24 px-[5%]">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-black text-center mb-16">
             Why Store Owners <span className="bg-gradient-to-r from-green-500 to-green-300 bg-clip-text text-transparent">Love Julyu</span>
@@ -173,7 +173,7 @@ export default function ForStoresPage() {
       </section>
 
       {/* Pricing */}
-      <section className="bg-gradient-to-b from-gray-900 to-black py-24 px-[5%]">
+      <section className="py-24 px-[5%]">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-black text-center mb-6">
             Simple, <span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">Transparent</span> Pricing
@@ -228,7 +228,7 @@ export default function ForStoresPage() {
       </section>
 
       {/* FAQ */}
-      <section className="bg-black py-24 px-[5%]">
+      <section className="py-24 px-[5%]">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-black text-center mb-16">
             Frequently Asked <span className="bg-gradient-to-r from-green-500 to-green-300 bg-clip-text text-transparent">Questions</span>
@@ -293,7 +293,7 @@ export default function ForStoresPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="bg-gradient-to-b from-gray-900 to-black py-24 px-[5%]">
+      <section className="py-24 px-[5%]">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-black mb-6">
             Ready to Grow Your Business?
