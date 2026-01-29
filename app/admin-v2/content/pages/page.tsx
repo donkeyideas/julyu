@@ -101,7 +101,7 @@ export default function ContentPagesPage() {
                 <a
                   href={`/${page.page_slug === 'home' ? '' : page.page_slug}`}
                   target="_blank"
-                  className="px-3 py-1 rounded text-sm hover:bg-gray-700 transition"
+                  className="px-3 py-1 rounded text-sm hover:opacity-80 transition"
                   style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}
                 >
                   View

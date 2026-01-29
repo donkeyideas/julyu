@@ -80,8 +80,9 @@ export default function RetailersPage() {
                     <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
                       retailer.is_active
                         ? 'bg-green-500/15 text-green-500'
-                        : 'bg-gray-500/15 text-gray-500'
-                    }`}>
+                        : ''
+                    }`}
+                    style={!retailer.is_active ? { backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)' } : {}}>
                       {retailer.is_active ? 'Active' : 'Inactive'}
                     </span>
                   </td>

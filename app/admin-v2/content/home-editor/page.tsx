@@ -162,7 +162,8 @@ export default function HomeEditorPage() {
                       e.stopPropagation()
                       toggleSectionVisibility(section.section_key)
                     }}
-                    className={`p-1 rounded ${section.is_visible ? 'text-green-500' : 'text-gray-500'}`}
+                    className="p-1 rounded"
+                    style={{ color: section.is_visible ? '#10b981' : 'var(--text-muted)' }}
                   >
                     {section.is_visible ? (
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

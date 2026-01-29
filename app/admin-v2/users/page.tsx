@@ -172,7 +172,7 @@ export default function UsersPage() {
       case 'premium':
         return 'bg-blue-500/20 text-blue-400 border-blue-500/50'
       default:
-        return 'bg-gray-500/20 text-gray-400 border-gray-500/50'
+        return ''
     }
   }
 
@@ -272,7 +272,7 @@ export default function UsersPage() {
                 </tr>
               ) : (
                 filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-800/50 transition" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <tr key={user.id} className="hover:opacity-80 transition" style={{ borderBottom: '1px solid var(--border-color)' }}>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         {/* Avatar or initial */}
@@ -302,7 +302,8 @@ export default function UsersPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getTierBadgeColor(user.subscription_tier)}`}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getTierBadgeColor(user.subscription_tier)}`}
+                        style={user.subscription_tier === 'free' || !getTierBadgeColor(user.subscription_tier) ? { backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)', borderColor: 'var(--border-color)' } : {}}>
                         {user.subscription_tier.charAt(0).toUpperCase() + user.subscription_tier.slice(1)}
                       </span>
                     </td>
