@@ -19,12 +19,6 @@ export default function PayoutsPage() {
     try {
       const supabase = createClient()
 
-      // Verify admin access
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/dashboard')
-        return
-      }
 
       // Get all payouts
       const { data: payoutsData } = await supabase

@@ -18,12 +18,6 @@ export default function CommissionTiersPage() {
     try {
       const supabase = createClient()
 
-      // Verify admin access
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/dashboard')
-        return
-      }
 
       // Fetch all commission tiers
       const { data: tiersData, error: fetchError } = await supabase
@@ -33,7 +27,6 @@ export default function CommissionTiersPage() {
 
       if (fetchError) {
         console.error('Fetch tiers error:', fetchError)
-      }
 
       const allTiers = tiersData || []
       setTiers(allTiers)

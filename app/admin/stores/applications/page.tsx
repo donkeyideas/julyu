@@ -18,13 +18,6 @@ export default function StoreApplicationsPage() {
     try {
       const supabase = createClient()
 
-      // Verify admin access
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/dashboard')
-        return
-      }
-
       // Fetch all applications with store owner and store details
       const { data: applicationsData, error: fetchError } = await supabase
         .from('store_owners')

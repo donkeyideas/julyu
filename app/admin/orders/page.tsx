@@ -18,12 +18,6 @@ export default function AdminOrdersPage() {
     try {
       const supabase = createClient()
 
-      // Verify admin access
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/dashboard')
-        return
-      }
 
       // Fetch all orders with store and owner details
       const { data: ordersData, error: fetchError } = await supabase
@@ -37,7 +31,6 @@ export default function AdminOrdersPage() {
 
       if (fetchError) {
         console.error('Fetch orders error:', fetchError)
-      }
 
       setOrders(ordersData || [])
     } catch (error) {

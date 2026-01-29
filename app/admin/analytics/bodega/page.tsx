@@ -42,12 +42,6 @@ export default function BodegaAnalyticsPage() {
     try {
       const supabase = createClient()
 
-      // Verify admin access
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/dashboard')
-        return
-      }
 
       // Get all stores
       const { data: stores } = await supabase
@@ -124,7 +118,6 @@ export default function BodegaAnalyticsPage() {
         out_for_delivery: allOrders.filter((o: any) => o.status === 'out_for_delivery').length,
         delivered: allOrders.filter((o: any) => o.status === 'delivered').length,
         cancelled: allOrders.filter((o: any) => o.status === 'cancelled').length,
-      }
 
       // Delivery method breakdown
       const deliveryOrders = allOrders.filter((o: any) => o.delivery_method === 'delivery').length
