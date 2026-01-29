@@ -216,6 +216,7 @@ export async function POST(request: NextRequest) {
     const now = new Date().toISOString()
     const isTriggered = currentPrice !== null && currentPrice <= target_price
 
+    // Insert the alert without join first
     const { data: alert, error } = await dbClient
       .from('price_alerts')
       .insert({
@@ -229,24 +230,32 @@ export async function POST(request: NextRequest) {
         lowest_price_found: currentPrice,
         triggered_at: isTriggered ? now : null,
       })
-      .select(`
-        *,
-        products (
-          id,
-          name,
-          brand,
-          category,
-          image_url
-        )
-      `)
+      .select('*')
       .single()
 
     if (error) {
-      console.error('[Alerts] Insert error:', error)
+      console.error('[Alerts] Insert error:', JSON.stringify(error, null, 2))
       return NextResponse.json({ error: 'Failed to create alert', details: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ alert }, { status: 201 })
+    // Fetch product details separately if product_id exists
+    let productDetails = null
+    if (alert.product_id) {
+      const { data: product } = await dbClient
+        .from('products')
+        .select('id, name, brand, category, image_url')
+        .eq('id', alert.product_id)
+        .single()
+
+      productDetails = product
+    }
+
+    return NextResponse.json({
+      alert: {
+        ...alert,
+        products: productDetails
+      }
+    }, { status: 201 })
   } catch (error) {
     console.error('[Alerts] Error creating alert:', error)
     return NextResponse.json({ error: 'Failed to create alert' }, { status: 500 })
