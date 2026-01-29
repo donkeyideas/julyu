@@ -10,7 +10,7 @@ import CTASection from '@/components/home/CTASection'
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-gradient-to-b from-black via-green-950/30 to-black text-white">
       <Header transparent />
 
       {/* Hero Section - starts black, ends black */}
