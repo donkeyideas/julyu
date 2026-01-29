@@ -5,6 +5,7 @@
  */
 
 import { createServerClient } from '@/lib/supabase/server'
+import { getApiKey } from '@/lib/api/config'
 
 export interface GeocodeResult {
   latitude: number
@@ -115,7 +116,7 @@ async function saveToCache(
  */
 async function callPositionstack(query: string): Promise<GeocodeResult | null> {
   try {
-    const apiKey = process.env.POSITIONSTACK_API_KEY
+    const apiKey = await getApiKey('positionstack')
 
     if (!apiKey || apiKey.trim() === '') {
       console.error('[Geocoding] Positionstack API key not configured')
