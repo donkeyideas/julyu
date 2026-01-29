@@ -84,7 +84,7 @@ export default async function CommissionTiersPage() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           <div className="text-sm font-medium text-gray-500">Default Rate</div>
           <div className="text-2xl font-bold text-purple-600 mt-1">
-            {allTiers.find(t => t.is_default)?.commission_percentage || 15}%
+            {allTiers.find((t: any) => t.is_default)?.commission_percentage || 15}%
           </div>
         </div>
       </div>
