@@ -51,8 +51,13 @@ export async function POST(request: NextRequest) {
 
       if (signUpError || !newUser.user) {
         console.error('Sign up error:', signUpError)
+        console.error('Sign up error details:', JSON.stringify(signUpError, null, 2))
         return NextResponse.json(
-          { error: 'Failed to create account. This email may already be in use.' },
+          {
+            error: 'Failed to create account. This email may already be in use.',
+            details: signUpError?.message || 'Unknown error',
+            code: signUpError?.code || 'unknown'
+          },
           { status: 400 }
         )
       }
@@ -115,8 +120,13 @@ export async function POST(request: NextRequest) {
 
     if (ownerError) {
       console.error('Store owner creation error:', ownerError)
+      console.error('Store owner error details:', JSON.stringify(ownerError, null, 2))
       return NextResponse.json(
-        { error: 'Failed to create store owner account' },
+        {
+          error: 'Failed to create store owner account',
+          details: ownerError.message || 'Unknown error',
+          code: ownerError.code || 'unknown'
+        },
         { status: 500 }
       )
     }
@@ -163,6 +173,7 @@ export async function POST(request: NextRequest) {
 
     if (storeError) {
       console.error('Bodega store creation error:', storeError)
+      console.error('Bodega store error details:', JSON.stringify(storeError, null, 2))
 
       // Rollback - delete store owner
       await supabase
@@ -171,7 +182,11 @@ export async function POST(request: NextRequest) {
         .eq('id', storeOwner.id)
 
       return NextResponse.json(
-        { error: 'Failed to create store location' },
+        {
+          error: 'Failed to create store location',
+          details: storeError.message || 'Unknown error',
+          code: storeError.code || 'unknown'
+        },
         { status: 500 }
       )
     }
