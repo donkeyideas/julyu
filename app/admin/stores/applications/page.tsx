@@ -40,8 +40,8 @@ export default function StoreApplicationsPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="inline-block w-12 h-12 border-4 border-gray-800 border-t-green-500 rounded-full animate-spin mb-4"></div>
-          <div className="text-gray-500">Loading applications...</div>
+          <div className="inline-block w-12 h-12 border-4 rounded-full animate-spin mb-4" style={{ borderColor: 'var(--border-color)', borderTopColor: 'var(--accent-primary)' }}></div>
+          <div style={{ color: 'var(--text-secondary)' }}>Loading applications...</div>
         </div>
       </div>
     )
@@ -95,87 +95,87 @@ export default function StoreApplicationsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-800">
+      <div className="flex items-center justify-between mb-8 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
         <div>
-          <h1 className="text-4xl font-black">Store Applications</h1>
-          <p className="text-gray-500 mt-2">Review and manage store owner applications</p>
+          <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>Store Applications</h1>
+          <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>Review and manage store owner applications</p>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-10">
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-2">Total Applications</div>
-          <div className="text-4xl font-black">{totalApplications}</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Total Applications</div>
+          <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>{totalApplications}</div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-2">Pending</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Pending</div>
           <div className="text-4xl font-black text-yellow-500">{pendingApps}</div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-2">Under Review</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Under Review</div>
           <div className="text-4xl font-black text-blue-500">{underReviewApps}</div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-2">Approved</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Approved</div>
           <div className="text-4xl font-black text-green-500">{approvedApps}</div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-2">Rejected</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Rejected</div>
           <div className="text-4xl font-black text-red-500">{rejectedApps}</div>
         </div>
       </div>
 
       {/* Applications Table */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-800">
-            <thead className="bg-gray-800/50">
+          <table className="min-w-full" style={{ borderTop: '1px solid var(--border-color)' }}>
+            <thead style={{ backgroundColor: 'var(--bg-card)' }}>
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                   Business Name
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                   Type
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                   Location
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                   Status
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                   Created
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800">
+            <tbody style={{ borderTop: '1px solid var(--border-color)' }}>
               {allApplications.map((app: any) => (
-                <tr key={app.id} className="hover:bg-gray-800/50 transition">
+                <tr key={app.id} className="hover:bg-gray-800/50 transition" style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-semibold">{app.business_name}</div>
+                    <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{app.business_name}</div>
                     {app.business_email && (
-                      <div className="text-sm text-gray-500">{app.business_email}</div>
+                      <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>{app.business_email}</div>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm capitalize text-gray-400">
+                    <span className="text-sm capitalize" style={{ color: 'var(--text-secondary)' }}>
                       {app.business_type || 'N/A'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {app.bodega_stores && app.bodega_stores.length > 0 ? (
                       <>
-                        <div className="text-sm">{app.bodega_stores[0].name}</div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-sm" style={{ color: 'var(--text-primary)' }}>{app.bodega_stores[0].name}</div>
+                        <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                           {app.bodega_stores[0].city}, {app.bodega_stores[0].state} {app.bodega_stores[0].zip}
                         </div>
                       </>
                     ) : (
-                      <span className="text-sm text-gray-500">No location</span>
+                      <span className="text-sm" style={{ color: 'var(--text-muted)' }}>No location</span>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -183,7 +183,7 @@ export default function StoreApplicationsPage() {
                       {app.application_status.replace('_', ' ')}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ color: 'var(--text-muted)' }}>
                     {new Date(app.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm space-x-4">
@@ -204,7 +204,7 @@ export default function StoreApplicationsPage() {
                       </>
                     )}
                     {app.application_status !== 'pending' && (
-                      <span className="text-gray-600">No actions</span>
+                      <span style={{ color: 'var(--text-muted)' }}>No actions</span>
                     )}
                   </td>
                 </tr>
@@ -215,7 +215,7 @@ export default function StoreApplicationsPage() {
 
         {allApplications.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500">No applications found</p>
+            <p style={{ color: 'var(--text-secondary)' }}>No applications found</p>
           </div>
         )}
       </div>

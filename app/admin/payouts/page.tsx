@@ -45,8 +45,8 @@ export default function PayoutsPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="inline-block w-12 h-12 border-4 border-gray-800 border-t-green-500 rounded-full animate-spin mb-4"></div>
-          <div className="text-gray-500">Loading payouts...</div>
+          <div className="inline-block w-12 h-12 border-4 rounded-full animate-spin mb-4" style={{ borderColor: 'var(--border-color)', borderTopColor: 'var(--accent-primary)' }}></div>
+          <div style={{ color: 'var(--text-secondary)' }}>Loading payouts...</div>
         </div>
       </div>
     )
@@ -72,10 +72,10 @@ export default function PayoutsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between mb-10 pb-6 border-b border-gray-800">
+      <div className="flex items-center justify-between mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
         <div>
-          <h1 className="text-4xl font-black">Store Owner Payouts</h1>
-          <p className="text-gray-500 mt-2">
+          <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>Store Owner Payouts</h1>
+          <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>
             Generate and manage payouts to store owners
           </p>
         </div>
@@ -86,32 +86,32 @@ export default function PayoutsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-10">
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-2">Total Payouts</div>
-          <div className="text-4xl font-black">
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Total Payouts</div>
+          <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>
             {totalPayouts}
           </div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-2">Pending</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Pending</div>
           <div className="text-4xl font-black text-yellow-500">
             {pendingPayouts}
           </div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-2">Processing</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Processing</div>
           <div className="text-4xl font-black text-blue-500">
             {processingPayouts}
           </div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-2">Paid</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Paid</div>
           <div className="text-4xl font-black text-green-500">
             {paidPayouts}
           </div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-2">Total Paid</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Total Paid</div>
           <div className="text-4xl font-black text-green-500">
             ${totalPaidAmount.toFixed(2)}
           </div>
@@ -119,63 +119,63 @@ export default function PayoutsPage() {
       </div>
 
       {/* Payout Generator */}
-      <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
-        <h2 className="text-2xl font-black mb-4">Quick Payout Generator</h2>
+      <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <h2 className="text-2xl font-black mb-4" style={{ color: 'var(--text-primary)' }}>Quick Payout Generator</h2>
         <PayoutGeneratorForm />
       </div>
 
       {/* Payouts Table */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-800">
-            <thead className="bg-gray-800/50">
+          <table className="min-w-full" style={{ borderTop: '1px solid var(--border-color)' }}>
+            <thead style={{ backgroundColor: 'var(--bg-card)' }}>
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                   Store
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                   Period
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                   Orders
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                   Gross Revenue
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                   Commission
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                   Net Payout
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                   Status
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                   Paid At
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800">
+            <tbody style={{ borderTop: '1px solid var(--border-color)' }}>
               {allPayouts.map((payout: any) => (
-                <tr key={payout.id} className="hover:bg-gray-800/50 transition">
+                <tr key={payout.id} className="hover:bg-gray-800/50 transition" style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-semibold">
+                    <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                       {payout.store_owners?.business_name || 'Unknown'}
                     </div>
                     {payout.stripe_payout_id && (
-                      <div className="text-xs text-gray-500 font-mono">
+                      <div className="text-xs font-mono" style={{ color: 'var(--text-secondary)' }}>
                         {payout.stripe_payout_id}
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ color: 'var(--text-muted)' }}>
                     {new Date(payout.period_start).toLocaleDateString()} - {new Date(payout.period_end).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                     {payout.total_orders}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                     ${parseFloat(payout.gross_revenue).toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-purple-500">
@@ -189,7 +189,7 @@ export default function PayoutsPage() {
                       {payout.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ color: 'var(--text-muted)' }}>
                     {payout.paid_at ? new Date(payout.paid_at).toLocaleDateString() : '-'}
                   </td>
                 </tr>
@@ -200,7 +200,7 @@ export default function PayoutsPage() {
 
         {allPayouts.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500">No payouts yet</p>
+            <p style={{ color: 'var(--text-secondary)' }}>No payouts yet</p>
             <Link
               href="/admin/payouts/generate"
               className="mt-4 inline-block px-6 py-3 bg-green-500 text-black font-black rounded-xl hover:bg-green-400 transition"

@@ -74,8 +74,8 @@ export default function AdminV2Dashboard() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="inline-block w-12 h-12 border-4 border-gray-800 border-t-green-500 rounded-full animate-spin mb-4"></div>
-          <div className="text-gray-500">Loading dashboard...</div>
+          <div className="inline-block w-12 h-12 border-4 rounded-full animate-spin mb-4" style={{ borderColor: 'var(--border-color)', borderTopColor: 'var(--accent-primary)' }}></div>
+          <div style={{ color: 'var(--text-secondary)' }}>Loading dashboard...</div>
         </div>
       </div>
     )
@@ -83,61 +83,61 @@ export default function AdminV2Dashboard() {
 
   return (
     <div>
-      <div className="mb-10 pb-6 border-b border-gray-800">
-        <h1 className="text-4xl font-black">Admin Dashboard</h1>
-        <p className="text-gray-500 mt-2">Complete overview of your Julyu system</p>
+      <div className="mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
+        <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>Admin Dashboard</h1>
+        <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>Complete overview of your Julyu system</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-2">Total Users</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Total Users</div>
           <div className="text-4xl font-black text-green-500">{stats.totalUsers.toLocaleString()}</div>
-          <div className="text-xs text-gray-500 mt-2">Registered users</div>
+          <div className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>Registered users</div>
         </div>
 
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-2">Total Retailers</div>
-          <div className="text-4xl font-black">{stats.totalRetailers.toLocaleString()}</div>
-          <div className="text-xs text-gray-500 mt-2">Active partnerships</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Total Retailers</div>
+          <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>{stats.totalRetailers.toLocaleString()}</div>
+          <div className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>Active partnerships</div>
         </div>
 
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-2">AI Requests</div>
-          <div className="text-4xl font-black">{stats.totalRequests.toLocaleString()}</div>
-          <div className="text-xs text-gray-500 mt-2">Total API calls</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>AI Requests</div>
+          <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>{stats.totalRequests.toLocaleString()}</div>
+          <div className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>Total API calls</div>
         </div>
 
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-2">Total Cost</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Total Cost</div>
           <div className="text-4xl font-black text-green-500">${stats.totalCost.toFixed(4)}</div>
-          <div className="text-xs text-gray-500 mt-2">AI usage costs</div>
+          <div className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>AI usage costs</div>
         </div>
 
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-2">Active Models</div>
-          <div className="text-4xl font-black">{stats.activeModels}</div>
-          <div className="text-xs text-gray-500 mt-2">Configured AI models</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Active Models</div>
+          <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>{stats.activeModels}</div>
+          <div className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>Configured AI models</div>
         </div>
 
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-2">Avg Response Time</div>
-          <div className="text-4xl font-black">{stats.avgResponseTime}ms</div>
-          <div className="text-xs text-gray-500 mt-2">Across all models</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Avg Response Time</div>
+          <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>{stats.avgResponseTime}ms</div>
+          <div className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>Across all models</div>
         </div>
       </div>
 
       {/* Bodega System Quick Access */}
       <div className="mb-10">
-        <h2 className="text-2xl font-bold mb-6">🏪 Bodega System Management</h2>
+        <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>🏪 Bodega System Management</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <a
             href="/admin/stores/applications"
             className="bg-gradient-to-br from-blue-900/50 to-blue-950/50 border-2 border-blue-500/30 rounded-2xl p-6 hover:border-blue-500 transition cursor-pointer group"
           >
             <div className="text-sm text-blue-400 mb-2">Review & Approve</div>
-            <div className="text-2xl font-black mb-2 group-hover:text-blue-400 transition">Store Applications</div>
-            <div className="text-xs text-gray-500">Manage pending store applications</div>
+            <div className="text-2xl font-black mb-2 group-hover:text-blue-400 transition" style={{ color: 'var(--text-primary)' }}>Store Applications</div>
+            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Manage pending store applications</div>
           </a>
 
           <a
@@ -145,8 +145,8 @@ export default function AdminV2Dashboard() {
             className="bg-gradient-to-br from-green-900/50 to-green-950/50 border-2 border-green-500/30 rounded-2xl p-6 hover:border-green-500 transition cursor-pointer group"
           >
             <div className="text-sm text-green-400 mb-2">Manage</div>
-            <div className="text-2xl font-black mb-2 group-hover:text-green-400 transition">All Stores</div>
-            <div className="text-xs text-gray-500">View and edit all bodega stores</div>
+            <div className="text-2xl font-black mb-2 group-hover:text-green-400 transition" style={{ color: 'var(--text-primary)' }}>All Stores</div>
+            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>View and edit all bodega stores</div>
           </a>
 
           <a
@@ -154,8 +154,8 @@ export default function AdminV2Dashboard() {
             className="bg-gradient-to-br from-purple-900/50 to-purple-950/50 border-2 border-purple-500/30 rounded-2xl p-6 hover:border-purple-500 transition cursor-pointer group"
           >
             <div className="text-sm text-purple-400 mb-2">Monitor</div>
-            <div className="text-2xl font-black mb-2 group-hover:text-purple-400 transition">All Orders</div>
-            <div className="text-xs text-gray-500">Real-time order monitoring</div>
+            <div className="text-2xl font-black mb-2 group-hover:text-purple-400 transition" style={{ color: 'var(--text-primary)' }}>All Orders</div>
+            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Real-time order monitoring</div>
           </a>
 
           <a
@@ -163,8 +163,8 @@ export default function AdminV2Dashboard() {
             className="bg-gradient-to-br from-yellow-900/50 to-yellow-950/50 border-2 border-yellow-500/30 rounded-2xl p-6 hover:border-yellow-500 transition cursor-pointer group"
           >
             <div className="text-sm text-yellow-400 mb-2">Configure</div>
-            <div className="text-2xl font-black mb-2 group-hover:text-yellow-400 transition">Commission Tiers</div>
-            <div className="text-xs text-gray-500">Set pricing and commission rates</div>
+            <div className="text-2xl font-black mb-2 group-hover:text-yellow-400 transition" style={{ color: 'var(--text-primary)' }}>Commission Tiers</div>
+            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Set pricing and commission rates</div>
           </a>
 
           <a
@@ -172,8 +172,8 @@ export default function AdminV2Dashboard() {
             className="bg-gradient-to-br from-emerald-900/50 to-emerald-950/50 border-2 border-emerald-500/30 rounded-2xl p-6 hover:border-emerald-500 transition cursor-pointer group"
           >
             <div className="text-sm text-emerald-400 mb-2">Financial</div>
-            <div className="text-2xl font-black mb-2 group-hover:text-emerald-400 transition">Payouts</div>
-            <div className="text-xs text-gray-500">Manage store payouts</div>
+            <div className="text-2xl font-black mb-2 group-hover:text-emerald-400 transition" style={{ color: 'var(--text-primary)' }}>Payouts</div>
+            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Manage store payouts</div>
           </a>
 
           <a
@@ -181,36 +181,36 @@ export default function AdminV2Dashboard() {
             className="bg-gradient-to-br from-pink-900/50 to-pink-950/50 border-2 border-pink-500/30 rounded-2xl p-6 hover:border-pink-500 transition cursor-pointer group"
           >
             <div className="text-sm text-pink-400 mb-2">Insights</div>
-            <div className="text-2xl font-black mb-2 group-hover:text-pink-400 transition">Analytics</div>
-            <div className="text-xs text-gray-500">Bodega performance metrics</div>
+            <div className="text-2xl font-black mb-2 group-hover:text-pink-400 transition" style={{ color: 'var(--text-primary)' }}>Analytics</div>
+            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Bodega performance metrics</div>
           </a>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-10">
-        <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
+      <div className="rounded-2xl p-6 mb-10" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <a
             href="/admin-v2/ai-models"
             className="p-4 bg-blue-500/10 border border-blue-500/50 rounded-lg hover:bg-blue-500/20 transition"
           >
-            <div className="text-lg font-semibold mb-1">Manage API Keys</div>
-            <div className="text-sm text-gray-400">Configure and test AI model API keys</div>
+            <div className="text-lg font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Manage API Keys</div>
+            <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Configure and test AI model API keys</div>
           </a>
           <a
             href="/admin-v2/usage"
             className="p-4 bg-green-500/10 border border-green-500/50 rounded-lg hover:bg-green-500/20 transition"
           >
-            <div className="text-lg font-semibold mb-1">View Usage & Costs</div>
-            <div className="text-sm text-gray-400">Track API usage and costs</div>
+            <div className="text-lg font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>View Usage & Costs</div>
+            <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Track API usage and costs</div>
           </a>
           <a
             href="/admin-v2/performance"
             className="p-4 bg-purple-500/10 border border-purple-500/50 rounded-lg hover:bg-purple-500/20 transition"
           >
-            <div className="text-lg font-semibold mb-1">Performance Metrics</div>
-            <div className="text-sm text-gray-400">View AI model performance</div>
+            <div className="text-lg font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Performance Metrics</div>
+            <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>View AI model performance</div>
           </a>
         </div>
       </div>

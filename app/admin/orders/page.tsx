@@ -45,8 +45,8 @@ export default function AdminOrdersPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="inline-block w-12 h-12 border-4 border-gray-800 border-t-green-500 rounded-full animate-spin mb-4"></div>
-          <div className="text-gray-500">Loading orders...</div>
+          <div className="inline-block w-12 h-12 border-4 rounded-full animate-spin mb-4" style={{ borderColor: 'var(--border-color)', borderTopColor: 'var(--accent-primary)' }}></div>
+          <div style={{ color: 'var(--text-secondary)' }}>Loading orders...</div>
         </div>
       </div>
     )
@@ -91,41 +91,41 @@ export default function AdminOrdersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="mb-10 pb-6 border-b border-gray-800">
-        <h1 className="text-4xl font-black">Bodega Orders</h1>
-        <p className="text-gray-500 mt-2">
+      <div className="mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
+        <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>Bodega Orders</h1>
+        <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>
           Monitor and manage all orders across the platform
         </p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-10">
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-2">Total Orders</div>
-          <div className="text-4xl font-black">
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Total Orders</div>
+          <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>
             {allOrders.length}
           </div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-2">Pending</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Pending</div>
           <div className="text-4xl font-black text-yellow-500">
             {pendingOrders}
           </div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-2">Active</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Active</div>
           <div className="text-4xl font-black text-blue-500">
             {activeOrders}
           </div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-2">Completed</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Completed</div>
           <div className="text-4xl font-black text-green-500">
             {completedOrders}
           </div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
-          <div className="text-sm text-gray-500 mb-2">Commission Earned</div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Commission Earned</div>
           <div className="text-4xl font-black text-purple-500">
             ${totalCommission.toFixed(2)}
           </div>
@@ -133,16 +133,17 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4">
+      <div className="rounded-2xl p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <div className="flex items-center gap-4">
           <div className="flex-1">
             <input
               type="text"
               placeholder="Search by order number, customer, or store..."
-              className="w-full px-4 py-2 bg-black border border-gray-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-white"
+              className="w-full px-4 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+              style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
-          <select className="px-4 py-2 bg-black border border-gray-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-white">
+          <select className="px-4 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}>
             <option value="">All Statuses</option>
             <option value="pending">Pending</option>
             <option value="active">Active</option>
@@ -156,46 +157,46 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* Recent Orders Table */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-800">
-            <thead className="bg-gray-800/50">
+          <table className="min-w-full" style={{ borderTop: '1px solid var(--border-color)' }}>
+            <thead style={{ backgroundColor: 'var(--bg-card)' }}>
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Order #</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Customer</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Store</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Items</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Total</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Commission</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Order #</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Customer</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Store</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Items</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Total</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Commission</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Status</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Date</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800">
+            <tbody style={{ borderTop: '1px solid var(--border-color)' }}>
               {allOrders.map((order: any) => (
-                <tr key={order.id} className="hover:bg-gray-800/50 transition">
+                <tr key={order.id} className="hover:bg-gray-800/50 transition" style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-semibold">{order.order_number}</div>
+                    <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{order.order_number}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-semibold">{order.customer_name}</div>
+                    <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{order.customer_name}</div>
                     {order.customer_email && (
-                      <div className="text-xs text-gray-500">{order.customer_email}</div>
+                      <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{order.customer_email}</div>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm">
+                    <div className="text-sm" style={{ color: 'var(--text-primary)' }}>
                       {order.bodega_store?.name || 'Unknown Store'}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                       {order.store_owner?.business_name || 'Unknown Owner'}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ color: 'var(--text-secondary)' }}>
                     {order.items?.length || 0} items
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                     ${parseFloat(order.total_amount).toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-purple-500">
@@ -206,7 +207,7 @@ export default function AdminOrdersPage() {
                       {statusLabels[order.status]}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ color: 'var(--text-muted)' }}>
                     {new Date(order.ordered_at).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -225,7 +226,7 @@ export default function AdminOrdersPage() {
 
         {allOrders.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500">No orders found</p>
+            <p style={{ color: 'var(--text-secondary)' }}>No orders found</p>
           </div>
         )}
       </div>
@@ -233,48 +234,48 @@ export default function AdminOrdersPage() {
       {/* Status Breakdown */}
       {allOrders.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
-            <h3 className="text-2xl font-black mb-4">Orders by Status</h3>
+          <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <h3 className="text-2xl font-black mb-4" style={{ color: 'var(--text-primary)' }}>Orders by Status</h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">Pending</span>
-                <span className="text-sm font-black">{ordersByStatus.pending.length}</span>
+                <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Pending</span>
+                <span className="text-sm font-black" style={{ color: 'var(--text-primary)' }}>{ordersByStatus.pending.length}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">Active</span>
-                <span className="text-sm font-black">{ordersByStatus.active.length}</span>
+                <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Active</span>
+                <span className="text-sm font-black" style={{ color: 'var(--text-primary)' }}>{ordersByStatus.active.length}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">Completed</span>
-                <span className="text-sm font-black">{ordersByStatus.completed.length}</span>
+                <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Completed</span>
+                <span className="text-sm font-black" style={{ color: 'var(--text-primary)' }}>{ordersByStatus.completed.length}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">Cancelled</span>
-                <span className="text-sm font-black">{ordersByStatus.cancelled.length}</span>
+                <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Cancelled</span>
+                <span className="text-sm font-black" style={{ color: 'var(--text-primary)' }}>{ordersByStatus.cancelled.length}</span>
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
-            <h3 className="text-2xl font-black mb-4">Revenue Summary</h3>
+          <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <h3 className="text-2xl font-black mb-4" style={{ color: 'var(--text-primary)' }}>Revenue Summary</h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">Total Revenue</span>
-                <span className="text-sm font-black">${totalRevenue.toFixed(2)}</span>
+                <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Total Revenue</span>
+                <span className="text-sm font-black" style={{ color: 'var(--text-primary)' }}>${totalRevenue.toFixed(2)}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">Commission Earned</span>
+                <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Commission Earned</span>
                 <span className="text-sm font-black text-purple-500">${totalCommission.toFixed(2)}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">Store Payouts</span>
-                <span className="text-sm font-black">
+                <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Store Payouts</span>
+                <span className="text-sm font-black" style={{ color: 'var(--text-primary)' }}>
                   ${(totalRevenue - totalCommission - allOrders.reduce((sum: number, o: any) => sum + parseFloat(o.delivery_fee), 0)).toFixed(2)}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">Avg Order Value</span>
-                <span className="text-sm font-black">
+                <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Avg Order Value</span>
+                <span className="text-sm font-black" style={{ color: 'var(--text-primary)' }}>
                   ${allOrders.length > 0 ? (totalRevenue / allOrders.length).toFixed(2) : '0.00'}
                 </span>
               </div>
