@@ -35,18 +35,18 @@ export default async function AdminOrdersPage() {
   const allOrders = orders || []
 
   // Calculate stats
-  const totalRevenue = allOrders.reduce((sum, o) => sum + parseFloat(o.total_amount), 0)
-  const totalCommission = allOrders.reduce((sum, o) => sum + (parseFloat(o.total_amount) - parseFloat(o.store_payout) - parseFloat(o.delivery_fee)), 0)
-  const pendingOrders = allOrders.filter(o => o.status === 'pending').length
-  const activeOrders = allOrders.filter(o => ['accepted', 'preparing', 'ready', 'out_for_delivery'].includes(o.status)).length
-  const completedOrders = allOrders.filter(o => o.status === 'delivered').length
+  const totalRevenue = allOrders.reduce((sum: number, o: any) => sum + parseFloat(o.total_amount), 0)
+  const totalCommission = allOrders.reduce((sum: number, o: any) => sum + (parseFloat(o.total_amount) - parseFloat(o.store_payout) - parseFloat(o.delivery_fee)), 0)
+  const pendingOrders = allOrders.filter((o: any) => o.status === 'pending').length
+  const activeOrders = allOrders.filter((o: any) => ['accepted', 'preparing', 'ready', 'out_for_delivery'].includes(o.status)).length
+  const completedOrders = allOrders.filter((o: any) => o.status === 'delivered').length
 
   // Group orders by status
   const ordersByStatus = {
-    pending: allOrders.filter(o => o.status === 'pending'),
-    active: allOrders.filter(o => ['accepted', 'preparing', 'ready', 'out_for_delivery'].includes(o.status)),
-    completed: allOrders.filter(o => o.status === 'delivered'),
-    cancelled: allOrders.filter(o => o.status === 'cancelled'),
+    pending: allOrders.filter((o: any) => o.status === 'pending'),
+    active: allOrders.filter((o: any) => ['accepted', 'preparing', 'ready', 'out_for_delivery'].includes(o.status)),
+    completed: allOrders.filter((o: any) => o.status === 'delivered'),
+    cancelled: allOrders.filter((o: any) => o.status === 'cancelled'),
   }
 
   const statusColors: Record<string, string> = {
@@ -169,7 +169,7 @@ export default async function AdminOrdersPage() {
                   </td>
                 </tr>
               ) : (
-                allOrders.map(order => (
+                allOrders.map((order: any) => (
                   <tr key={order.id} className="hover:bg-gray-50">
                     <td className="p-4">
                       <Link
@@ -263,7 +263,7 @@ export default async function AdminOrdersPage() {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Store Payouts</span>
                 <span className="text-sm font-medium text-gray-900">
-                  ${(totalRevenue - totalCommission - allOrders.reduce((sum, o) => sum + parseFloat(o.delivery_fee), 0)).toFixed(2)}
+                  ${(totalRevenue - totalCommission - allOrders.reduce((sum: number, o: any) => sum + parseFloat(o.delivery_fee), 0)).toFixed(2)}
                 </span>
               </div>
               <div className="flex items-center justify-between">
