@@ -146,7 +146,7 @@ export default function DeliveryPartnersAnalyticsPage() {
             <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
               <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Conversions</div>
               <div className="text-4xl font-bold text-green-500">{analytics.summary.conversions}</div>
-              <div className="text-sm text-gray-500 mt-1">{analytics.summary.conversionRate}% rate</div>
+              <div className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{analytics.summary.conversionRate}% rate</div>
             </div>
             <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
               <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Estimated Revenue</div>
@@ -155,13 +155,13 @@ export default function DeliveryPartnersAnalyticsPage() {
             <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
               <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Confirmed Revenue</div>
               <div className="text-4xl font-bold text-yellow-500">${analytics.summary.actualRevenue}</div>
-              <div className="text-sm text-gray-500 mt-1">Avg order: ${analytics.summary.avgOrderValue}</div>
+              <div className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Avg order: ${analytics.summary.avgOrderValue}</div>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-6 mb-8">
             {/* Daily Trend Chart */}
-            <div className="col-span-2 bg-gray-900 border border-gray-800 rounded-2xl p-6">
+            <div className="col-span-2 rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
               <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Daily Clicks</h3>
               {analytics.dailyTrend.length > 0 ? (
                 <div className="h-48 flex items-end gap-1">
@@ -171,12 +171,12 @@ export default function DeliveryPartnersAnalyticsPage() {
                         className="w-full bg-green-500/30 hover:bg-green-500/50 rounded-t transition relative"
                         style={{ height: `${(day.clicks / maxClicks) * 100}%`, minHeight: day.clicks > 0 ? '4px' : '0' }}
                       >
-                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 px-2 py-1 rounded text-xs hidden group-hover:block whitespace-nowrap">
+                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 rounded text-xs hidden group-hover:block whitespace-nowrap" style={{ backgroundColor: 'var(--bg-secondary)' }}>
                           {day.clicks} clicks
                         </div>
                       </div>
                       {i % 5 === 0 && (
-                        <div className="text-xs text-gray-600 mt-2 -rotate-45 origin-left">
+                        <div className="text-xs mt-2 -rotate-45 origin-left" style={{ color: 'var(--text-muted)' }}>
                           {formatDate(day.date)}
                         </div>
                       )}
@@ -184,7 +184,7 @@ export default function DeliveryPartnersAnalyticsPage() {
                   ))}
                 </div>
               ) : (
-                <div className="h-48 flex items-center justify-center text-gray-500">
+                <div className="h-48 flex items-center justify-center" style={{ color: 'var(--text-secondary)' }}>
                   No data for this period
                 </div>
               )}
@@ -198,15 +198,15 @@ export default function DeliveryPartnersAnalyticsPage() {
                   analytics.topStores.slice(0, 5).map((store, i) => (
                     <div key={i} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <span className="text-gray-500 w-4">{i + 1}</span>
+                        <span className="w-4" style={{ color: 'var(--text-muted)' }}>{i + 1}</span>
                         <div>
-                          <div className="font-medium text-sm">{store.store}</div>
-                          <div className="text-xs text-gray-500">{store.retailer}</div>
+                          <div className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>{store.store}</div>
+                          <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{store.retailer}</div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold">{store.clicks}</div>
-                        <div className="text-xs text-gray-500">clicks</div>
+                        <div className="font-bold" style={{ color: 'var(--text-primary)' }}>{store.clicks}</div>
+                        <div className="text-xs" style={{ color: 'var(--text-muted)' }}>clicks</div>
                       </div>
                     </div>
                   ))
@@ -218,7 +218,7 @@ export default function DeliveryPartnersAnalyticsPage() {
           </div>
 
           {/* Partner Breakdown */}
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+          <div className="rounded-2xl p-6 mb-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Performance by Partner</h3>
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -235,7 +235,7 @@ export default function DeliveryPartnersAnalyticsPage() {
                 <tbody>
                   {analytics.byPartner.length > 0 ? (
                     analytics.byPartner.map((row, i) => (
-                      <tr key={i} className="hover:bg-gray-800/30" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <tr key={i} className="hover:opacity-80 transition" style={{ borderBottom: '1px solid var(--border-color)' }}>
                         <td className="py-3 pr-4">
                           <div className="flex items-center gap-3">
                             <div
@@ -244,13 +244,13 @@ export default function DeliveryPartnersAnalyticsPage() {
                             >
                               {row.partner?.name?.charAt(0) || '?'}
                             </div>
-                            <span className="font-medium">{row.partner?.name || 'Unknown'}</span>
+                            <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{row.partner?.name || 'Unknown'}</span>
                           </div>
                         </td>
-                        <td className="py-3 pr-4 text-right font-mono">{row.clicks.toLocaleString()}</td>
+                        <td className="py-3 pr-4 text-right font-mono" style={{ color: 'var(--text-primary)' }}>{row.clicks.toLocaleString()}</td>
                         <td className="py-3 pr-4 text-right font-mono text-green-500">{row.conversions}</td>
-                        <td className="py-3 pr-4 text-right font-mono">{row.conversionRate.toFixed(1)}%</td>
-                        <td className="py-3 pr-4 text-right font-mono">${row.avgOrderValue.toFixed(2)}</td>
+                        <td className="py-3 pr-4 text-right font-mono" style={{ color: 'var(--text-primary)' }}>{row.conversionRate.toFixed(1)}%</td>
+                        <td className="py-3 pr-4 text-right font-mono" style={{ color: 'var(--text-primary)' }}>${row.avgOrderValue.toFixed(2)}</td>
                         <td className="py-3 text-right font-mono font-bold text-yellow-500">
                           ${(row.actualRevenue || row.estimatedRevenue).toFixed(2)}
                         </td>
@@ -258,7 +258,7 @@ export default function DeliveryPartnersAnalyticsPage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-gray-500">
+                      <td colSpan={6} className="py-8 text-center" style={{ color: 'var(--text-secondary)' }}>
                         No partner data for this period
                       </td>
                     </tr>
@@ -287,38 +287,38 @@ export default function DeliveryPartnersAnalyticsPage() {
                 <tbody>
                   {analytics.recentClicks.length > 0 ? (
                     analytics.recentClicks.map((click) => (
-                      <tr key={click.id} className="hover:bg-gray-800/30" style={{ borderBottom: '1px solid var(--border-color)' }}>
-                        <td className="py-3 pr-4 text-sm text-gray-400">
+                      <tr key={click.id} className="hover:opacity-80 transition" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                        <td className="py-3 pr-4 text-sm" style={{ color: 'var(--text-muted)' }}>
                           {formatDateTime(click.created_at)}
                         </td>
-                        <td className="py-3 pr-4 font-medium">{click.partnerName}</td>
+                        <td className="py-3 pr-4 font-medium" style={{ color: 'var(--text-primary)' }}>{click.partnerName}</td>
                         <td className="py-3 pr-4">
-                          <div className="text-sm">{click.store_name}</div>
-                          <div className="text-xs text-gray-500">{click.store_retailer}</div>
+                          <div className="text-sm" style={{ color: 'var(--text-primary)' }}>{click.store_name}</div>
+                          <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{click.store_retailer}</div>
                         </td>
-                        <td className="py-3 pr-4 text-right font-mono">{click.items_count || '-'}</td>
-                        <td className="py-3 pr-4 text-right font-mono">
+                        <td className="py-3 pr-4 text-right font-mono" style={{ color: 'var(--text-primary)' }}>{click.items_count || '-'}</td>
+                        <td className="py-3 pr-4 text-right font-mono" style={{ color: 'var(--text-primary)' }}>
                           ${(click.estimated_total || 0).toFixed(2)}
                         </td>
                         <td className="py-3 pr-4 text-center">
                           {click.deep_link_used ? (
                             <span className="px-2 py-0.5 bg-blue-500/15 text-blue-500 rounded text-xs">Yes</span>
                           ) : (
-                            <span className="px-2 py-0.5 bg-gray-800 text-gray-500 rounded text-xs">No</span>
+                            <span className="px-2 py-0.5 rounded text-xs" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>No</span>
                           )}
                         </td>
                         <td className="py-3 text-center">
                           {click.converted ? (
                             <span className="px-2 py-0.5 bg-green-500/15 text-green-500 rounded text-xs">Yes</span>
                           ) : (
-                            <span className="px-2 py-0.5 bg-gray-800 text-gray-500 rounded text-xs">Pending</span>
+                            <span className="px-2 py-0.5 rounded text-xs" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>Pending</span>
                           )}
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={7} className="py-8 text-center text-gray-500">
+                      <td colSpan={7} className="py-8 text-center" style={{ color: 'var(--text-secondary)' }}>
                         No clicks recorded yet
                       </td>
                     </tr>
@@ -329,7 +329,7 @@ export default function DeliveryPartnersAnalyticsPage() {
           </div>
         </>
       ) : (
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-12 text-center text-gray-500">
+        <div className="rounded-2xl p-12 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
           Failed to load analytics
         </div>
       )}
