@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { hasStoreOwnerAccount } from '@/lib/auth/store-portal-auth'
 
 export async function POST(request: NextRequest) {
   try {
+    // Use anon client for auth checks
     const supabase = await createServerClient()
+    // Use service role client for database operations (bypasses RLS)
+    const supabaseAdmin = createServiceRoleClient()
 
     // Parse request body first to get email
     const body = await request.json()
@@ -38,7 +41,7 @@ export async function POST(request: NextRequest) {
       // Generate a temporary password
       const tempPassword = `Store${Math.random().toString(36).substring(2, 15)}!`
 
-      const { data: newUser, error: signUpError } = await supabase.auth.signUp({
+      const { data: newUser, error: signUpError } = await supabaseAdmin.auth.signUp({
         email: businessEmail,
         password: tempPassword,
         options: {
@@ -99,7 +102,7 @@ export async function POST(request: NextRequest) {
     console.log('[Store Apply] Validation passed, creating store owner...')
 
     // Start transaction - Create store owner first
-    const { data: storeOwner, error: ownerError } = await supabase
+    const { data: storeOwner, error: ownerError } = await supabaseAdmin
       .from('store_owners')
       .insert({
         user_id: userId,
@@ -153,7 +156,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create bodega store
-    const { data: bodegaStore, error: storeError } = await supabase
+    const { data: bodegaStore, error: storeError } = await supabaseAdmin
       .from('bodega_stores')
       .insert({
         store_owner_id: storeOwner.id,
@@ -176,7 +179,7 @@ export async function POST(request: NextRequest) {
       console.error('Bodega store error details:', JSON.stringify(storeError, null, 2))
 
       // Rollback - delete store owner
-      await supabase
+      await supabaseAdmin
         .from('store_owners')
         .delete()
         .eq('id', storeOwner.id)
