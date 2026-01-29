@@ -477,7 +477,7 @@ export default function EditPagePage() {
             </div>
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Introduction</h3>
             <textarea
               value={pageData.content.introduction || ''}
@@ -488,7 +488,7 @@ export default function EditPagePage() {
             />
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Information We Collect</h3>
             <div className="space-y-4">
               <div>
@@ -544,7 +544,7 @@ export default function EditPagePage() {
             </div>
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>How We Use Your Information</h3>
             <div className="space-y-4">
               <div>
@@ -610,7 +610,7 @@ export default function EditPagePage() {
             </div>
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Data Sharing</h3>
             <div className="space-y-4">
               <div>
@@ -656,7 +656,7 @@ export default function EditPagePage() {
             </div>
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Data Security</h3>
             <textarea
               value={pageData.content.data_security || ''}
@@ -667,7 +667,7 @@ export default function EditPagePage() {
             />
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Your Rights</h3>
             <div className="space-y-4">
               <div>
@@ -733,7 +733,7 @@ export default function EditPagePage() {
             </div>
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Cookies</h3>
             <textarea
               value={pageData.content.cookies || ''}
@@ -744,7 +744,7 @@ export default function EditPagePage() {
             />
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Children&apos;s Privacy</h3>
             <textarea
               value={pageData.content.children_privacy || ''}
@@ -755,7 +755,7 @@ export default function EditPagePage() {
             />
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Changes to This Policy</h3>
             <textarea
               value={pageData.content.changes_policy || ''}
@@ -766,7 +766,7 @@ export default function EditPagePage() {
             />
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Contact Us</h3>
             <div className="space-y-4">
               <div>
@@ -788,7 +788,7 @@ export default function EditPagePage() {
       {/* Terms of Service Editor */}
       {slug === 'terms' && (
         <div className="space-y-6">
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Terms Settings</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -816,7 +816,7 @@ export default function EditPagePage() {
             </div>
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Agreement to Terms</h3>
             <textarea
               value={pageData.content.agreement || ''}
@@ -827,7 +827,7 @@ export default function EditPagePage() {
             />
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Description of Service</h3>
             <div className="space-y-4">
               <div>
@@ -883,7 +883,7 @@ export default function EditPagePage() {
             </div>
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>User Accounts</h3>
             <div className="space-y-4">
               <div>
@@ -949,7 +949,7 @@ export default function EditPagePage() {
             </div>
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Acceptable Use</h3>
             <div className="space-y-4">
               <div>
@@ -1025,7 +1025,7 @@ export default function EditPagePage() {
             </div>
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Price Information Disclaimer</h3>
             <textarea
               value={pageData.content.price_disclaimer || ''}
@@ -1036,7 +1036,7 @@ export default function EditPagePage() {
             />
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Intellectual Property</h3>
             <textarea
               value={pageData.content.intellectual_property || ''}
@@ -1047,7 +1047,7 @@ export default function EditPagePage() {
             />
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>User Content</h3>
             <textarea
               value={pageData.content.user_content || ''}
@@ -1058,7 +1058,7 @@ export default function EditPagePage() {
             />
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Third-Party Services</h3>
             <textarea
               value={pageData.content.third_party || ''}
@@ -1069,7 +1069,7 @@ export default function EditPagePage() {
             />
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Limitation of Liability</h3>
             <textarea
               value={pageData.content.liability || ''}
@@ -1080,7 +1080,7 @@ export default function EditPagePage() {
             />
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Disclaimer of Warranties</h3>
             <textarea
               value={pageData.content.warranties || ''}
@@ -1091,7 +1091,7 @@ export default function EditPagePage() {
             />
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Termination</h3>
             <textarea
               value={pageData.content.termination || ''}
@@ -1102,7 +1102,7 @@ export default function EditPagePage() {
             />
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Governing Law</h3>
             <textarea
               value={pageData.content.governing_law || ''}
@@ -1113,7 +1113,7 @@ export default function EditPagePage() {
             />
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Changes to Terms</h3>
             <textarea
               value={pageData.content.changes_terms || ''}
@@ -1124,7 +1124,7 @@ export default function EditPagePage() {
             />
           </div>
 
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Contact Us</h3>
             <div className="space-y-4">
               <div>
