@@ -314,7 +314,7 @@ export default function SubscriptionsPage() {
                 <select
                   value={newType}
                   onChange={(e) => setNewType(e.target.value as any)}
-                  className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
+                  className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 >
                   <option value="free_months">Free Months</option>
                   <option value="percentage">Percentage Off</option>
@@ -331,7 +331,7 @@ export default function SubscriptionsPage() {
                   value={newValue}
                   onChange={(e) => setNewValue(e.target.value)}
                   placeholder={newType === 'free_months' ? '3' : newType === 'percentage' ? '50' : '10'}
-                  className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
+                  className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
 
@@ -342,7 +342,7 @@ export default function SubscriptionsPage() {
                   value={newMaxUses}
                   onChange={(e) => setNewMaxUses(e.target.value)}
                   placeholder="100"
-                  className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
+                  className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
 
@@ -352,7 +352,7 @@ export default function SubscriptionsPage() {
                   type="datetime-local"
                   value={newValidFrom}
                   onChange={(e) => setNewValidFrom(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
+                  className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
 
@@ -362,7 +362,7 @@ export default function SubscriptionsPage() {
                   type="datetime-local"
                   value={newValidUntil}
                   onChange={(e) => setNewValidUntil(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
+                  className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
 
@@ -373,7 +373,7 @@ export default function SubscriptionsPage() {
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
                   placeholder="e.g. Welcome offer - 3 months free"
-                  className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
+                  className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
 
@@ -515,64 +515,64 @@ function PlanEditor({
     <div className="mt-4 pt-4 space-y-4" style={{ borderTop: '1px solid var(--border-color)' }}>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Price ($)</label>
+          <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Price ($)</label>
           <input
             type="number"
             step="0.01"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
+            className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
           />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Billing Interval</label>
+          <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Billing Interval</label>
           <select
             value={interval}
             onChange={(e) => setInterval(e.target.value as 'month' | 'year')}
-            className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
+            className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
           >
             <option value="month">Monthly</option>
             <option value="year">Yearly</option>
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Stripe Price ID</label>
+          <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Stripe Price ID</label>
           <input
             type="text"
             value={stripePriceId}
             onChange={(e) => setStripePriceId(e.target.value)}
             placeholder="price_..."
-            className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' font-mono"
+            className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none font-mono" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
           />
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Max Calls/Day</label>
+          <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Max Calls/Day</label>
           <input
             type="number"
             value={callsDay}
             onChange={(e) => setCallsDay(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
+            className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
           />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Max Calls/Min</label>
+          <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Max Calls/Min</label>
           <input
             type="number"
             value={callsMin}
             onChange={(e) => setCallsMin(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
+            className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
           />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Max Tokens/Day</label>
+          <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Max Tokens/Day</label>
           <input
             type="number"
             value={tokensDay}
             onChange={(e) => setTokensDay(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
+            className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
           />
         </div>
       </div>
@@ -583,7 +583,7 @@ function PlanEditor({
           type="text"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
+          className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
         />
       </div>
 
