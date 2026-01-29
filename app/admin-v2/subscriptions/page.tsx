@@ -170,16 +170,16 @@ export default function SubscriptionsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500 text-lg">Loading...</div>
+        <div className="text-lg" style={{ color: 'var(--text-secondary)' }}>Loading...</div>
       </div>
     )
   }
 
   return (
     <div>
-      <div className="mb-10 pb-6 border-b border-gray-800">
-        <h1 className="text-4xl font-black">Subscriptions & Promo Codes</h1>
-        <p className="text-gray-500 mt-2">Manage subscription plans, features, and promotional codes</p>
+      <div className="mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
+        <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>Subscriptions & Promo Codes</h1>
+        <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>Manage subscription plans, features, and promotional codes</p>
       </div>
 
       {/* Tabs */}
@@ -189,8 +189,9 @@ export default function SubscriptionsPage() {
           className={`px-6 py-3 rounded-lg font-semibold transition ${
             activeTab === 'plans'
               ? 'bg-green-500 text-black'
-              : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+              : 'hover:opacity-80'
           }`}
+          style={activeTab !== 'plans' ? { backgroundColor: 'var(--bg-card)', color: 'var(--text-secondary)' } : undefined}
         >
           Plans ({plans.length})
         </button>
@@ -199,8 +200,9 @@ export default function SubscriptionsPage() {
           className={`px-6 py-3 rounded-lg font-semibold transition ${
             activeTab === 'promo'
               ? 'bg-green-500 text-black'
-              : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+              : 'hover:opacity-80'
           }`}
+          style={activeTab !== 'promo' ? { backgroundColor: 'var(--bg-card)', color: 'var(--text-secondary)' } : undefined}
         >
           Promo Codes ({promoCodes.length})
         </button>
@@ -210,12 +212,12 @@ export default function SubscriptionsPage() {
       {activeTab === 'plans' && (
         <div className="space-y-6">
           {plans.map(plan => (
-            <div key={plan.id} className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+            <div key={plan.id} className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4">
                   <div>
-                    <h3 className="text-xl font-bold">{plan.name}</h3>
-                    <p className="text-gray-500 text-sm">Slug: {plan.slug}</p>
+                    <h3 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{plan.name}</h3>
+                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Slug: {plan.slug}</p>
                   </div>
                   <span className={`px-3 py-1 rounded-lg text-xs font-semibold ${
                     plan.is_active
@@ -241,7 +243,8 @@ export default function SubscriptionsPage() {
                   </span>
                   <button
                     onClick={() => setExpandedPlan(expandedPlan === plan.id ? null : plan.id)}
-                    className="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 text-sm"
+                    className="px-4 py-2 rounded-lg hover:opacity-80 text-sm"
+                    style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
                   >
                     {expandedPlan === plan.id ? 'Collapse' : 'Edit'}
                   </button>
@@ -251,14 +254,14 @@ export default function SubscriptionsPage() {
               {/* Features summary */}
               <div className="flex flex-wrap gap-2 mb-2">
                 {(Array.isArray(plan.features) ? plan.features : []).map(f => (
-                  <span key={f} className="px-2 py-1 bg-gray-800 text-gray-400 rounded text-xs">
+                  <span key={f} className="px-2 py-1 rounded text-xs" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-secondary)' }}>
                     {FEATURE_LABELS[f as FeatureKey] || f}
                   </span>
                 ))}
               </div>
 
               {/* Rate limits */}
-              <div className="flex gap-6 text-xs text-gray-500 mt-2">
+              <div className="flex gap-6 text-xs mt-2" style={{ color: 'var(--text-secondary)' }}>
                 <span>Calls/day: {plan.max_calls_per_day}</span>
                 <span>Calls/min: {plan.max_calls_per_minute}</span>
                 <span>Tokens/day: {plan.max_tokens_per_day.toLocaleString()}</span>
@@ -282,22 +285,24 @@ export default function SubscriptionsPage() {
       {activeTab === 'promo' && (
         <div>
           {/* Create Form */}
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
-            <h3 className="text-lg font-bold mb-4">Create Promo Code</h3>
+          <div className="rounded-2xl p-6 mb-8" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+            <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Create Promo Code</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Code</label>
+                <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Code</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={newCode}
                     onChange={(e) => setNewCode(e.target.value.toUpperCase())}
                     placeholder="e.g. WELCOME50"
-                    className="flex-1 px-3 py-2 bg-black border border-gray-800 rounded-lg text-white text-sm focus:border-green-500 focus:outline-none font-mono"
+                    className="flex-1 px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none font-mono"
+                    style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   />
                   <button
                     onClick={generateCode}
-                    className="px-3 py-2 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 text-xs"
+                    className="px-3 py-2 rounded-lg hover:opacity-80 text-xs"
+                    style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
                   >
                     Generate
                   </button>
@@ -305,11 +310,11 @@ export default function SubscriptionsPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Type</label>
+                <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Type</label>
                 <select
                   value={newType}
                   onChange={(e) => setNewType(e.target.value as any)}
-                  className="w-full px-3 py-2 bg-black border border-gray-800 rounded-lg text-white text-sm focus:border-green-500 focus:outline-none"
+                  className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
                 >
                   <option value="free_months">Free Months</option>
                   <option value="percentage">Percentage Off</option>
@@ -318,7 +323,7 @@ export default function SubscriptionsPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">
+                <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>
                   Value ({newType === 'free_months' ? 'months' : newType === 'percentage' ? '%' : '$'})
                 </label>
                 <input
@@ -326,57 +331,57 @@ export default function SubscriptionsPage() {
                   value={newValue}
                   onChange={(e) => setNewValue(e.target.value)}
                   placeholder={newType === 'free_months' ? '3' : newType === 'percentage' ? '50' : '10'}
-                  className="w-full px-3 py-2 bg-black border border-gray-800 rounded-lg text-white text-sm focus:border-green-500 focus:outline-none"
+                  className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Max Uses (empty = unlimited)</label>
+                <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Max Uses (empty = unlimited)</label>
                 <input
                   type="number"
                   value={newMaxUses}
                   onChange={(e) => setNewMaxUses(e.target.value)}
                   placeholder="100"
-                  className="w-full px-3 py-2 bg-black border border-gray-800 rounded-lg text-white text-sm focus:border-green-500 focus:outline-none"
+                  className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Valid From</label>
+                <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Valid From</label>
                 <input
                   type="datetime-local"
                   value={newValidFrom}
                   onChange={(e) => setNewValidFrom(e.target.value)}
-                  className="w-full px-3 py-2 bg-black border border-gray-800 rounded-lg text-white text-sm focus:border-green-500 focus:outline-none"
+                  className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Valid Until</label>
+                <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Valid Until</label>
                 <input
                   type="datetime-local"
                   value={newValidUntil}
                   onChange={(e) => setNewValidUntil(e.target.value)}
-                  className="w-full px-3 py-2 bg-black border border-gray-800 rounded-lg text-white text-sm focus:border-green-500 focus:outline-none"
+                  className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
                 />
               </div>
 
               <div className="md:col-span-2 lg:col-span-3">
-                <label className="block text-sm text-gray-400 mb-1">Description</label>
+                <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Description</label>
                 <input
                   type="text"
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
                   placeholder="e.g. Welcome offer - 3 months free"
-                  className="w-full px-3 py-2 bg-black border border-gray-800 rounded-lg text-white text-sm focus:border-green-500 focus:outline-none"
+                  className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
                 />
               </div>
 
               <div className="md:col-span-2 lg:col-span-3">
-                <label className="block text-sm text-gray-400 mb-1">Applicable Plans (leave unchecked for all)</label>
+                <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Applicable Plans (leave unchecked for all)</label>
                 <div className="flex gap-4">
                   {plans.filter(p => p.is_self_serve && p.price > 0).map(plan => (
-                    <label key={plan.slug} className="flex items-center gap-2 text-sm text-gray-300">
+                    <label key={plan.slug} className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-primary)' }}>
                       <input
                         type="checkbox"
                         checked={newApplicablePlans.includes(plan.slug)}
@@ -387,7 +392,8 @@ export default function SubscriptionsPage() {
                             setNewApplicablePlans(prev => prev.filter(s => s !== plan.slug))
                           }
                         }}
-                        className="rounded border-gray-600 text-green-500 focus:ring-green-500"
+                        className="rounded text-green-500 focus:ring-green-500"
+                        style={{ borderColor: 'var(--border-color)' }}
                       />
                       {plan.name}
                     </label>
@@ -406,10 +412,10 @@ export default function SubscriptionsPage() {
           </div>
 
           {/* Promo Codes Table */}
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+          <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-800 text-gray-500 text-left">
+                <tr className="text-left" style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
                   <th className="px-4 py-3">Code</th>
                   <th className="px-4 py-3">Type</th>
                   <th className="px-4 py-3">Value</th>
@@ -423,31 +429,31 @@ export default function SubscriptionsPage() {
               <tbody>
                 {promoCodes.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan={8} className="px-4 py-8 text-center" style={{ color: 'var(--text-secondary)' }}>
                       No promo codes yet. Create one above.
                     </td>
                   </tr>
                 )}
                 {promoCodes.map(promo => (
-                  <tr key={promo.id} className="border-b border-gray-800/50 hover:bg-gray-800/30">
+                  <tr key={promo.id} className="hover:opacity-80 transition" style={{ borderBottom: '1px solid var(--border-color)' }}>
                     <td className="px-4 py-3 font-mono font-bold text-green-400">{promo.code}</td>
-                    <td className="px-4 py-3 text-gray-400">
+                    <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>
                       {promo.type === 'free_months' ? 'Free Months' : promo.type === 'percentage' ? 'Percentage' : 'Fixed'}
                     </td>
-                    <td className="px-4 py-3 text-white font-semibold">
+                    <td className="px-4 py-3 font-semibold" style={{ color: 'var(--text-primary)' }}>
                       {promo.type === 'free_months' && `${promo.value} mo`}
                       {promo.type === 'percentage' && `${promo.value}%`}
                       {promo.type === 'fixed' && `$${promo.value}`}
                     </td>
-                    <td className="px-4 py-3 text-gray-400">
+                    <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>
                       {promo.current_uses}/{promo.max_uses ?? '∞'}
                     </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">
+                    <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>
                       {promo.valid_from ? new Date(promo.valid_from).toLocaleDateString() : '—'}
                       {' → '}
                       {promo.valid_until ? new Date(promo.valid_until).toLocaleDateString() : '—'}
                     </td>
-                    <td className="px-4 py-3 text-gray-400 text-xs">
+                    <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-secondary)' }}>
                       {Array.isArray(promo.applicable_plans) && promo.applicable_plans.length > 0
                         ? promo.applicable_plans.join(', ')
                         : 'All'}
@@ -506,7 +512,7 @@ function PlanEditor({
   const planFeatures = Array.isArray(plan.features) ? plan.features : []
 
   return (
-    <div className="mt-4 pt-4 border-t border-gray-800 space-y-4">
+    <div className="mt-4 pt-4 space-y-4" style={{ borderTop: '1px solid var(--border-color)' }}>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm text-gray-400 mb-1">Price ($)</label>
@@ -515,7 +521,7 @@ function PlanEditor({
             step="0.01"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
-            className="w-full px-3 py-2 bg-black border border-gray-800 rounded-lg text-white text-sm focus:border-green-500 focus:outline-none"
+            className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
           />
         </div>
         <div>
@@ -523,7 +529,7 @@ function PlanEditor({
           <select
             value={interval}
             onChange={(e) => setInterval(e.target.value as 'month' | 'year')}
-            className="w-full px-3 py-2 bg-black border border-gray-800 rounded-lg text-white text-sm focus:border-green-500 focus:outline-none"
+            className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
           >
             <option value="month">Monthly</option>
             <option value="year">Yearly</option>
@@ -536,7 +542,7 @@ function PlanEditor({
             value={stripePriceId}
             onChange={(e) => setStripePriceId(e.target.value)}
             placeholder="price_..."
-            className="w-full px-3 py-2 bg-black border border-gray-800 rounded-lg text-white text-sm focus:border-green-500 focus:outline-none font-mono"
+            className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' font-mono"
           />
         </div>
       </div>
@@ -548,7 +554,7 @@ function PlanEditor({
             type="number"
             value={callsDay}
             onChange={(e) => setCallsDay(e.target.value)}
-            className="w-full px-3 py-2 bg-black border border-gray-800 rounded-lg text-white text-sm focus:border-green-500 focus:outline-none"
+            className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
           />
         </div>
         <div>
@@ -557,7 +563,7 @@ function PlanEditor({
             type="number"
             value={callsMin}
             onChange={(e) => setCallsMin(e.target.value)}
-            className="w-full px-3 py-2 bg-black border border-gray-800 rounded-lg text-white text-sm focus:border-green-500 focus:outline-none"
+            className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
           />
         </div>
         <div>
@@ -566,7 +572,7 @@ function PlanEditor({
             type="number"
             value={tokensDay}
             onChange={(e) => setTokensDay(e.target.value)}
-            className="w-full px-3 py-2 bg-black border border-gray-800 rounded-lg text-white text-sm focus:border-green-500 focus:outline-none"
+            className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
           />
         </div>
       </div>
@@ -577,24 +583,26 @@ function PlanEditor({
           type="text"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full px-3 py-2 bg-black border border-gray-800 rounded-lg text-white text-sm focus:border-green-500 focus:outline-none"
+          className="w-full px-3 py-2 rounded-lg text-sm focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)'"
         />
       </div>
 
       {/* Feature Checkboxes */}
       <div>
-        <label className="block text-sm text-gray-400 mb-2">Features</label>
+        <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>Features</label>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
           {ALL_FEATURES.map(feature => (
             <label
               key={feature}
-              className="flex items-center gap-2 text-sm text-gray-300 p-2 rounded hover:bg-gray-800/50 cursor-pointer"
+              className="flex items-center gap-2 text-sm p-2 rounded hover:opacity-80 cursor-pointer"
+              style={{ color: 'var(--text-primary)', backgroundColor: 'var(--bg-card)' }}
             >
               <input
                 type="checkbox"
                 checked={planFeatures.includes(feature)}
                 onChange={(e) => onToggleFeature(feature, e.target.checked)}
-                className="rounded border-gray-600 text-green-500 focus:ring-green-500"
+                className="rounded text-green-500 focus:ring-green-500"
+                style={{ borderColor: 'var(--border-color)' }}
               />
               {FEATURE_LABELS[feature]}
             </label>
