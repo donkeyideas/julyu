@@ -118,6 +118,7 @@ export default function BodegaAnalyticsPage() {
         out_for_delivery: allOrders.filter((o: any) => o.status === 'out_for_delivery').length,
         delivered: allOrders.filter((o: any) => o.status === 'delivered').length,
         cancelled: allOrders.filter((o: any) => o.status === 'cancelled').length,
+      }
 
       // Delivery method breakdown
       const deliveryOrders = allOrders.filter((o: any) => o.delivery_method === 'delivery').length
