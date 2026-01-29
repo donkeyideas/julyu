@@ -31,27 +31,19 @@ export default function AllStoresPage() {
 
   const loadStores = async () => {
     try {
-      const supabase = createClient()
-      const { data, error } = await supabase
-        .from('store_owners')
-        .select(`
-          *,
-          bodega_stores (
-            id,
-            name,
-            city,
-            state,
-            zip,
-            is_active,
-            verified
-          )
-        `)
-        .order('created_at', { ascending: false })
+      // Use API route to fetch stores (bypasses RLS)
+      const response = await fetch('/api/admin/stores')
 
-      if (error) throw error
-      setStores(data || [])
+      if (response.ok) {
+        const data = await response.json()
+        setStores(data.stores || [])
+      } else {
+        console.error('Failed to fetch stores:', response.statusText)
+        setStores([])
+      }
     } catch (error) {
       console.error('Error loading stores:', error)
+      setStores([])
     } finally {
       setLoading(false)
     }
