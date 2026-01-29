@@ -118,8 +118,8 @@ export default function PartnershipsCostsPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="inline-block w-12 h-12 border-4 border-gray-800 border-t-green-500 rounded-full animate-spin mb-4"></div>
-          <div className="text-gray-500">Loading cost data...</div>
+          <div className="inline-block w-12 h-12 border-4 rounded-full animate-spin mb-4" style={{ borderColor: 'var(--border-color)', borderTopColor: 'var(--accent-primary)' }}></div>
+          <div style={{ color: 'var(--text-secondary)' }}>Loading cost data...</div>
         </div>
       </div>
     )
@@ -127,12 +127,13 @@ export default function PartnershipsCostsPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-10 pb-6 border-b border-gray-800">
-        <h1 className="text-4xl font-black">Partnerships AI Costs</h1>
+      <div className="flex justify-between items-center mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
+        <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>Partnerships AI Costs</h1>
         <select
           value={timeRange}
           onChange={(e) => setTimeRange(e.target.value as any)}
-          className="px-4 py-2 bg-gray-900 border border-gray-800 rounded-lg text-white"
+          className="px-4 py-2 rounded-lg"
+          style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
         >
           <option value="24h">Last 24 Hours</option>
           <option value="7d">Last 7 Days</option>
@@ -141,39 +142,39 @@ export default function PartnershipsCostsPage() {
         </select>
       </div>
 
-      <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-8 mb-10">
-        <div className="text-sm text-gray-500 mb-2">Total AI Costs</div>
+      <div className="rounded-2xl p-8 mb-10" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Total AI Costs</div>
         <div className="text-5xl font-black text-green-500">{formatCurrency(totalCost)}</div>
-        <div className="text-xs text-gray-500 mt-2">For selected period</div>
+        <div className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>For selected period</div>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <table className="w-full">
-          <thead className="bg-black">
+          <thead style={{ backgroundColor: 'var(--bg-secondary)' }}>
             <tr>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Model</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Requests</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Input Tokens</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Output Tokens</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Total Cost</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Avg Response Time</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Model</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Requests</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Input Tokens</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Output Tokens</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Total Cost</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Avg Response Time</th>
             </tr>
           </thead>
           <tbody>
             {costBreakdown.length > 0 ? (
               costBreakdown.map((item, index) => (
-                <tr key={index} className="border-t border-gray-800 hover:bg-black/50">
-                  <td className="p-4 font-bold">{item.model}</td>
-                  <td className="p-4">{item.requests.toLocaleString()}</td>
-                  <td className="p-4">{formatTokens(item.inputTokens)}</td>
-                  <td className="p-4">{formatTokens(item.outputTokens)}</td>
+                <tr key={index} style={{ borderTop: '1px solid var(--border-color)' }}>
+                  <td className="p-4 font-bold" style={{ color: 'var(--text-primary)' }}>{item.model}</td>
+                  <td className="p-4" style={{ color: 'var(--text-primary)' }}>{item.requests.toLocaleString()}</td>
+                  <td className="p-4" style={{ color: 'var(--text-primary)' }}>{formatTokens(item.inputTokens)}</td>
+                  <td className="p-4" style={{ color: 'var(--text-primary)' }}>{formatTokens(item.outputTokens)}</td>
                   <td className="p-4 font-bold text-green-500">{formatCurrency(item.cost)}</td>
-                  <td className="p-4">{Math.round(item.avgResponseTime)}ms</td>
+                  <td className="p-4" style={{ color: 'var(--text-primary)' }}>{Math.round(item.avgResponseTime)}ms</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="p-8 text-center text-gray-500">
+                <td colSpan={6} className="p-8 text-center" style={{ color: 'var(--text-secondary)' }}>
                   No cost data for the selected period
                 </td>
               </tr>

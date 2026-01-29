@@ -32,8 +32,8 @@ export default function InstacartAPIPage() {
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Instacart API Integration</h1>
-        <p className="text-gray-400">
+        <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Instacart API Integration</h1>
+        <p style={{ color: 'var(--text-secondary)' }}>
           Connect to Instacart for real-time pricing across 50+ retailers
         </p>
       </div>
@@ -44,7 +44,7 @@ export default function InstacartAPIPage() {
           <div className="text-3xl">🚧</div>
           <div>
             <h3 className="text-lg font-semibold text-yellow-400 mb-2">Integration Pending</h3>
-            <p className="text-gray-300 mb-4">
+            <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>
               Instacart API access requires a partnership agreement. Once approved, you can configure
               your credentials here to enable real-time price comparison across all Instacart-connected retailers.
             </p>
@@ -64,12 +64,12 @@ export default function InstacartAPIPage() {
       </div>
 
       {/* API Configuration */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-8">
-        <h3 className="text-xl font-semibold mb-6">API Credentials</h3>
+      <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }} mb-8">
+        <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>API Credentials</h3>
 
         <div className="space-y-4 mb-6">
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>
               Client ID
             </label>
             <input
@@ -77,12 +77,12 @@ export default function InstacartAPIPage() {
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
               placeholder="Enter your Instacart Client ID"
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>
               Client Secret
             </label>
             <input
@@ -90,7 +90,7 @@ export default function InstacartAPIPage() {
               value={clientSecret}
               onChange={(e) => setClientSecret(e.target.value)}
               placeholder="Enter your Instacart Client Secret"
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
         </div>
@@ -117,7 +117,7 @@ export default function InstacartAPIPage() {
           </button>
           <button
             onClick={handleTestConnection}
-            className="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition"
+            className="px-6 py-3 rounded-lg transition" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
           >
             Test Connection
           </button>
@@ -125,38 +125,38 @@ export default function InstacartAPIPage() {
       </div>
 
       {/* Features Preview */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-8">
-        <h3 className="text-xl font-semibold mb-6">What You Get with Instacart API</h3>
+      <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }} mb-8">
+        <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>What You Get with Instacart API</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 bg-gray-800 rounded-lg">
+          <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
             <div className="text-2xl mb-2">🏪</div>
-            <h4 className="font-semibold text-white mb-1">50+ Retailers</h4>
-            <p className="text-sm text-gray-400">
+            <h4 className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>50+ Retailers</h4>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
               Access pricing from Kroger, Costco, Safeway, Publix, and many more
             </p>
           </div>
 
-          <div className="p-4 bg-gray-800 rounded-lg">
+          <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
             <div className="text-2xl mb-2">⚡</div>
-            <h4 className="font-semibold text-white mb-1">Real-Time Prices</h4>
-            <p className="text-sm text-gray-400">
+            <h4 className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Real-Time Prices</h4>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
               Get up-to-the-minute pricing and availability data
             </p>
           </div>
 
-          <div className="p-4 bg-gray-800 rounded-lg">
+          <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
             <div className="text-2xl mb-2">📍</div>
-            <h4 className="font-semibold text-white mb-1">Location-Based</h4>
-            <p className="text-sm text-gray-400">
+            <h4 className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Location-Based</h4>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
               Prices specific to user location and nearby stores
             </p>
           </div>
 
-          <div className="p-4 bg-gray-800 rounded-lg">
+          <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
             <div className="text-2xl mb-2">🔗</div>
-            <h4 className="font-semibold text-white mb-1">Direct Ordering</h4>
-            <p className="text-sm text-gray-400">
+            <h4 className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Direct Ordering</h4>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
               Enable users to order directly through Instacart
             </p>
           </div>
@@ -164,9 +164,9 @@ export default function InstacartAPIPage() {
       </div>
 
       {/* Alternative Data Sources */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+      <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
         <h3 className="text-xl font-semibold mb-4">Current Data Sources</h3>
-        <p className="text-gray-400 mb-4">
+        <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>
           While waiting for Instacart API access, Julyu uses these data sources:
         </p>
 
@@ -174,7 +174,7 @@ export default function InstacartAPIPage() {
           <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
             <div className="flex items-center gap-3">
               <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-              <span className="text-white">Kroger API</span>
+              <span className style={{ color: 'var(--text-primary)' }}>Kroger API</span>
             </div>
             <span className="text-green-400 text-sm">Active</span>
           </div>
@@ -182,7 +182,7 @@ export default function InstacartAPIPage() {
           <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
             <div className="flex items-center gap-3">
               <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-              <span className="text-white">Spoonacular API</span>
+              <span className style={{ color: 'var(--text-primary)' }}>Spoonacular API</span>
             </div>
             <span className="text-green-400 text-sm">Active</span>
           </div>
@@ -190,7 +190,7 @@ export default function InstacartAPIPage() {
           <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
             <div className="flex items-center gap-3">
               <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-              <span className="text-white">Receipt OCR (User Submitted)</span>
+              <span className style={{ color: 'var(--text-primary)' }}>Receipt OCR (User Submitted)</span>
             </div>
             <span className="text-green-400 text-sm">Active</span>
           </div>
@@ -198,7 +198,7 @@ export default function InstacartAPIPage() {
           <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
             <div className="flex items-center gap-3">
               <span className="w-3 h-3 bg-yellow-500 rounded-full"></span>
-              <span className="text-white">Instacart API</span>
+              <span className style={{ color: 'var(--text-primary)' }}>Instacart API</span>
             </div>
             <span className="text-yellow-400 text-sm">Pending</span>
           </div>
