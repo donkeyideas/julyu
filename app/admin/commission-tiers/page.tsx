@@ -29,7 +29,7 @@ export default async function CommissionTiersPage() {
   }
 
   const allTiers = tiers || []
-  const activeTiers = allTiers.filter(t => t.is_active)
+  const activeTiers = allTiers.filter((t: any) => t.is_active)
 
   // Get store count per tier
   const { data: storeOwners } = await supabase
@@ -37,9 +37,9 @@ export default async function CommissionTiersPage() {
     .select('id, commission_rate')
     .eq('application_status', 'approved')
 
-  const storesByTier = allTiers.map(tier => ({
+  const storesByTier = allTiers.map((tier: any) => ({
     ...tier,
-    storeCount: storeOwners?.filter(s => Math.abs(parseFloat(s.commission_rate) - tier.commission_percentage) < 0.01).length || 0
+    storeCount: storeOwners?.filter((s: any) => Math.abs(parseFloat(s.commission_rate) - tier.commission_percentage) < 0.01).length || 0
   }))
 
   return (
@@ -91,7 +91,7 @@ export default async function CommissionTiersPage() {
 
       {/* Tiers Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {storesByTier.map(tier => (
+        {storesByTier.map((tier: any) => (
           <div
             key={tier.id}
             className={`bg-white rounded-lg shadow-sm border-2 p-6 ${
@@ -212,7 +212,7 @@ export default async function CommissionTiersPage() {
             { rate: 15, name: 'Default (15%)' },
             { rate: 12, name: 'Silver (12%)' },
             { rate: 10, name: 'Gold (10%)' },
-          ].map(({ rate, name }) => (
+          ].map(({ rate, name }: { rate: number; name: string }) => (
             <div key={rate} className="border border-gray-200 rounded-lg p-4">
               <div className="text-center mb-3">
                 <div className="text-lg font-bold text-gray-900">{name}</div>
