@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
         items_updated: items.length,
         updated_by: user.id,
       })
-      .catch(err => console.error('Failed to log inventory update:', err))
+      .catch((err: any) => console.error('Failed to log inventory update:', err))
 
     return NextResponse.json({
       success: true,
