@@ -6,26 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerClient()
 
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Please log in first' },
-        { status: 401 }
-      )
-    }
-
-    // Check if user already has a store owner account
-    const hasAccount = await hasStoreOwnerAccount(user.id)
-    if (hasAccount) {
-      return NextResponse.json(
-        { error: 'You already have a store owner account' },
-        { status: 400 }
-      )
-    }
-
-    // Parse request body
+    // Parse request body first to get email
     const body = await request.json()
     const {
       businessName,
@@ -44,6 +25,52 @@ export async function POST(request: NextRequest) {
       hasPosSystem,
       posSystemName,
     } = body
+
+    // Check if user is logged in
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    let userId: string
+
+    if (!user) {
+      // User not logged in - create account for them
+      // Generate a temporary password
+      const tempPassword = `Store${Math.random().toString(36).substring(2, 15)}!`
+
+      const { data: newUser, error: signUpError } = await supabase.auth.signUp({
+        email: businessEmail,
+        password: tempPassword,
+        options: {
+          data: {
+            business_name: businessName,
+            user_type: 'store_owner'
+          }
+        }
+      })
+
+      if (signUpError || !newUser.user) {
+        console.error('Sign up error:', signUpError)
+        return NextResponse.json(
+          { error: 'Failed to create account. This email may already be in use.' },
+          { status: 400 }
+        )
+      }
+
+      userId = newUser.user.id
+
+      // TODO: Send email with temporary password and instructions to reset
+      console.log(`Created store owner account for ${businessEmail} with temp password`)
+    } else {
+      userId = user.id
+
+      // Check if logged-in user already has a store owner account
+      const hasAccount = await hasStoreOwnerAccount(userId)
+      if (hasAccount) {
+        return NextResponse.json(
+          { error: 'You already have a store owner account' },
+          { status: 400 }
+        )
+      }
+    }
 
     // Validate required fields
     if (!businessName || !businessType || !businessAddress || !businessPhone || !businessEmail) {
@@ -64,7 +91,7 @@ export async function POST(request: NextRequest) {
     const { data: storeOwner, error: ownerError } = await supabase
       .from('store_owners')
       .insert({
-        user_id: user.id,
+        user_id: userId,
         business_name: businessName,
         business_type: businessType,
         business_address: businessAddress,
