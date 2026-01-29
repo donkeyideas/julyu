@@ -64,10 +64,10 @@ export default function PayoutsPage() {
     .reduce((sum: number, p: any) => sum + parseFloat(p.net_payout), 0)
 
   const statusColors: Record<string, string> = {
-    pending: 'bg-yellow-500 text-black',
-    processing: 'bg-blue-500 text-black',
-    paid: 'bg-green-500 text-black',
-    failed: 'bg-red-500 text-black',
+    pending: 'bg-yellow-500/15 text-yellow-500',
+    processing: 'bg-blue-500/15 text-blue-500',
+    paid: 'bg-green-500/15 text-green-500',
+    failed: 'bg-red-500/15 text-red-500',
   }
 
   return (
@@ -79,43 +79,40 @@ export default function PayoutsPage() {
             Generate and manage payouts to store owners
           </p>
         </div>
-        <Link
-          href="/admin/payouts/generate"
-          className="px-6 py-3 bg-green-500 text-black font-black rounded-xl hover:bg-green-400 transition"
-        >
+        <button className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition">
           Generate Payouts
-        </Link>
+        </button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-10">
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
           <div className="text-sm text-gray-500 mb-2">Total Payouts</div>
-          <div className="text-3xl font-black">
+          <div className="text-4xl font-black">
             {totalPayouts}
           </div>
         </div>
-        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
           <div className="text-sm text-gray-500 mb-2">Pending</div>
-          <div className="text-3xl font-black text-yellow-500">
+          <div className="text-4xl font-black text-yellow-500">
             {pendingPayouts}
           </div>
         </div>
-        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
           <div className="text-sm text-gray-500 mb-2">Processing</div>
-          <div className="text-3xl font-black text-blue-500">
+          <div className="text-4xl font-black text-blue-500">
             {processingPayouts}
           </div>
         </div>
-        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
           <div className="text-sm text-gray-500 mb-2">Paid</div>
-          <div className="text-3xl font-black text-green-500">
+          <div className="text-4xl font-black text-green-500">
             {paidPayouts}
           </div>
         </div>
-        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
           <div className="text-sm text-gray-500 mb-2">Total Paid</div>
-          <div className="text-3xl font-black text-green-500">
+          <div className="text-4xl font-black text-green-500">
             ${totalPaidAmount.toFixed(2)}
           </div>
         </div>
@@ -128,45 +125,42 @@ export default function PayoutsPage() {
       </div>
 
       {/* Payouts Table */}
-      <div className="bg-gray-900 rounded-2xl border border-gray-800">
-        <div className="px-6 py-4 border-b border-gray-800">
-          <h2 className="text-2xl font-black">Recent Payouts</h2>
-        </div>
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-800">
-            <thead className="bg-black">
+            <thead className="bg-gray-800/50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-black text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Store
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-black text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Period
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-black text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Orders
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-black text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Gross Revenue
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-black text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Commission
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-black text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Net Payout
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-black text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-black text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Paid At
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-gray-900 divide-y divide-gray-800">
+            <tbody className="divide-y divide-gray-800">
               {allPayouts.map((payout: any) => (
-                <tr key={payout.id} className="hover:bg-gray-800/50">
+                <tr key={payout.id} className="hover:bg-gray-800/50 transition">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-black">
+                    <div className="text-sm font-semibold">
                       {payout.store_owners?.business_name || 'Unknown'}
                     </div>
                     {payout.stripe_payout_id && (
@@ -175,27 +169,27 @@ export default function PayoutsPage() {
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(payout.period_start).toLocaleDateString()} - {new Date(payout.period_end).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-black">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
                     {payout.total_orders}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-black">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
                     ${parseFloat(payout.gross_revenue).toFixed(2)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-black text-purple-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-purple-500">
                     ${parseFloat(payout.total_commissions).toFixed(2)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-black text-green-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-500">
                     ${parseFloat(payout.net_payout).toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-black rounded-full ${statusColors[payout.status]}`}>
+                    <span className={`px-3 py-1 text-xs font-semibold rounded-lg ${statusColors[payout.status]}`}>
                       {payout.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {payout.paid_at ? new Date(payout.paid_at).toLocaleDateString() : '-'}
                   </td>
                 </tr>
