@@ -22,6 +22,7 @@ export default function AdminSidebar() {
     { href: '/admin/stores', label: 'All Stores', icon: '' },
     { href: '/admin/orders', label: 'All Orders', icon: '' },
     { href: '/admin/commission-tiers', label: 'Commission Tiers', icon: '' },
+    { href: '/admin/payouts', label: 'Payouts', icon: '' },
     { href: '/admin/analytics/bodega', label: 'Analytics', icon: '' },
   ]
 
