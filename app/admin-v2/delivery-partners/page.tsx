@@ -528,7 +528,8 @@ export default function DeliveryPartnersPage() {
                         onChange={(e) => setRetailerInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addRetailer())}
                         placeholder="e.g., kroger"
-                        className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:border-green-500 focus:outline-none"
+                        className="flex-1 border rounded-lg px-4 py-2 focus:border-green-500 focus:outline-none"
+                        style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                       />
                       <button
                         type="button"
@@ -564,7 +565,7 @@ export default function DeliveryPartnersPage() {
                       value={formData.deep_link_template}
                       onChange={(e) => setFormData(prev => ({ ...prev, deep_link_template: e.target.value }))}
                       placeholder="https://www.instacart.com/store/{retailer}/storefront?search={search}"
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:border-green-500 focus:outline-none font-mono text-sm"
+                      className="w-full border rounded-lg px-4 py-3 focus:border-green-500 focus:outline-none font-mono text-sm"
                     />
                     <p className="text-xs text-gray-500 mt-1">
                       Placeholders: {'{retailer}'}, {'{search}'}, {'{items}'}, {'{zipCode}'}, {'{affiliateId}'}
@@ -691,7 +692,7 @@ export default function DeliveryPartnersPage() {
                           step="0.1"
                           value={formData.commission_rate}
                           onChange={(e) => setFormData(prev => ({ ...prev, commission_rate: parseFloat(e.target.value) || 0 }))}
-                          className="w-24 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-center focus:border-green-500 focus:outline-none"
+                          className="w-24 border rounded-lg px-3 py-2 text-center focus:border-green-500 focus:outline-none"
                         />
                         <span>%</span>
                       </div>
@@ -733,7 +734,7 @@ export default function DeliveryPartnersPage() {
                         onChange={(e) => setFormData(prev => ({ ...prev, icon_letter: e.target.value.slice(0, 2).toUpperCase() }))}
                         placeholder="I"
                         maxLength={2}
-                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:border-green-500 focus:outline-none text-center text-2xl font-bold"
+                        className="w-full border rounded-lg px-4 py-3 focus:border-green-500 focus:outline-none text-center text-2xl font-bold"
                       />
                     </div>
                     <div>
@@ -750,7 +751,7 @@ export default function DeliveryPartnersPage() {
                           value={formData.brand_color}
                           onChange={(e) => setFormData(prev => ({ ...prev, brand_color: e.target.value }))}
                           placeholder="#22C55E"
-                          className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:border-green-500 focus:outline-none"
+                          className="flex-1 border rounded-lg px-4 py-3 focus:border-green-500 focus:outline-none"
                         />
                       </div>
                     </div>
