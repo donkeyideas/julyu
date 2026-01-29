@@ -59,15 +59,38 @@ export default function OrderPlacementModal({ isOpen, bodega, userAddress, onClo
     setError(null)
 
     try {
-      // Validate
-      if (!customerName.trim() || !customerPhone.trim() || !customerEmail.trim()) {
-        throw new Error('Please fill in all contact information')
+      // Validate contact info
+      if (!customerName.trim()) {
+        throw new Error('Please enter your name')
+      }
+      if (!customerPhone.trim()) {
+        throw new Error('Please enter your phone number')
+      }
+      if (!customerEmail.trim()) {
+        throw new Error('Please enter your email address')
       }
 
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(customerEmail)) {
+        throw new Error('Please enter a valid email address')
+      }
+
+      // Validate phone format (basic)
+      const phoneRegex = /^[\d\s\-\(\)]+$/
+      if (!phoneRegex.test(customerPhone) || customerPhone.replace(/\D/g, '').length < 10) {
+        throw new Error('Please enter a valid phone number (at least 10 digits)')
+      }
+
+      // Validate delivery address
       if (deliveryMethod === 'delivery' && !deliveryAddress.trim()) {
         throw new Error('Please enter a delivery address')
       }
 
+      // Validate quantity
+      if (quantity < 1) {
+        throw new Error('Quantity must be at least 1')
+      }
       if (quantity > product.stockQuantity) {
         throw new Error(`Only ${product.stockQuantity} available in stock`)
       }
@@ -87,24 +110,31 @@ export default function OrderPlacementModal({ isOpen, bodega, userAddress, onClo
           ],
           deliveryMethod,
           deliveryAddress: deliveryMethod === 'delivery' ? deliveryAddress : null,
-          customerName,
-          customerPhone,
-          customerEmail,
+          customerName: customerName.trim(),
+          customerPhone: customerPhone.trim(),
+          customerEmail: customerEmail.trim().toLowerCase(),
         }),
       })
 
-      const data = await response.json()
-
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to place order')
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to place order. Please try again.')
       }
 
-      // Success - redirect to orders page or show success message
+      const data = await response.json()
+
+      // Success - show success message and close
       alert(`Order placed successfully! Order #${data.data.orderNumber}\n\nThe store will prepare your order and you'll receive updates via email.`)
       onClose()
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      if (err instanceof TypeError && err.message.includes('fetch')) {
+        setError('Network error. Please check your connection and try again.')
+      } else {
+        setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.')
+      }
+      // Scroll to top to show error
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } finally {
       setLoading(false)
     }

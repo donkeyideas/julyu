@@ -17,6 +17,14 @@ export default function AdminSidebar() {
     { href: '/admin/prices', label: 'Price Database', icon: '' },
   ]
 
+  const bodegaNavItems = [
+    { href: '/admin/stores/applications', label: 'Store Applications', icon: '' },
+    { href: '/admin/stores', label: 'All Stores', icon: '' },
+    { href: '/admin/orders', label: 'All Orders', icon: '' },
+    { href: '/admin/commission-tiers', label: 'Commission Tiers', icon: '' },
+    { href: '/admin/analytics/bodega', label: 'Analytics', icon: '' },
+  ]
+
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-[280px] bg-gray-900 border-r border-gray-800 p-8 overflow-y-auto">
       <Link href="/admin" className="text-3xl font-black text-green-500 mb-12 block">
@@ -54,6 +62,29 @@ export default function AdminSidebar() {
         <div className="text-xs text-gray-500 uppercase font-semibold mb-4">Partnerships</div>
         <nav className="space-y-2">
           {navItems.slice(4, 5).map((item) => {
+            const isActive = pathname === item.href
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+                  isActive
+                    ? 'bg-green-500/15 text-green-500 border-l-4 border-green-500 font-semibold'
+                    : 'text-gray-400 hover:bg-green-500/10 hover:text-white'
+                }`}
+              >
+                <span>{item.icon}</span>
+                <span>{item.label}</span>
+              </Link>
+            )
+          })}
+        </nav>
+      </div>
+
+      <div className="mb-8 pb-8 border-b border-gray-800">
+        <div className="text-xs text-gray-500 uppercase font-semibold mb-4">Bodega System</div>
+        <nav className="space-y-2">
+          {bodegaNavItems.map((item) => {
             const isActive = pathname === item.href
             return (
               <Link
