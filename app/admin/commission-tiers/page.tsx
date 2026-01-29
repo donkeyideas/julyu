@@ -75,35 +75,35 @@ export default function CommissionTiersPage() {
           </p>
         </div>
         <button
-          className="px-6 py-3 bg-green-500 text-black font-black rounded-xl hover:bg-green-400 transition"
+          className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition"
         >
           Add New Tier
         </button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
           <div className="text-sm text-gray-500 mb-2">Total Tiers</div>
-          <div className="text-3xl font-black">
+          <div className="text-4xl font-black">
             {allTiers.length}
           </div>
         </div>
-        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
           <div className="text-sm text-gray-500 mb-2">Active Tiers</div>
-          <div className="text-3xl font-black text-green-500">
+          <div className="text-4xl font-black text-green-500">
             {activeTiers.length}
           </div>
         </div>
-        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
           <div className="text-sm text-gray-500 mb-2">Stores Using Tiers</div>
-          <div className="text-3xl font-black text-blue-500">
+          <div className="text-4xl font-black text-blue-500">
             {storesByTier.reduce((sum, t) => sum + t.storeCount, 0)}
           </div>
         </div>
-        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
           <div className="text-sm text-gray-500 mb-2">Default Rate</div>
-          <div className="text-3xl font-black text-purple-500">
+          <div className="text-4xl font-black text-purple-500">
             {allTiers.find((t: any) => t.is_default)?.commission_percentage || 15}%
           </div>
         </div>
@@ -114,7 +114,7 @@ export default function CommissionTiersPage() {
         {storesByTier.map((tier: any) => (
           <div
             key={tier.id}
-            className={`bg-gray-900 rounded-2xl border-2 p-6 ${
+            className={`bg-gradient-to-br from-gray-900 to-black rounded-2xl border p-6 ${
               tier.is_default ? 'border-green-500' : 'border-gray-800'
             }`}
           >
@@ -192,11 +192,11 @@ export default function CommissionTiersPage() {
 
             {/* Actions */}
             <div className="flex gap-2 mt-4">
-              <button className="flex-1 px-4 py-2 text-sm font-black bg-green-500 text-black rounded-xl hover:bg-green-400 transition">
+              <button className="flex-1 px-4 py-2 text-sm font-semibold bg-green-500 text-black rounded-lg hover:bg-green-600 transition">
                 Edit
               </button>
               {!tier.is_default && (
-                <button className="px-4 py-2 text-sm font-black text-gray-400 border border-gray-700 rounded-xl hover:bg-gray-800 transition">
+                <button className="px-4 py-2 text-sm font-semibold text-gray-400 border border-gray-700 rounded-lg hover:bg-gray-800 transition">
                   {tier.is_active ? 'Disable' : 'Enable'}
                 </button>
               )}
