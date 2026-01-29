@@ -62,7 +62,7 @@ export default function StoreOwnerCTA() {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
-                href="/store-portal/apply"
+                href="/for-stores/apply"
                 className="px-8 py-4 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition text-lg text-center"
               >
                 Apply Now

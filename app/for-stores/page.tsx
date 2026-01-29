@@ -32,7 +32,7 @@ export default function ForStoresPage() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Link
-              href="/store-portal/apply"
+              href="/for-stores/apply"
               className="px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-cyan-600 transition text-lg text-center shadow-lg"
             >
               Apply to Join
@@ -217,7 +217,7 @@ export default function ForStoresPage() {
 
             <div className="text-center">
               <Link
-                href="/store-portal/apply"
+                href="/for-stores/apply"
                 className="inline-block px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-cyan-600 transition text-lg shadow-lg"
               >
                 Start Your Application
@@ -302,7 +302,7 @@ export default function ForStoresPage() {
             Join other local stores that are increasing revenue with Julyu
           </p>
           <Link
-            href="/store-portal/apply"
+            href="/for-stores/apply"
             className="inline-block px-10 py-5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold rounded-lg hover:from-blue-600 hover:to-cyan-600 transition text-xl shadow-lg"
           >
             Apply Now - It&apos;s Free
