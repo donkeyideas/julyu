@@ -40,9 +40,9 @@ export default async function InventoryPage() {
 
   // Calculate stats
   const totalProducts = inventoryItems.length
-  const inStockCount = inventoryItems.filter(item => item.in_stock && item.stock_quantity > 0).length
-  const lowStockCount = inventoryItems.filter(item => item.stock_quantity > 0 && item.stock_quantity <= 5).length
-  const outOfStockCount = inventoryItems.filter(item => !item.in_stock || item.stock_quantity === 0).length
+  const inStockCount = inventoryItems.filter((item: any) => item.in_stock && item.stock_quantity > 0).length
+  const lowStockCount = inventoryItems.filter((item: any) => item.stock_quantity > 0 && item.stock_quantity <= 5).length
+  const outOfStockCount = inventoryItems.filter((item: any) => !item.in_stock || item.stock_quantity === 0).length
 
   return (
     <div className="space-y-6">

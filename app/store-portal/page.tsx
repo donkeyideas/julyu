@@ -40,8 +40,8 @@ export default async function StorePortalDashboard() {
     .limit(10)
 
   const totalOrders = orders?.length || 0
-  const pendingOrders = orders?.filter(o => o.status === 'pending' || o.status === 'accepted').length || 0
-  const todayRevenue = orders?.reduce((sum, o) => {
+  const pendingOrders = orders?.filter((o: any) => o.status === 'pending' || o.status === 'accepted').length || 0
+  const todayRevenue = orders?.reduce((sum: number, o: any) => {
     const orderDate = new Date(o.ordered_at)
     const today = new Date()
     if (orderDate.toDateString() === today.toDateString()) {
@@ -203,7 +203,7 @@ export default async function StorePortalDashboard() {
 
         {orders && orders.length > 0 ? (
           <div className="space-y-3">
-            {orders.map(order => (
+            {orders.map((order: any) => (
               <div key={order.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-900">

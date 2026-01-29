@@ -32,10 +32,10 @@ export default async function OrdersPage() {
   const allOrders = orders || []
 
   // Separate orders by status
-  const pendingOrders = allOrders.filter(o => o.status === 'pending')
-  const activeOrders = allOrders.filter(o => ['accepted', 'preparing', 'ready', 'out_for_delivery'].includes(o.status))
-  const completedOrders = allOrders.filter(o => o.status === 'delivered')
-  const cancelledOrders = allOrders.filter(o => o.status === 'cancelled')
+  const pendingOrders = allOrders.filter((o: any) => o.status === 'pending')
+  const activeOrders = allOrders.filter((o: any) => ['accepted', 'preparing', 'ready', 'out_for_delivery'].includes(o.status))
+  const completedOrders = allOrders.filter((o: any) => o.status === 'delivered')
+  const cancelledOrders = allOrders.filter((o: any) => o.status === 'cancelled')
 
   return (
     <div className="space-y-6">
@@ -81,7 +81,7 @@ export default async function OrdersPage() {
             Pending Orders ({pendingOrders.length})
           </h2>
           <div className="space-y-4">
-            {pendingOrders.map(order => (
+            {pendingOrders.map((order: any) => (
               <OrderCard key={order.id} order={order} />
             ))}
           </div>
@@ -95,7 +95,7 @@ export default async function OrdersPage() {
             Active Orders ({activeOrders.length})
           </h2>
           <div className="space-y-4">
-            {activeOrders.map(order => (
+            {activeOrders.map((order: any) => (
               <OrderCard key={order.id} order={order} />
             ))}
           </div>
@@ -109,7 +109,7 @@ export default async function OrdersPage() {
             Completed Orders ({completedOrders.length})
           </h2>
           <div className="space-y-4">
-            {completedOrders.slice(0, 5).map(order => (
+            {completedOrders.slice(0, 5).map((order: any) => (
               <OrderCard key={order.id} order={order} />
             ))}
           </div>

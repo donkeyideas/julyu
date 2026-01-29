@@ -84,7 +84,7 @@ export default function ImportInventoryPage() {
 
   const handleToggleItem = (index: number) => {
     setExtractedItems(prev =>
-      prev.map((item, i) =>
+      prev.map((item: any, i: number) =>
         i === index ? { ...item, selected: !item.selected } : item
       )
     )
@@ -92,14 +92,14 @@ export default function ImportInventoryPage() {
 
   const handleUpdateItem = (index: number, field: string, value: any) => {
     setExtractedItems(prev =>
-      prev.map((item, i) =>
+      prev.map((item: any, i: number) =>
         i === index ? { ...item, [field]: value } : item
       )
     )
   }
 
   const handleImportSelected = async () => {
-    const selectedItems = extractedItems.filter(item => item.selected)
+    const selectedItems = extractedItems.filter((item: any) => item.selected)
 
     if (selectedItems.length === 0) {
       setError('Please select at least one item to import')
@@ -264,7 +264,7 @@ export default function ImportInventoryPage() {
 
           <div className="p-6">
             <div className="space-y-4">
-              {extractedItems.map((item, index) => (
+              {extractedItems.map((item: any, index: number) => (
                 <div
                   key={index}
                   className={`border rounded-lg p-4 transition ${
@@ -362,7 +362,7 @@ export default function ImportInventoryPage() {
           <div className="p-6 border-t border-gray-200 bg-gray-50">
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-600">
-                {extractedItems.filter(item => item.selected).length} of {extractedItems.length} items selected
+                {extractedItems.filter((item: any) => item.selected).length} of {extractedItems.length} items selected
               </div>
               <button
                 onClick={handleImportSelected}
