@@ -378,17 +378,17 @@ export default function AIModelsPage() {
 
   return (
     <div>
-      <div className="mb-10 pb-6 border-b border-gray-800">
-        <h1 className="text-4xl font-black">AI Model API Keys</h1>
-        <p className="text-gray-500 mt-2">Configure and test your AI model API keys</p>
+      <div className="mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
+        <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>AI Model API Keys</h1>
+        <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>Configure and test your AI model API keys</p>
       </div>
 
       {/* DeepSeek API Key */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 mb-8">
+      <div className="rounded-2xl p-8 mb-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold mb-2">DeepSeek API Key</h2>
-            <p className="text-gray-500 text-sm">Used for product matching</p>
+            <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>DeepSeek API Key</h2>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Used for product matching</p>
           </div>
           <div>
             {apiKeyStatus.deepseek ? (
@@ -405,13 +405,14 @@ export default function AIModelsPage() {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-2">API Key</label>
+            <label className="block text-sm mb-2" style={{ color: 'var(--text-muted)' }}>API Key</label>
             <input
               type="text"
               value={deepseekKey}
               onChange={(e) => setDeepseekKey(e.target.value)}
               placeholder={apiKeyStatus.deepseek ? "Enter new key to update" : "sk-..."}
-              className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white focus:border-green-500 focus:outline-none font-mono text-sm"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none font-mono text-sm"
+              style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
@@ -455,11 +456,11 @@ export default function AIModelsPage() {
       </div>
 
       {/* OpenAI API Key */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 mb-8">
+      <div className="rounded-2xl p-8 mb-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold mb-2">OpenAI API Key</h2>
-            <p className="text-gray-500 text-sm">Used for receipt OCR</p>
+            <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>OpenAI API Key</h2>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Used for receipt OCR</p>
           </div>
           <div>
             {apiKeyStatus.openai ? (
@@ -476,13 +477,14 @@ export default function AIModelsPage() {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-2">API Key</label>
+            <label className="block text-sm mb-2" style={{ color: 'var(--text-muted)' }}>API Key</label>
             <input
               type="text"
               value={openaiKey}
               onChange={(e) => setOpenaiKey(e.target.value)}
               placeholder={apiKeyStatus.openai ? "Enter new key to update" : "sk-..."}
-              className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white focus:border-green-500 focus:outline-none font-mono text-sm"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none font-mono text-sm"
+              style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
@@ -519,11 +521,11 @@ export default function AIModelsPage() {
       </div>
 
       {/* Kroger API Credentials */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8">
+      <div className="rounded-2xl p-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold mb-2">Kroger API</h2>
-            <p className="text-gray-500 text-sm">Used for real-time grocery prices (FREE)</p>
+            <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Kroger API</h2>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Used for real-time grocery prices (FREE)</p>
             <a
               href="https://developer.kroger.com/"
               target="_blank"
@@ -548,24 +550,26 @@ export default function AIModelsPage() {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-2">Client ID</label>
+            <label className="block text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Client ID</label>
             <input
               type="text"
               value={krogerClientId}
               onChange={(e) => setKrogerClientId(e.target.value)}
               placeholder={apiKeyStatus.kroger ? "Enter new Client ID to update" : "your-client-id"}
-              className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white focus:border-green-500 focus:outline-none font-mono text-sm"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none font-mono text-sm"
+              style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
           <div>
-            <label className="block text-sm text-gray-400 mb-2">Client Secret</label>
+            <label className="block text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Client Secret</label>
             <input
               type="password"
               value={krogerClientSecret}
               onChange={(e) => setKrogerClientSecret(e.target.value)}
               placeholder={apiKeyStatus.kroger ? "Enter new Client Secret to update" : "your-client-secret"}
-              className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white focus:border-green-500 focus:outline-none font-mono text-sm"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none font-mono text-sm"
+              style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
@@ -608,11 +612,11 @@ export default function AIModelsPage() {
       </div>
 
       {/* Spoonacular API Key */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 mt-8">
+      <div className="rounded-2xl p-8 mt-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold mb-2">Spoonacular API</h2>
-            <p className="text-gray-500 text-sm">Used for product data, nutrition info, and price estimates</p>
+            <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Spoonacular API</h2>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Used for product data, nutrition info, and price estimates</p>
             <a
               href="https://spoonacular.com/food-api"
               target="_blank"
@@ -637,13 +641,14 @@ export default function AIModelsPage() {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-2">API Key</label>
+            <label className="block text-sm mb-2" style={{ color: 'var(--text-muted)' }}>API Key</label>
             <input
               type="text"
               value={spoonacularKey}
               onChange={(e) => setSpoonacularKey(e.target.value)}
               placeholder={apiKeyStatus.spoonacular ? "Enter new key to update" : "your-api-key"}
-              className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white focus:border-green-500 focus:outline-none font-mono text-sm"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none font-mono text-sm"
+              style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
@@ -686,11 +691,11 @@ export default function AIModelsPage() {
       </div>
 
       {/* Positionstack API Key */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 mt-8">
+      <div className="rounded-2xl p-8 mt-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold mb-2">Positionstack Geocoding API</h2>
-            <p className="text-gray-500 text-sm">Converts addresses and zip codes to coordinates for accurate store searches</p>
+            <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Positionstack Geocoding API</h2>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Converts addresses and zip codes to coordinates for accurate store searches</p>
             <a
               href="https://positionstack.com/signup/free"
               target="_blank"
@@ -715,13 +720,14 @@ export default function AIModelsPage() {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-2">API Key</label>
+            <label className="block text-sm mb-2" style={{ color: 'var(--text-muted)' }}>API Key</label>
             <input
               type="text"
               value={positionstackKey}
               onChange={(e) => setPositionstackKey(e.target.value)}
               placeholder={apiKeyStatus.positionstack ? "Enter new key to update" : "your-api-key"}
-              className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white focus:border-green-500 focus:outline-none font-mono text-sm"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none font-mono text-sm"
+              style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
@@ -747,11 +753,11 @@ export default function AIModelsPage() {
       </div>
 
       {/* Stripe API Keys */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 mt-8">
+      <div className="rounded-2xl p-8 mt-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold mb-2">Stripe</h2>
-            <p className="text-gray-500 text-sm">Payment processing for subscriptions</p>
+            <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Stripe</h2>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Payment processing for subscriptions</p>
             <a
               href="https://dashboard.stripe.com/apikeys"
               target="_blank"
@@ -776,35 +782,38 @@ export default function AIModelsPage() {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-2">Secret Key</label>
+            <label className="block text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Secret Key</label>
             <input
               type="password"
               value={stripeSecretKey}
               onChange={(e) => setStripeSecretKey(e.target.value)}
               placeholder={apiKeyStatus.stripe ? "Enter new key to update" : "sk_live_... or sk_test_..."}
-              className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white focus:border-green-500 focus:outline-none font-mono text-sm"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none font-mono text-sm"
+              style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
           <div>
-            <label className="block text-sm text-gray-400 mb-2">Publishable Key</label>
+            <label className="block text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Publishable Key</label>
             <input
               type="text"
               value={stripePublishableKey}
               onChange={(e) => setStripePublishableKey(e.target.value)}
               placeholder="pk_live_... or pk_test_..."
-              className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white focus:border-green-500 focus:outline-none font-mono text-sm"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none font-mono text-sm"
+              style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
           <div>
-            <label className="block text-sm text-gray-400 mb-2">Webhook Secret</label>
+            <label className="block text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Webhook Secret</label>
             <input
               type="password"
               value={stripeWebhookSecret}
               onChange={(e) => setStripeWebhookSecret(e.target.value)}
               placeholder="whsec_..."
-              className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white focus:border-green-500 focus:outline-none font-mono text-sm"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none font-mono text-sm"
+              style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 

@@ -134,10 +134,10 @@ export default function FeatureFlagsPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-10 pb-6 border-b border-gray-800">
+      <div className="flex justify-between items-center mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
         <div>
-          <h1 className="text-4xl font-black">Feature Flags</h1>
-          <p className="text-gray-500 mt-2">Control feature rollout and A/B testing</p>
+          <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>Feature Flags</h1>
+          <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>Control feature rollout and A/B testing</p>
         </div>
         <button
           onClick={openCreateModal}
@@ -149,36 +149,37 @@ export default function FeatureFlagsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <div className="text-sm text-gray-500">Total Flags</div>
-          <div className="text-3xl font-bold">{features.length}</div>
+        <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Total Flags</div>
+          <div className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{features.length}</div>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <div className="text-sm text-gray-500">Enabled</div>
+        <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Enabled</div>
           <div className="text-3xl font-bold text-green-500">{enabledCount}</div>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <div className="text-sm text-gray-500">Disabled</div>
-          <div className="text-3xl font-bold text-gray-500">{features.length - enabledCount}</div>
+        <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Disabled</div>
+          <div className="text-3xl font-bold" style={{ color: 'var(--text-muted)' }}>{features.length - enabledCount}</div>
         </div>
       </div>
 
       {/* Feature Flags List */}
       <div className="space-y-4">
         {loading ? (
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 text-center text-gray-500">
+          <div className="rounded-2xl p-8 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
             Loading feature flags...
           </div>
         ) : features.length > 0 ? (
           features.map(feature => (
             <div
               key={feature.id}
-              className="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-gray-700 transition"
+              className="rounded-2xl p-6 transition"
+              style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-bold">{feature.name}</h3>
+                    <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{feature.name}</h3>
                     <span className={`px-2 py-0.5 rounded text-xs font-medium ${
                       feature.is_enabled
                         ? 'bg-green-500/15 text-green-500'
@@ -192,22 +193,22 @@ export default function FeatureFlagsPage() {
                       </span>
                     )}
                   </div>
-                  <p className="text-gray-500 text-sm mb-4">
+                  <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
                     {feature.description || 'No description'}
                   </p>
 
                   {/* Rollout Progress Bar */}
                   <div className="flex items-center gap-4">
                     <div className="flex-1 max-w-xs">
-                      <div className="text-xs text-gray-500 mb-1">Rollout Percentage</div>
-                      <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+                      <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Rollout Percentage</div>
+                      <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)' }}>
                         <div
                           className={`h-full transition-all ${feature.is_enabled ? 'bg-green-500' : 'bg-gray-600'}`}
                           style={{ width: `${feature.rollout_percentage}%` }}
                         />
                       </div>
                     </div>
-                    <span className="text-sm text-gray-400">{feature.rollout_percentage}%</span>
+                    <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{feature.rollout_percentage}%</span>
                   </div>
                 </div>
 
@@ -218,8 +219,8 @@ export default function FeatureFlagsPage() {
                     className="relative"
                   >
                     <div className={`w-14 h-8 rounded-full transition ${
-                      feature.is_enabled ? 'bg-green-500' : 'bg-gray-700'
-                    }`}>
+                      feature.is_enabled ? 'bg-green-500' : ''
+                    }`} style={{ backgroundColor: feature.is_enabled ? undefined : 'var(--bg-secondary)' }}>
                       <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all shadow ${
                         feature.is_enabled ? 'left-7' : 'left-1'
                       }`} />
@@ -228,13 +229,15 @@ export default function FeatureFlagsPage() {
 
                   <button
                     onClick={() => openEditModal(feature)}
-                    className="px-4 py-2 border border-gray-700 rounded-lg hover:border-green-500 hover:text-green-500 transition"
+                    className="px-4 py-2 rounded-lg hover:border-green-500 hover:text-green-500 transition"
+                    style={{ border: '1px solid var(--border-color)' }}
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => deleteFeature(feature.id)}
-                    className="px-4 py-2 border border-gray-700 rounded-lg hover:border-red-500 hover:text-red-500 transition"
+                    className="px-4 py-2 rounded-lg hover:border-red-500 hover:text-red-500 transition"
+                    style={{ border: '1px solid var(--border-color)' }}
                   >
                     Delete
                   </button>
@@ -243,14 +246,14 @@ export default function FeatureFlagsPage() {
             </div>
           ))
         ) : (
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-12 text-center">
-            <div className="text-gray-500 mb-4">
+          <div className="rounded-2xl p-12 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <div className="mb-4" style={{ color: 'var(--text-secondary)' }}>
               <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
               </svg>
               No feature flags configured
             </div>
-            <p className="text-gray-600 mb-6">Create feature flags to control feature rollout</p>
+            <p className="mb-6" style={{ color: 'var(--text-muted)' }}>Create feature flags to control feature rollout</p>
             <button
               onClick={openCreateModal}
               className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition"
@@ -264,39 +267,41 @@ export default function FeatureFlagsPage() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-6">
+          <div className="rounded-2xl p-8 max-w-md w-full" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>
               {editingFeature ? 'Edit Feature Flag' : 'Create Feature Flag'}
             </h2>
 
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
                 <div>
-                  <label className="block font-medium mb-2">Flag Name</label>
+                  <label className="block font-medium mb-2" style={{ color: 'var(--text-primary)' }}>Flag Name</label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="e.g., ai_assistant"
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:border-green-500 focus:outline-none"
+                    className="w-full rounded-lg px-4 py-3 focus:border-green-500 focus:outline-none"
+                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                     required
                   />
-                  <p className="text-xs text-gray-500 mt-1">Use snake_case (e.g., new_feature_v2)</p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Use snake_case (e.g., new_feature_v2)</p>
                 </div>
 
                 <div>
-                  <label className="block font-medium mb-2">Description</label>
+                  <label className="block font-medium mb-2" style={{ color: 'var(--text-primary)' }}>Description</label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                     placeholder="What does this feature flag control?"
                     rows={3}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:border-green-500 focus:outline-none"
+                    className="w-full rounded-lg px-4 py-3 focus:border-green-500 focus:outline-none"
+                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block font-medium mb-2">Rollout Percentage</label>
+                  <label className="block font-medium mb-2" style={{ color: 'var(--text-primary)' }}>Rollout Percentage</label>
                   <div className="flex items-center gap-4">
                     <input
                       type="range"
@@ -306,21 +311,21 @@ export default function FeatureFlagsPage() {
                       onChange={(e) => setFormData(prev => ({ ...prev, rollout_percentage: parseInt(e.target.value) }))}
                       className="flex-1"
                     />
-                    <span className="w-12 text-center">{formData.rollout_percentage}%</span>
+                    <span className="w-12 text-center" style={{ color: 'var(--text-primary)' }}>{formData.rollout_percentage}%</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Percentage of users who will see this feature</p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Percentage of users who will see this feature</p>
                 </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-gray-800">
-                  <label className="font-medium">Enable Feature</label>
+                <div className="flex items-center justify-between pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
+                  <label className="font-medium" style={{ color: 'var(--text-primary)' }}>Enable Feature</label>
                   <button
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, is_enabled: !prev.is_enabled }))}
                     className="relative"
                   >
                     <div className={`w-14 h-8 rounded-full transition ${
-                      formData.is_enabled ? 'bg-green-500' : 'bg-gray-700'
-                    }`}>
+                      formData.is_enabled ? 'bg-green-500' : ''
+                    }`} style={{ backgroundColor: formData.is_enabled ? undefined : 'var(--bg-secondary)' }}>
                       <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all shadow ${
                         formData.is_enabled ? 'left-7' : 'left-1'
                       }`} />
@@ -333,7 +338,8 @@ export default function FeatureFlagsPage() {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-3 border border-gray-700 rounded-lg hover:border-gray-500 transition"
+                  className="flex-1 px-4 py-3 rounded-lg hover:border-gray-500 transition"
+                  style={{ border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 >
                   Cancel
                 </button>
