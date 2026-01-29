@@ -180,8 +180,8 @@ export default function UsersPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="inline-block w-12 h-12 border-4 border-gray-800 border-t-green-500 rounded-full animate-spin mb-4"></div>
-          <div className="text-gray-500">Loading users...</div>
+          <div className="inline-block w-12 h-12 border-4 rounded-full animate-spin mb-4" style={{ borderColor: 'var(--border-color)', borderTopColor: 'var(--accent-primary)' }}></div>
+          <div style={{ color: 'var(--text-secondary)' }}>Loading users...</div>
         </div>
       </div>
     )
@@ -190,35 +190,35 @@ export default function UsersPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-10 pb-6 border-b border-gray-800">
-        <h1 className="text-4xl font-black">User Management</h1>
-        <p className="text-gray-500 mt-2">View and manage all registered users</p>
+      <div className="mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
+        <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>User Management</h1>
+        <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>View and manage all registered users</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-xl p-4">
-          <div className="text-xs text-gray-500 mb-1">Total Users</div>
+        <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Total Users</div>
           <div className="text-3xl font-black text-green-500">{stats.total}</div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-xl p-4">
-          <div className="text-xs text-gray-500 mb-1">Premium</div>
+        <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Premium</div>
           <div className="text-3xl font-black text-blue-400">{stats.premium}</div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-xl p-4">
-          <div className="text-xs text-gray-500 mb-1">Enterprise</div>
+        <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Enterprise</div>
           <div className="text-3xl font-black text-purple-400">{stats.enterprise}</div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-xl p-4">
-          <div className="text-xs text-gray-500 mb-1">Free</div>
-          <div className="text-3xl font-black text-gray-400">{stats.free}</div>
+        <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Free</div>
+          <div className="text-3xl font-black" style={{ color: 'var(--text-secondary)' }}>{stats.free}</div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-xl p-4">
-          <div className="text-xs text-gray-500 mb-1">New This Month</div>
+        <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>New This Month</div>
           <div className="text-3xl font-black text-yellow-400">{stats.newThisMonth}</div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-xl p-4">
-          <div className="text-xs text-gray-500 mb-1">Active Today</div>
+        <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Active Today</div>
           <div className="text-3xl font-black text-green-400">{stats.activeToday}</div>
         </div>
       </div>
@@ -231,13 +231,15 @@ export default function UsersPage() {
             placeholder="Search by name or email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg focus:outline-none focus:border-green-500 text-white"
+            className="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-green-500"
+            style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
           />
         </div>
         <select
           value={filterTier}
           onChange={(e) => setFilterTier(e.target.value)}
-          className="px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg focus:outline-none focus:border-green-500 text-white"
+          className="px-4 py-3 rounded-lg focus:outline-none focus:border-green-500"
+          style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
         >
           <option value="all">All Tiers</option>
           <option value="free">Free</option>
@@ -247,22 +249,22 @@ export default function UsersPage() {
       </div>
 
       {/* Users Table */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-800">
-                <th className="text-left px-6 py-4 text-sm font-semibold text-gray-400">User</th>
-                <th className="text-left px-6 py-4 text-sm font-semibold text-gray-400">Tier</th>
-                <th className="text-left px-6 py-4 text-sm font-semibold text-gray-400">Joined</th>
-                <th className="text-left px-6 py-4 text-sm font-semibold text-gray-400">Last Active</th>
-                <th className="text-right px-6 py-4 text-sm font-semibold text-gray-400">Actions</th>
+              <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                <th className="text-left px-6 py-4 text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>User</th>
+                <th className="text-left px-6 py-4 text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>Tier</th>
+                <th className="text-left px-6 py-4 text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>Joined</th>
+                <th className="text-left px-6 py-4 text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>Last Active</th>
+                <th className="text-right px-6 py-4 text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={5} className="px-6 py-12 text-center" style={{ color: 'var(--text-secondary)' }}>
                     {searchTerm || filterTier !== 'all'
                       ? 'No users match your search criteria'
                       : 'No users found. Users will appear here when they sign up.'}
@@ -270,7 +272,7 @@ export default function UsersPage() {
                 </tr>
               ) : (
                 filteredUsers.map((user) => (
-                  <tr key={user.id} className="border-b border-gray-800 hover:bg-gray-800/50 transition">
+                  <tr key={user.id} className="hover:bg-gray-800/50 transition" style={{ borderBottom: '1px solid var(--border-color)' }}>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         {/* Avatar or initial */}
@@ -281,12 +283,12 @@ export default function UsersPage() {
                             className="w-10 h-10 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 font-semibold">
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>
                             {(user.full_name || user.email)[0].toUpperCase()}
                           </div>
                         )}
                         <div>
-                          <div className="font-semibold text-white flex items-center gap-2">
+                          <div className="font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                             {user.full_name || 'No name'}
                             {/* Show Google icon for Google-authenticated users */}
                             {(user.auth_provider === 'google' || user.firebase_uid) && (
@@ -295,7 +297,7 @@ export default function UsersPage() {
                               </span>
                             )}
                           </div>
-                          <div className="text-sm text-gray-500">{user.email}</div>
+                          <div className="text-sm" style={{ color: 'var(--text-muted)' }}>{user.email}</div>
                         </div>
                       </div>
                     </td>
@@ -304,10 +306,10 @@ export default function UsersPage() {
                         {user.subscription_tier.charAt(0).toUpperCase() + user.subscription_tier.slice(1)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-400">
+                    <td className="px-6 py-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
                       {formatDate(user.created_at)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-400">
+                    <td className="px-6 py-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
                       {formatDate(user.last_login)}
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -327,47 +329,50 @@ export default function UsersPage() {
       </div>
 
       {/* User count */}
-      <div className="mt-4 text-sm text-gray-500">
+      <div className="mt-4 text-sm" style={{ color: 'var(--text-muted)' }}>
         Showing {filteredUsers.length} of {users.length} users
       </div>
 
       {/* Edit Modal */}
       {editModalOpen && selectedUser && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-lg">
-            <div className="p-6 border-b border-gray-800">
-              <h2 className="text-2xl font-bold">Edit User</h2>
-              <p className="text-gray-500 text-sm mt-1">{selectedUser.email}</p>
+          <div className="rounded-2xl w-full max-w-lg" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <div className="p-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
+              <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Edit User</h2>
+              <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{selectedUser.email}</p>
             </div>
 
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Full Name</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>Full Name</label>
                 <input
                   type="text"
                   value={selectedUser.full_name || ''}
                   onChange={(e) => setSelectedUser({ ...selectedUser, full_name: e.target.value })}
-                  className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg focus:outline-none focus:border-green-500 text-white"
+                  className="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-green-500"
+                  style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Phone</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>Phone</label>
                 <input
                   type="tel"
                   value={selectedUser.phone || ''}
                   onChange={(e) => setSelectedUser({ ...selectedUser, phone: e.target.value })}
-                  className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg focus:outline-none focus:border-green-500 text-white"
+                  className="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-green-500"
+                  style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   placeholder="+1 (555) 000-0000"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Subscription Tier</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>Subscription Tier</label>
                 <select
                   value={selectedUser.subscription_tier}
                   onChange={(e) => setSelectedUser({ ...selectedUser, subscription_tier: e.target.value as 'free' | 'premium' | 'enterprise' })}
-                  className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg focus:outline-none focus:border-green-500 text-white"
+                  className="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-green-500"
+                  style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 >
                   <option value="free">Free</option>
                   <option value="premium">Premium</option>
@@ -375,21 +380,21 @@ export default function UsersPage() {
                 </select>
               </div>
 
-              <div className="pt-4 border-t border-gray-800">
+              <div className="pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-500">User ID:</span>
-                    <p className="text-gray-400 font-mono text-xs mt-1 truncate">{selectedUser.id}</p>
+                    <span style={{ color: 'var(--text-muted)' }}>User ID:</span>
+                    <p className="font-mono text-xs mt-1 truncate" style={{ color: 'var(--text-secondary)' }}>{selectedUser.id}</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">Stripe Customer:</span>
-                    <p className="text-gray-400 font-mono text-xs mt-1 truncate">
+                    <span style={{ color: 'var(--text-muted)' }}>Stripe Customer:</span>
+                    <p className="font-mono text-xs mt-1 truncate" style={{ color: 'var(--text-secondary)' }}>
                       {selectedUser.stripe_customer_id || 'Not connected'}
                     </p>
                   </div>
                   <div>
-                    <span className="text-gray-500">Auth Method:</span>
-                    <p className="text-gray-400 mt-1 flex items-center gap-2">
+                    <span style={{ color: 'var(--text-muted)' }}>Auth Method:</span>
+                    <p className="mt-1 flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
                       {(selectedUser.auth_provider === 'google' || selectedUser.firebase_uid) ? (
                         <>
                           <GoogleIcon />
@@ -401,8 +406,8 @@ export default function UsersPage() {
                     </p>
                   </div>
                   <div>
-                    <span className="text-gray-500">Joined:</span>
-                    <p className="text-gray-400 text-xs mt-1">
+                    <span style={{ color: 'var(--text-muted)' }}>Joined:</span>
+                    <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
                       {new Date(selectedUser.created_at).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
@@ -414,13 +419,14 @@ export default function UsersPage() {
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-800 flex justify-end gap-4">
+            <div className="p-6 flex justify-end gap-4" style={{ borderTop: '1px solid var(--border-color)' }}>
               <button
                 onClick={() => {
                   setEditModalOpen(false)
                   setSelectedUser(null)
                 }}
-                className="px-6 py-2 text-gray-400 hover:text-white transition"
+                className="px-6 py-2 transition"
+                style={{ color: 'var(--text-secondary)' }}
               >
                 Cancel
               </button>
