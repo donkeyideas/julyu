@@ -187,7 +187,7 @@ export default function ImportInventoryPage() {
                 Upload Supplier Receipt
               </h2>
               <p className="text-sm text-gray-600">
-                We'll automatically extract product names, prices, and quantities from your receipt
+                We&apos;ll automatically extract product names, prices, and quantities from your receipt
               </p>
             </div>
 

@@ -50,7 +50,7 @@ export default async function InventoryPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Inventory</h1>
           <p className="text-gray-600 mt-1">
-            Manage your store's products and stock levels
+            Manage your store&apos;s products and stock levels
           </p>
         </div>
         <div className="flex space-x-3">

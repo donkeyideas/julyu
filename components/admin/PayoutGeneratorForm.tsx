@@ -140,7 +140,7 @@ export default function PayoutGeneratorForm() {
       <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
         <p className="text-xs text-blue-800">
           This will generate payouts for all stores with completed orders in the selected period.
-          Payouts will be automatically sent via Stripe Connect to each store owner's bank account.
+          Payouts will be automatically sent via Stripe Connect to each store owner&apos;s bank account.
         </p>
       </div>
 

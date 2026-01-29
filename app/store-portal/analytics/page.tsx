@@ -26,7 +26,7 @@ export default function AnalyticsPage() {
           Analytics dashboard will be available in Phase 5 of development.
         </p>
         <p className="text-sm text-gray-500 mb-6">
-          Track your sales performance, view customer insights, and monitor your store's growth over time.
+          Track your sales performance, view customer insights, and monitor your store&apos;s growth over time.
         </p>
         <Link
           href="/store-portal"
@@ -37,7 +37,7 @@ export default function AnalyticsPage() {
       </div>
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-blue-900 mb-2">Metrics you'll be able to track:</h3>
+        <h3 className="text-sm font-medium text-blue-900 mb-2">Metrics you&apos;ll be able to track:</h3>
         <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
           <li>Total revenue and order volume (daily, weekly, monthly)</li>
           <li>Average order value and customer lifetime value</li>

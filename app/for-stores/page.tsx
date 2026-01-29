@@ -27,7 +27,7 @@ export default function ForStoresPage() {
           </h1>
 
           <p className="text-xl text-gray-400 mb-10 leading-relaxed max-w-3xl mx-auto">
-            Join NYC's local stores that are reaching new customers and increasing revenue through Julyu's digital storefront platform.
+            Join NYC&apos;s local stores that are reaching new customers and increasing revenue through Julyu&apos;s digital storefront platform.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -240,7 +240,7 @@ export default function ForStoresPage() {
                 What types of stores can join Julyu?
               </summary>
               <p className="text-gray-400 mt-4">
-                We work with bodegas, convenience stores, corner stores, small grocery stores, and local markets. If you sell groceries or household items, you're a good fit!
+                We work with bodegas, convenience stores, corner stores, small grocery stores, and local markets. If you sell groceries or household items, you&apos;re a good fit!
               </p>
             </details>
 
@@ -258,7 +258,7 @@ export default function ForStoresPage() {
                 How do I receive orders?
               </summary>
               <p className="text-gray-400 mt-4">
-                You'll receive real-time notifications via email and through your store portal dashboard. You can accept or decline orders based on product availability.
+                You&apos;ll receive real-time notifications via email and through your store portal dashboard. You can accept or decline orders based on product availability.
               </p>
             </details>
 
@@ -276,7 +276,7 @@ export default function ForStoresPage() {
                 When do I get paid?
               </summary>
               <p className="text-gray-400 mt-4">
-                Payouts are processed weekly via Stripe Connect. You'll need to set up a Stripe account (free) to receive your earnings.
+                Payouts are processed weekly via Stripe Connect. You&apos;ll need to set up a Stripe account (free) to receive your earnings.
               </p>
             </details>
 
@@ -305,7 +305,7 @@ export default function ForStoresPage() {
             href="/store-portal/apply"
             className="inline-block px-10 py-5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold rounded-lg hover:from-blue-600 hover:to-cyan-600 transition text-xl shadow-lg"
           >
-            Apply Now - It's Free
+            Apply Now - It&apos;s Free
           </Link>
           <p className="text-sm text-gray-500 mt-6">
             Application takes less than 5 minutes • No credit card required

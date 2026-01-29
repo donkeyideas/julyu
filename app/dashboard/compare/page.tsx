@@ -1020,7 +1020,7 @@ function ComparePageContent() {
                 No local stores found nearby
               </h3>
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                We couldn't find any local stores with these products in your area. Try searching for different items or check back later as more stores join Julyu.
+                We couldn&apos;t find any local stores with these products in your area. Try searching for different items or check back later as more stores join Julyu.
               </p>
             </div>
           )}

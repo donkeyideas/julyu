@@ -376,7 +376,7 @@ export default function StoreApplicationPage() {
 
             <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
               <p className="text-sm text-blue-800">
-                <strong>What happens next?</strong> After submitting, our team will review your application within 1-2 business days. You'll receive an email notification once your application is approved.
+                <strong>What happens next?</strong> After submitting, our team will review your application within 1-2 business days. You&apos;ll receive an email notification once your application is approved.
               </p>
             </div>
           </form>

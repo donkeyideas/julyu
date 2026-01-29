@@ -63,7 +63,7 @@ export default async function StorePortalLayout({
                   </div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">Application Pending</h2>
                   <p className="text-gray-600 mb-6">
-                    Your store application is pending review. We'll notify you via email once it's been reviewed.
+                    Your store application is pending review. We&apos;ll notify you via email once it&apos;s been reviewed.
                   </p>
                 </>
               )}
