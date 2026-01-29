@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate distances and filter by radius
     const storesWithDistance = stores
-      .map(store => {
+      .map((store: any) => {
         if (!store.latitude || !store.longitude) return null
 
         // Haversine formula to calculate distance
@@ -91,8 +91,8 @@ export async function GET(request: NextRequest) {
           distance: parseFloat(distance.toFixed(2))
         }
       })
-      .filter(store => store !== null && store.distance <= radius)
-      .sort((a, b) => a.distance - b.distance)
+      .filter((store: any) => store !== null && store.distance <= radius)
+      .sort((a: any, b: any) => a.distance - b.distance)
 
     if (storesWithDistance.length === 0) {
       return NextResponse.json({
