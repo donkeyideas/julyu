@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getStoreOwnerAnyStatus } from '@/lib/auth/store-portal-auth'
 import Link from 'next/link'
+import StorePortalHeader from '@/components/store-portal/Header'
 
 export const metadata = {
   title: 'Store Portal - Julyu',
@@ -27,32 +28,14 @@ export default async function StorePortalLayout({
   // Show application status page if not approved
   if (storeOwner && storeOwner.application_status !== 'approved') {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <header className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <Link href="/" className="text-2xl font-bold text-blue-600">
-                  Julyu
-                </Link>
-                <span className="text-gray-400">|</span>
-                <span className="text-lg font-medium text-gray-700">Store Portal</span>
-              </div>
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-600">{user?.email}</span>
-                <Link
-                  href="/api/auth/signout"
-                  className="text-sm text-gray-600 hover:text-gray-900"
-                >
-                  Sign Out
-                </Link>
-              </div>
-            </div>
-          </div>
-        </header>
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
+        <StorePortalHeader
+          userEmail={user?.email}
+          isApproved={false}
+        />
 
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+          <div className="rounded-lg shadow-sm p-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="text-center">
               {storeOwner.application_status === 'pending' && (
                 <>
@@ -149,65 +132,12 @@ export default async function StorePortalLayout({
 
   // Store owner is approved - show full portal
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-8">
-              <div className="flex items-center space-x-3">
-                <Link href="/" className="text-2xl font-bold text-blue-600">
-                  Julyu
-                </Link>
-                <span className="text-gray-400">|</span>
-                <span className="text-lg font-medium text-gray-700">Store Portal</span>
-              </div>
-
-              <nav className="hidden md:flex space-x-6">
-                <Link
-                  href="/store-portal"
-                  className="text-sm font-medium text-gray-700 hover:text-blue-600"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/store-portal/inventory"
-                  className="text-sm font-medium text-gray-700 hover:text-blue-600"
-                >
-                  Inventory
-                </Link>
-                <Link
-                  href="/store-portal/orders"
-                  className="text-sm font-medium text-gray-700 hover:text-blue-600"
-                >
-                  Orders
-                </Link>
-                <Link
-                  href="/store-portal/analytics"
-                  className="text-sm font-medium text-gray-700 hover:text-blue-600"
-                >
-                  Analytics
-                </Link>
-                <Link
-                  href="/store-portal/settings"
-                  className="text-sm font-medium text-gray-700 hover:text-blue-600"
-                >
-                  Settings
-                </Link>
-              </nav>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">{storeOwner?.business_name}</span>
-              <Link
-                href="/api/auth/signout"
-                className="text-sm text-gray-600 hover:text-gray-900"
-              >
-                Sign Out
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
+      <StorePortalHeader
+        businessName={storeOwner?.business_name}
+        userEmail={user?.email}
+        isApproved={true}
+      />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}

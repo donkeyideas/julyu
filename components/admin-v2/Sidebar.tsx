@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { clearAdminSession, getAdminSession } from '@/lib/auth/admin-auth'
+import ThemeToggle from '@/components/ThemeToggle'
 
 interface NavItem {
   href: string
@@ -93,6 +94,11 @@ export default function AdminSidebar() {
       </nav>
 
       <div className="mt-8 pt-8 border-t border-gray-800">
+        <div className="px-4 mb-4">
+          <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Theme</p>
+          <ThemeToggle />
+        </div>
+
         <Link
           href="/"
           className="block w-full px-4 py-3 text-left text-gray-400 hover:bg-green-500/10 hover:text-green-500 rounded-lg transition"
