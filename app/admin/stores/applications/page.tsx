@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react'
 export default function StoreApplicationsPage() {
   const [loading, setLoading] = useState(true)
   const [applications, setApplications] = useState<any[]>([])
+  const [selectedApplication, setSelectedApplication] = useState<any | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
     loadApplications()
@@ -63,6 +65,7 @@ export default function StoreApplicationsPage() {
       })
       if (response.ok) {
         loadApplications()
+        setIsModalOpen(false)
       }
     } catch (error) {
       console.error('Error approving application:', error)
@@ -81,10 +84,21 @@ export default function StoreApplicationsPage() {
       })
       if (response.ok) {
         loadApplications()
+        setIsModalOpen(false)
       }
     } catch (error) {
       console.error('Error rejecting application:', error)
     }
+  }
+
+  const openModal = (app: any) => {
+    setSelectedApplication(app)
+    setIsModalOpen(true)
+  }
+
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setSelectedApplication(null)
   }
 
   return (
@@ -148,7 +162,12 @@ export default function StoreApplicationsPage() {
             </thead>
             <tbody style={{ borderTop: '1px solid var(--border-color)' }}>
               {allApplications.map((app: any) => (
-                <tr key={app.id} className="hover:bg-gray-800/50 transition" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                <tr
+                  key={app.id}
+                  onClick={() => openModal(app)}
+                  className="hover:bg-gray-800/50 transition cursor-pointer"
+                  style={{ borderBottom: '1px solid var(--border-color)' }}
+                >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{app.business_name}</div>
                     {app.business_email && (
@@ -184,13 +203,19 @@ export default function StoreApplicationsPage() {
                     {app.application_status === 'pending' && (
                       <>
                         <button
-                          onClick={() => handleApprove(app.id)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleApprove(app.id)
+                          }}
                           className="text-green-500 hover:text-green-400 font-semibold"
                         >
                           Approve
                         </button>
                         <button
-                          onClick={() => handleReject(app.id)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleReject(app.id)
+                          }}
                           className="text-red-500 hover:text-red-400 font-semibold"
                         >
                           Reject
@@ -213,6 +238,172 @@ export default function StoreApplicationsPage() {
           </div>
         )}
       </div>
+
+      {/* Application Details Modal */}
+      {isModalOpen && selectedApplication && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.75)' }}
+          onClick={closeModal}
+        >
+          <div
+            className="rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="sticky top-0 px-8 py-6 flex items-center justify-between" style={{ backgroundColor: 'var(--bg-card)', borderBottom: '1px solid var(--border-color)' }}>
+              <div>
+                <h2 className="text-2xl font-black" style={{ color: 'var(--text-primary)' }}>
+                  {selectedApplication.business_name}
+                </h2>
+                <span className={`inline-block mt-2 px-3 py-1 text-xs font-semibold rounded-lg ${statusColors[selectedApplication.application_status]}`}>
+                  {selectedApplication.application_status.replace('_', ' ')}
+                </span>
+              </div>
+              <button
+                onClick={closeModal}
+                className="text-2xl font-bold hover:opacity-70 transition"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="px-8 py-6 space-y-8">
+              {/* Business Information */}
+              <div>
+                <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+                  Business Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Business Name</div>
+                    <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{selectedApplication.business_name || 'N/A'}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Business Type</div>
+                    <div className="font-semibold capitalize" style={{ color: 'var(--text-primary)' }}>{selectedApplication.business_type || 'N/A'}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Business Email</div>
+                    <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{selectedApplication.business_email || 'N/A'}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Business Phone</div>
+                    <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{selectedApplication.business_phone || 'N/A'}</div>
+                  </div>
+                  <div className="md:col-span-2">
+                    <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Business Address</div>
+                    <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{selectedApplication.business_address || 'N/A'}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Tax ID</div>
+                    <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{selectedApplication.tax_id || 'N/A'}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Business License</div>
+                    <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{selectedApplication.business_license || 'N/A'}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Store Location */}
+              {selectedApplication.bodega_stores && selectedApplication.bodega_stores.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+                    Store Location
+                  </h3>
+                  {selectedApplication.bodega_stores.map((store: any, index: number) => (
+                    <div key={store.id || index} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Store Name</div>
+                        <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{store.name || 'N/A'}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Phone</div>
+                        <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{store.phone || 'N/A'}</div>
+                      </div>
+                      <div className="md:col-span-2">
+                        <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Address</div>
+                        <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                          {store.address}, {store.city}, {store.state} {store.zip}
+                        </div>
+                      </div>
+                      {store.latitude && store.longitude && (
+                        <div className="md:col-span-2">
+                          <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Coordinates</div>
+                          <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                            {store.latitude}, {store.longitude}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Application Details */}
+              <div>
+                <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+                  Application Details
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Submitted</div>
+                    <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                      {new Date(selectedApplication.created_at).toLocaleString()}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Commission Rate</div>
+                    <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{selectedApplication.commission_rate}%</div>
+                  </div>
+                  {selectedApplication.approval_date && (
+                    <div>
+                      <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Approval Date</div>
+                      <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                        {new Date(selectedApplication.approval_date).toLocaleString()}
+                      </div>
+                    </div>
+                  )}
+                  {selectedApplication.rejection_reason && (
+                    <div className="md:col-span-2">
+                      <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Rejection Reason</div>
+                      <div className="font-semibold text-red-500">{selectedApplication.rejection_reason}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            {selectedApplication.application_status === 'pending' && (
+              <div className="sticky bottom-0 px-8 py-6 flex gap-4" style={{ backgroundColor: 'var(--bg-card)', borderTop: '1px solid var(--border-color)' }}>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleApprove(selectedApplication.id)
+                  }}
+                  className="flex-1 px-6 py-3 rounded-xl font-bold text-white bg-green-500 hover:bg-green-600 transition"
+                >
+                  Approve Application
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleReject(selectedApplication.id)
+                  }}
+                  className="flex-1 px-6 py-3 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 transition"
+                >
+                  Reject Application
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
