@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get inventory for these stores that matches the product name
-    const storeIds = storesWithDistance.map(s => s.id)
+    const storeIds = storesWithDistance.map((s: any) => s.id)
 
     const { data: inventory, error: inventoryError } = await supabase
       .from('bodega_inventory')
@@ -124,19 +124,19 @@ export async function GET(request: NextRequest) {
 
     // Filter inventory by product name match
     const searchTerms = productName.toLowerCase().split(' ')
-    const matchingInventory = inventory?.filter(item => {
+    const matchingInventory = inventory?.filter((item: any) => {
       const itemName = (item.custom_name || item.product?.name || '').toLowerCase()
       const itemBrand = (item.custom_brand || item.product?.brand || '').toLowerCase()
       const searchText = `${itemName} ${itemBrand}`
 
       // Check if all search terms are present
-      return searchTerms.every(term => searchText.includes(term))
+      return searchTerms.every((term: string) => searchText.includes(term))
     }) || []
 
     // Group inventory by store and find best match per store
     const storeInventoryMap = new Map()
 
-    matchingInventory.forEach(item => {
+    matchingInventory.forEach((item: any) => {
       if (!storeInventoryMap.has(item.bodega_store_id)) {
         storeInventoryMap.set(item.bodega_store_id, [])
       }
@@ -145,12 +145,12 @@ export async function GET(request: NextRequest) {
 
     // Build results with store info and inventory
     const results = storesWithDistance
-      .filter(store => storeInventoryMap.has(store.id))
-      .map(store => {
+      .filter((store: any) => storeInventoryMap.has(store.id))
+      .map((store: any) => {
         const storeInventory = storeInventoryMap.get(store.id)
 
         // Sort by best match (exact name match first, then alphabetically)
-        const sortedInventory = storeInventory.sort((a, b) => {
+        const sortedInventory = storeInventory.sort((a: any, b: any) => {
           const aName = (a.custom_name || a.product?.name || '').toLowerCase()
           const bName = (b.custom_name || b.product?.name || '').toLowerCase()
           const searchLower = productName.toLowerCase()
