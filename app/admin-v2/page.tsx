@@ -127,6 +127,66 @@ export default function AdminV2Dashboard() {
         </div>
       </div>
 
+      {/* Bodega System Quick Access */}
+      <div className="mb-10">
+        <h2 className="text-2xl font-bold mb-6">🏪 Bodega System Management</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <a
+            href="/admin/stores/applications"
+            className="bg-gradient-to-br from-blue-900/50 to-blue-950/50 border-2 border-blue-500/30 rounded-2xl p-6 hover:border-blue-500 transition cursor-pointer group"
+          >
+            <div className="text-sm text-blue-400 mb-2">Review & Approve</div>
+            <div className="text-2xl font-black mb-2 group-hover:text-blue-400 transition">Store Applications</div>
+            <div className="text-xs text-gray-500">Manage pending store applications</div>
+          </a>
+
+          <a
+            href="/admin/stores"
+            className="bg-gradient-to-br from-green-900/50 to-green-950/50 border-2 border-green-500/30 rounded-2xl p-6 hover:border-green-500 transition cursor-pointer group"
+          >
+            <div className="text-sm text-green-400 mb-2">Manage</div>
+            <div className="text-2xl font-black mb-2 group-hover:text-green-400 transition">All Stores</div>
+            <div className="text-xs text-gray-500">View and edit all bodega stores</div>
+          </a>
+
+          <a
+            href="/admin/orders"
+            className="bg-gradient-to-br from-purple-900/50 to-purple-950/50 border-2 border-purple-500/30 rounded-2xl p-6 hover:border-purple-500 transition cursor-pointer group"
+          >
+            <div className="text-sm text-purple-400 mb-2">Monitor</div>
+            <div className="text-2xl font-black mb-2 group-hover:text-purple-400 transition">All Orders</div>
+            <div className="text-xs text-gray-500">Real-time order monitoring</div>
+          </a>
+
+          <a
+            href="/admin/commission-tiers"
+            className="bg-gradient-to-br from-yellow-900/50 to-yellow-950/50 border-2 border-yellow-500/30 rounded-2xl p-6 hover:border-yellow-500 transition cursor-pointer group"
+          >
+            <div className="text-sm text-yellow-400 mb-2">Configure</div>
+            <div className="text-2xl font-black mb-2 group-hover:text-yellow-400 transition">Commission Tiers</div>
+            <div className="text-xs text-gray-500">Set pricing and commission rates</div>
+          </a>
+
+          <a
+            href="/admin/payouts"
+            className="bg-gradient-to-br from-emerald-900/50 to-emerald-950/50 border-2 border-emerald-500/30 rounded-2xl p-6 hover:border-emerald-500 transition cursor-pointer group"
+          >
+            <div className="text-sm text-emerald-400 mb-2">Financial</div>
+            <div className="text-2xl font-black mb-2 group-hover:text-emerald-400 transition">Payouts</div>
+            <div className="text-xs text-gray-500">Manage store payouts</div>
+          </a>
+
+          <a
+            href="/admin/analytics/bodega"
+            className="bg-gradient-to-br from-pink-900/50 to-pink-950/50 border-2 border-pink-500/30 rounded-2xl p-6 hover:border-pink-500 transition cursor-pointer group"
+          >
+            <div className="text-sm text-pink-400 mb-2">Insights</div>
+            <div className="text-2xl font-black mb-2 group-hover:text-pink-400 transition">Analytics</div>
+            <div className="text-xs text-gray-500">Bodega performance metrics</div>
+          </a>
+        </div>
+      </div>
+
       {/* Quick Actions */}
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-10">
         <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
