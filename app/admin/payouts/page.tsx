@@ -27,12 +27,12 @@ export default async function PayoutsPage() {
 
   // Calculate stats
   const totalPayouts = allPayouts.length
-  const pendingPayouts = allPayouts.filter(p => p.status === 'pending').length
-  const processingPayouts = allPayouts.filter(p => p.status === 'processing').length
-  const paidPayouts = allPayouts.filter(p => p.status === 'paid').length
+  const pendingPayouts = allPayouts.filter((p: any) => p.status === 'pending').length
+  const processingPayouts = allPayouts.filter((p: any) => p.status === 'processing').length
+  const paidPayouts = allPayouts.filter((p: any) => p.status === 'paid').length
   const totalPaidAmount = allPayouts
-    .filter(p => p.status === 'paid')
-    .reduce((sum, p) => sum + parseFloat(p.net_payout), 0)
+    .filter((p: any) => p.status === 'paid')
+    .reduce((sum: number, p: any) => sum + parseFloat(p.net_payout), 0)
 
   const statusColors: Record<string, string> = {
     pending: 'bg-yellow-100 text-yellow-800',
@@ -134,7 +134,7 @@ export default async function PayoutsPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {allPayouts.map((payout) => (
+              {allPayouts.map((payout: any) => (
                 <tr key={payout.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">

@@ -34,16 +34,16 @@ export default async function StoreApplicationsPage() {
   const allApplications = applications || []
 
   // Separate applications by status
-  const pendingApplications = allApplications.filter(app =>
+  const pendingApplications = allApplications.filter((app: any) =>
     app.application_status === 'pending' || app.application_status === 'under_review'
   )
-  const approvedApplications = allApplications.filter(app =>
+  const approvedApplications = allApplications.filter((app: any) =>
     app.application_status === 'approved'
   )
-  const rejectedApplications = allApplications.filter(app =>
+  const rejectedApplications = allApplications.filter((app: any) =>
     app.application_status === 'rejected'
   )
-  const suspendedApplications = allApplications.filter(app =>
+  const suspendedApplications = allApplications.filter((app: any) =>
     app.application_status === 'suspended'
   )
 
@@ -89,7 +89,7 @@ export default async function StoreApplicationsPage() {
             Pending Review ({pendingApplications.length})
           </h2>
           <div className="space-y-4">
-            {pendingApplications.map(application => (
+            {pendingApplications.map((application: any) => (
               <ApplicationCard
                 key={application.id}
                 application={application}
@@ -107,7 +107,7 @@ export default async function StoreApplicationsPage() {
             Approved Stores ({approvedApplications.length})
           </h2>
           <div className="space-y-4">
-            {approvedApplications.map(application => (
+            {approvedApplications.map((application: any) => (
               <ApplicationCard
                 key={application.id}
                 application={application}
@@ -125,7 +125,7 @@ export default async function StoreApplicationsPage() {
             Rejected Applications ({rejectedApplications.length})
           </h2>
           <div className="space-y-4">
-            {rejectedApplications.map(application => (
+            {rejectedApplications.map((application: any) => (
               <ApplicationCard
                 key={application.id}
                 application={application}
@@ -143,7 +143,7 @@ export default async function StoreApplicationsPage() {
             Suspended Stores ({suspendedApplications.length})
           </h2>
           <div className="space-y-4">
-            {suspendedApplications.map(application => (
+            {suspendedApplications.map((application: any) => (
               <ApplicationCard
                 key={application.id}
                 application={application}

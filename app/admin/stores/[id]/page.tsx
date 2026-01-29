@@ -43,13 +43,13 @@ export default async function StoreDetailsPage({ params }: Props) {
 
   // Calculate stats
   const totalOrders = orders.length
-  const completedOrders = orders.filter(o => o.status === 'delivered').length
+  const completedOrders = orders.filter((o: any) => o.status === 'delivered').length
   const totalRevenue = orders
-    .filter(o => o.status === 'delivered')
-    .reduce((sum, o) => sum + parseFloat(o.total_amount), 0)
+    .filter((o: any) => o.status === 'delivered')
+    .reduce((sum: number, o: any) => sum + parseFloat(o.total_amount), 0)
   const totalPayout = orders
-    .filter(o => o.status === 'delivered')
-    .reduce((sum, o) => sum + parseFloat(o.store_payout), 0)
+    .filter((o: any) => o.status === 'delivered')
+    .reduce((sum: number, o: any) => sum + parseFloat(o.store_payout), 0)
 
   // Get inventory count
   const { count: inventoryCount } = await supabase
@@ -211,7 +211,7 @@ export default async function StoreDetailsPage({ params }: Props) {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {orders.map((order) => (
+                {orders.map((order: any) => (
                   <tr key={order.id}>
                     <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
                       {order.order_number}

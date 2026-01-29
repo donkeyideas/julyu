@@ -30,12 +30,12 @@ export default async function AllStoresPage() {
 
   // Stats
   const totalStores = allStores.length
-  const approvedStores = allStores.filter(s => s.application_status === 'approved').length
-  const pendingStores = allStores.filter(s => s.application_status === 'pending').length
-  const activeStores = allStores.filter(s => s.application_status === 'approved' && s.accepts_orders).length
+  const approvedStores = allStores.filter((s: any) => s.application_status === 'approved').length
+  const pendingStores = allStores.filter((s: any) => s.application_status === 'pending').length
+  const activeStores = allStores.filter((s: any) => s.application_status === 'approved' && s.accepts_orders).length
 
   // Calculate total locations
-  const totalLocations = allStores.reduce((sum, owner) => sum + (owner.bodega_stores?.length || 0), 0)
+  const totalLocations = allStores.reduce((sum: number, owner: any) => sum + (owner.bodega_stores?.length || 0), 0)
 
   return (
     <div className="space-y-6">
@@ -121,7 +121,7 @@ export default async function AllStoresPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {allStores.map((store) => {
+              {allStores.map((store: any) => {
                 const statusColors: Record<string, string> = {
                   pending: 'bg-yellow-100 text-yellow-800',
                   under_review: 'bg-blue-100 text-blue-800',
