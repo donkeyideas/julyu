@@ -19,7 +19,7 @@ export default function AdminV2Layout({
 
   return (
     <AdminAuthGuard>
-      <div className="flex min-h-screen bg-black">
+      <div className="flex min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
         <AdminSidebar />
         <main className="flex-1 ml-[280px] p-8">
           {children}

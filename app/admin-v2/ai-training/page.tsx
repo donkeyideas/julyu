@@ -276,10 +276,10 @@ export default function AITrainingPage() {
                         <span className="text-red-500">-</span>
                       )}
                       {record.user_feedback === 'neutral' && (
-                        <span className="text-gray-500">~</span>
+                        <span style={{ color: 'var(--text-muted)' }} className="500">~</span>
                       )}
                       {!record.user_feedback && (
-                        <span className="text-gray-600">—</span>
+                        <span style={{ color: 'var(--text-muted)' }} className="600">—</span>
                       )}
                     </td>
                     <td className="p-4">
