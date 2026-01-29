@@ -8,6 +8,8 @@ export async function POST(request: NextRequest) {
 
     // Parse request body first to get email
     const body = await request.json()
+    console.log('[Store Apply] Received application:', JSON.stringify(body, null, 2))
+
     const {
       businessName,
       businessType,
@@ -74,6 +76,7 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!businessName || !businessType || !businessAddress || !businessPhone || !businessEmail) {
+      console.error('[Store Apply] Missing business info:', { businessName, businessType, businessAddress, businessPhone, businessEmail })
       return NextResponse.json(
         { error: 'Missing required business information' },
         { status: 400 }
@@ -81,11 +84,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (!storeName || !storeAddress || !storeCity || !storeState || !storeZip || !storePhone) {
+      console.error('[Store Apply] Missing store info:', { storeName, storeAddress, storeCity, storeState, storeZip, storePhone })
       return NextResponse.json(
         { error: 'Missing required store information' },
         { status: 400 }
       )
     }
+
+    console.log('[Store Apply] Validation passed, creating store owner...')
 
     // Start transaction - Create store owner first
     const { data: storeOwner, error: ownerError } = await supabase
