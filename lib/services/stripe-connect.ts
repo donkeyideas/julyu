@@ -184,14 +184,14 @@ export class StripeConnectService {
 
       // Calculate totals
       const totalOrders = orders.length
-      const grossRevenue = orders.reduce((sum, o) => sum + parseFloat(o.total_amount), 0)
-      const totalCommissions = orders.reduce((sum, o) => {
+      const grossRevenue = orders.reduce((sum: number, o: any) => sum + parseFloat(o.total_amount), 0)
+      const totalCommissions = orders.reduce((sum: number, o: any) => {
         const orderTotal = parseFloat(o.total_amount)
         const storePayout = parseFloat(o.store_payout)
         const deliveryFee = parseFloat(o.delivery_fee)
         return sum + (orderTotal - storePayout - deliveryFee)
       }, 0)
-      const netPayout = orders.reduce((sum, o) => sum + parseFloat(o.store_payout), 0)
+      const netPayout = orders.reduce((sum: number, o: any) => sum + parseFloat(o.store_payout), 0)
 
       // Get store owner Stripe account
       const { data: storeOwner } = await supabase
