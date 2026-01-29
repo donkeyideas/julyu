@@ -75,7 +75,7 @@ export default function AllStoresPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="inline-block w-12 h-12 border-4 border-gray-800 border-t-green-500 rounded-full animate-spin mb-4"></div>
+          <div className="inline-block w-12 h-12 border-4 border-t-green-500 rounded-full animate-spin mb-4" style={{ borderColor: 'var(--border-color)', borderTopColor: '#10b981' }}></div>
           <div style={{ color: 'var(--text-secondary)' }}>Loading stores...</div>
         </div>
       </div>
@@ -99,23 +99,23 @@ export default function AllStoresPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-10">
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <div className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>Total Stores</div>
           <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>{totalStores}</div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <div className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>Approved</div>
           <div className="text-4xl font-black text-green-500">{approvedStores}</div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <div className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>Pending</div>
           <div className="text-4xl font-black text-yellow-500">{pendingStores}</div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <div className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>Active</div>
           <div className="text-4xl font-black text-blue-500">{activeStores}</div>
         </div>
-        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <div className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>Total Locations</div>
           <div className="text-4xl font-black text-purple-500">{totalLocations}</div>
         </div>
@@ -125,7 +125,7 @@ export default function AllStoresPage() {
       <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
         <div className="overflow-x-auto">
           <table className="min-w-full" style={{ borderTop: '1px solid var(--border-color)' }}>
-            <thead className="bg-gray-800/50">
+            <thead style={{ backgroundColor: 'var(--bg-card)' }}>
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                   Business Name
@@ -155,7 +155,7 @@ export default function AllStoresPage() {
             </thead>
             <tbody style={{ borderTop: '1px solid var(--border-color)' }}>
               {stores.map((store) => (
-                <tr key={store.id} className="hover:bg-gray-800/50 transition" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                <tr key={store.id} className="hover:opacity-80 transition" style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{store.business_name}</div>
                     {store.business_email && (

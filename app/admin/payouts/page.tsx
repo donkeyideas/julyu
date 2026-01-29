@@ -158,7 +158,7 @@ export default function PayoutsPage() {
             </thead>
             <tbody style={{ borderTop: '1px solid var(--border-color)' }}>
               {allPayouts.map((payout: any) => (
-                <tr key={payout.id} className="hover:bg-gray-800/50 transition" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                <tr key={payout.id} className="hover:opacity-80 transition" style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                       {payout.store_owners?.business_name || 'Unknown'}
