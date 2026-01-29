@@ -6,31 +6,6 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Verify admin access
-    const supabase = await createServerClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-
-    // Check if user is enterprise (admin)
-    const { data: profile } = await supabase
-      .from('users')
-      .select('subscription_tier')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile || profile.subscription_tier !== 'enterprise') {
-      return NextResponse.json(
-        { error: 'Admin access required' },
-        { status: 403 }
-      )
-    }
-
     const supabaseAdmin = createServiceRoleClient()
     const { id } = params
     const body = await request.json()
