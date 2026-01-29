@@ -31,8 +31,9 @@ export default function AdminOrdersPage() {
 
       if (fetchError) {
         console.error('Fetch orders error:', fetchError)
+      }
 
-      setOrders(ordersData || [])
+      setOrders(ordersData || []);
     } catch (error) {
       console.error('Error loading orders:', error)
     } finally {

@@ -27,6 +27,7 @@ export default function CommissionTiersPage() {
 
       if (fetchError) {
         console.error('Fetch tiers error:', fetchError)
+      }
 
       const allTiers = tiersData || []
       setTiers(allTiers)
@@ -42,7 +43,7 @@ export default function CommissionTiersPage() {
         storeCount: storeOwners?.filter((s: any) => Math.abs(parseFloat(s.commission_rate) - tier.commission_percentage) < 0.01).length || 0
       }))
 
-      setStoresByTier(tierCounts)
+      setStoresByTier(tierCounts);
     } catch (error) {
       console.error('Error loading tiers:', error)
     } finally {
