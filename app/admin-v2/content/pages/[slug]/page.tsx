@@ -352,7 +352,7 @@ export default function EditPagePage() {
       )}
 
       {/* Page Settings */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
+      <div className="rounded-xl p-6 mb-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Page Settings</h3>
         <div className="space-y-4">
           <div>
@@ -400,7 +400,7 @@ export default function EditPagePage() {
 
       {/* Contact Page - Email Editor */}
       {slug === 'contact' && (
-        <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }} mb-6">
+        <div className="rounded-xl p-6 mb-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Contact Information</h3>
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Contact Email</label>
@@ -419,7 +419,7 @@ export default function EditPagePage() {
 
       {/* About Page - Text Editor */}
       {slug === 'about' && (
-        <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }} mb-6">
+        <div className="rounded-xl p-6 mb-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>About Content</h3>
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Mission Statement</label>
