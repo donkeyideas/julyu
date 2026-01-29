@@ -40,8 +40,8 @@ export default function RetailersPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="inline-block w-12 h-12 border-4 border-gray-800 border-t-green-500 rounded-full animate-spin mb-4"></div>
-          <div className="text-gray-500">Loading retailers...</div>
+          <div className="inline-block w-12 h-12 border-4 rounded-full animate-spin mb-4" style={{ borderColor: 'var(--border-color)', borderTopColor: 'var(--accent-primary)' }}></div>
+          <div style={{ color: 'var(--text-secondary)' }}>Loading retailers...</div>
         </div>
       </div>
     )
@@ -49,33 +49,33 @@ export default function RetailersPage() {
 
   return (
     <div>
-      <div className="mb-10 pb-6 border-b border-gray-800">
-        <h1 className="text-4xl font-black">Retailer Partnerships</h1>
-        <p className="text-gray-500 mt-2">Manage retailer partnerships and revenue sharing</p>
+      <div className="mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
+        <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>Retailer Partnerships</h1>
+        <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>Manage retailer partnerships and revenue sharing</p>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <table className="w-full">
-          <thead className="bg-black">
+          <thead style={{ backgroundColor: 'var(--bg-secondary)' }}>
             <tr>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Retailer</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Partnership Tier</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Revenue Share</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Revenue (QTD)</th>
-              <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Status</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Retailer</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Partnership Tier</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Revenue Share</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Revenue (QTD)</th>
+              <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Status</th>
             </tr>
           </thead>
           <tbody>
             {retailers.length > 0 ? (
               retailers.map((retailer) => (
-                <tr key={retailer.id} className="border-t border-gray-800 hover:bg-black/50">
-                  <td className="p-4 font-bold">{retailer.retailer_name || 'Unknown'}</td>
-                  <td className="p-4">
-                    {retailer.revenue_share_percent >= 10 ? 'Premium' : 
+                <tr key={retailer.id} style={{ borderTop: '1px solid var(--border-color)' }}>
+                  <td className="p-4 font-bold" style={{ color: 'var(--text-primary)' }}>{retailer.retailer_name || 'Unknown'}</td>
+                  <td className="p-4" style={{ color: 'var(--text-primary)' }}>
+                    {retailer.revenue_share_percent >= 10 ? 'Premium' :
                      retailer.revenue_share_percent >= 5 ? 'Standard' : 'Basic'}
                   </td>
-                  <td className="p-4 font-bold">{retailer.revenue_share_percent || 0}%</td>
-                  <td className="p-4 font-bold">$0.00</td>
+                  <td className="p-4 font-bold" style={{ color: 'var(--text-primary)' }}>{retailer.revenue_share_percent || 0}%</td>
+                  <td className="p-4 font-bold" style={{ color: 'var(--text-primary)' }}>$0.00</td>
                   <td className="p-4">
                     <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
                       retailer.is_active
@@ -89,7 +89,7 @@ export default function RetailersPage() {
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="p-8 text-center text-gray-500">
+                <td colSpan={5} className="p-8 text-center" style={{ color: 'var(--text-secondary)' }}>
                   No retailer partnerships yet. Set up partnerships to start earning affiliate revenue.
                 </td>
               </tr>

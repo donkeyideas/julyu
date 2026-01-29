@@ -104,16 +104,17 @@ export default function DeliveryPartnersAnalyticsPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-10 pb-6 border-b border-gray-800">
+      <div className="flex justify-between items-center mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
         <div>
-          <h1 className="text-4xl font-black">Partner Analytics</h1>
-          <p className="text-gray-500 mt-2">Track clicks, conversions, and revenue from delivery partners</p>
+          <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>Partner Analytics</h1>
+          <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>Track clicks, conversions, and revenue from delivery partners</p>
         </div>
         <div className="flex gap-3">
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
-            className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:border-green-500 focus:outline-none"
+            className="px-4 py-2 rounded-lg focus:border-green-500 focus:outline-none"
+            style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
           >
             <option value="7">Last 7 days</option>
             <option value="30">Last 30 days</option>
@@ -122,7 +123,8 @@ export default function DeliveryPartnersAnalyticsPage() {
           </select>
           <a
             href="/admin-v2/delivery-partners"
-            className="px-6 py-3 border border-gray-700 rounded-lg hover:border-green-500 hover:text-green-500 transition"
+            className="px-6 py-3 rounded-lg hover:border-green-500 hover:text-green-500 transition"
+            style={{ border: '1px solid var(--border-color)' }}
           >
             Manage Partners
           </a>
@@ -130,28 +132,28 @@ export default function DeliveryPartnersAnalyticsPage() {
       </div>
 
       {loading ? (
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-12 text-center text-gray-500">
+        <div className="rounded-2xl p-12 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
           Loading analytics...
         </div>
       ) : analytics ? (
         <>
           {/* Summary Stats */}
           <div className="grid grid-cols-4 gap-4 mb-8">
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-              <div className="text-sm text-gray-500 mb-1">Total Clicks</div>
-              <div className="text-4xl font-bold">{analytics.summary.totalClicks.toLocaleString()}</div>
+            <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+              <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Total Clicks</div>
+              <div className="text-4xl font-bold" style={{ color: 'var(--text-primary)' }}>{analytics.summary.totalClicks.toLocaleString()}</div>
             </div>
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-              <div className="text-sm text-gray-500 mb-1">Conversions</div>
+            <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+              <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Conversions</div>
               <div className="text-4xl font-bold text-green-500">{analytics.summary.conversions}</div>
               <div className="text-sm text-gray-500 mt-1">{analytics.summary.conversionRate}% rate</div>
             </div>
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-              <div className="text-sm text-gray-500 mb-1">Estimated Revenue</div>
+            <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+              <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Estimated Revenue</div>
               <div className="text-4xl font-bold text-blue-500">${analytics.summary.estimatedRevenue}</div>
             </div>
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-              <div className="text-sm text-gray-500 mb-1">Confirmed Revenue</div>
+            <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+              <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Confirmed Revenue</div>
               <div className="text-4xl font-bold text-yellow-500">${analytics.summary.actualRevenue}</div>
               <div className="text-sm text-gray-500 mt-1">Avg order: ${analytics.summary.avgOrderValue}</div>
             </div>
@@ -160,7 +162,7 @@ export default function DeliveryPartnersAnalyticsPage() {
           <div className="grid grid-cols-3 gap-6 mb-8">
             {/* Daily Trend Chart */}
             <div className="col-span-2 bg-gray-900 border border-gray-800 rounded-2xl p-6">
-              <h3 className="text-lg font-bold mb-4">Daily Clicks</h3>
+              <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Daily Clicks</h3>
               {analytics.dailyTrend.length > 0 ? (
                 <div className="h-48 flex items-end gap-1">
                   {analytics.dailyTrend.slice(-30).map((day, i) => (
@@ -189,8 +191,8 @@ export default function DeliveryPartnersAnalyticsPage() {
             </div>
 
             {/* Top Stores */}
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-              <h3 className="text-lg font-bold mb-4">Top Stores</h3>
+            <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+              <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Top Stores</h3>
               <div className="space-y-3">
                 {analytics.topStores.length > 0 ? (
                   analytics.topStores.slice(0, 5).map((store, i) => (
@@ -209,7 +211,7 @@ export default function DeliveryPartnersAnalyticsPage() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-gray-500 text-center py-4">No store data</div>
+                  <div className="text-center py-4" style={{ color: 'var(--text-secondary)' }}>No store data</div>
                 )}
               </div>
             </div>
@@ -217,11 +219,11 @@ export default function DeliveryPartnersAnalyticsPage() {
 
           {/* Partner Breakdown */}
           <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
-            <h3 className="text-lg font-bold mb-4">Performance by Partner</h3>
+            <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Performance by Partner</h3>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-gray-500 text-sm border-b border-gray-800">
+                  <tr className="text-left text-sm" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--border-color)' }}>
                     <th className="pb-3 pr-4">Partner</th>
                     <th className="pb-3 pr-4 text-right">Clicks</th>
                     <th className="pb-3 pr-4 text-right">Conversions</th>
@@ -233,7 +235,7 @@ export default function DeliveryPartnersAnalyticsPage() {
                 <tbody>
                   {analytics.byPartner.length > 0 ? (
                     analytics.byPartner.map((row, i) => (
-                      <tr key={i} className="border-b border-gray-800/50 hover:bg-gray-800/30">
+                      <tr key={i} className="hover:bg-gray-800/30" style={{ borderBottom: '1px solid var(--border-color)' }}>
                         <td className="py-3 pr-4">
                           <div className="flex items-center gap-3">
                             <div
@@ -267,12 +269,12 @@ export default function DeliveryPartnersAnalyticsPage() {
           </div>
 
           {/* Recent Clicks */}
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-            <h3 className="text-lg font-bold mb-4">Recent Clicks</h3>
+          <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Recent Clicks</h3>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-gray-500 text-sm border-b border-gray-800">
+                  <tr className="text-left text-sm" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--border-color)' }}>
                     <th className="pb-3 pr-4">Time</th>
                     <th className="pb-3 pr-4">Partner</th>
                     <th className="pb-3 pr-4">Store</th>
@@ -285,7 +287,7 @@ export default function DeliveryPartnersAnalyticsPage() {
                 <tbody>
                   {analytics.recentClicks.length > 0 ? (
                     analytics.recentClicks.map((click) => (
-                      <tr key={click.id} className="border-b border-gray-800/50 hover:bg-gray-800/30">
+                      <tr key={click.id} className="hover:bg-gray-800/30" style={{ borderBottom: '1px solid var(--border-color)' }}>
                         <td className="py-3 pr-4 text-sm text-gray-400">
                           {formatDateTime(click.created_at)}
                         </td>
