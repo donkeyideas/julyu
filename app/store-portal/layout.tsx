@@ -16,7 +16,7 @@ export default async function StorePortalLayout({
 
   // Redirect to login if not authenticated
   if (error && error.includes('Unauthorized')) {
-    redirect('/login?redirect=/store-portal')
+    redirect('/auth/login?redirect=/store-portal')
   }
 
   // Redirect to application page if no store owner account
