@@ -94,13 +94,14 @@ export default function PayoutGeneratorForm() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
+          <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
             Payout Period
           </label>
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value as any)}
-            className="w-full px-4 py-2 bg-black border border-gray-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
           >
             <option value="week">Last Week</option>
             <option value="biweekly">Last 2 Weeks</option>
@@ -112,25 +113,27 @@ export default function PayoutGeneratorForm() {
         {period === 'custom' && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
                 Start Date
               </label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-4 py-2 bg-black border border-gray-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
                 End Date
               </label>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full px-4 py-2 bg-black border border-gray-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
               />
             </div>
           </>
@@ -138,7 +141,7 @@ export default function PayoutGeneratorForm() {
       </div>
 
       <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
-        <p className="text-xs text-blue-300">
+        <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
           This will generate payouts for all stores with completed orders in the selected period.
           Payouts will be automatically sent via Stripe Connect to each store owner&apos;s bank account.
         </p>
