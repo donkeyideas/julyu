@@ -32,18 +32,18 @@ export default async function BodegaAnalyticsPage() {
     .select('*', { count: 'exact', head: true })
 
   // Calculate metrics
-  const totalStores = allStores.filter(s => s.application_status === 'approved').length
-  const totalLocations = allStores.reduce((sum, s) => sum + (s.bodega_stores?.length || 0), 0)
+  const totalStores = allStores.filter((s: any) => s.application_status === 'approved').length
+  const totalLocations = allStores.reduce((sum: number, s: any) => sum + (s.bodega_stores?.length || 0), 0)
   const totalOrders = allOrders.length
-  const completedOrders = allOrders.filter(o => o.status === 'delivered').length
+  const completedOrders = allOrders.filter((o: any) => o.status === 'delivered').length
 
   const totalRevenue = allOrders
-    .filter(o => o.status === 'delivered')
-    .reduce((sum, o) => sum + parseFloat(o.total_amount), 0)
+    .filter((o: any) => o.status === 'delivered')
+    .reduce((sum: number, o: any) => sum + parseFloat(o.total_amount), 0)
 
   const totalCommission = allOrders
-    .filter(o => o.status === 'delivered')
-    .reduce((sum, o) => {
+    .filter((o: any) => o.status === 'delivered')
+    .reduce((sum: number, o: any) => {
       const orderTotal = parseFloat(o.total_amount)
       const storePayout = parseFloat(o.store_payout)
       const deliveryFee = parseFloat(o.delivery_fee)
@@ -51,18 +51,18 @@ export default async function BodegaAnalyticsPage() {
     }, 0)
 
   const totalStorePayout = allOrders
-    .filter(o => o.status === 'delivered')
-    .reduce((sum, o) => sum + parseFloat(o.store_payout), 0)
+    .filter((o: any) => o.status === 'delivered')
+    .reduce((sum: number, o: any) => sum + parseFloat(o.store_payout), 0)
 
   const averageOrderValue = completedOrders > 0 ? totalRevenue / completedOrders : 0
   const averageCommissionRate = totalRevenue > 0 ? (totalCommission / totalRevenue) * 100 : 0
 
   // Top performing stores
   const storePerformance = allStores
-    .filter(s => s.application_status === 'approved')
-    .map(store => {
-      const storeOrders = allOrders.filter(o => o.store_owner_id === store.id && o.status === 'delivered')
-      const revenue = storeOrders.reduce((sum, o) => sum + parseFloat(o.total_amount), 0)
+    .filter((s: any) => s.application_status === 'approved')
+    .map((store: any) => {
+      const storeOrders = allOrders.filter((o: any) => o.store_owner_id === store.id && o.status === 'delivered')
+      const revenue = storeOrders.reduce((sum: number, o: any) => sum + parseFloat(o.total_amount), 0)
       return {
         id: store.id,
         name: store.business_name,
@@ -71,31 +71,31 @@ export default async function BodegaAnalyticsPage() {
         commission: store.commission_rate,
       }
     })
-    .sort((a, b) => b.revenue - a.revenue)
+    .sort((a: any, b: any) => b.revenue - a.revenue)
     .slice(0, 10)
 
   // Orders by status
   const ordersByStatus = {
-    pending: allOrders.filter(o => o.status === 'pending').length,
-    accepted: allOrders.filter(o => o.status === 'accepted').length,
-    preparing: allOrders.filter(o => o.status === 'preparing').length,
-    ready: allOrders.filter(o => o.status === 'ready').length,
-    out_for_delivery: allOrders.filter(o => o.status === 'out_for_delivery').length,
-    delivered: allOrders.filter(o => o.status === 'delivered').length,
-    cancelled: allOrders.filter(o => o.status === 'cancelled').length,
+    pending: allOrders.filter((o: any) => o.status === 'pending').length,
+    accepted: allOrders.filter((o: any) => o.status === 'accepted').length,
+    preparing: allOrders.filter((o: any) => o.status === 'preparing').length,
+    ready: allOrders.filter((o: any) => o.status === 'ready').length,
+    out_for_delivery: allOrders.filter((o: any) => o.status === 'out_for_delivery').length,
+    delivered: allOrders.filter((o: any) => o.status === 'delivered').length,
+    cancelled: allOrders.filter((o: any) => o.status === 'cancelled').length,
   }
 
   // Delivery method breakdown
-  const deliveryOrders = allOrders.filter(o => o.delivery_method === 'delivery').length
-  const pickupOrders = allOrders.filter(o => o.delivery_method === 'pickup').length
+  const deliveryOrders = allOrders.filter((o: any) => o.delivery_method === 'delivery').length
+  const pickupOrders = allOrders.filter((o: any) => o.delivery_method === 'pickup').length
 
   // Recent activity (last 7 days)
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-  const recentOrders = allOrders.filter(o => new Date(o.ordered_at) >= sevenDaysAgo)
+  const recentOrders = allOrders.filter((o: any) => new Date(o.ordered_at) >= sevenDaysAgo)
   const recentRevenue = recentOrders
-    .filter(o => o.status === 'delivered')
-    .reduce((sum, o) => sum + parseFloat(o.total_amount), 0)
+    .filter((o: any) => o.status === 'delivered')
+    .reduce((sum: number, o: any) => sum + parseFloat(o.total_amount), 0)
 
   return (
     <div className="space-y-6">
