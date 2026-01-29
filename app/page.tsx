@@ -5,6 +5,7 @@ import InteractiveDemo from '@/components/home/InteractiveDemo'
 import HowItWorks from '@/components/home/HowItWorks'
 import FeatureShowcase from '@/components/home/FeatureShowcase'
 import WhyJulyu from '@/components/home/WhyJulyu'
+import StoreOwnerCTA from '@/components/home/StoreOwnerCTA'
 import CTASection from '@/components/home/CTASection'
 
 export default function HomePage() {
@@ -71,6 +72,9 @@ export default function HomePage() {
 
       {/* Why Julyu - replaces fake testimonials */}
       <WhyJulyu />
+
+      {/* Store Owner CTA */}
+      <StoreOwnerCTA />
 
       {/* CTA Section */}
       <CTASection />
