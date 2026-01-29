@@ -176,8 +176,8 @@ export default function TestimonialsPage() {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Testimonials</h1>
-          <p className="text-gray-400">Manage customer testimonials displayed on the home page</p>
+          <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Testimonials</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>Manage customer testimonials displayed on the home page</p>
         </div>
         <button
           onClick={() => setShowAddForm(true)}
@@ -200,59 +200,64 @@ export default function TestimonialsPage() {
 
       {/* Add Form */}
       {showAddForm && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-8">
-          <h3 className="text-xl font-semibold mb-4">Add New Testimonial</h3>
+        <div className="rounded-xl p-6 mb-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Add New Testimonial</h3>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">Name</label>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Name</label>
               <input
                 type="text"
                 value={newTestimonial.author_name}
                 onChange={(e) => setNewTestimonial({ ...newTestimonial, author_name: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 placeholder="e.g., Sarah M."
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">Title</label>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Title</label>
               <input
                 type="text"
                 value={newTestimonial.author_title}
                 onChange={(e) => setNewTestimonial({ ...newTestimonial, author_title: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 placeholder="e.g., Busy Parent"
               />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">Location</label>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Location</label>
               <input
                 type="text"
                 value={newTestimonial.author_location}
                 onChange={(e) => setNewTestimonial({ ...newTestimonial, author_location: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 placeholder="e.g., Cincinnati, OH"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">Monthly Savings ($)</label>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Monthly Savings ($)</label>
               <input
                 type="number"
                 value={newTestimonial.savings_amount}
                 onChange={(e) => setNewTestimonial({ ...newTestimonial, savings_amount: parseFloat(e.target.value) })}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 placeholder="e.g., 250"
               />
             </div>
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-400 mb-2">Quote</label>
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Quote</label>
             <textarea
               value={newTestimonial.quote}
               onChange={(e) => setNewTestimonial({ ...newTestimonial, quote: e.target.value })}
               rows={3}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
               placeholder="Their testimonial..."
             />
           </div>
@@ -262,18 +267,20 @@ export default function TestimonialsPage() {
                 type="checkbox"
                 checked={newTestimonial.is_featured}
                 onChange={(e) => setNewTestimonial({ ...newTestimonial, is_featured: e.target.checked })}
-                className="w-5 h-5 rounded border-gray-700 bg-gray-800 text-green-500 focus:ring-green-500"
+                className="w-5 h-5 rounded text-green-500 focus:ring-green-500"
+                style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}
               />
-              <span className="text-gray-300">Featured</span>
+              <span style={{ color: 'var(--text-secondary)' }}>Featured</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={newTestimonial.is_active}
                 onChange={(e) => setNewTestimonial({ ...newTestimonial, is_active: e.target.checked })}
-                className="w-5 h-5 rounded border-gray-700 bg-gray-800 text-green-500 focus:ring-green-500"
+                className="w-5 h-5 rounded text-green-500 focus:ring-green-500"
+                style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}
               />
-              <span className="text-gray-300">Active</span>
+              <span style={{ color: 'var(--text-secondary)' }}>Active</span>
             </label>
           </div>
           <div className="flex gap-4">
@@ -286,7 +293,8 @@ export default function TestimonialsPage() {
             </button>
             <button
               onClick={() => setShowAddForm(false)}
-              className="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition"
+              className="px-6 py-3 rounded-lg transition"
+              style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
             >
               Cancel
             </button>
@@ -297,57 +305,62 @@ export default function TestimonialsPage() {
       {/* Testimonials List */}
       <div className="space-y-4">
         {testimonials.map((testimonial) => (
-          <div key={testimonial.id} className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+          <div key={testimonial.id} className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             {editingId === testimonial.id ? (
               /* Edit Mode */
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">Name</label>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Name</label>
                     <input
                       type="text"
                       value={testimonial.author_name}
                       onChange={(e) => updateTestimonial(testimonial.id, 'author_name', e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                      className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                      style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">Title</label>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Title</label>
                     <input
                       type="text"
                       value={testimonial.author_title}
                       onChange={(e) => updateTestimonial(testimonial.id, 'author_title', e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                      className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                      style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                     />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">Location</label>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Location</label>
                     <input
                       type="text"
                       value={testimonial.author_location}
                       onChange={(e) => updateTestimonial(testimonial.id, 'author_location', e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                      className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                      style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">Monthly Savings ($)</label>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Monthly Savings ($)</label>
                     <input
                       type="number"
                       value={testimonial.savings_amount}
                       onChange={(e) => updateTestimonial(testimonial.id, 'savings_amount', parseFloat(e.target.value))}
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                      className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                      style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">Quote</label>
+                  <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Quote</label>
                   <textarea
                     value={testimonial.quote}
                     onChange={(e) => updateTestimonial(testimonial.id, 'quote', e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                    className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   />
                 </div>
                 <div className="flex gap-4">
@@ -360,7 +373,8 @@ export default function TestimonialsPage() {
                   </button>
                   <button
                     onClick={() => setEditingId(null)}
-                    className="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition"
+                    className="px-6 py-3 rounded-lg transition"
+                    style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
                   >
                     Cancel
                   </button>
@@ -375,8 +389,8 @@ export default function TestimonialsPage() {
                       {testimonial.author_name.charAt(0)}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-white">{testimonial.author_name}</h3>
-                      <p className="text-sm text-gray-400">{testimonial.author_title} • {testimonial.author_location}</p>
+                      <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{testimonial.author_name}</h3>
+                      <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{testimonial.author_title} • {testimonial.author_location}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -390,13 +404,14 @@ export default function TestimonialsPage() {
                     )}
                   </div>
                 </div>
-                <p className="text-gray-300 mb-4 italic">&ldquo;{testimonial.quote}&rdquo;</p>
+                <p className="mb-4 italic" style={{ color: 'var(--text-secondary)' }}>&ldquo;{testimonial.quote}&rdquo;</p>
                 <div className="flex justify-between items-center">
                   <span className="text-green-500 font-semibold">Saves ${testimonial.savings_amount}/month</span>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setEditingId(testimonial.id)}
-                      className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition"
+                      className="px-4 py-2 rounded-lg transition"
+                      style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
                     >
                       Edit
                     </button>

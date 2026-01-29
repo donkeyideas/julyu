@@ -104,14 +104,15 @@ export default function HomeEditorPage() {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Home Page Editor</h1>
-          <p className="text-gray-400">Manage the content displayed on the home page</p>
+          <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Home Page Editor</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>Manage the content displayed on the home page</p>
         </div>
         <div className="flex gap-4">
           <a
             href="/"
             target="_blank"
-            className="px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition"
+            className="px-6 py-3 rounded-lg transition"
+            style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
           >
             Preview
           </a>
@@ -139,8 +140,8 @@ export default function HomeEditorPage() {
       <div className="grid grid-cols-4 gap-8">
         {/* Section List */}
         <div className="col-span-1">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <h3 className="font-semibold mb-4 text-gray-300">Sections</h3>
+          <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <h3 className="font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Sections</h3>
             <div className="space-y-2">
               {sections.map((section) => (
                 <div
@@ -148,11 +149,12 @@ export default function HomeEditorPage() {
                   className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition ${
                     activeSection === section.section_key
                       ? 'bg-green-500/20 border border-green-500/30'
-                      : 'bg-gray-800 hover:bg-gray-700'
+                      : ''
                   }`}
+                  style={activeSection !== section.section_key ? { backgroundColor: 'var(--bg-secondary)' } : undefined}
                   onClick={() => setActiveSection(section.section_key)}
                 >
-                  <span className={section.is_visible ? 'text-white' : 'text-gray-500 line-through'}>
+                  <span className={section.is_visible ? '' : 'line-through'} style={{ color: section.is_visible ? 'var(--text-primary)' : 'var(--text-muted)' }}>
                     {section.section_title}
                   </span>
                   <button
@@ -181,39 +183,41 @@ export default function HomeEditorPage() {
 
         {/* Editor Panel */}
         <div className="col-span-3">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             {/* Hero Section Editor */}
             {activeSection === 'hero' && (
               <div className="space-y-6">
-                <h3 className="text-xl font-semibold mb-4">Edit Hero Section</h3>
+                <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Edit Hero Section</h3>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                  <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>
                     Main Headline
                   </label>
                   <input
                     type="text"
                     value={heroContent.headline}
                     onChange={(e) => setHeroContent({ ...heroContent, headline: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                    className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                  <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>
                     Subheadline
                   </label>
                   <textarea
                     value={heroContent.subheadline}
                     onChange={(e) => setHeroContent({ ...heroContent, subheadline: e.target.value })}
                     rows={3}
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                    className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>
                       Primary CTA Text
                     </label>
                     <input
@@ -225,11 +229,12 @@ export default function HomeEditorPage() {
                           cta_primary: { ...heroContent.cta_primary, text: e.target.value },
                         })
                       }
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                      className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                      style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>
                       Primary CTA Link
                     </label>
                     <input
@@ -241,14 +246,15 @@ export default function HomeEditorPage() {
                           cta_primary: { ...heroContent.cta_primary, href: e.target.value },
                         })
                       }
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                      className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                      style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>
                       Secondary CTA Text
                     </label>
                     <input
@@ -260,11 +266,12 @@ export default function HomeEditorPage() {
                           cta_secondary: { ...heroContent.cta_secondary, text: e.target.value },
                         })
                       }
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                      className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                      style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>
                       Secondary CTA Link
                     </label>
                     <input
@@ -276,7 +283,8 @@ export default function HomeEditorPage() {
                           cta_secondary: { ...heroContent.cta_secondary, href: e.target.value },
                         })
                       }
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                      className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                      style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                     />
                   </div>
                 </div>
@@ -286,51 +294,55 @@ export default function HomeEditorPage() {
             {/* Stats Editor */}
             {activeSection === 'stats' && (
               <div className="space-y-6">
-                <h3 className="text-xl font-semibold mb-4">Edit Animated Stats</h3>
+                <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Edit Animated Stats</h3>
 
                 {stats.map((stat, index) => (
-                  <div key={stat.id} className="p-4 bg-gray-800 rounded-lg">
+                  <div key={stat.id} className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
                     <div className="grid grid-cols-4 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-2">Label</label>
+                        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Label</label>
                         <input
                           type="text"
                           value={stat.label}
                           onChange={(e) => updateStat(index, 'label', e.target.value)}
-                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                          className="w-full px-3 py-2 rounded-lg focus:border-green-500 focus:outline-none"
+                          style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-2">Value</label>
+                        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Value</label>
                         <input
                           type="text"
                           value={stat.value}
                           onChange={(e) => updateStat(index, 'value', e.target.value)}
-                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                          className="w-full px-3 py-2 rounded-lg focus:border-green-500 focus:outline-none"
+                          style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-2">Prefix</label>
+                        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Prefix</label>
                         <input
                           type="text"
                           value={stat.prefix}
                           onChange={(e) => updateStat(index, 'prefix', e.target.value)}
-                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                          className="w-full px-3 py-2 rounded-lg focus:border-green-500 focus:outline-none"
+                          style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                           placeholder="e.g., $"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-2">Suffix</label>
+                        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Suffix</label>
                         <input
                           type="text"
                           value={stat.suffix}
                           onChange={(e) => updateStat(index, 'suffix', e.target.value)}
-                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                          className="w-full px-3 py-2 rounded-lg focus:border-green-500 focus:outline-none"
+                          style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                           placeholder="e.g., M, K, %"
                         />
                       </div>
                     </div>
-                    <div className="mt-3 text-sm text-gray-500">
+                    <div className="mt-3 text-sm" style={{ color: 'var(--text-muted)' }}>
                       Preview: <span className="text-green-500 font-bold">{stat.prefix}{stat.value}{stat.suffix}</span>
                     </div>
                   </div>
@@ -341,13 +353,13 @@ export default function HomeEditorPage() {
             {/* Demo Section */}
             {activeSection === 'demo' && (
               <div className="space-y-4">
-                <h3 className="text-xl font-semibold mb-4">Interactive Demo</h3>
-                <p className="text-gray-400">
+                <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Interactive Demo</h3>
+                <p style={{ color: 'var(--text-secondary)' }}>
                   The interactive demo uses real Kroger API data. Users enter their zip code
                   and can compare prices across nearby stores.
                 </p>
-                <div className="p-4 bg-gray-800 rounded-lg">
-                  <p className="text-sm text-gray-500">
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                     This section is automatically populated with real-time data from the Kroger API.
                     No manual content editing is required.
                   </p>
@@ -358,18 +370,18 @@ export default function HomeEditorPage() {
             {/* How It Works */}
             {activeSection === 'how_it_works' && (
               <div className="space-y-4">
-                <h3 className="text-xl font-semibold mb-4">How It Works Section</h3>
-                <p className="text-gray-400 mb-4">
+                <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>How It Works Section</h3>
+                <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>
                   This section explains the 3-step process to users.
                 </p>
                 <div className="space-y-4">
                   {['Scan Your Receipts', 'We Track Prices', 'Save Money'].map((step, i) => (
-                    <div key={i} className="p-4 bg-gray-800 rounded-lg">
+                    <div key={i} className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
                       <div className="flex items-center gap-4">
                         <span className="w-10 h-10 bg-green-500 text-black font-bold rounded-full flex items-center justify-center">
                           {i + 1}
                         </span>
-                        <span className="text-white font-medium">{step}</span>
+                        <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{step}</span>
                       </div>
                     </div>
                   ))}
@@ -380,8 +392,8 @@ export default function HomeEditorPage() {
             {/* Features */}
             {activeSection === 'features' && (
               <div className="space-y-4">
-                <h3 className="text-xl font-semibold mb-4">Feature Showcase</h3>
-                <p className="text-gray-400 mb-4">
+                <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Feature Showcase</h3>
+                <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>
                   Displays 6 key features with icons and descriptions.
                 </p>
                 <div className="grid grid-cols-2 gap-4">
@@ -393,9 +405,9 @@ export default function HomeEditorPage() {
                     { title: 'Savings Analytics', color: 'pink' },
                     { title: 'Store Finder', color: 'cyan' },
                   ].map((feature, i) => (
-                    <div key={i} className="p-4 bg-gray-800 rounded-lg flex items-center gap-3">
+                    <div key={i} className="p-4 rounded-lg flex items-center gap-3" style={{ backgroundColor: 'var(--bg-secondary)' }}>
                       <div className={`w-3 h-3 rounded-full bg-${feature.color}-500`}></div>
-                      <span className="text-white">{feature.title}</span>
+                      <span style={{ color: 'var(--text-primary)' }}>{feature.title}</span>
                     </div>
                   ))}
                 </div>
@@ -405,8 +417,8 @@ export default function HomeEditorPage() {
             {/* Testimonials */}
             {activeSection === 'testimonials' && (
               <div className="space-y-4">
-                <h3 className="text-xl font-semibold mb-4">Testimonials Section</h3>
-                <p className="text-gray-400 mb-4">
+                <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Testimonials Section</h3>
+                <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>
                   Manage testimonials from the dedicated testimonials page.
                 </p>
                 <a
@@ -421,13 +433,13 @@ export default function HomeEditorPage() {
             {/* CTA */}
             {activeSection === 'cta' && (
               <div className="space-y-4">
-                <h3 className="text-xl font-semibold mb-4">CTA Section</h3>
-                <p className="text-gray-400 mb-4">
+                <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>CTA Section</h3>
+                <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>
                   The call-to-action section at the bottom of the page.
                 </p>
-                <div className="p-4 bg-gray-800 rounded-lg">
-                  <p className="text-white font-semibold mb-2">Current Message:</p>
-                  <p className="text-gray-300">&ldquo;Start Saving Today - Join 127,000+ smart shoppers&rdquo;</p>
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                  <p className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Current Message:</p>
+                  <p style={{ color: 'var(--text-secondary)' }}>&ldquo;Start Saving Today - Join 127,000+ smart shoppers&rdquo;</p>
                 </div>
               </div>
             )}

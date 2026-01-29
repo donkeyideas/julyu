@@ -80,8 +80,8 @@ export default function SeoSettingsPage() {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold mb-2">SEO Settings</h1>
-          <p className="text-gray-400">Manage global SEO configuration for the website</p>
+          <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>SEO Settings</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>Manage global SEO configuration for the website</p>
         </div>
         <button
           onClick={handleSave}
@@ -106,43 +106,46 @@ export default function SeoSettingsPage() {
       {/* Settings Form */}
       <div className="space-y-8">
         {/* Basic Info */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <h3 className="text-xl font-semibold mb-6">Basic Information</h3>
+        <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Basic Information</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">Site Name</label>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Site Name</label>
               <input
                 type="text"
                 value={settings.site_name}
                 onChange={(e) => setSettings({ ...settings, site_name: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">Tagline</label>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Tagline</label>
               <input
                 type="text"
                 value={settings.tagline}
                 onChange={(e) => setSettings({ ...settings, tagline: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">Meta Description</label>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Meta Description</label>
               <textarea
                 value={settings.meta_description}
                 onChange={(e) => setSettings({ ...settings, meta_description: e.target.value })}
                 rows={3}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
               />
-              <p className="text-xs text-gray-500 mt-1">{settings.meta_description.length}/160 characters</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{settings.meta_description.length}/160 characters</p>
             </div>
           </div>
         </div>
 
         {/* Keywords */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <h3 className="text-xl font-semibold mb-6">Meta Keywords</h3>
+        <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Meta Keywords</h3>
           <div className="flex flex-wrap gap-2 mb-4">
             {settings.meta_keywords.map((keyword) => (
               <span
@@ -166,7 +169,8 @@ export default function SeoSettingsPage() {
               onChange={(e) => setNewKeyword(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && addKeyword()}
               placeholder="Add keyword..."
-              className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="flex-1 px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
             <button
               onClick={addKeyword}
@@ -178,27 +182,29 @@ export default function SeoSettingsPage() {
         </div>
 
         {/* Social Media */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <h3 className="text-xl font-semibold mb-6">Social Media & Open Graph</h3>
+        <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Social Media & Open Graph</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">OG Image URL</label>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>OG Image URL</label>
               <input
                 type="text"
                 value={settings.og_image_url}
                 onChange={(e) => setSettings({ ...settings, og_image_url: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 placeholder="/og-image.png"
               />
-              <p className="text-xs text-gray-500 mt-1">Recommended size: 1200x630 pixels</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Recommended size: 1200x630 pixels</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">Twitter Handle</label>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Twitter Handle</label>
               <input
                 type="text"
                 value={settings.twitter_handle}
                 onChange={(e) => setSettings({ ...settings, twitter_handle: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 placeholder="@julyu"
               />
             </div>
@@ -206,26 +212,28 @@ export default function SeoSettingsPage() {
         </div>
 
         {/* Verification */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <h3 className="text-xl font-semibold mb-6">Search Engine Verification</h3>
+        <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Search Engine Verification</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">Google Search Console</label>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Google Search Console</label>
               <input
                 type="text"
                 value={settings.google_verification}
                 onChange={(e) => setSettings({ ...settings, google_verification: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 placeholder="Verification code"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">Bing Webmaster</label>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Bing Webmaster</label>
               <input
                 type="text"
                 value={settings.bing_verification}
                 onChange={(e) => setSettings({ ...settings, bing_verification: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 placeholder="Verification code"
               />
             </div>
@@ -233,24 +241,24 @@ export default function SeoSettingsPage() {
         </div>
 
         {/* SEO Status */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <h3 className="text-xl font-semibold mb-6">SEO Status</h3>
+        <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>SEO Status</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg text-center">
-              <div className="text-2xl mb-1">✓</div>
-              <div className="text-sm text-gray-400">robots.txt</div>
+              <div className="text-2xl mb-1" style={{ color: 'var(--text-primary)' }}>✓</div>
+              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>robots.txt</div>
             </div>
             <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg text-center">
-              <div className="text-2xl mb-1">✓</div>
-              <div className="text-sm text-gray-400">sitemap.xml</div>
+              <div className="text-2xl mb-1" style={{ color: 'var(--text-primary)' }}>✓</div>
+              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>sitemap.xml</div>
             </div>
             <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg text-center">
-              <div className="text-2xl mb-1">✓</div>
-              <div className="text-sm text-gray-400">Open Graph</div>
+              <div className="text-2xl mb-1" style={{ color: 'var(--text-primary)' }}>✓</div>
+              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Open Graph</div>
             </div>
             <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg text-center">
-              <div className="text-2xl mb-1">✓</div>
-              <div className="text-sm text-gray-400">JSON-LD</div>
+              <div className="text-2xl mb-1" style={{ color: 'var(--text-primary)' }}>✓</div>
+              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>JSON-LD</div>
             </div>
           </div>
         </div>

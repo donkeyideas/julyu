@@ -77,31 +77,32 @@ export default function ContentPagesPage() {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold mb-2">All Pages</h1>
-          <p className="text-gray-400">Manage content and SEO for all site pages</p>
+          <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>All Pages</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>Manage content and SEO for all site pages</p>
         </div>
       </div>
 
       {/* Pages Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {pages.map((page) => (
-          <div key={page.id} className="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-green-500/50 transition">
+          <div key={page.id} className="rounded-xl p-6 hover:border-green-500/50 transition" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="flex justify-between items-start mb-4">
-              <h3 className="text-xl font-semibold text-white">{page.title}</h3>
+              <h3 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>{page.title}</h3>
               {page.is_published ? (
                 <span className="px-3 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">Published</span>
               ) : (
                 <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-full">Draft</span>
               )}
             </div>
-            <p className="text-gray-400 text-sm mb-4 line-clamp-2">{page.meta_description}</p>
+            <p className="text-sm mb-4 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{page.meta_description}</p>
             <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-500">/{page.page_slug}</span>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>/{page.page_slug}</span>
               <div className="flex gap-2">
                 <a
                   href={`/${page.page_slug === 'home' ? '' : page.page_slug}`}
                   target="_blank"
-                  className="px-3 py-1 bg-gray-800 text-gray-300 rounded text-sm hover:bg-gray-700 transition"
+                  className="px-3 py-1 rounded text-sm hover:bg-gray-700 transition"
+                  style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}
                 >
                   View
                 </a>
@@ -129,7 +130,7 @@ export default function ContentPagesPage() {
       {/* Info Box */}
       <div className="mt-8 bg-green-500/10 border border-green-500/30 rounded-xl p-6">
         <h3 className="text-lg font-semibold text-green-400 mb-2">Content Management Active</h3>
-        <p className="text-gray-400">
+        <p style={{ color: 'var(--text-secondary)' }}>
           Click &quot;Edit&quot; on any page to modify its content, headlines, and SEO settings.
           Changes will be reflected on the live site after saving.
         </p>
