@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+// Updated: 2026-01-28 - Bodega System navigation
 import AdminSidebar from '@/components/admin/Sidebar'
 
 export default function AdminLayout({
