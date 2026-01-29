@@ -284,8 +284,8 @@ export default function EditPagePage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="inline-block w-12 h-12 border-4 border-gray-800 border-t-green-500 rounded-full animate-spin mb-4"></div>
-          <div className="text-gray-500">Loading page...</div>
+          <div className="inline-block w-12 h-12 border-4 border-t-green-500 rounded-full animate-spin mb-4" style={{ borderColor: 'var(--border-color)' }}></div>
+          <div style={{ color: 'var(--text-secondary)' }}>Loading page...</div>
         </div>
       </div>
     )
@@ -296,7 +296,7 @@ export default function EditPagePage() {
       <div className="max-w-4xl mx-auto">
         <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-6 text-center">
           <h2 className="text-xl font-semibold text-red-400 mb-2">Page Not Found</h2>
-          <p className="text-gray-400">The page &quot;{slug}&quot; could not be found.</p>
+          <p style={{ color: 'var(--text-secondary)' }}>The page &quot;{slug}&quot; could not be found.</p>
           <Link href="/admin-v2/content/pages" className="mt-4 inline-block text-green-500 hover:text-green-400">
             ← Back to All Pages
           </Link>
@@ -311,19 +311,20 @@ export default function EditPagePage() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Link href="/admin-v2/content/pages" className="text-gray-400 hover:text-white transition">
+            <Link href="/admin-v2/content/pages" className="hover:text-green-500 transition" style={{ color: 'var(--text-secondary)' }}>
               ← Back
             </Link>
-            <span className="text-gray-600">|</span>
-            <span className="text-gray-400">/{slug}</span>
+            <span style={{ color: 'var(--border-color)' }}>|</span>
+            <span style={{ color: 'var(--text-secondary)' }}>/{slug}</span>
           </div>
-          <h1 className="text-3xl font-bold">Edit {pageData.title}</h1>
+          <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Edit {pageData.title}</h1>
         </div>
         <div className="flex gap-3">
           <a
             href={`/${slug === 'home' ? '' : slug}`}
             target="_blank"
-            className="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition"
+            className="px-4 py-2 rounded-lg hover:opacity-80 transition"
+            style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
           >
             Preview
           </a>
@@ -352,42 +353,46 @@ export default function EditPagePage() {
 
       {/* Page Settings */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
-        <h3 className="text-xl font-semibold mb-6">Page Settings</h3>
+        <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Page Settings</h3>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">Page Title</label>
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Page Title</label>
             <input
               type="text"
               value={pageData.title}
               onChange={(e) => setPageData({ ...pageData, title: e.target.value })}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">Headline</label>
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Headline</label>
             <input
               type="text"
               value={pageData.headline}
               onChange={(e) => setPageData({ ...pageData, headline: e.target.value })}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">Subheadline</label>
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Subheadline</label>
             <input
               type="text"
               value={pageData.subheadline}
               onChange={(e) => setPageData({ ...pageData, subheadline: e.target.value })}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">Meta Description (SEO)</label>
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Meta Description (SEO)</label>
             <textarea
               value={pageData.meta_description}
               onChange={(e) => setPageData({ ...pageData, meta_description: e.target.value })}
               rows={2}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
         </div>
@@ -395,35 +400,37 @@ export default function EditPagePage() {
 
       {/* Contact Page - Email Editor */}
       {slug === 'contact' && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
-          <h3 className="text-xl font-semibold mb-6">Contact Information</h3>
+        <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }} mb-6">
+          <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Contact Information</h3>
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">Contact Email</label>
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Contact Email</label>
             <input
               type="email"
               value={pageData.content.email || ''}
               onChange={(e) => updateContent('email', e.target.value)}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
               placeholder="contact@julyu.com"
             />
-            <p className="text-sm text-gray-500 mt-2">This email will be displayed on the Contact page.</p>
+            <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>This email will be displayed on the Contact page.</p>
           </div>
         </div>
       )}
 
       {/* About Page - Text Editor */}
       {slug === 'about' && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
-          <h3 className="text-xl font-semibold mb-6">About Content</h3>
+        <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }} mb-6">
+          <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>About Content</h3>
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">Mission Statement</label>
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Mission Statement</label>
             <textarea
               value={pageData.content.about_text || ''}
               onChange={(e) => updateContent('about_text', e.target.value)}
               rows={6}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
-            <p className="text-sm text-gray-500 mt-2">This text will be displayed in the &quot;Our Mission&quot; section.</p>
+            <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>This text will be displayed in the &quot;Our Mission&quot; section.</p>
           </div>
         </div>
       )}
@@ -432,7 +439,7 @@ export default function EditPagePage() {
       {(slug === 'features' || slug === 'pricing') && (
         <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-6 mb-6">
           <h3 className="text-lg font-semibold text-yellow-400 mb-2">Page Content</h3>
-          <p className="text-gray-400 text-sm">
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
             The {slug} page content (feature cards, pricing tiers) is managed in the codebase.
             You can edit the page title, headline, and SEO settings above.
           </p>
@@ -442,307 +449,336 @@ export default function EditPagePage() {
       {/* Privacy Policy Editor */}
       {slug === 'privacy' && (
         <div className="space-y-6">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Privacy Policy Settings</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Privacy Policy Settings</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Last Updated Date</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Last Updated Date</label>
                 <input
                   type="text"
                   value={pageData.content.last_updated || ''}
                   onChange={(e) => updateContent('last_updated', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   placeholder="January 26, 2025"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Contact Email</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Contact Email</label>
                 <input
                   type="email"
                   value={pageData.content.contact_email || ''}
                   onChange={(e) => updateContent('contact_email', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   placeholder="privacy@julyu.com"
                 />
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Introduction</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Introduction</h3>
             <textarea
               value={pageData.content.introduction || ''}
               onChange={(e) => updateContent('introduction', e.target.value)}
               rows={4}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Information We Collect</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Information We Collect</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Account Information</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Account Information</label>
                 <textarea
                   value={pageData.content.info_collect_account || ''}
                   onChange={(e) => updateContent('info_collect_account', e.target.value)}
                   rows={3}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Receipt Data</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Receipt Data</label>
                 <textarea
                   value={pageData.content.info_collect_receipt || ''}
                   onChange={(e) => updateContent('info_collect_receipt', e.target.value)}
                   rows={3}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Shopping Lists</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Shopping Lists</label>
                 <textarea
                   value={pageData.content.info_collect_lists || ''}
                   onChange={(e) => updateContent('info_collect_lists', e.target.value)}
                   rows={2}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Location Information</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Location Information</label>
                 <textarea
                   value={pageData.content.info_collect_location || ''}
                   onChange={(e) => updateContent('info_collect_location', e.target.value)}
                   rows={2}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Usage Data</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Usage Data</label>
                 <textarea
                   value={pageData.content.info_collect_usage || ''}
                   onChange={(e) => updateContent('info_collect_usage', e.target.value)}
                   rows={2}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">How We Use Your Information</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>How We Use Your Information</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Introduction Text</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Introduction Text</label>
                 <input
                   type="text"
                   value={pageData.content.how_we_use_intro || ''}
                   onChange={(e) => updateContent('how_we_use_intro', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Item 1</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Item 1</label>
                 <input
                   type="text"
                   value={pageData.content.how_we_use_1 || ''}
                   onChange={(e) => updateContent('how_we_use_1', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Item 2</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Item 2</label>
                 <input
                   type="text"
                   value={pageData.content.how_we_use_2 || ''}
                   onChange={(e) => updateContent('how_we_use_2', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Item 3</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Item 3</label>
                 <input
                   type="text"
                   value={pageData.content.how_we_use_3 || ''}
                   onChange={(e) => updateContent('how_we_use_3', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Item 4</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Item 4</label>
                 <input
                   type="text"
                   value={pageData.content.how_we_use_4 || ''}
                   onChange={(e) => updateContent('how_we_use_4', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Item 5</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Item 5</label>
                 <input
                   type="text"
                   value={pageData.content.how_we_use_5 || ''}
                   onChange={(e) => updateContent('how_we_use_5', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Data Sharing</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Data Sharing</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Introduction Text</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Introduction Text</label>
                 <textarea
                   value={pageData.content.data_sharing_intro || ''}
                   onChange={(e) => updateContent('data_sharing_intro', e.target.value)}
                   rows={2}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Service Providers</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Service Providers</label>
                 <textarea
                   value={pageData.content.data_sharing_providers || ''}
                   onChange={(e) => updateContent('data_sharing_providers', e.target.value)}
                   rows={2}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Legal Requirements</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Legal Requirements</label>
                 <textarea
                   value={pageData.content.data_sharing_legal || ''}
                   onChange={(e) => updateContent('data_sharing_legal', e.target.value)}
                   rows={2}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Business Transfers</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Business Transfers</label>
                 <textarea
                   value={pageData.content.data_sharing_transfers || ''}
                   onChange={(e) => updateContent('data_sharing_transfers', e.target.value)}
                   rows={2}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Data Security</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Data Security</h3>
             <textarea
               value={pageData.content.data_security || ''}
               onChange={(e) => updateContent('data_security', e.target.value)}
               rows={4}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Your Rights</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Your Rights</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Introduction Text</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Introduction Text</label>
                 <input
                   type="text"
                   value={pageData.content.your_rights_intro || ''}
                   onChange={(e) => updateContent('your_rights_intro', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Right 1</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Right 1</label>
                 <input
                   type="text"
                   value={pageData.content.your_rights_1 || ''}
                   onChange={(e) => updateContent('your_rights_1', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Right 2</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Right 2</label>
                 <input
                   type="text"
                   value={pageData.content.your_rights_2 || ''}
                   onChange={(e) => updateContent('your_rights_2', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Right 3</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Right 3</label>
                 <input
                   type="text"
                   value={pageData.content.your_rights_3 || ''}
                   onChange={(e) => updateContent('your_rights_3', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Right 4</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Right 4</label>
                 <input
                   type="text"
                   value={pageData.content.your_rights_4 || ''}
                   onChange={(e) => updateContent('your_rights_4', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Contact Text (before email link)</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Contact Text (before email link)</label>
                 <input
                   type="text"
                   value={pageData.content.your_rights_contact_text || ''}
                   onChange={(e) => updateContent('your_rights_contact_text', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Cookies</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Cookies</h3>
             <textarea
               value={pageData.content.cookies || ''}
               onChange={(e) => updateContent('cookies', e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Children&apos;s Privacy</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Children&apos;s Privacy</h3>
             <textarea
               value={pageData.content.children_privacy || ''}
               onChange={(e) => updateContent('children_privacy', e.target.value)}
               rows={2}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Changes to This Policy</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Changes to This Policy</h3>
             <textarea
               value={pageData.content.changes_policy || ''}
               onChange={(e) => updateContent('changes_policy', e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Contact Us</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Contact Us</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Contact Section Text</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Contact Section Text</label>
                 <textarea
                   value={pageData.content.contact_us_text || ''}
                   onChange={(e) => updateContent('contact_us_text', e.target.value)}
                   rows={2}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
-                <p className="text-sm text-gray-500 mt-2">The contact email is set in the Privacy Policy Settings section above.</p>
+                <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>The contact email is set in the Privacy Policy Settings section above.</p>
               </div>
             </div>
           </div>
@@ -752,324 +788,355 @@ export default function EditPagePage() {
       {/* Terms of Service Editor */}
       {slug === 'terms' && (
         <div className="space-y-6">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Terms Settings</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Terms Settings</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Last Updated Date</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Last Updated Date</label>
                 <input
                   type="text"
                   value={pageData.content.last_updated || ''}
                   onChange={(e) => updateContent('last_updated', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   placeholder="January 26, 2025"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Contact Email</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Contact Email</label>
                 <input
                   type="email"
                   value={pageData.content.contact_email || ''}
                   onChange={(e) => updateContent('contact_email', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   placeholder="legal@julyu.com"
                 />
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Agreement to Terms</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Agreement to Terms</h3>
             <textarea
               value={pageData.content.agreement || ''}
               onChange={(e) => updateContent('agreement', e.target.value)}
               rows={4}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Description of Service</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Description of Service</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Introduction Text</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Introduction Text</label>
                 <input
                   type="text"
                   value={pageData.content.description_of_service_intro || ''}
                   onChange={(e) => updateContent('description_of_service_intro', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Service 1</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Service 1</label>
                 <input
                   type="text"
                   value={pageData.content.description_of_service_1 || ''}
                   onChange={(e) => updateContent('description_of_service_1', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Service 2</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Service 2</label>
                 <input
                   type="text"
                   value={pageData.content.description_of_service_2 || ''}
                   onChange={(e) => updateContent('description_of_service_2', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Service 3</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Service 3</label>
                 <input
                   type="text"
                   value={pageData.content.description_of_service_3 || ''}
                   onChange={(e) => updateContent('description_of_service_3', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Service 4</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Service 4</label>
                 <input
                   type="text"
                   value={pageData.content.description_of_service_4 || ''}
                   onChange={(e) => updateContent('description_of_service_4', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">User Accounts</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>User Accounts</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Introduction</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Introduction</label>
                 <input
                   type="text"
                   value={pageData.content.user_accounts_intro || ''}
                   onChange={(e) => updateContent('user_accounts_intro', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Requirement 1</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Requirement 1</label>
                 <input
                   type="text"
                   value={pageData.content.user_accounts_1 || ''}
                   onChange={(e) => updateContent('user_accounts_1', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Requirement 2</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Requirement 2</label>
                 <input
                   type="text"
                   value={pageData.content.user_accounts_2 || ''}
                   onChange={(e) => updateContent('user_accounts_2', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Requirement 3</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Requirement 3</label>
                 <input
                   type="text"
                   value={pageData.content.user_accounts_3 || ''}
                   onChange={(e) => updateContent('user_accounts_3', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Requirement 4</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Requirement 4</label>
                 <input
                   type="text"
                   value={pageData.content.user_accounts_4 || ''}
                   onChange={(e) => updateContent('user_accounts_4', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Age Requirement</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Age Requirement</label>
                 <input
                   type="text"
                   value={pageData.content.user_accounts_age || ''}
                   onChange={(e) => updateContent('user_accounts_age', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Acceptable Use</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Acceptable Use</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Introduction</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Introduction</label>
                 <input
                   type="text"
                   value={pageData.content.acceptable_use_intro || ''}
                   onChange={(e) => updateContent('acceptable_use_intro', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Prohibited Action 1</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Prohibited Action 1</label>
                 <input
                   type="text"
                   value={pageData.content.acceptable_use_1 || ''}
                   onChange={(e) => updateContent('acceptable_use_1', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Prohibited Action 2</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Prohibited Action 2</label>
                 <input
                   type="text"
                   value={pageData.content.acceptable_use_2 || ''}
                   onChange={(e) => updateContent('acceptable_use_2', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Prohibited Action 3</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Prohibited Action 3</label>
                 <input
                   type="text"
                   value={pageData.content.acceptable_use_3 || ''}
                   onChange={(e) => updateContent('acceptable_use_3', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Prohibited Action 4</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Prohibited Action 4</label>
                 <input
                   type="text"
                   value={pageData.content.acceptable_use_4 || ''}
                   onChange={(e) => updateContent('acceptable_use_4', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Prohibited Action 5</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Prohibited Action 5</label>
                 <input
                   type="text"
                   value={pageData.content.acceptable_use_5 || ''}
                   onChange={(e) => updateContent('acceptable_use_5', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Prohibited Action 6</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Prohibited Action 6</label>
                 <input
                   type="text"
                   value={pageData.content.acceptable_use_6 || ''}
                   onChange={(e) => updateContent('acceptable_use_6', e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Price Information Disclaimer</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Price Information Disclaimer</h3>
             <textarea
               value={pageData.content.price_disclaimer || ''}
               onChange={(e) => updateContent('price_disclaimer', e.target.value)}
               rows={4}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Intellectual Property</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Intellectual Property</h3>
             <textarea
               value={pageData.content.intellectual_property || ''}
               onChange={(e) => updateContent('intellectual_property', e.target.value)}
               rows={4}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">User Content</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>User Content</h3>
             <textarea
               value={pageData.content.user_content || ''}
               onChange={(e) => updateContent('user_content', e.target.value)}
               rows={4}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Third-Party Services</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Third-Party Services</h3>
             <textarea
               value={pageData.content.third_party || ''}
               onChange={(e) => updateContent('third_party', e.target.value)}
               rows={4}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Limitation of Liability</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Limitation of Liability</h3>
             <textarea
               value={pageData.content.liability || ''}
               onChange={(e) => updateContent('liability', e.target.value)}
               rows={4}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Disclaimer of Warranties</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Disclaimer of Warranties</h3>
             <textarea
               value={pageData.content.warranties || ''}
               onChange={(e) => updateContent('warranties', e.target.value)}
               rows={4}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Termination</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Termination</h3>
             <textarea
               value={pageData.content.termination || ''}
               onChange={(e) => updateContent('termination', e.target.value)}
               rows={4}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Governing Law</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Governing Law</h3>
             <textarea
               value={pageData.content.governing_law || ''}
               onChange={(e) => updateContent('governing_law', e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Changes to Terms</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Changes to Terms</h3>
             <textarea
               value={pageData.content.changes_terms || ''}
               onChange={(e) => updateContent('changes_terms', e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-6">Contact Us</h3>
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+            <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Contact Us</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Contact Section Text</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Contact Section Text</label>
                 <textarea
                   value={pageData.content.contact_us_terms_text || ''}
                   onChange={(e) => updateContent('contact_us_terms_text', e.target.value)}
                   rows={2}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
-                <p className="text-sm text-gray-500 mt-2">The contact email is set in the Terms Settings section above.</p>
+                <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>The contact email is set in the Terms Settings section above.</p>
               </div>
             </div>
           </div>
@@ -1079,7 +1146,7 @@ export default function EditPagePage() {
       {/* Help Text */}
       <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-6">
         <h3 className="text-lg font-semibold text-green-400 mb-2">How It Works</h3>
-        <p className="text-gray-400 text-sm">
+        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
           Changes saved here are stored in the database and will appear on the live website.
           Click &quot;Save Changes&quot; when you&apos;re done editing.
         </p>

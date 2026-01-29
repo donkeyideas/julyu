@@ -142,10 +142,10 @@ export default function AITrainingPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-10 pb-6 border-b border-gray-800">
+      <div className="flex justify-between items-center mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
         <div>
-          <h1 className="text-4xl font-black">Training Data Management</h1>
-          <p className="text-gray-500 mt-2">Manage and export data for custom LLM training</p>
+          <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>Training Data Management</h1>
+          <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>Manage and export data for custom LLM training</p>
         </div>
         <div className="flex gap-2">
           <button
@@ -158,7 +158,8 @@ export default function AITrainingPage() {
           <button
             onClick={() => exportData('csv')}
             disabled={exporting}
-            className="px-4 py-2 border border-gray-700 rounded-lg hover:border-green-500 transition disabled:opacity-50"
+            className="px-4 py-2 rounded-lg hover:border-green-500 transition disabled:opacity-50"
+            style={{ border: '1px solid var(--border-color)' }}
           >
             Export CSV
           </button>
@@ -168,24 +169,24 @@ export default function AITrainingPage() {
       {/* Stats Cards */}
       {summary && (
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <div className="text-sm text-gray-500">Total Records</div>
+          <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Total Records</div>
             <div className="text-3xl font-bold">{summary.total}</div>
           </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <div className="text-sm text-gray-500">Validated</div>
+          <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Validated</div>
             <div className="text-3xl font-bold text-green-500">{summary.validated}</div>
           </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <div className="text-sm text-gray-500">Pending Review</div>
+          <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Pending Review</div>
             <div className="text-3xl font-bold text-yellow-500">{summary.pending}</div>
           </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <div className="text-sm text-gray-500">Positive Feedback</div>
+          <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Positive Feedback</div>
             <div className="text-3xl font-bold text-green-500">{summary.byFeedback.positive}</div>
           </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <div className="text-sm text-gray-500">Negative Feedback</div>
+          <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Negative Feedback</div>
             <div className="text-3xl font-bold text-red-500">{summary.byFeedback.negative}</div>
           </div>
         </div>
@@ -196,7 +197,8 @@ export default function AITrainingPage() {
         <select
           value={filters.use_case}
           onChange={(e) => { setFilters(f => ({ ...f, use_case: e.target.value })); setPage(1); }}
-          className="bg-gray-900 border border-gray-800 rounded-lg px-4 py-2"
+          className="rounded-lg px-4 py-2"
+          style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
         >
           <option value="">All Use Cases</option>
           {useCases.map(uc => (
@@ -207,7 +209,8 @@ export default function AITrainingPage() {
         <select
           value={filters.validated}
           onChange={(e) => { setFilters(f => ({ ...f, validated: e.target.value })); setPage(1); }}
-          className="bg-gray-900 border border-gray-800 rounded-lg px-4 py-2"
+          className="rounded-lg px-4 py-2"
+          style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
         >
           <option value="">All Validation Status</option>
           <option value="true">Validated</option>
@@ -217,7 +220,8 @@ export default function AITrainingPage() {
         <select
           value={filters.feedback}
           onChange={(e) => { setFilters(f => ({ ...f, feedback: e.target.value })); setPage(1); }}
-          className="bg-gray-900 border border-gray-800 rounded-lg px-4 py-2"
+          className="rounded-lg px-4 py-2"
+          style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
         >
           <option value="">All Feedback</option>
           <option value="positive">Positive</option>
@@ -227,34 +231,34 @@ export default function AITrainingPage() {
       </div>
 
       {/* Data Table */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading...</div>
+          <div className="p-8 text-center" style={{ color: 'var(--text-secondary)' }}>Loading...</div>
         ) : (
           <table className="w-full">
-            <thead className="bg-black">
+            <thead style={{ backgroundColor: 'var(--bg-secondary)' }}>
               <tr>
-                <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Date</th>
-                <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Use Case</th>
-                <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Input Preview</th>
-                <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Status</th>
-                <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Feedback</th>
-                <th className="text-left p-4 text-sm text-gray-500 font-semibold uppercase">Actions</th>
+                <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Date</th>
+                <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Use Case</th>
+                <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Input Preview</th>
+                <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Status</th>
+                <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Feedback</th>
+                <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {data.length > 0 ? (
                 data.map(record => (
-                  <tr key={record.id} className="border-t border-gray-800 hover:bg-black/50">
+                  <tr key={record.id} style={{ borderTop: '1px solid var(--border-color)' }} className="hover:opacity-80 transition">
                     <td className="p-4 text-sm">
                       {new Date(record.created_at).toLocaleDateString()}
                     </td>
                     <td className="p-4">
-                      <span className="px-2 py-1 bg-gray-800 rounded text-sm">
+                      <span className="px-2 py-1 rounded text-sm" style={{ backgroundColor: 'var(--bg-secondary)' }}>
                         {record.use_case || 'N/A'}
                       </span>
                     </td>
-                    <td className="p-4 text-sm text-gray-400 max-w-xs truncate">
+                    <td className="p-4 text-sm max-w-xs truncate" style={{ color: 'var(--text-secondary)' }}>
                       {record.input_text?.substring(0, 100) || 'N/A'}...
                     </td>
                     <td className="p-4">
@@ -282,7 +286,8 @@ export default function AITrainingPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => setSelectedRecord(record)}
-                          className="px-3 py-1 text-sm border border-gray-700 rounded hover:border-green-500"
+                          className="px-3 py-1 text-sm rounded hover:border-green-500"
+                          style={{ border: '1px solid var(--border-color)' }}
                         >
                           View
                         </button>
@@ -290,9 +295,10 @@ export default function AITrainingPage() {
                           onClick={() => updateRecord(record.id, { validated: !record.validated })}
                           className={`px-3 py-1 text-sm rounded ${
                             record.validated
-                              ? 'bg-gray-800 text-gray-400'
+                              ? ''
                               : 'bg-green-500 text-black'
                           }`}
+                          style={record.validated ? { backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)' } : {}}
                         >
                           {record.validated ? 'Unvalidate' : 'Validate'}
                         </button>
@@ -302,7 +308,7 @@ export default function AITrainingPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-gray-500">
+                  <td colSpan={6} className="p-8 text-center" style={{ color: 'var(--text-secondary)' }}>
                     No training data found
                   </td>
                 </tr>
@@ -313,21 +319,23 @@ export default function AITrainingPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="p-4 border-t border-gray-800 flex justify-between items-center">
+          <div className="p-4 flex justify-between items-center" style={{ borderTop: '1px solid var(--border-color)' }}>
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-4 py-2 border border-gray-700 rounded disabled:opacity-50"
+              className="px-4 py-2 rounded disabled:opacity-50"
+              style={{ border: '1px solid var(--border-color)' }}
             >
               Previous
             </button>
-            <span className="text-gray-500">
+            <span style={{ color: 'var(--text-secondary)' }}>
               Page {page} of {totalPages}
             </span>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="px-4 py-2 border border-gray-700 rounded disabled:opacity-50"
+              className="px-4 py-2 rounded disabled:opacity-50"
+              style={{ border: '1px solid var(--border-color)' }}
             >
               Next
             </button>
@@ -338,12 +346,13 @@ export default function AITrainingPage() {
       {/* Detail Modal */}
       {selectedRecord && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="rounded-2xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="flex justify-between items-start mb-6">
-              <h2 className="text-2xl font-bold">Training Record Details</h2>
+              <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Training Record Details</h2>
               <button
                 onClick={() => setSelectedRecord(null)}
-                className="text-gray-500 hover:text-white"
+                className="hover:opacity-80"
+                style={{ color: 'var(--text-secondary)' }}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -354,19 +363,19 @@ export default function AITrainingPage() {
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="text-sm text-gray-500">Use Case</div>
+                  <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Use Case</div>
                   <div className="font-medium">{selectedRecord.use_case || 'N/A'}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500">Model</div>
+                  <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Model</div>
                   <div className="font-medium">{selectedRecord.model_name || 'N/A'}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500">Created</div>
+                  <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Created</div>
                   <div className="font-medium">{new Date(selectedRecord.created_at).toLocaleString()}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500">Accuracy Score</div>
+                  <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Accuracy Score</div>
                   <div className="font-medium">
                     {selectedRecord.accuracy_score ? `${(selectedRecord.accuracy_score * 100).toFixed(0)}%` : 'N/A'}
                   </div>
@@ -374,31 +383,32 @@ export default function AITrainingPage() {
               </div>
 
               <div>
-                <div className="text-sm text-gray-500 mb-2">Input</div>
-                <pre className="bg-black p-4 rounded-lg text-sm overflow-x-auto whitespace-pre-wrap">
+                <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Input</div>
+                <pre className="p-4 rounded-lg text-sm overflow-x-auto whitespace-pre-wrap" style={{ backgroundColor: 'var(--bg-secondary)' }}>
                   {selectedRecord.input_text || 'N/A'}
                 </pre>
               </div>
 
               <div>
-                <div className="text-sm text-gray-500 mb-2">Output</div>
-                <pre className="bg-black p-4 rounded-lg text-sm overflow-x-auto whitespace-pre-wrap">
+                <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Output</div>
+                <pre className="p-4 rounded-lg text-sm overflow-x-auto whitespace-pre-wrap" style={{ backgroundColor: 'var(--bg-secondary)' }}>
                   {selectedRecord.output_text || 'N/A'}
                 </pre>
               </div>
 
               <div>
-                <div className="text-sm text-gray-500 mb-2">Validation Notes</div>
+                <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Validation Notes</div>
                 <textarea
                   value={selectedRecord.validation_notes || ''}
                   onChange={(e) => setSelectedRecord(prev => prev ? { ...prev, validation_notes: e.target.value } : null)}
                   placeholder="Add notes about this training record..."
-                  className="w-full bg-black border border-gray-800 rounded-lg p-3 text-sm"
+                  className="w-full rounded-lg p-3 text-sm"
+                  style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   rows={3}
                 />
               </div>
 
-              <div className="flex justify-between items-center pt-4 border-t border-gray-800">
+              <div className="flex justify-between items-center pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
                 <div className="flex gap-2">
                   <button
                     onClick={() => {
@@ -407,8 +417,9 @@ export default function AITrainingPage() {
                     className={`px-4 py-2 rounded ${
                       selectedRecord.user_feedback === 'positive'
                         ? 'bg-green-500 text-black'
-                        : 'bg-gray-800'
+                        : ''
                     }`}
+                    style={selectedRecord.user_feedback !== 'positive' ? { backgroundColor: 'var(--bg-secondary)' } : {}}
                   >
                     + Good
                   </button>
@@ -419,8 +430,9 @@ export default function AITrainingPage() {
                     className={`px-4 py-2 rounded ${
                       selectedRecord.user_feedback === 'negative'
                         ? 'bg-red-500 text-white'
-                        : 'bg-gray-800'
+                        : ''
                     }`}
+                    style={selectedRecord.user_feedback !== 'negative' ? { backgroundColor: 'var(--bg-secondary)' } : {}}
                   >
                     - Bad
                   </button>

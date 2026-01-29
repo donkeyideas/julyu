@@ -183,8 +183,9 @@ export default function FeatureFlagsPage() {
                     <span className={`px-2 py-0.5 rounded text-xs font-medium ${
                       feature.is_enabled
                         ? 'bg-green-500/15 text-green-500'
-                        : 'bg-gray-800 text-gray-500'
-                    }`}>
+                        : ''
+                    }`}
+                    style={!feature.is_enabled ? { backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)' } : {}}>
                       {feature.is_enabled ? 'Enabled' : 'Disabled'}
                     </span>
                     {feature.rollout_percentage > 0 && feature.rollout_percentage < 100 && (
@@ -203,8 +204,8 @@ export default function FeatureFlagsPage() {
                       <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Rollout Percentage</div>
                       <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)' }}>
                         <div
-                          className={`h-full transition-all ${feature.is_enabled ? 'bg-green-500' : 'bg-gray-600'}`}
-                          style={{ width: `${feature.rollout_percentage}%` }}
+                          className={`h-full transition-all ${feature.is_enabled ? 'bg-green-500' : ''}`}
+                          style={feature.is_enabled ? { width: `${feature.rollout_percentage}%` } : { width: `${feature.rollout_percentage}%`, backgroundColor: 'var(--text-muted)' }}
                         />
                       </div>
                     </div>
@@ -338,7 +339,7 @@ export default function FeatureFlagsPage() {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-3 rounded-lg hover:border-gray-500 transition"
+                  className="flex-1 px-4 py-3 rounded-lg hover:opacity-80 transition"
                   style={{ border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 >
                   Cancel

@@ -578,7 +578,7 @@ function PlanEditor({
       </div>
 
       <div>
-        <label className="block text-sm text-gray-400 mb-1">Description</label>
+        <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Description</label>
         <input
           type="text"
           value={description}

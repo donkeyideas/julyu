@@ -35,15 +35,15 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: 'var(--bg-primary)' }}>
       <div className="w-full max-w-md">
         <Link href="/" className="text-3xl font-black text-green-500 mb-2 block text-center">
           Julyu
         </Link>
-        <p className="text-gray-500 text-center mb-8">Admin Portal</p>
+        <p className="text-center mb-8" style={{ color: 'var(--text-secondary)' }}>Admin Portal</p>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8">
-          <h1 className="text-2xl font-bold mb-6">Admin Login</h1>
+        <div className="rounded-2xl p-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>Admin Login</h1>
 
           <form onSubmit={handleLogin} className="space-y-6">
             {error && (
@@ -53,25 +53,27 @@ export default function AdminLoginPage() {
             )}
 
             <div>
-              <label className="block text-sm font-medium mb-2">Email</label>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg focus:outline-none focus:border-green-500"
+                className="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-green-500"
+                style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 placeholder="admin@example.com"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Password</label>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg focus:outline-none focus:border-green-500"
+                className="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-green-500"
+                style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 placeholder="Enter password"
               />
             </div>
@@ -85,10 +87,11 @@ export default function AdminLoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-gray-800">
+          <div className="mt-6 pt-6" style={{ borderTop: '1px solid var(--border-color)' }}>
             <Link
               href="/"
-              className="block text-center text-gray-500 hover:text-green-500 transition text-sm"
+              className="block text-center hover:text-green-500 transition text-sm"
+              style={{ color: 'var(--text-secondary)' }}
             >
               Back to main site
             </Link>
