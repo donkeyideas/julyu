@@ -449,7 +449,7 @@ export default function EditPagePage() {
       {/* Privacy Policy Editor */}
       {slug === 'privacy' && (
         <div className="space-y-6">
-          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+          <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Privacy Policy Settings</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
