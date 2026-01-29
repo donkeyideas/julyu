@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 export default function StoreApplicationsPage() {
-  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [applications, setApplications] = useState<any[]>([])
 
