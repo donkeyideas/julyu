@@ -73,7 +73,7 @@ export default function PricesPage() {
   return (
     <div>
       <div className="mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
-        <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }} style={{ color: 'var(--text-primary)' }}>Price Database</h1>
+        <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>Price Database</h1>
         <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>Manage product prices and retailer data</p>
       </div>
 

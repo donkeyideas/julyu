@@ -64,7 +64,7 @@ export default function InstacartAPIPage() {
       </div>
 
       {/* API Configuration */}
-      <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }} mb-8">
+      <div className="rounded-xl p-6 mb-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>API Credentials</h3>
 
         <div className="space-y-4 mb-6">
@@ -125,7 +125,7 @@ export default function InstacartAPIPage() {
       </div>
 
       {/* Features Preview */}
-      <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }} mb-8">
+      <div className="rounded-xl p-6 mb-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <h3 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>What You Get with Instacart API</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -164,41 +164,41 @@ export default function InstacartAPIPage() {
       </div>
 
       {/* Alternative Data Sources */}
-      <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}">
+      <div className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <h3 className="text-xl font-semibold mb-4">Current Data Sources</h3>
         <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>
           While waiting for Instacart API access, Julyu uses these data sources:
         </p>
 
         <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+          <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
             <div className="flex items-center gap-3">
               <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-              <span className style={{ color: 'var(--text-primary)' }}>Kroger API</span>
+              <span style={{ color: 'var(--text-primary)' }}>Kroger API</span>
             </div>
             <span className="text-green-400 text-sm">Active</span>
           </div>
 
-          <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+          <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
             <div className="flex items-center gap-3">
               <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-              <span className style={{ color: 'var(--text-primary)' }}>Spoonacular API</span>
+              <span style={{ color: 'var(--text-primary)' }}>Spoonacular API</span>
             </div>
             <span className="text-green-400 text-sm">Active</span>
           </div>
 
-          <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+          <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
             <div className="flex items-center gap-3">
               <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-              <span className style={{ color: 'var(--text-primary)' }}>Receipt OCR (User Submitted)</span>
+              <span style={{ color: 'var(--text-primary)' }}>Receipt OCR (User Submitted)</span>
             </div>
             <span className="text-green-400 text-sm">Active</span>
           </div>
 
-          <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+          <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
             <div className="flex items-center gap-3">
               <span className="w-3 h-3 bg-yellow-500 rounded-full"></span>
-              <span className style={{ color: 'var(--text-primary)' }}>Instacart API</span>
+              <span style={{ color: 'var(--text-primary)' }}>Instacart API</span>
             </div>
             <span className="text-yellow-400 text-sm">Pending</span>
           </div>

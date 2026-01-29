@@ -602,7 +602,7 @@ export default function DeliveryPartnersPage() {
                         onClick={() => setFormData(prev => ({ ...prev, supports_deep_linking: !prev.supports_deep_linking }))}
                         className="relative"
                       >
-                        <div className={`w-12 h-6 rounded-full transition ${formData.supports_deep_linking ? 'bg-green-500' : ''}`} style={{ backgroundColor: formData.supports_deep_linking || formData.supports_search_url || formData.supports_cart_api || formData.requires_partnership || formData.is_active || formData.show_in_modal ? undefined : 'var(--bg-secondary)'}`}>
+                        <div className={`w-12 h-6 rounded-full transition ${formData.supports_deep_linking ? 'bg-green-500' : ''}`} style={{ backgroundColor: formData.supports_deep_linking ? undefined : 'var(--bg-secondary)' }}>
                           <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-all shadow ${formData.supports_deep_linking ? 'left-6' : 'left-0.5'}`} />
                         </div>
                       </button>
@@ -614,7 +614,7 @@ export default function DeliveryPartnersPage() {
                         onClick={() => setFormData(prev => ({ ...prev, supports_search_url: !prev.supports_search_url }))}
                         className="relative"
                       >
-                        <div className={`w-12 h-6 rounded-full transition ${formData.supports_search_url ? 'bg-green-500' : ''}`} style={{ backgroundColor: formData.supports_deep_linking || formData.supports_search_url || formData.supports_cart_api || formData.requires_partnership || formData.is_active || formData.show_in_modal ? undefined : 'var(--bg-secondary)'}`}>
+                        <div className={`w-12 h-6 rounded-full transition ${formData.supports_search_url ? 'bg-green-500' : ''}`} style={{ backgroundColor: formData.supports_search_url ? undefined : 'var(--bg-secondary)' }}>
                           <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-all shadow ${formData.supports_search_url ? 'left-6' : 'left-0.5'}`} />
                         </div>
                       </button>
@@ -626,7 +626,7 @@ export default function DeliveryPartnersPage() {
                         onClick={() => setFormData(prev => ({ ...prev, supports_cart_api: !prev.supports_cart_api }))}
                         className="relative"
                       >
-                        <div className={`w-12 h-6 rounded-full transition ${formData.supports_cart_api ? 'bg-green-500' : ''}`} style={{ backgroundColor: formData.supports_deep_linking || formData.supports_search_url || formData.supports_cart_api || formData.requires_partnership || formData.is_active || formData.show_in_modal ? undefined : 'var(--bg-secondary)'}`}>
+                        <div className={`w-12 h-6 rounded-full transition ${formData.supports_cart_api ? 'bg-green-500' : ''}`} style={{ backgroundColor: formData.supports_cart_api ? undefined : 'var(--bg-secondary)' }}>
                           <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-all shadow ${formData.supports_cart_api ? 'left-6' : 'left-0.5'}`} />
                         </div>
                       </button>
@@ -638,7 +638,7 @@ export default function DeliveryPartnersPage() {
                         onClick={() => setFormData(prev => ({ ...prev, requires_partnership: !prev.requires_partnership }))}
                         className="relative"
                       >
-                        <div className={`w-12 h-6 rounded-full transition ${formData.requires_partnership ? 'bg-green-500' : ''}`} style={{ backgroundColor: formData.supports_deep_linking || formData.supports_search_url || formData.supports_cart_api || formData.requires_partnership || formData.is_active || formData.show_in_modal ? undefined : 'var(--bg-secondary)'}`}>
+                        <div className={`w-12 h-6 rounded-full transition ${formData.requires_partnership ? 'bg-green-500' : ''}`} style={{ backgroundColor: formData.requires_partnership ? undefined : 'var(--bg-secondary)' }}>
                           <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-all shadow ${formData.requires_partnership ? 'left-6' : 'left-0.5'}`} />
                         </div>
                       </button>
@@ -808,7 +808,7 @@ export default function DeliveryPartnersPage() {
                         onClick={() => setFormData(prev => ({ ...prev, is_active: !prev.is_active }))}
                         className="relative"
                       >
-                        <div className={`w-12 h-6 rounded-full transition ${formData.is_active ? 'bg-green-500' : ''}`} style={{ backgroundColor: formData.supports_deep_linking || formData.supports_search_url || formData.supports_cart_api || formData.requires_partnership || formData.is_active || formData.show_in_modal ? undefined : 'var(--bg-secondary)'}`}>
+                        <div className={`w-12 h-6 rounded-full transition ${formData.is_active ? 'bg-green-500' : ''}`} style={{ backgroundColor: formData.is_active ? undefined : 'var(--bg-secondary)' }}>
                           <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-all shadow ${formData.is_active ? 'left-6' : 'left-0.5'}`} />
                         </div>
                       </button>
@@ -820,7 +820,7 @@ export default function DeliveryPartnersPage() {
                         onClick={() => setFormData(prev => ({ ...prev, show_in_modal: !prev.show_in_modal }))}
                         className="relative"
                       >
-                        <div className={`w-12 h-6 rounded-full transition ${formData.show_in_modal ? 'bg-green-500' : ''}`} style={{ backgroundColor: formData.supports_deep_linking || formData.supports_search_url || formData.supports_cart_api || formData.requires_partnership || formData.is_active || formData.show_in_modal ? undefined : 'var(--bg-secondary)'}`}>
+                        <div className={`w-12 h-6 rounded-full transition ${formData.show_in_modal ? 'bg-green-500' : ''}`} style={{ backgroundColor: formData.show_in_modal ? undefined : 'var(--bg-secondary)' }}>
                           <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-all shadow ${formData.show_in_modal ? 'left-6' : 'left-0.5'}`} />
                         </div>
                       </button>
