@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import BodegaCard from '@/components/dashboard/BodegaCard'
 
 // Helper to get auth headers for API calls (supports Firebase/Google users)
 function getAuthHeaders(): HeadersInit {
@@ -137,6 +138,9 @@ function ComparePageContent() {
   const [loadingPartners, setLoadingPartners] = useState(false)
   const [krogerConnectModal, setKrogerConnectModal] = useState<{ isOpen: boolean; store: any | null }>({ isOpen: false, store: null })
   const [krogerConnected, setKrogerConnected] = useState(false)
+  const [bodegaResults, setBodegaResults] = useState<any[]>([])
+  const [bodegaLoading, setBodegaLoading] = useState(false)
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
 
   // Load search history from localStorage
   useEffect(() => {
@@ -285,10 +289,12 @@ function ComparePageContent() {
   const handleCompare = async () => {
     setLoading(true)
     setResults(null)
+    setBodegaResults([])
 
     const items = list.split('\n').filter(item => item.trim())
 
     try {
+      // Retail store comparison
       const response = await fetch('/api/lists/analyze', {
         method: 'POST',
         headers: getAuthHeaders(),
@@ -305,6 +311,9 @@ function ComparePageContent() {
 
       // Save to history
       saveToHistory(items, data)
+
+      // Search for nearby bodegas (parallel to retail search)
+      searchNearbyBodegas(items)
     } catch (error) {
       console.error('Comparison error:', error)
       const errorResult: AnalyzeResult = {
@@ -319,6 +328,80 @@ function ComparePageContent() {
       setResults(errorResult)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const searchNearbyBodegas = async (items: string[]) => {
+    if (!address && !zipCode) {
+      console.log('[Bodega] No location provided, skipping bodega search')
+      return
+    }
+
+    setBodegaLoading(true)
+
+    try {
+      // Geocode user's location if we don't have it
+      let latitude: number
+      let longitude: number
+
+      if (userLocation) {
+        latitude = userLocation.latitude
+        longitude = userLocation.longitude
+      } else {
+        // Geocode address or zip code
+        const location = address || zipCode
+        const geocodeResponse = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}`
+        )
+        const geocodeData = await geocodeResponse.json()
+
+        if (geocodeData.status !== 'OK' || !geocodeData.results[0]) {
+          console.log('[Bodega] Failed to geocode location')
+          setBodegaLoading(false)
+          return
+        }
+
+        latitude = geocodeData.results[0].geometry.location.lat
+        longitude = geocodeData.results[0].geometry.location.lng
+        setUserLocation({ latitude, longitude })
+      }
+
+      // Search for each product at nearby bodegas
+      const bodegaPromises = items.map(async (item) => {
+        try {
+          const response = await fetch(
+            `/api/bodegas/nearby?productName=${encodeURIComponent(item)}&latitude=${latitude}&longitude=${longitude}&radius=5`
+          )
+          const data = await response.json()
+
+          if (data.success && data.data.length > 0) {
+            return {
+              productQuery: item,
+              bodegas: data.data
+            }
+          }
+          return null
+        } catch (error) {
+          console.error(`[Bodega] Error searching for ${item}:`, error)
+          return null
+        }
+      })
+
+      const bodegaResults = await Promise.all(bodegaPromises)
+      const validResults = bodegaResults.filter(r => r !== null)
+
+      // Flatten and deduplicate bodegas
+      const allBodegas = validResults.flatMap(r => r!.bodegas)
+      const uniqueBodegas = Array.from(
+        new Map(allBodegas.map(b => [b.store.id, b])).values()
+      )
+
+      console.log('[Bodega] Found', uniqueBodegas.length, 'nearby bodegas')
+      setBodegaResults(uniqueBodegas)
+    } catch (error) {
+      console.error('[Bodega] Search error:', error)
+    } finally {
+      setBodegaLoading(false)
     }
   }
 
@@ -463,6 +546,24 @@ function ComparePageContent() {
       window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination}`, '_blank')
     }
     recordShoppingTrip(store, 'in_store')
+  }
+
+  const handleBodegaOrder = (bodega: any) => {
+    // TODO: Implement order placement modal for bodega orders (Phase 3)
+    alert(`Order placement from ${bodega.store.name} will be available in Phase 3. For now, you can call them at ${bodega.store.phone}`)
+  }
+
+  const handleBodegaDirections = (bodega: any) => {
+    const storeAddress = `${bodega.store.address}, ${bodega.store.city}, ${bodega.store.state} ${bodega.store.zip}`
+    const destination = encodeURIComponent(storeAddress)
+
+    const origin = address || zipCode
+    if (origin) {
+      const encodedOrigin = encodeURIComponent(origin)
+      window.open(`https://www.google.com/maps/dir/?api=1&origin=${encodedOrigin}&destination=${destination}`, '_blank')
+    } else {
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination}`, '_blank')
+    }
   }
 
   const handlePartnerClick = async (partner: DeliveryPartner) => {
@@ -869,6 +970,94 @@ function ComparePageContent() {
       {results && results.message && (
         <div className="bg-yellow-500/10 border border-yellow-500/50 rounded-2xl p-6 mb-8">
           <p className="text-yellow-500">{results.message}</p>
+        </div>
+      )}
+
+      {/* Bodega Results Section */}
+      {(bodegaResults.length > 0 || bodegaLoading) && (
+        <div className="mt-12">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-2">
+              <svg className="w-6 h-6" style={{ color: 'var(--accent-primary)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                Nearby Local Stores
+              </h2>
+            </div>
+            {bodegaResults.length > 0 && (
+              <span
+                className="px-3 py-1 text-sm font-semibold rounded-full"
+                style={{
+                  backgroundColor: 'var(--accent-primary-10)',
+                  color: 'var(--accent-primary)',
+                }}
+              >
+                {bodegaResults.length} {bodegaResults.length === 1 ? 'store' : 'stores'} nearby
+              </span>
+            )}
+          </div>
+
+          {bodegaLoading && (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="inline-block w-8 h-8 border-4 rounded-full animate-spin mb-3" style={{ borderColor: 'var(--border-color)', borderTopColor: 'var(--accent-primary)' }}></div>
+                <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Searching for nearby local stores...</div>
+              </div>
+            </div>
+          )}
+
+          {!bodegaLoading && bodegaResults.length === 0 && (
+            <div
+              className="rounded-2xl p-8 text-center"
+              style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
+            >
+              <svg className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+                No local stores found nearby
+              </h3>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                We couldn't find any local stores with these products in your area. Try searching for different items or check back later as more stores join Julyu.
+              </p>
+            </div>
+          )}
+
+          {!bodegaLoading && bodegaResults.length > 0 && (
+            <>
+              <div
+                className="rounded-2xl p-6 mb-6"
+                style={{ backgroundColor: 'var(--accent-primary-10)', border: '1px solid var(--accent-primary-30)' }}
+              >
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'var(--accent-primary)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium mb-1" style={{ color: 'var(--accent-primary)' }}>
+                      Support your local community
+                    </p>
+                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                      These are small, independent stores in your neighborhood. Shopping here supports local business owners and often means fresher products and personalized service.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {bodegaResults.map((bodega, idx) => (
+                  <BodegaCard
+                    key={bodega.store.id || idx}
+                    bodega={bodega}
+                    productQuery={list.split('\n')[0]}
+                    onOrderClick={handleBodegaOrder}
+                    onDirectionsClick={handleBodegaDirections}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
 
