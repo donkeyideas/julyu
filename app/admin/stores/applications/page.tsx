@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 
 export default function StoreApplicationsPage() {
   const [loading, setLoading] = useState(true)
@@ -13,24 +12,19 @@ export default function StoreApplicationsPage() {
 
   const loadApplications = async () => {
     try {
-      const supabase = createClient()
+      // Use API route to fetch applications (bypasses RLS)
+      const response = await fetch('/api/admin/store-applications')
 
-      // Fetch all applications with store owner and store details
-      const { data: applicationsData, error: fetchError } = await supabase
-        .from('store_owners')
-        .select(`
-          *,
-          bodega_stores(*)
-        `)
-        .order('created_at', { ascending: false })
-
-      if (fetchError) {
-        console.error('Fetch applications error:', fetchError)
+      if (response.ok) {
+        const data = await response.json()
+        setApplications(data.applications || [])
+      } else {
+        console.error('Failed to fetch applications:', response.statusText)
+        setApplications([])
       }
-
-      setApplications(applicationsData || [])
     } catch (error) {
       console.error('Error loading applications:', error)
+      setApplications([])
     } finally {
       setLoading(false)
     }
