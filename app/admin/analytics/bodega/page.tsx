@@ -178,10 +178,10 @@ export default function BodegaAnalyticsPage() {
       </div>
 
       {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
           <div className="text-sm text-gray-500 mb-2">Active Stores</div>
-          <div className="text-3xl font-black">
+          <div className="text-4xl font-black">
             {stats.totalStores}
           </div>
           <div className="text-xs text-gray-500 mt-2">
@@ -189,9 +189,9 @@ export default function BodegaAnalyticsPage() {
           </div>
         </div>
 
-        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
           <div className="text-sm text-gray-500 mb-2">Total Orders</div>
-          <div className="text-3xl font-black text-blue-500">
+          <div className="text-4xl font-black text-blue-500">
             {stats.totalOrders}
           </div>
           <div className="text-xs text-gray-500 mt-2">
@@ -199,9 +199,9 @@ export default function BodegaAnalyticsPage() {
           </div>
         </div>
 
-        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
           <div className="text-sm text-gray-500 mb-2">Total Revenue</div>
-          <div className="text-3xl font-black text-green-500">
+          <div className="text-4xl font-black text-green-500">
             ${stats.totalRevenue.toFixed(2)}
           </div>
           <div className="text-xs text-gray-500 mt-2">
@@ -209,9 +209,9 @@ export default function BodegaAnalyticsPage() {
           </div>
         </div>
 
-        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
           <div className="text-sm text-gray-500 mb-2">Total Commission</div>
-          <div className="text-3xl font-black text-purple-500">
+          <div className="text-4xl font-black text-purple-500">
             ${stats.totalCommission.toFixed(2)}
           </div>
           <div className="text-xs text-gray-500 mt-2">
@@ -221,7 +221,7 @@ export default function BodegaAnalyticsPage() {
       </div>
 
       {/* Financial Breakdown */}
-      <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+      <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
         <h2 className="text-2xl font-bold mb-6">Financial Breakdown</h2>
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -245,9 +245,9 @@ export default function BodegaAnalyticsPage() {
 
       {/* Recent Activity */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
           <div className="text-sm text-gray-500 mb-2">Last 7 Days</div>
-          <div className="text-3xl font-black">
+          <div className="text-4xl font-black">
             {stats.recentOrders} orders
           </div>
           <div className="text-xs text-gray-500 mt-2">
@@ -255,9 +255,9 @@ export default function BodegaAnalyticsPage() {
           </div>
         </div>
 
-        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
           <div className="text-sm text-gray-500 mb-2">Inventory Items</div>
-          <div className="text-3xl font-black">
+          <div className="text-4xl font-black">
             {stats.totalInventoryItems}
           </div>
           <div className="text-xs text-gray-500 mt-2">
@@ -265,9 +265,9 @@ export default function BodegaAnalyticsPage() {
           </div>
         </div>
 
-        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
           <div className="text-sm text-gray-500 mb-2">Success Rate</div>
-          <div className="text-3xl font-black">
+          <div className="text-4xl font-black">
             {stats.totalOrders > 0 ? ((stats.completedOrders / stats.totalOrders) * 100).toFixed(1) : 0}%
           </div>
           <div className="text-xs text-gray-500 mt-2">
@@ -277,38 +277,38 @@ export default function BodegaAnalyticsPage() {
       </div>
 
       {/* Order Status Distribution */}
-      <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+      <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
         <h2 className="text-2xl font-bold mb-6">Order Status Distribution</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center">
-            <div className="text-3xl font-black text-yellow-500">{stats.ordersByStatus.pending}</div>
+            <div className="text-4xl font-black text-yellow-500">{stats.ordersByStatus.pending}</div>
             <div className="text-xs text-gray-500 mt-1">Pending</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-black text-blue-500">
+            <div className="text-4xl font-black text-blue-500">
               {stats.ordersByStatus.accepted + stats.ordersByStatus.preparing + stats.ordersByStatus.ready}
             </div>
             <div className="text-xs text-gray-500 mt-1">In Progress</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-black text-cyan-500">{stats.ordersByStatus.out_for_delivery}</div>
+            <div className="text-4xl font-black text-cyan-500">{stats.ordersByStatus.out_for_delivery}</div>
             <div className="text-xs text-gray-500 mt-1">Out for Delivery</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-black text-green-500">{stats.ordersByStatus.delivered}</div>
+            <div className="text-4xl font-black text-green-500">{stats.ordersByStatus.delivered}</div>
             <div className="text-xs text-gray-500 mt-1">Delivered</div>
           </div>
         </div>
         {stats.ordersByStatus.cancelled > 0 && (
           <div className="mt-4 pt-4 border-t border-gray-800 text-center">
-            <div className="text-3xl font-black text-red-500">{stats.ordersByStatus.cancelled}</div>
+            <div className="text-4xl font-black text-red-500">{stats.ordersByStatus.cancelled}</div>
             <div className="text-xs text-gray-500 mt-1">Cancelled</div>
           </div>
         )}
       </div>
 
       {/* Delivery Method */}
-      <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+      <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
         <h2 className="text-2xl font-bold mb-6">Delivery Method Breakdown</h2>
         <div className="grid grid-cols-2 gap-4">
           <div className="text-center">
@@ -329,7 +329,7 @@ export default function BodegaAnalyticsPage() {
       </div>
 
       {/* Top Performing Stores */}
-      <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+      <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
         <h2 className="text-2xl font-bold mb-6">Top Performing Stores</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-800">
