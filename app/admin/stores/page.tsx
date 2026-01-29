@@ -1,195 +1,214 @@
-import { createServerClient } from '@/lib/supabase/server'
+'use client'
+
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
-export const metadata = {
-  title: 'All Stores - Admin - Julyu',
-  description: 'Manage all store owners',
+interface StoreOwner {
+  id: string
+  business_name: string
+  business_type: string
+  business_email?: string
+  application_status: string
+  commission_rate: number
+  accepts_orders: boolean
+  created_at: string
+  bodega_stores?: Array<{
+    id: string
+    name: string
+    city: string
+    state: string
+  }>
 }
 
-export default async function AllStoresPage() {
-  const supabase = await createServerClient()
+export default function AllStoresPage() {
+  const [stores, setStores] = useState<StoreOwner[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Get all store owners with their stores
-  const { data: storeOwners, error } = await supabase
-    .from('store_owners')
-    .select(`
-      *,
-      bodega_stores (
-        id,
-        name,
-        city,
-        state,
-        zip,
-        is_active,
-        verified
-      )
-    `)
-    .order('created_at', { ascending: false })
+  useEffect(() => {
+    loadStores()
+  }, [])
 
-  const allStores = storeOwners || []
+  const loadStores = async () => {
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from('store_owners')
+        .select(`
+          *,
+          bodega_stores (
+            id,
+            name,
+            city,
+            state,
+            zip,
+            is_active,
+            verified
+          )
+        `)
+        .order('created_at', { ascending: false })
 
-  // Stats
-  const totalStores = allStores.length
-  const approvedStores = allStores.filter((s: any) => s.application_status === 'approved').length
-  const pendingStores = allStores.filter((s: any) => s.application_status === 'pending').length
-  const activeStores = allStores.filter((s: any) => s.application_status === 'approved' && s.accepts_orders).length
+      if (error) throw error
+      setStores(data || [])
+    } catch (error) {
+      console.error('Error loading stores:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-  // Calculate total locations
-  const totalLocations = allStores.reduce((sum: number, owner: any) => sum + (owner.bodega_stores?.length || 0), 0)
+  const totalStores = stores.length
+  const approvedStores = stores.filter(s => s.application_status === 'approved').length
+  const pendingStores = stores.filter(s => s.application_status === 'pending').length
+  const activeStores = stores.filter(s => s.application_status === 'approved' && s.accepts_orders).length
+  const totalLocations = stores.reduce((sum, owner) => sum + (owner.bodega_stores?.length || 0), 0)
+
+  const statusColors: Record<string, string> = {
+    pending: 'bg-yellow-500/15 text-yellow-500',
+    under_review: 'bg-blue-500/15 text-blue-500',
+    approved: 'bg-green-500/15 text-green-500',
+    rejected: 'bg-red-500/15 text-red-500',
+    suspended: 'bg-gray-500/15 text-gray-500',
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="inline-block w-12 h-12 border-4 border-gray-800 border-t-green-500 rounded-full animate-spin mb-4"></div>
+          <div className="text-gray-500">Loading stores...</div>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div>
+      <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-800">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">All Stores</h1>
-          <p className="text-gray-600 mt-1">
-            Manage all store owners and locations
-          </p>
+          <h1 className="text-4xl font-black">All Stores</h1>
+          <p className="text-gray-500 mt-2">Manage all store owners and locations</p>
         </div>
         <Link
           href="/admin/stores/applications"
-          className="px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700"
+          className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition"
         >
           View Applications
         </Link>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-sm font-medium text-gray-500">Total Stores</div>
-          <div className="text-2xl font-bold text-gray-900 mt-1">
-            {totalStores}
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-10">
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
+          <div className="text-sm text-gray-500 mb-2">Total Stores</div>
+          <div className="text-4xl font-black">{totalStores}</div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-sm font-medium text-gray-500">Approved</div>
-          <div className="text-2xl font-bold text-green-600 mt-1">
-            {approvedStores}
-          </div>
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
+          <div className="text-sm text-gray-500 mb-2">Approved</div>
+          <div className="text-4xl font-black text-green-500">{approvedStores}</div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-sm font-medium text-gray-500">Pending</div>
-          <div className="text-2xl font-bold text-yellow-600 mt-1">
-            {pendingStores}
-          </div>
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
+          <div className="text-sm text-gray-500 mb-2">Pending</div>
+          <div className="text-4xl font-black text-yellow-500">{pendingStores}</div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-sm font-medium text-gray-500">Active</div>
-          <div className="text-2xl font-bold text-blue-600 mt-1">
-            {activeStores}
-          </div>
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
+          <div className="text-sm text-gray-500 mb-2">Active</div>
+          <div className="text-4xl font-black text-blue-500">{activeStores}</div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-sm font-medium text-gray-500">Total Locations</div>
-          <div className="text-2xl font-bold text-purple-600 mt-1">
-            {totalLocations}
-          </div>
+        <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-6">
+          <div className="text-sm text-gray-500 mb-2">Total Locations</div>
+          <div className="text-4xl font-black text-purple-500">{totalLocations}</div>
         </div>
       </div>
 
       {/* Stores Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-800">
+            <thead className="bg-gray-800/50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Business Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Type
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Locations
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Commission Rate
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Accepting Orders
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Created
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {allStores.map((store: any) => {
-                const statusColors: Record<string, string> = {
-                  pending: 'bg-yellow-100 text-yellow-800',
-                  under_review: 'bg-blue-100 text-blue-800',
-                  approved: 'bg-green-100 text-green-800',
-                  rejected: 'bg-red-100 text-red-800',
-                  suspended: 'bg-gray-100 text-gray-800',
-                }
-
-                return (
-                  <tr key={store.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {store.business_name}
+            <tbody className="divide-y divide-gray-800">
+              {stores.map((store) => (
+                <tr key={store.id} className="hover:bg-gray-800/50 transition">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-semibold">{store.business_name}</div>
+                    {store.business_email && (
+                      <div className="text-sm text-gray-500">{store.business_email}</div>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="text-sm capitalize text-gray-400">
+                      {store.business_type || 'N/A'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm">{store.bodega_stores?.length || 0} location(s)</div>
+                    {store.bodega_stores && store.bodega_stores.length > 0 && (
+                      <div className="text-xs text-gray-500">
+                        {store.bodega_stores[0].name}
+                        {store.bodega_stores.length > 1 && ` +${store.bodega_stores.length - 1} more`}
                       </div>
-                      {store.business_email && (
-                        <div className="text-sm text-gray-500">{store.business_email}</div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-900 capitalize">
-                        {store.business_type || 'N/A'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {store.bodega_stores?.length || 0} location(s)
-                      </div>
-                      {store.bodega_stores && store.bodega_stores.length > 0 && (
-                        <div className="text-xs text-gray-500">
-                          {store.bodega_stores[0].name}
-                          {store.bodega_stores.length > 1 && ` +${store.bodega_stores.length - 1} more`}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[store.application_status]}`}>
-                        {store.application_status.replace('_', ' ')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {store.commission_rate}%
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {store.accepts_orders ? (
-                        <span className="text-green-600 text-sm">Yes</span>
-                      ) : (
-                        <span className="text-red-600 text-sm">No</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(store.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <Link
-                        href={`/admin/stores/${store.id}`}
-                        className="text-blue-600 hover:text-blue-700 font-medium"
-                      >
-                        View Details
-                      </Link>
-                    </td>
-                  </tr>
-                )
-              })}
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-3 py-1 text-xs font-semibold rounded-lg ${statusColors[store.application_status]}`}>
+                      {store.application_status.replace('_', ' ')}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {store.commission_rate}%
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {store.accepts_orders ? (
+                      <span className="text-green-500 text-sm font-semibold">Yes</span>
+                    ) : (
+                      <span className="text-red-500 text-sm font-semibold">No</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {new Date(store.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <Link
+                      href={`/admin/stores/${store.id}`}
+                      className="text-green-500 hover:text-green-400 font-semibold"
+                    >
+                      View Details
+                    </Link>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
 
-        {allStores.length === 0 && (
+        {stores.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500">No stores found</p>
           </div>

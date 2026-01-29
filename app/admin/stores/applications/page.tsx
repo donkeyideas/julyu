@@ -1,34 +1,60 @@
-import { createServerClient } from '@/lib/supabase/server'
-import { verifyAdminAccess } from '@/lib/auth/store-portal-auth'
-import { redirect } from 'next/navigation'
+'use client'
+
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 import ApplicationCard from '@/components/admin/StoreApplicationCard'
 
-export const metadata = {
-  title: 'Store Applications - Admin - Julyu',
-  description: 'Review and manage store owner applications',
-}
+export default function StoreApplicationsPage() {
+  const router = useRouter()
+  const [loading, setLoading] = useState(true)
+  const [applications, setApplications] = useState<any[]>([])
 
-export default async function StoreApplicationsPage() {
-  // Verify admin access
-  const { isAdmin, error } = await verifyAdminAccess()
+  useEffect(() => {
+    loadApplications()
+  }, [])
 
-  if (!isAdmin) {
-    redirect('/dashboard')
+  const loadApplications = async () => {
+    try {
+      const supabase = createClient()
+
+      // Verify admin access
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/dashboard')
+        return
+      }
+
+      // Fetch all applications with store owner and store details
+      const { data: applicationsData, error: fetchError } = await supabase
+        .from('store_owners')
+        .select(`
+          *,
+          bodega_stores(*)
+        `)
+        .order('created_at', { ascending: false })
+
+      if (fetchError) {
+        console.error('Fetch applications error:', fetchError)
+      }
+
+      setApplications(applicationsData || [])
+    } catch (error) {
+      console.error('Error loading applications:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const supabase = await createServerClient()
-
-  // Fetch all applications with store owner and store details
-  const { data: applications, error: fetchError } = await supabase
-    .from('store_owners')
-    .select(`
-      *,
-      bodega_stores(*)
-    `)
-    .order('created_at', { ascending: false })
-
-  if (fetchError) {
-    console.error('Fetch applications error:', fetchError)
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="inline-block w-12 h-12 border-4 border-gray-800 border-t-green-500 rounded-full animate-spin mb-4"></div>
+          <div className="text-gray-500">Loading applications...</div>
+        </div>
+      </div>
+    )
   }
 
   const allApplications = applications || []
@@ -49,34 +75,34 @@ export default async function StoreApplicationsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Store Applications</h1>
-        <p className="text-gray-600 mt-1">Review and manage store owner applications</p>
+      <div className="mb-10 pb-6 border-b border-gray-800">
+        <h1 className="text-4xl font-black">Store Applications</h1>
+        <p className="text-gray-500 mt-2">Review and manage store owner applications</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-sm font-medium text-gray-500">Pending Review</div>
-          <div className="text-2xl font-bold text-yellow-600 mt-1">
+        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+          <div className="text-sm text-gray-500 mb-2">Pending Review</div>
+          <div className="text-3xl font-black text-yellow-500">
             {pendingApplications.length}
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-sm font-medium text-gray-500">Approved</div>
-          <div className="text-2xl font-bold text-green-600 mt-1">
+        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+          <div className="text-sm text-gray-500 mb-2">Approved</div>
+          <div className="text-3xl font-black text-green-500">
             {approvedApplications.length}
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-sm font-medium text-gray-500">Rejected</div>
-          <div className="text-2xl font-bold text-red-600 mt-1">
+        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+          <div className="text-sm text-gray-500 mb-2">Rejected</div>
+          <div className="text-3xl font-black text-red-500">
             {rejectedApplications.length}
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-sm font-medium text-gray-500">Suspended</div>
-          <div className="text-2xl font-bold text-gray-600 mt-1">
+        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+          <div className="text-sm text-gray-500 mb-2">Suspended</div>
+          <div className="text-3xl font-black">
             {suspendedApplications.length}
           </div>
         </div>
@@ -85,7 +111,7 @@ export default async function StoreApplicationsPage() {
       {/* Pending Applications */}
       {pendingApplications.length > 0 && (
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          <h2 className="text-2xl font-black mb-4">
             Pending Review ({pendingApplications.length})
           </h2>
           <div className="space-y-4">
@@ -103,7 +129,7 @@ export default async function StoreApplicationsPage() {
       {/* Approved Applications */}
       {approvedApplications.length > 0 && (
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          <h2 className="text-2xl font-black mb-4">
             Approved Stores ({approvedApplications.length})
           </h2>
           <div className="space-y-4">
@@ -121,7 +147,7 @@ export default async function StoreApplicationsPage() {
       {/* Rejected Applications */}
       {rejectedApplications.length > 0 && (
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          <h2 className="text-2xl font-black mb-4">
             Rejected Applications ({rejectedApplications.length})
           </h2>
           <div className="space-y-4">
@@ -139,7 +165,7 @@ export default async function StoreApplicationsPage() {
       {/* Suspended Applications */}
       {suspendedApplications.length > 0 && (
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          <h2 className="text-2xl font-black mb-4">
             Suspended Stores ({suspendedApplications.length})
           </h2>
           <div className="space-y-4">
@@ -155,7 +181,7 @@ export default async function StoreApplicationsPage() {
       )}
 
       {allApplications.length === 0 && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-12 text-center">
           <p className="text-gray-500">No store applications yet</p>
         </div>
       )}
