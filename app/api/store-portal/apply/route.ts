@@ -41,14 +41,13 @@ export async function POST(request: NextRequest) {
       // Generate a temporary password
       const tempPassword = `Store${Math.random().toString(36).substring(2, 15)}!`
 
-      const { data: newUser, error: signUpError } = await supabaseAdmin.auth.signUp({
+      const { data: newUser, error: signUpError } = await supabaseAdmin.auth.admin.createUser({
         email: businessEmail,
         password: tempPassword,
-        options: {
-          data: {
-            business_name: businessName,
-            user_type: 'store_owner'
-          }
+        email_confirm: true, // Auto-confirm email for store owners
+        user_metadata: {
+          business_name: businessName,
+          user_type: 'store_owner'
         }
       })
 
