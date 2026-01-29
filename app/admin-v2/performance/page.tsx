@@ -73,8 +73,8 @@ export default function PerformancePage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="inline-block w-12 h-12 border-4 border-gray-800 border-t-green-500 rounded-full animate-spin mb-4"></div>
-          <div className="text-gray-500">Loading performance metrics...</div>
+          <div className="inline-block w-12 h-12 border-4 border-t-green-500 rounded-full animate-spin mb-4" style={{ borderColor: 'var(--border-color)' }}></div>
+          <div style={{ color: 'var(--text-secondary)' }}>Loading performance metrics...</div>
         </div>
       </div>
     )
@@ -82,29 +82,29 @@ export default function PerformancePage() {
 
   return (
     <div>
-      <div className="mb-10 pb-6 border-b border-gray-800">
-        <h1 className="text-4xl font-black">AI Performance Metrics</h1>
-        <p className="text-gray-500 mt-2">Track AI model performance and accuracy</p>
+      <div className="mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
+        <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>AI Performance Metrics</h1>
+        <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>Track AI model performance and accuracy</p>
       </div>
 
       {metrics.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {metrics.map((metric) => (
-            <div key={metric.model} className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-              <h2 className="text-2xl font-bold mb-4">{metric.model}</h2>
+            <div key={metric.model} className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+              <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>{metric.model}</h2>
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between mb-2">
-                    <span className="text-gray-500">Total Requests</span>
-                    <span className="font-bold">{metric.totalRequests.toLocaleString()}</span>
+                    <span style={{ color: 'var(--text-muted)' }}>Total Requests</span>
+                    <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{metric.totalRequests.toLocaleString()}</span>
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">
-                    <span className="text-gray-500">Success Rate</span>
-                    <span className="font-bold">{metric.successRate.toFixed(1)}%</span>
+                    <span style={{ color: 'var(--text-muted)' }}>Success Rate</span>
+                    <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{metric.successRate.toFixed(1)}%</span>
                   </div>
-                  <div className="w-full bg-gray-800 rounded-full h-2">
+                  <div className="w-full rounded-full h-2" style={{ backgroundColor: 'var(--bg-secondary)' }}>
                     <div
                       className="bg-green-500 h-2 rounded-full"
                       style={{ width: `${metric.successRate}%` }}
@@ -113,14 +113,14 @@ export default function PerformancePage() {
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">
-                    <span className="text-gray-500">Avg Response Time</span>
-                    <span className="font-bold">{Math.round(metric.avgResponseTime)}ms</span>
+                    <span style={{ color: 'var(--text-muted)' }}>Avg Response Time</span>
+                    <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{Math.round(metric.avgResponseTime)}ms</span>
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">
-                    <span className="text-gray-500">Avg Tokens per Request</span>
-                    <span className="font-bold">{Math.round(metric.avgTokens).toLocaleString()}</span>
+                    <span style={{ color: 'var(--text-muted)' }}>Avg Tokens per Request</span>
+                    <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{Math.round(metric.avgTokens).toLocaleString()}</span>
                   </div>
                 </div>
               </div>
@@ -128,9 +128,9 @@ export default function PerformancePage() {
           ))}
         </div>
       ) : (
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-12 text-center">
-          <div className="text-xl font-bold mb-2">No Performance Data</div>
-          <div className="text-gray-500">Start using AI models to see performance metrics</div>
+        <div className="rounded-2xl p-12 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>No Performance Data</div>
+          <div style={{ color: 'var(--text-secondary)' }}>Start using AI models to see performance metrics</div>
         </div>
       )}
     </div>
