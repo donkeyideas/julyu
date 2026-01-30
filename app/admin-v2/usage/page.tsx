@@ -14,19 +14,8 @@ interface UsageRecord {
   success: boolean
 }
 
-interface ApiUsageRecord {
-  id: string
-  api_name: string
-  date: string
-  calls_count: number
-  successful_calls: number
-  failed_calls: number
-  last_call_at: string
-}
-
 export default function UsagePage() {
   const [usage, setUsage] = useState<UsageRecord[]>([])
-  const [apiUsage, setApiUsage] = useState<ApiUsageRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d' | 'all'>('30d')
   const [stats, setStats] = useState({
@@ -34,12 +23,6 @@ export default function UsagePage() {
     totalRequests: 0,
     totalTokens: 0,
     avgResponseTime: 0,
-  })
-  const [apiStats, setApiStats] = useState({
-    totalCalls: 0,
-    successfulCalls: 0,
-    failedCalls: 0,
-    successRate: 0,
   })
 
   const loadUsageData = useCallback(async () => {
@@ -85,32 +68,9 @@ export default function UsagePage() {
         totalTokens,
         avgResponseTime: Math.round(avgResponseTime),
       })
-
-      // Get RapidAPI usage
-      const { data: apiData } = await supabase
-        .from('api_usage_tracking')
-        .select('*')
-        .gte('date', startDate.toISOString().split('T')[0])
-        .order('date', { ascending: false })
-
-      const apiUsageData = (apiData || []) as ApiUsageRecord[]
-
-      const totalCalls = apiUsageData.reduce((sum, item) => sum + (item.calls_count || 0), 0)
-      const successfulCalls = apiUsageData.reduce((sum, item) => sum + (item.successful_calls || 0), 0)
-      const failedCalls = apiUsageData.reduce((sum, item) => sum + (item.failed_calls || 0), 0)
-      const successRate = totalCalls > 0 ? Math.round((successfulCalls / totalCalls) * 100) : 0
-
-      setApiUsage(apiUsageData)
-      setApiStats({
-        totalCalls,
-        successfulCalls,
-        failedCalls,
-        successRate,
-      })
     } catch (error) {
       console.error('Error loading usage:', error)
       setUsage([])
-      setApiUsage([])
     } finally {
       setLoading(false)
     }
@@ -159,54 +119,28 @@ export default function UsagePage() {
         </select>
       </div>
 
-      {/* AI Models Stats Cards */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>AI Models Usage</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-          <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-            <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Total Cost</div>
-            <div className="text-4xl font-black text-green-500">{formatCurrency(stats.totalCost)}</div>
-          </div>
-          <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-            <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Total Requests</div>
-            <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>{stats.totalRequests.toLocaleString()}</div>
-          </div>
-          <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-            <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Total Tokens</div>
-            <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>{formatTokens(stats.totalTokens)}</div>
-          </div>
-          <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-            <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Avg Response Time</div>
-            <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>{stats.avgResponseTime}ms</div>
-          </div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Total Cost</div>
+          <div className="text-4xl font-black text-green-500">{formatCurrency(stats.totalCost)}</div>
+        </div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Total Requests</div>
+          <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>{stats.totalRequests.toLocaleString()}</div>
+        </div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Total Tokens</div>
+          <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>{formatTokens(stats.totalTokens)}</div>
+        </div>
+        <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Avg Response Time</div>
+          <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>{stats.avgResponseTime}ms</div>
         </div>
       </div>
 
-      {/* RapidAPI Stats Cards */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>RapidAPI Usage</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-          <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-            <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Total API Calls</div>
-            <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>{apiStats.totalCalls.toLocaleString()}</div>
-          </div>
-          <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-            <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Successful Calls</div>
-            <div className="text-4xl font-black text-green-500">{apiStats.successfulCalls.toLocaleString()}</div>
-          </div>
-          <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-            <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Failed Calls</div>
-            <div className="text-4xl font-black text-red-500">{apiStats.failedCalls.toLocaleString()}</div>
-          </div>
-          <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-            <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Success Rate</div>
-            <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>{apiStats.successRate}%</div>
-          </div>
-        </div>
-      </div>
-
-      {/* AI Usage Table */}
-      <div className="mb-10">
+      {/* Usage Table */}
+      <div>
         <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>AI Model Call History</h3>
         <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
           <table className="w-full">
@@ -243,66 +177,7 @@ export default function UsagePage() {
               ) : (
                 <tr>
                   <td colSpan={7} className="p-8 text-center" style={{ color: 'var(--text-secondary)' }}>
-                    No AI model usage data for the selected period
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* RapidAPI Usage Table */}
-      <div>
-        <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>RapidAPI Call History</h3>
-        <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
-          <table className="w-full">
-            <thead style={{ backgroundColor: 'var(--bg-card)' }}>
-              <tr>
-                <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-secondary)' }}>Date</th>
-                <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-secondary)' }}>API</th>
-                <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-secondary)' }}>Total Calls</th>
-                <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-secondary)' }}>Successful</th>
-                <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-secondary)' }}>Failed</th>
-                <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-secondary)' }}>Success Rate</th>
-                <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-secondary)' }}>Last Call</th>
-              </tr>
-            </thead>
-            <tbody>
-              {apiUsage.length > 0 ? (
-                apiUsage.map((item) => {
-                  const successRate = item.calls_count > 0
-                    ? Math.round((item.successful_calls / item.calls_count) * 100)
-                    : 0
-
-                  return (
-                    <tr key={item.id} style={{ borderTop: '1px solid var(--border-color)' }}>
-                      <td className="p-4" style={{ color: 'var(--text-primary)' }}>{new Date(item.date).toLocaleDateString()}</td>
-                      <td className="p-4 font-bold" style={{ color: 'var(--text-primary)' }}>
-                        {item.api_name === 'tesco' ? 'Tesco Product API' : 'Grocery Prices API'}
-                      </td>
-                      <td className="p-4" style={{ color: 'var(--text-primary)' }}>{item.calls_count}</td>
-                      <td className="p-4 text-green-500 font-bold">{item.successful_calls}</td>
-                      <td className="p-4 text-red-500 font-bold">{item.failed_calls}</td>
-                      <td className="p-4" style={{ color: 'var(--text-primary)' }}>
-                        <span className={`px-3 py-1 rounded-full text-sm ${
-                          successRate >= 90 ? 'bg-green-500/15 text-green-500' :
-                          successRate >= 50 ? 'bg-yellow-500/15 text-yellow-500' :
-                          'bg-red-500/15 text-red-500'
-                        }`}>
-                          {successRate}%
-                        </span>
-                      </td>
-                      <td className="p-4" style={{ color: 'var(--text-primary)' }}>
-                        {item.last_call_at ? new Date(item.last_call_at).toLocaleString() : 'N/A'}
-                      </td>
-                    </tr>
-                  )
-                })
-              ) : (
-                <tr>
-                  <td colSpan={7} className="p-8 text-center" style={{ color: 'var(--text-secondary)' }}>
-                    No RapidAPI usage data for the selected period
+                    No usage data for the selected period
                   </td>
                 </tr>
               )}

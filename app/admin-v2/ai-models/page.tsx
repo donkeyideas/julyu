@@ -12,13 +12,10 @@ export default function AIModelsPage() {
   const [stripeSecretKey, setStripeSecretKey] = useState('')
   const [stripePublishableKey, setStripePublishableKey] = useState('')
   const [stripeWebhookSecret, setStripeWebhookSecret] = useState('')
-  const [rapidapiKey, setRapidapiKey] = useState('')
-  const [tescoEnabled, setTescoEnabled] = useState(false)
-  const [groceryPricesEnabled, setGroceryPricesEnabled] = useState(false)
   const [saving, setSaving] = useState(false)
   const [testing, setTesting] = useState<string | null>(null)
   const [testResult, setTestResult] = useState<{ success: boolean; message: string; details?: any } | null>(null)
-  const [apiKeyStatus, setApiKeyStatus] = useState({ deepseek: false, openai: false, kroger: false, spoonacular: false, positionstack: false, stripe: false, rapidapi: false, tesco: false, groceryPrices: false })
+  const [apiKeyStatus, setApiKeyStatus] = useState({ deepseek: false, openai: false, kroger: false, spoonacular: false, positionstack: false, stripe: false })
 
   const loadApiKeyStatus = async () => {
     try {
@@ -31,12 +28,7 @@ export default function AIModelsPage() {
         spoonacular: data.spoonacularConfigured || false,
         positionstack: data.positionstackConfigured || false,
         stripe: data.stripeConfigured || false,
-        rapidapi: data.rapidapiConfigured || false,
-        tesco: data.tescoEnabled || false,
-        groceryPrices: data.groceryPricesEnabled || false,
       })
-      setTescoEnabled(data.tescoEnabled || false)
-      setGroceryPricesEnabled(data.groceryPricesEnabled || false)
     } catch (error) {
       console.error('Error loading API key status:', error)
     }
@@ -384,41 +376,6 @@ export default function AIModelsPage() {
     }
   }
 
-  const handleSaveRapidAPI = async () => {
-    if (!rapidapiKey.trim()) {
-      alert('Please enter a RapidAPI key')
-      return
-    }
-
-    setSaving(true)
-    try {
-      const response = await fetch('/api/admin/save-api-keys', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          rapidapiKey: rapidapiKey.trim(),
-          tescoApiEnabled: tescoEnabled,
-          groceryPricesEnabled: groceryPricesEnabled,
-        }),
-      })
-
-      const data = await response.json()
-      console.log('[Save] RapidAPI Response:', data)
-
-      if (data.success) {
-        alert('RapidAPI key saved successfully!')
-        setRapidapiKey('')
-        await loadApiKeyStatus()
-      } else {
-        alert(`Failed to save: ${data.error || 'Unknown error'}`)
-      }
-    } catch (error: any) {
-      console.error('[Save] RapidAPI Error:', error)
-      alert(`Error: ${error.message || 'Unknown error'}`)
-    } finally {
-      setSaving(false)
-    }
-  }
 
   return (
     <div>
@@ -907,110 +864,6 @@ export default function AIModelsPage() {
           <div className="mt-4 p-4 bg-indigo-500/10 border border-indigo-500/30 rounded-lg">
             <p className="text-indigo-400 text-sm">
               <strong>Features:</strong> Subscription billing, checkout sessions, customer portal, webhook events, promo code discounts.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* RapidAPI Key (Tesco + Grocery Prices) */}
-      <div className="rounded-2xl p-8 mt-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>RapidAPI Key</h2>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Access to Tesco Product API (UK) and Grocery Prices API (Amazon/Walmart)</p>
-            <a
-              href="https://rapidapi.com/hub"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-400 text-sm hover:underline"
-            >
-              Get API key from rapidapi.com
-            </a>
-          </div>
-          <div>
-            {apiKeyStatus.rapidapi ? (
-              <span className="px-4 py-2 bg-green-500/15 text-green-500 rounded-lg text-sm font-semibold">
-                ✓ Configured
-              </span>
-            ) : (
-              <span className="px-4 py-2 bg-red-500/15 text-red-500 rounded-lg text-sm font-semibold">
-                ✗ Not Set
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm mb-2" style={{ color: 'var(--text-muted)' }}>RapidAPI Key</label>
-            <input
-              type="text"
-              value={rapidapiKey}
-              onChange={(e) => setRapidapiKey(e.target.value)}
-              placeholder={apiKeyStatus.rapidapi ? "Enter new key to update" : "your-rapidapi-key"}
-              className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none font-mono text-sm"
-              style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
-            />
-          </div>
-
-          <div className="space-y-3">
-            <label className="block text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Enable APIs</label>
-
-            <div className="flex items-center gap-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)' }}>
-              <input
-                type="checkbox"
-                id="tesco-enabled"
-                checked={tescoEnabled}
-                onChange={(e) => setTescoEnabled(e.target.checked)}
-                className="w-5 h-5 rounded accent-green-500"
-              />
-              <label htmlFor="tesco-enabled" className="flex-1 cursor-pointer">
-                <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>Tesco Product API</div>
-                <div className="text-sm" style={{ color: 'var(--text-muted)' }}>UK&apos;s largest supermarket - real-time prices, reviews, ratings</div>
-              </label>
-              {apiKeyStatus.tesco && (
-                <span className="px-3 py-1 bg-green-500/15 text-green-500 rounded text-xs font-semibold">
-                  Active
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center gap-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)' }}>
-              <input
-                type="checkbox"
-                id="grocery-prices-enabled"
-                checked={groceryPricesEnabled}
-                onChange={(e) => setGroceryPricesEnabled(e.target.checked)}
-                className="w-5 h-5 rounded accent-green-500"
-              />
-              <label htmlFor="grocery-prices-enabled" className="flex-1 cursor-pointer">
-                <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>API to Find Grocery Prices</div>
-                <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Amazon & Walmart prices, discounts, delivery options</div>
-              </label>
-              {apiKeyStatus.groceryPrices && (
-                <span className="px-3 py-1 bg-green-500/15 text-green-500 rounded text-xs font-semibold">
-                  Active
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              onClick={handleSaveRapidAPI}
-              disabled={saving || !rapidapiKey.trim()}
-              className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 disabled:opacity-50"
-            >
-              {saving ? 'Saving...' : 'Save Key & Settings'}
-            </button>
-          </div>
-
-          <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-            <p className="text-yellow-400 text-sm mb-2">
-              <strong>⚠️ Rate Limits:</strong> This is a paid API with usage limits. Rate limiting will be implemented to prevent overage charges.
-            </p>
-            <p className="text-yellow-400 text-sm">
-              <strong>Coverage:</strong> Tesco (UK), Amazon (US), Walmart (US)
             </p>
           </div>
         </div>
