@@ -42,7 +42,9 @@ export async function canMakeApiCall(apiName: 'tesco' | 'grocery-prices'): Promi
   usage?: UsageStats
 }> {
   try {
-    const supabase = createServerClient()
+    // Use service role client to bypass RLS for system operations
+    const { createServiceRoleClient } = await import('@/lib/supabase/server')
+    const supabase = createServiceRoleClient()
 
     // Check if API is enabled
     const { data: config } = await supabase
@@ -194,10 +196,6 @@ export async function getUsageStats(): Promise<{
   groceryPrices: UsageStats | null
 }> {
   try {
-    const supabase = createServerClient()
-    const today = new Date().toISOString().split('T')[0]
-    const thisMonth = new Date().toISOString().substring(0, 7)
-
     // Get Tesco stats
     const tescoCheck = await canMakeApiCall('tesco')
     const groceryCheck = await canMakeApiCall('grocery-prices')
