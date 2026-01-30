@@ -154,9 +154,6 @@ export async function searchGroceryPrices(
 
     const { store = 'all', limit = 20 } = params
 
-    // Build query params (no page/limit in URL, they're not supported)
-    const queryParams = new URLSearchParams({ query })
-
     const allProducts: GroceryProduct[] = []
     const storesToSearch = store === 'all' ? ['amazon', 'walmart'] : [store]
 
@@ -164,9 +161,21 @@ export async function searchGroceryPrices(
     for (const storeName of storesToSearch) {
       try {
         const endpoint = storeName === 'amazon' ? '/amazon' : '/walmart'
+
+        // Build query params based on store requirements
+        const queryParams = new URLSearchParams({
+          query,
+          page: '1'
+        })
+
+        // Amazon requires country parameter
+        if (storeName === 'amazon') {
+          queryParams.append('country', 'us')
+        }
+
         const url = `${BASE_URL}${endpoint}?${queryParams.toString()}`
 
-        console.log(`[Grocery Prices API] Searching ${storeName}:`, query)
+        console.log(`[Grocery Prices API] Searching ${storeName}:`, query, '| URL:', url)
 
         const response = await fetch(url, {
           method: 'GET',
@@ -182,37 +191,62 @@ export async function searchGroceryPrices(
         }
 
         const data = await response.json()
-        console.log(`[Grocery Prices API] ${storeName} response:`, JSON.stringify(data).substring(0, 200))
+        console.log(`[Grocery Prices API] ${storeName} full response:`, JSON.stringify(data, null, 2))
 
         // Parse response based on store
         let products: any[] = []
 
-        if (storeName === 'amazon' && data.products) {
-          products = data.products
+        if (storeName === 'amazon') {
+          if (data.products && Array.isArray(data.products)) {
+            products = data.products
+            console.log(`[Grocery Prices API] Amazon found ${products.length} products in data.products`)
+          } else {
+            console.log(`[Grocery Prices API] Amazon response structure:`, Object.keys(data))
+          }
         } else if (storeName === 'walmart') {
           // Walmart has different structure - check multiple possible locations
-          if (data.products) {
+          if (data.products && Array.isArray(data.products)) {
             products = data.products
+            console.log(`[Grocery Prices API] Walmart found ${products.length} products in data.products`)
           } else if (data.raw_body_sample) {
+            console.log(`[Grocery Prices API] Walmart raw_body_sample:`, data.raw_body_sample)
             try {
               const parsed = JSON.parse(data.raw_body_sample)
               products = parsed.products || []
+              console.log(`[Grocery Prices API] Walmart parsed ${products.length} products from raw_body_sample`)
             } catch (e) {
-              console.error('[Grocery Prices API] Failed to parse Walmart raw_body_sample')
+              console.error('[Grocery Prices API] Failed to parse Walmart raw_body_sample:', e)
             }
+          } else {
+            console.log(`[Grocery Prices API] Walmart response structure:`, Object.keys(data))
           }
         }
 
         // Map products to our interface
         const mappedProducts = products.slice(0, limit).map((product: any) => {
-          // Parse price - may be in format "Fl64.00" or "$4.99" or just a number
+          // Parse price - Amazon has rawPrice field, Walmart might have price as number or string
           let price = 0
-          if (typeof product.price === 'string') {
-            const priceStr = product.price.replace(/[^0-9.]/g, '')
-            price = parseFloat(priceStr) || 0
-          } else if (typeof product.price === 'number') {
+
+          // Priority 1: Use rawPrice if available (Amazon)
+          if (product.rawPrice !== undefined) {
+            price = typeof product.rawPrice === 'number' ? product.rawPrice : parseFloat(product.rawPrice) || 0
+          }
+          // Priority 2: Use price field if it's a number
+          else if (typeof product.price === 'number') {
             price = product.price
           }
+          // Priority 3: Parse price string (remove $ and other non-numeric except .)
+          else if (typeof product.price === 'string') {
+            const priceStr = product.price.replace(/[$,]/g, '').match(/[\d.]+/)
+            price = priceStr ? parseFloat(priceStr[0]) || 0 : 0
+          }
+
+          console.log(`[Grocery Prices API] Mapped ${storeName} product:`, {
+            name: product.name,
+            rawPrice: product.rawPrice,
+            price: product.price,
+            parsedPrice: price
+          })
 
           return {
             product_id: product.id || product.product_id || undefined,
@@ -222,9 +256,9 @@ export async function searchGroceryPrices(
             price,
             original_price: product.rawPrice || product.original_price || undefined,
             store: storeName.charAt(0).toUpperCase() + storeName.slice(1), // "Amazon" or "Walmart"
-            url: product.amazonLink || product.url || undefined,
+            url: product.amazonLink || product.walmartLink || product.url || undefined,
             rating: product.customerReviews ? parseFloat(product.customerReviews) : undefined,
-            review_count: product.customerReviewCount || undefined,
+            review_count: product.customerReviewCount ? parseInt(product.customerReviewCount) : undefined,
           } as GroceryProduct
         })
 
