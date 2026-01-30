@@ -393,13 +393,19 @@ async function analyzeWithKroger(
 
     const rapidResults = await Promise.all(rapidPromises)
 
+    // Debug: Log all results to see what we got
+    console.log('[ListAnalyze] RapidAPI raw results:', JSON.stringify(rapidResults, null, 2))
+
     // Separate by retailer
     for (const result of rapidResults) {
       if (result.product) {
+        console.log('[ListAnalyze] Product store field:', result.product.store, 'for item:', result.userInput)
         if (result.product.store?.toLowerCase().includes('amazon')) {
           rapidApiResults.amazon.push(result)
         } else if (result.product.store?.toLowerCase().includes('walmart')) {
           rapidApiResults.walmart.push(result)
+        } else {
+          console.log('[ListAnalyze] Product not matched to any retailer:', result.product.store)
         }
       }
     }
