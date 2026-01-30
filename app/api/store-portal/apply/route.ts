@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { hasStoreOwnerAccount } from '@/lib/auth/store-portal-auth'
+import { sendStoreApplicationSubmittedEmail, sendStoreAccountCreatedEmail } from '@/lib/services/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -66,8 +67,19 @@ export async function POST(request: NextRequest) {
 
       userId = newUser.user.id
 
-      // TODO: Send email with temporary password and instructions to reset
-      console.log(`Created store owner account for ${businessEmail} with temp password`)
+      // Send email with temporary password
+      const emailResult = await sendStoreAccountCreatedEmail({
+        businessName,
+        businessEmail,
+        temporaryPassword: tempPassword,
+      })
+
+      if (!emailResult.success) {
+        console.error('Failed to send account creation email:', emailResult.error)
+        // Don't fail the entire request if email fails
+      }
+
+      console.log(`Created store owner account for ${businessEmail} and sent credentials email`)
     } else {
       userId = user.id
 
@@ -199,9 +211,17 @@ export async function POST(request: NextRequest) {
       console.log(`Store ${storeOwner.id} uses POS: ${posSystemName}`)
     }
 
-    // Send notification email (implement later)
-    // TODO: Send email to admin for review
-    // TODO: Send confirmation email to store owner
+    // Send application submitted confirmation email
+    const confirmationEmailResult = await sendStoreApplicationSubmittedEmail({
+      businessName,
+      businessEmail,
+      storeName,
+    })
+
+    if (!confirmationEmailResult.success) {
+      console.error('Failed to send application confirmation email:', confirmationEmailResult.error)
+      // Don't fail the entire request if email fails
+    }
 
     return NextResponse.json({
       success: true,

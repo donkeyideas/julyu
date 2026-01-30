@@ -262,3 +262,273 @@ export async function sendStoreRejectionEmail({
     return { success: false, error }
   }
 }
+
+interface StoreApplicationSubmittedEmailProps {
+  businessName: string
+  businessEmail: string
+  storeName: string
+}
+
+export async function sendStoreApplicationSubmittedEmail({
+  businessName,
+  businessEmail,
+  storeName,
+}: StoreApplicationSubmittedEmailProps) {
+  try {
+    const client = getResendClient()
+    if (!client) {
+      console.warn('Resend API key not configured - skipping email send')
+      return { success: false, error: 'Email service not configured' }
+    }
+
+    const { data, error } = await client.emails.send({
+      from: 'Julyu <onboarding@resend.dev>', // Replace with your verified domain
+      to: businessEmail,
+      subject: 'Store Application Received - Under Review',
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <style>
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+              }
+              .header {
+                background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+                color: white;
+                padding: 30px;
+                border-radius: 10px 10px 0 0;
+                text-align: center;
+              }
+              .content {
+                background: #f9fafb;
+                padding: 30px;
+                border-radius: 0 0 10px 10px;
+              }
+              .info-box {
+                background: white;
+                border-left: 4px solid #3b82f6;
+                padding: 15px;
+                margin: 20px 0;
+                border-radius: 4px;
+              }
+              .footer {
+                text-align: center;
+                color: #6b7280;
+                font-size: 14px;
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid #e5e7eb;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1 style="margin: 0; font-size: 28px;">Application Received!</h1>
+              <p style="margin: 10px 0 0 0; opacity: 0.9;">Thank you for applying to partner with Julyu</p>
+            </div>
+
+            <div class="content">
+              <p>Dear ${businessName},</p>
+
+              <p>We've successfully received your application to join the Julyu platform for <strong>${storeName}</strong>.</p>
+
+              <div class="info-box">
+                <h3 style="margin-top: 0; color: #3b82f6;">What Happens Next?</h3>
+                <p style="margin-bottom: 0;">Our team will review your application within <strong>1-2 business days</strong>. We'll verify your business information and ensure everything is in order.</p>
+              </div>
+
+              <div class="info-box">
+                <h3 style="margin-top: 0; color: #10b981;">Once Approved, You'll Receive:</h3>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                  <li>Login credentials for your store owner dashboard</li>
+                  <li>Instructions on how to set up your inventory</li>
+                  <li>Next steps to start receiving customer orders</li>
+                </ul>
+              </div>
+
+              <p>If you have any questions in the meantime, please don't hesitate to reach out to our support team.</p>
+
+              <p style="margin-top: 30px;">Best regards,</p>
+              <p style="margin: 0;"><strong>The Julyu Team</strong></p>
+            </div>
+
+            <div class="footer">
+              <p>This email was sent by Julyu. If you have questions, please contact support.</p>
+            </div>
+          </body>
+        </html>
+      `,
+    })
+
+    if (error) {
+      console.error('Resend email error:', error)
+      return { success: false, error }
+    }
+
+    console.log('Store application submitted email sent:', data)
+    return { success: true, data }
+  } catch (error) {
+    console.error('Error sending store application submitted email:', error)
+    return { success: false, error }
+  }
+}
+
+interface StoreAccountCreatedEmailProps {
+  businessName: string
+  businessEmail: string
+  temporaryPassword: string
+}
+
+export async function sendStoreAccountCreatedEmail({
+  businessName,
+  businessEmail,
+  temporaryPassword,
+}: StoreAccountCreatedEmailProps) {
+  try {
+    const client = getResendClient()
+    if (!client) {
+      console.warn('Resend API key not configured - skipping email send')
+      return { success: false, error: 'Email service not configured' }
+    }
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const storePortalUrl = `${appUrl}/store-portal`
+
+    const { data, error } = await client.emails.send({
+      from: 'Julyu <onboarding@resend.dev>', // Replace with your verified domain
+      to: businessEmail,
+      subject: 'Your Julyu Store Account Has Been Created',
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <style>
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+              }
+              .header {
+                background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+                color: white;
+                padding: 30px;
+                border-radius: 10px 10px 0 0;
+                text-align: center;
+              }
+              .content {
+                background: #f9fafb;
+                padding: 30px;
+                border-radius: 0 0 10px 10px;
+              }
+              .credentials-box {
+                background: white;
+                border: 2px solid #3b82f6;
+                padding: 20px;
+                margin: 20px 0;
+                border-radius: 8px;
+                text-align: center;
+              }
+              .password {
+                background: #fee2e2;
+                color: #991b1b;
+                padding: 10px;
+                font-family: 'Courier New', monospace;
+                font-size: 18px;
+                font-weight: bold;
+                border-radius: 4px;
+                margin: 10px 0;
+              }
+              .button {
+                display: inline-block;
+                background: #3b82f6;
+                color: white;
+                padding: 12px 30px;
+                text-decoration: none;
+                border-radius: 6px;
+                font-weight: 600;
+                margin: 20px 0;
+              }
+              .warning {
+                background: #fef3c7;
+                border-left: 4px solid #f59e0b;
+                padding: 15px;
+                margin: 20px 0;
+                border-radius: 4px;
+              }
+              .footer {
+                text-align: center;
+                color: #6b7280;
+                font-size: 14px;
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid #e5e7eb;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1 style="margin: 0; font-size: 28px;">Account Created!</h1>
+              <p style="margin: 10px 0 0 0; opacity: 0.9;">Your store owner account is ready</p>
+            </div>
+
+            <div class="content">
+              <p>Dear ${businessName},</p>
+
+              <p>Your store owner account has been created as part of your application submission. Below are your temporary login credentials:</p>
+
+              <div class="credentials-box">
+                <h3 style="margin-top: 0; color: #3b82f6;">Login Credentials</h3>
+                <p style="margin: 5px 0;"><strong>Email:</strong> ${businessEmail}</p>
+                <p style="margin: 5px 0;"><strong>Temporary Password:</strong></p>
+                <div class="password">${temporaryPassword}</div>
+              </div>
+
+              <div class="warning">
+                <p style="margin: 0;"><strong>⚠️ Important:</strong> Please change this temporary password after your first login for security purposes.</p>
+              </div>
+
+              <p>You can log in to your store portal once your application is approved. You'll receive another email when that happens.</p>
+
+              <div style="text-align: center;">
+                <a href="${storePortalUrl}" class="button">
+                  Go to Store Portal →
+                </a>
+              </div>
+
+              <p style="margin-top: 30px;">If you have any questions, please contact our support team.</p>
+
+              <p style="margin-top: 30px;">Best regards,</p>
+              <p style="margin: 0;"><strong>The Julyu Team</strong></p>
+            </div>
+
+            <div class="footer">
+              <p>This email was sent by Julyu. If you have questions, please contact support.</p>
+            </div>
+          </body>
+        </html>
+      `,
+    })
+
+    if (error) {
+      console.error('Resend email error:', error)
+      return { success: false, error }
+    }
+
+    console.log('Store account created email sent:', data)
+    return { success: true, data }
+  } catch (error) {
+    console.error('Error sending store account created email:', error)
+    return { success: false, error }
+  }
+}
