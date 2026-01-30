@@ -157,9 +157,22 @@ export async function POST(request: NextRequest) {
     // Proceed to save keys (auth already checked or skipped)
 
     const body = await request.json()
-    const { deepseek, openai, krogerClientId, krogerClientSecret, spoonacular, positionstack, stripeSecretKey, stripePublishableKey, stripeWebhookSecret } = body
+    const {
+      deepseek,
+      openai,
+      krogerClientId,
+      krogerClientSecret,
+      spoonacular,
+      positionstack,
+      stripeSecretKey,
+      stripePublishableKey,
+      stripeWebhookSecret,
+      rapidapiKey,
+      tescoApiEnabled,
+      groceryPricesEnabled
+    } = body
 
-    if (!deepseek && !openai && !(krogerClientId && krogerClientSecret) && !spoonacular && !positionstack && !stripeSecretKey && !stripePublishableKey && !stripeWebhookSecret) {
+    if (!deepseek && !openai && !(krogerClientId && krogerClientSecret) && !spoonacular && !positionstack && !stripeSecretKey && !stripePublishableKey && !stripeWebhookSecret && !rapidapiKey) {
       return NextResponse.json({ success: false, error: 'At least one API key required' }, { status: 400 })
     }
 
@@ -445,6 +458,46 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Save RapidAPI key (used for Tesco and Grocery Prices APIs)
+    if (rapidapiKey) {
+      const trimmedKey = rapidapiKey.trim()
+      if (!trimmedKey || trimmedKey.length < 10) {
+        return NextResponse.json({ success: false, error: 'Invalid RapidAPI key format' }, { status: 400 })
+      }
+
+      console.log('[Save API Keys] Saving RapidAPI key, length:', trimmedKey.length)
+      const encryptedKey = encrypt(trimmedKey)
+
+      const { error: rapidapiError } = await supabase
+        .from('ai_model_config')
+        .upsert({
+          model_name: 'rapidapi',
+          provider: 'RapidAPI',
+          api_key_encrypted: encryptedKey,
+          api_endpoint: 'https://rapidapi.com',
+          model_version: 'v1',
+          is_active: true,
+          config: {
+            tescoEnabled: tescoApiEnabled || false,
+            groceryPricesEnabled: groceryPricesEnabled || false,
+          },
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'model_name',
+        })
+
+      if (rapidapiError) {
+        if (!rapidapiError.message?.includes('relation') && !rapidapiError.message?.includes('does not exist')) {
+          console.error('[Save API Keys] Error saving RapidAPI key:', rapidapiError)
+          return NextResponse.json({ success: false, error: 'Failed to save RapidAPI key' }, { status: 500 })
+        } else {
+          console.log('[Save API Keys] Database table not found, but RapidAPI key accepted')
+        }
+      } else {
+        console.log('[Save API Keys] RapidAPI key saved successfully')
+      }
+    }
+
     // Save Stripe API keys
     if (stripeSecretKey) {
       const trimmedKey = stripeSecretKey.trim()
@@ -575,6 +628,9 @@ export async function POST(request: NextRequest) {
       spoonacularConfigured: !!spoonacular,
       positionstackConfigured: !!positionstack,
       stripeConfigured: !!stripeSecretKey,
+      rapidapiConfigured: !!rapidapiKey,
+      tescoEnabled: tescoApiEnabled || false,
+      groceryPricesEnabled: groceryPricesEnabled || false,
     })
   } catch (error: any) {
     console.error('[Save API Keys] Error saving API keys:', error)
@@ -590,8 +646,8 @@ export async function GET() {
     // Get API key configs (without decrypting - just check if they exist)
     const { data: configs, error } = await supabase
       .from('ai_model_config')
-      .select('model_name, api_key_encrypted, is_active')
-      .in('model_name', ['deepseek-chat', 'gpt-4-vision', 'kroger', 'spoonacular', 'positionstack', 'stripe-secret'])
+      .select('model_name, api_key_encrypted, is_active, config')
+      .in('model_name', ['deepseek-chat', 'gpt-4-vision', 'kroger', 'spoonacular', 'positionstack', 'stripe-secret', 'rapidapi'])
 
     if (error) {
       // If table doesn't exist, check environment variables as fallback
@@ -601,6 +657,7 @@ export async function GET() {
       const hasSpoonacularEnv = !!(process.env.SPOONACULAR_API_KEY && process.env.SPOONACULAR_API_KEY.trim() !== '')
       const hasPositionstackEnv = !!(process.env.POSITIONSTACK_API_KEY && process.env.POSITIONSTACK_API_KEY.trim() !== '')
       const hasStripeEnv = !!(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.trim() !== '')
+      const hasRapidapiEnv = !!(process.env.RAPIDAPI_KEY && process.env.RAPIDAPI_KEY.trim() !== '')
 
       return NextResponse.json({
         deepseekConfigured: hasDeepseekEnv,
@@ -609,6 +666,9 @@ export async function GET() {
         spoonacularConfigured: hasSpoonacularEnv,
         positionstackConfigured: hasPositionstackEnv,
         stripeConfigured: hasStripeEnv,
+        rapidapiConfigured: hasRapidapiEnv,
+        tescoEnabled: false,
+        groceryPricesEnabled: false,
       })
     }
 
@@ -618,6 +678,12 @@ export async function GET() {
     const spoonacularConfigured = configs?.some((c: any) => c.model_name === 'spoonacular' && c.api_key_encrypted && c.is_active) || false
     const positionstackConfigured = configs?.some((c: any) => c.model_name === 'positionstack' && c.api_key_encrypted && c.is_active) || false
     const stripeConfigured = configs?.some((c: any) => c.model_name === 'stripe-secret' && c.api_key_encrypted && c.is_active) || false
+    const rapidapiConfigured = configs?.some((c: any) => c.model_name === 'rapidapi' && c.api_key_encrypted && c.is_active) || false
+
+    // Get RapidAPI config for enabled flags
+    const rapidapiConfig = configs?.find((c: any) => c.model_name === 'rapidapi')
+    const tescoEnabled = rapidapiConfig?.config?.tescoEnabled || false
+    const groceryPricesEnabled = rapidapiConfig?.config?.groceryPricesEnabled || false
 
     // Also check environment variables as fallback
     const hasDeepseekEnv = !!(process.env.DEEPSEEK_API_KEY && process.env.DEEPSEEK_API_KEY.trim() !== '')
@@ -626,6 +692,7 @@ export async function GET() {
     const hasSpoonacularEnv = !!(process.env.SPOONACULAR_API_KEY && process.env.SPOONACULAR_API_KEY.trim() !== '')
     const hasPositionstackEnv = !!(process.env.POSITIONSTACK_API_KEY && process.env.POSITIONSTACK_API_KEY.trim() !== '')
     const hasStripeEnv = !!(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.trim() !== '')
+    const hasRapidapiEnv = !!(process.env.RAPIDAPI_KEY && process.env.RAPIDAPI_KEY.trim() !== '')
 
     return NextResponse.json({
       deepseekConfigured: deepseekConfigured || hasDeepseekEnv,
@@ -634,6 +701,9 @@ export async function GET() {
       spoonacularConfigured: spoonacularConfigured || hasSpoonacularEnv,
       positionstackConfigured: positionstackConfigured || hasPositionstackEnv,
       stripeConfigured: stripeConfigured || hasStripeEnv,
+      rapidapiConfigured: rapidapiConfigured || hasRapidapiEnv,
+      tescoEnabled,
+      groceryPricesEnabled,
     })
   } catch (error) {
     // Fallback to environment variables
@@ -642,6 +712,7 @@ export async function GET() {
     const hasKrogerEnv = !!(process.env.KROGER_CLIENT_ID && process.env.KROGER_CLIENT_SECRET)
     const hasSpoonacularEnv = !!(process.env.SPOONACULAR_API_KEY && process.env.SPOONACULAR_API_KEY.trim() !== '')
     const hasPositionstackEnv = !!(process.env.POSITIONSTACK_API_KEY && process.env.POSITIONSTACK_API_KEY.trim() !== '')
+    const hasRapidapiEnv = !!(process.env.RAPIDAPI_KEY && process.env.RAPIDAPI_KEY.trim() !== '')
 
     return NextResponse.json({
       deepseekConfigured: hasDeepseekEnv,
@@ -649,6 +720,9 @@ export async function GET() {
       krogerConfigured: hasKrogerEnv,
       spoonacularConfigured: hasSpoonacularEnv,
       positionstackConfigured: hasPositionstackEnv,
+      rapidapiConfigured: hasRapidapiEnv,
+      tescoEnabled: false,
+      groceryPricesEnabled: false,
     })
   }
 }
