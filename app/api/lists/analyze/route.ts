@@ -463,6 +463,9 @@ async function analyzeWithKroger(
           size: null,
           imageUrl: found.product.image || null,
           upc: null,
+          description: null,
+          categories: [],
+          availability: 'Available',
         } : null,
         price: found?.price || null,
       }
@@ -496,6 +499,9 @@ async function analyzeWithKroger(
           size: null,
           imageUrl: found.product.image || null,
           upc: null,
+          description: null,
+          categories: [],
+          availability: 'Available',
         } : null,
         price: found?.price || null,
       }
