@@ -203,7 +203,6 @@ export async function searchGroceryPrices(
 
     // Track failed API call
     try {
-      const { trackApiCall } = await import('@/lib/services/rate-limiter')
       await trackApiCall('grocery-prices', false)
     } catch (trackError) {
       console.error('[Grocery Prices API] Failed to track API call:', trackError)

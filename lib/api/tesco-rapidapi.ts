@@ -165,7 +165,6 @@ export async function searchTescoProducts(query: string, page: number = 1, limit
     console.log('[Tesco API] Found', products.length, 'products, total:', total)
 
     // Track successful API call
-    const { trackApiCall } = await import('@/lib/services/rate-limiter')
     await trackApiCall('tesco', true)
 
     return {
@@ -179,7 +178,6 @@ export async function searchTescoProducts(query: string, page: number = 1, limit
 
     // Track failed API call
     try {
-      const { trackApiCall } = await import('@/lib/services/rate-limiter')
       await trackApiCall('tesco', false)
     } catch (trackError) {
       console.error('[Tesco API] Failed to track API call:', trackError)
@@ -255,7 +253,6 @@ export async function getTescoProduct(tpnb: string): Promise<{
 
     // Track failed API call
     try {
-      const { trackApiCall } = await import('@/lib/services/rate-limiter')
       await trackApiCall('tesco', false)
     } catch (trackError) {
       console.error('[Tesco API] Failed to track API call:', trackError)
