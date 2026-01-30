@@ -167,7 +167,7 @@ export default function SavingsPage() {
                           const monthDate = new Date(s.month + '-01')
                           return isNaN(monthDate.getTime())
                             ? s.month
-                            : monthDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                            : monthDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
                         } catch {
                           return s.month || 'N/A'
                         }
