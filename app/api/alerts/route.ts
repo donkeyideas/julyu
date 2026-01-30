@@ -92,6 +92,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('[Alerts] POST request received')
     // Auth: try Supabase first, fall back to Firebase headers
     let userId: string | null = null
     let userEmail: string | null = null
@@ -104,6 +105,7 @@ export async function POST(request: NextRequest) {
         userId = user.id
         userEmail = user.email || null
         userName = user.user_metadata?.full_name || null
+        console.log('[Alerts] Got user from Supabase:', userId)
       }
     } catch (authError) {
       console.error('[Alerts] Supabase auth failed (trying Firebase):', authError)
@@ -113,13 +115,17 @@ export async function POST(request: NextRequest) {
       userId = request.headers.get('x-user-id')
       userEmail = request.headers.get('x-user-email')
       userName = request.headers.get('x-user-name')
+      console.log('[Alerts] Got user from headers:', userId)
     }
 
     if (!userId) {
+      console.error('[Alerts] No user ID found')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    console.log('[Alerts] Ensuring user exists...')
     await ensureUserExists(userId, userEmail, userName)
+    console.log('[Alerts] User exists check passed')
 
     // Feature gate check (non-blocking if subscription tables are missing)
     try {
@@ -133,18 +139,22 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const { product_id, product_name, target_price, store_id } = body
+    console.log('[Alerts] Request body:', { product_id, product_name, target_price, store_id })
 
     if (!target_price || target_price <= 0) {
+      console.error('[Alerts] Invalid target price:', target_price)
       return NextResponse.json({ error: 'Valid target price is required' }, { status: 400 })
     }
 
     if (!product_id && !product_name) {
+      console.error('[Alerts] No product ID or name provided')
       return NextResponse.json({ error: 'Product name or ID is required' }, { status: 400 })
     }
 
     const dbClient = createServiceRoleClient()
 
     // Find or create product
+    console.log('[Alerts] Finding or creating product...')
     let finalProductId = product_id
     if (!finalProductId && product_name) {
       // Escape LIKE pattern chars in user input
@@ -216,6 +226,13 @@ export async function POST(request: NextRequest) {
     const now = new Date().toISOString()
     const isTriggered = currentPrice !== null && currentPrice <= target_price
 
+    console.log('[Alerts] Inserting alert with:', {
+      user_id: userId,
+      product_id: finalProductId,
+      target_price,
+      current_price: currentPrice,
+    })
+
     // Insert the alert without join first
     const { data: alert, error } = await dbClient
       .from('price_alerts')
@@ -224,7 +241,7 @@ export async function POST(request: NextRequest) {
         product_id: finalProductId,
         target_price,
         current_price: currentPrice,
-        store_id: store_id || null,
+        // Note: store_id removed due to schema cache issues
         is_active: true,
         last_checked_at: currentPrice !== null ? now : null,
         lowest_price_found: currentPrice,
@@ -237,6 +254,8 @@ export async function POST(request: NextRequest) {
       console.error('[Alerts] Insert error:', JSON.stringify(error, null, 2))
       return NextResponse.json({ error: 'Failed to create alert', details: error.message }, { status: 500 })
     }
+
+    console.log('[Alerts] Alert created successfully:', alert.id)
 
     // Fetch product details separately if product_id exists
     let productDetails = null
@@ -258,6 +277,13 @@ export async function POST(request: NextRequest) {
     }, { status: 201 })
   } catch (error) {
     console.error('[Alerts] Error creating alert:', error)
-    return NextResponse.json({ error: 'Failed to create alert' }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    const stack = error instanceof Error ? error.stack : undefined
+    console.error('[Alerts] Error stack:', stack)
+    return NextResponse.json({
+      error: 'Failed to create alert',
+      details: message,
+      stack: process.env.NODE_ENV === 'development' ? stack : undefined
+    }, { status: 500 })
   }
 }
