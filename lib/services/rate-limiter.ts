@@ -29,6 +29,10 @@ export interface UsageStats {
   alert_triggered: boolean
 }
 
+interface ApiUsageRecord {
+  calls_count: number
+}
+
 /**
  * Check if an API call can be made (rate limit check)
  */
@@ -82,7 +86,7 @@ export async function canMakeApiCall(apiName: 'tesco' | 'grocery-prices'): Promi
       .eq('api_name', apiName)
       .gte('date', today)
 
-    const callsToday = usage?.reduce((sum: number, u) => sum + (u.calls_count || 0), 0) || 0
+    const callsToday = usage?.reduce((sum: number, u: ApiUsageRecord) => sum + (u.calls_count || 0), 0) || 0
 
     const { data: monthUsage } = await supabase
       .from('api_usage_tracking')
@@ -90,7 +94,7 @@ export async function canMakeApiCall(apiName: 'tesco' | 'grocery-prices'): Promi
       .eq('api_name', apiName)
       .gte('date', `${thisMonth}-01`)
 
-    const callsThisMonth = monthUsage?.reduce((sum: number, u) => sum + (u.calls_count || 0), 0) || 0
+    const callsThisMonth = monthUsage?.reduce((sum: number, u: ApiUsageRecord) => sum + (u.calls_count || 0), 0) || 0
 
     const dailyPercentage = (callsToday / rateConfig.daily_limit) * 100
     const monthlyPercentage = (callsThisMonth / rateConfig.monthly_limit) * 100
