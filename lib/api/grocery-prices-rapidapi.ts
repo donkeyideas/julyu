@@ -152,52 +152,96 @@ export async function searchGroceryPrices(
       }
     }
 
-    const { store = 'all', page = 1, limit = 20, min_price, max_price } = params
+    const { store = 'all', limit = 20 } = params
 
-    const queryParams = new URLSearchParams({
-      query,
-      page: String(page),
-      limit: String(limit),
-    })
+    // Build query params (no page/limit in URL, they're not supported)
+    const queryParams = new URLSearchParams({ query })
 
-    if (store !== 'all') {
-      queryParams.append('store', store)
+    const allProducts: GroceryProduct[] = []
+    const storesToSearch = store === 'all' ? ['amazon', 'walmart'] : [store]
+
+    // Search each store separately using correct endpoints
+    for (const storeName of storesToSearch) {
+      try {
+        const endpoint = storeName === 'amazon' ? '/amazon' : '/walmart'
+        const url = `${BASE_URL}${endpoint}?${queryParams.toString()}`
+
+        console.log(`[Grocery Prices API] Searching ${storeName}:`, query)
+
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'X-RapidAPI-Key': apiKey,
+            'X-RapidAPI-Host': RAPIDAPI_HOST,
+          },
+        })
+
+        if (!response.ok) {
+          console.error(`[Grocery Prices API] ${storeName} request failed:`, response.status, response.statusText)
+          continue
+        }
+
+        const data = await response.json()
+        console.log(`[Grocery Prices API] ${storeName} response:`, JSON.stringify(data).substring(0, 200))
+
+        // Parse response based on store
+        let products: any[] = []
+
+        if (storeName === 'amazon' && data.products) {
+          products = data.products
+        } else if (storeName === 'walmart') {
+          // Walmart has different structure - check multiple possible locations
+          if (data.products) {
+            products = data.products
+          } else if (data.raw_body_sample) {
+            try {
+              const parsed = JSON.parse(data.raw_body_sample)
+              products = parsed.products || []
+            } catch (e) {
+              console.error('[Grocery Prices API] Failed to parse Walmart raw_body_sample')
+            }
+          }
+        }
+
+        // Map products to our interface
+        const mappedProducts = products.slice(0, limit).map((product: any) => {
+          // Parse price - may be in format "Fl64.00" or "$4.99" or just a number
+          let price = 0
+          if (typeof product.price === 'string') {
+            const priceStr = product.price.replace(/[^0-9.]/g, '')
+            price = parseFloat(priceStr) || 0
+          } else if (typeof product.price === 'number') {
+            price = product.price
+          }
+
+          return {
+            product_id: product.id || product.product_id || undefined,
+            title: product.name || product.title || 'Unknown Product',
+            brand: product.brand || undefined,
+            image: product.image || product.imageUrl || undefined,
+            price,
+            original_price: product.rawPrice || product.original_price || undefined,
+            store: storeName.charAt(0).toUpperCase() + storeName.slice(1), // "Amazon" or "Walmart"
+            url: product.amazonLink || product.url || undefined,
+            rating: product.customerReviews ? parseFloat(product.customerReviews) : undefined,
+            review_count: product.customerReviewCount || undefined,
+          } as GroceryProduct
+        })
+
+        allProducts.push(...mappedProducts)
+        console.log(`[Grocery Prices API] Found ${mappedProducts.length} products from ${storeName}`)
+      } catch (storeError: any) {
+        console.error(`[Grocery Prices API] Error searching ${storeName}:`, storeError.message)
+      }
     }
-    if (min_price !== undefined) {
-      queryParams.append('min_price', String(min_price))
-    }
-    if (max_price !== undefined) {
-      queryParams.append('max_price', String(max_price))
-    }
-
-    const url = `${BASE_URL}/search?${queryParams.toString()}`
-    console.log('[Grocery Prices API] Searching:', query, 'store:', store, 'page:', page)
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'X-RapidAPI-Key': apiKey,
-        'X-RapidAPI-Host': RAPIDAPI_HOST,
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`Grocery Prices API request failed: ${response.status} ${response.statusText}`)
-    }
-
-    const data: GrocerySearchResponse = await response.json()
-    const products = data?.products || []
-    const total = data?.total || products.length
-
-    console.log('[Grocery Prices API] Found', products.length, 'products, total:', total)
 
     // Track successful API call
     await trackApiCall('grocery-prices', true)
 
     return {
       success: true,
-      products,
-      total,
+      products: allProducts,
+      total: allProducts.length,
       rateLimitInfo: rateLimitCheck.usage,
     }
   } catch (error: any) {
