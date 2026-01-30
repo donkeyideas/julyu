@@ -50,7 +50,7 @@ export default function ThankYouPage() {
                 <div>
                   <h3 className="text-lg font-bold text-white mb-2">What Happens Next?</h3>
                   <p className="text-gray-400">
-                    Our team will carefully review your application within <strong className="text-white">1-2 business days</strong>. We'll verify your business information and ensure everything is in order.
+                    Our team will carefully review your application within <strong className="text-white">1-2 business days</strong>. We&apos;ll verify your business information and ensure everything is in order.
                   </p>
                 </div>
               </div>
@@ -64,9 +64,9 @@ export default function ThankYouPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white mb-2">You'll Receive an Email</h3>
+                  <h3 className="text-lg font-bold text-white mb-2">You&apos;ll Receive an Email</h3>
                   <p className="text-gray-400">
-                    Once your application is approved, you'll receive an email with:
+                    Once your application is approved, you&apos;ll receive an email with:
                   </p>
                   <ul className="mt-3 space-y-2 text-gray-400">
                     <li className="flex items-center">
