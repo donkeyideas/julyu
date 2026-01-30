@@ -60,7 +60,7 @@ export default function SubscriptionsPage() {
       const data = await response.json()
       if (data.plan) {
         setPlans(prev => prev.map(p => p.id === plan.id ? data.plan : p))
-        alert('Plan updated successfully')
+        alert('Plan updated successfully!\n\nNote: Changes may take 1-2 minutes to appear on the public pricing page due to browser caching. Users can hard refresh (Ctrl+Shift+R or Cmd+Shift+R) to see changes immediately.')
       } else {
         alert(`Error: ${data.error || 'Failed to update'}`)
       }
@@ -193,6 +193,19 @@ export default function SubscriptionsPage() {
       <div className="mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
         <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>Subscriptions & Promo Codes</h1>
         <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>Manage subscription plans, features, and promotional codes</p>
+      </div>
+
+      {/* Info Banner */}
+      <div className="mb-6 p-4 rounded-lg flex items-start gap-3" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid rgb(59, 130, 246, 0.3)' }}>
+        <svg className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div>
+          <div className="font-semibold text-blue-400 mb-1">Live Database Sync</div>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            Changes to plans and promo codes are saved directly to the database and will appear immediately on the <a href="/pricing" target="_blank" className="text-blue-400 hover:underline">/pricing page</a> and user settings. If you don&apos;t see changes right away, try a hard refresh (Ctrl+Shift+R / Cmd+Shift+R).
+          </p>
+        </div>
       </div>
 
       {/* Tabs */}
