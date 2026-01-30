@@ -13,6 +13,9 @@ export default function SubscriptionsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState<string | null>(null)
   const [expandedPlan, setExpandedPlan] = useState<string | null>(null)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [promoToDelete, setPromoToDelete] = useState<PromoCode | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   // Promo code form state
   const [newCode, setNewCode] = useState('')
@@ -140,21 +143,31 @@ export default function SubscriptionsPage() {
     }
   }
 
-  const handleDeletePromo = async (promo: PromoCode) => {
-    if (!confirm(`Delete promo code "${promo.code}"?`)) return
+  const handleDeletePromo = (promo: PromoCode) => {
+    setPromoToDelete(promo)
+    setDeleteModalOpen(true)
+  }
 
+  const confirmDeletePromo = async () => {
+    if (!promoToDelete) return
+
+    setDeleting(true)
     try {
-      const response = await fetch(`/api/admin/subscriptions/promo-codes?id=${promo.id}`, {
+      const response = await fetch(`/api/admin/subscriptions/promo-codes?id=${promoToDelete.id}`, {
         method: 'DELETE',
       })
       const data = await response.json()
       if (data.success) {
-        setPromoCodes(prev => prev.filter(p => p.id !== promo.id))
+        setPromoCodes(prev => prev.filter(p => p.id !== promoToDelete.id))
+        setDeleteModalOpen(false)
+        setPromoToDelete(null)
       } else {
         alert(`Error: ${data.error || 'Failed to delete'}`)
       }
     } catch (error: any) {
       alert(`Error: ${error.message}`)
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -482,6 +495,79 @@ export default function SubscriptionsPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && promoToDelete && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div
+            className="rounded-2xl p-8 max-w-md w-full"
+            style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
+          >
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-full bg-red-500/15 flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                  Delete Promo Code
+                </h2>
+                <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+                  This action cannot be undone
+                </p>
+              </div>
+            </div>
+
+            <div className="mb-6 p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+              <p className="mb-3" style={{ color: 'var(--text-secondary)' }}>
+                Are you sure you want to delete this promo code?
+              </p>
+              <div className="mb-3">
+                <div className="font-mono font-bold text-lg text-green-400 mb-2">
+                  {promoToDelete.code}
+                </div>
+                {promoToDelete.description && (
+                  <div className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
+                    {promoToDelete.description}
+                  </div>
+                )}
+                <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                  {promoToDelete.type === 'free_months' && `${promoToDelete.value} free months`}
+                  {promoToDelete.type === 'percentage' && `${promoToDelete.value}% off`}
+                  {promoToDelete.type === 'fixed' && `$${promoToDelete.value} off`}
+                  {' • '}
+                  Used {promoToDelete.current_uses} time{promoToDelete.current_uses !== 1 ? 's' : ''}
+                </div>
+              </div>
+              <p className="text-sm text-red-400">
+                This promo code will be permanently deleted. Users who have already applied it will not be affected.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setDeleteModalOpen(false)
+                  setPromoToDelete(null)
+                }}
+                disabled={deleting}
+                className="flex-1 px-6 py-3 rounded-lg transition hover:opacity-80 disabled:opacity-50"
+                style={{ border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeletePromo}
+                disabled={deleting}
+                className="flex-1 px-6 py-3 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition disabled:opacity-50"
+              >
+                {deleting ? 'Deleting...' : 'Delete Promo Code'}
+              </button>
+            </div>
           </div>
         </div>
       )}
