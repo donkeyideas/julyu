@@ -30,6 +30,7 @@ export default function RateLimitsPage() {
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState<string | null>(null)
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
   useEffect(() => {
     loadData()
@@ -68,12 +69,12 @@ export default function RateLimitsPage() {
       const data = await response.json()
       if (data.success) {
         await loadData()
-        alert('Rate limits updated successfully!')
+        setNotification({ type: 'success', message: 'Rate limits updated successfully!' })
       } else {
-        alert(`Error: ${data.error}`)
+        setNotification({ type: 'error', message: data.error || 'Failed to update rate limits' })
       }
     } catch (error: any) {
-      alert(`Error: ${error.message}`)
+      setNotification({ type: 'error', message: error.message || 'An unexpected error occurred' })
     } finally {
       setSaving(null)
     }
@@ -159,6 +160,43 @@ export default function RateLimitsPage() {
           </div>
         </div>
       </div>
+
+      {/* Notification Modal */}
+      {notification && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" onClick={() => setNotification(null)}>
+          <div
+            className="rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl"
+            style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-4">
+              <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${notification.type === 'success' ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
+                {notification.type === 'success' ? (
+                  <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                )}
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
+                  {notification.type === 'success' ? 'Success' : 'Error'}
+                </h3>
+                <p style={{ color: 'var(--text-secondary)' }}>{notification.message}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setNotification(null)}
+              className="mt-6 w-full px-4 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

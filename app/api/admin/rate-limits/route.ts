@@ -4,14 +4,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 import { getUsageStats } from '@/lib/services/rate-limiter'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
 
     // Get rate limit configs
     const { data: configs, error: configError } = await supabase
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
 
     // Upsert rate limit config
     const { data, error } = await supabase
