@@ -142,7 +142,9 @@ export async function canMakeApiCall(apiName: 'tesco' | 'grocery-prices'): Promi
  */
 export async function trackApiCall(apiName: 'tesco' | 'grocery-prices', callSuccessful: boolean = true): Promise<void> {
   try {
-    const supabase = createServerClient()
+    // Use service role client to bypass RLS for system operations
+    const { createServiceRoleClient } = await import('@/lib/supabase/server')
+    const supabase = createServiceRoleClient()
     const today = new Date().toISOString().split('T')[0]
 
     // Get or create today's usage record
