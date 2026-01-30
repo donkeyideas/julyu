@@ -56,8 +56,8 @@ export default function StoreApplicationPage() {
         throw new Error(data.error || 'Failed to submit application')
       }
 
-      // Redirect to store portal (will show pending status)
-      router.push('/store-portal')
+      // Redirect to thank you page
+      router.push('/for-stores/apply/thank-you')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
