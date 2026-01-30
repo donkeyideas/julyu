@@ -24,6 +24,7 @@ interface StoreOwner {
 export default function AllStoresPage() {
   const [stores, setStores] = useState<StoreOwner[]>([])
   const [loading, setLoading] = useState(true)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
   useEffect(() => {
     loadStores()
@@ -46,6 +47,31 @@ export default function AllStoresPage() {
       setStores([])
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDelete = async (storeId: string) => {
+    if (!confirm('Are you sure you want to delete this store? This will delete the store owner account, all locations, and all related data. This action cannot be undone.')) {
+      return
+    }
+
+    setDeleting(storeId)
+    try {
+      const response = await fetch(`/api/admin/store-owners/${storeId}/delete`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        await loadStores()
+      } else {
+        const data = await response.json()
+        alert(`Failed to delete store: ${data.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Error deleting store:', error)
+      alert('Failed to delete store. Please try again.')
+    } finally {
+      setDeleting(null)
     }
   }
 
@@ -187,12 +213,21 @@ export default function AllStoresPage() {
                     {new Date(store.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <Link
-                      href={`/admin/stores/${store.id}`}
-                      className="text-green-500 hover:text-green-400 font-semibold"
-                    >
-                      View Details
-                    </Link>
+                    <div className="flex gap-4">
+                      <Link
+                        href={`/admin/stores/${store.id}`}
+                        className="text-green-500 hover:text-green-400 font-semibold"
+                      >
+                        View Details
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(store.id)}
+                        disabled={deleting === store.id}
+                        className="text-red-500 hover:text-red-400 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {deleting === store.id ? 'Deleting...' : 'Delete'}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -63,6 +63,7 @@ export default function UsersPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
   useEffect(() => {
     loadUsers()
@@ -151,6 +152,45 @@ export default function UsersPage() {
       console.error('Error saving user:', error)
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      return
+    }
+
+    setDeleting(userId)
+    try {
+      const response = await fetch(`/api/admin/users/${userId}/delete`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        // Remove user from local state
+        setUsers(users.filter(u => u.id !== userId))
+        // Recalculate stats
+        const updatedUsers = users.filter(u => u.id !== userId)
+        const now = new Date()
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        setStats({
+          total: updatedUsers.length,
+          premium: updatedUsers.filter(u => u.subscription_tier === 'premium').length,
+          enterprise: updatedUsers.filter(u => u.subscription_tier === 'enterprise').length,
+          free: updatedUsers.filter(u => u.subscription_tier === 'free').length,
+          newThisMonth: updatedUsers.filter(u => new Date(u.created_at) >= startOfMonth).length,
+          activeToday: updatedUsers.filter(u => u.last_login && new Date(u.last_login) >= startOfToday).length,
+        })
+      } else {
+        console.error('Error deleting user:', response.statusText)
+        alert('Failed to delete user. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error)
+      alert('Failed to delete user. Please try again.')
+    } finally {
+      setDeleting(null)
     }
   }
 
@@ -314,12 +354,21 @@ export default function UsersPage() {
                       {formatDate(user.last_login)}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={() => handleEditUser(user)}
-                        className="px-4 py-2 bg-green-500/10 text-green-500 rounded-lg hover:bg-green-500/20 transition text-sm font-medium"
-                      >
-                        Edit
-                      </button>
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => handleEditUser(user)}
+                          className="px-4 py-2 bg-green-500/10 text-green-500 rounded-lg hover:bg-green-500/20 transition text-sm font-medium"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(user.id)}
+                          disabled={deleting === user.id}
+                          className="px-4 py-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20 transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {deleting === user.id ? 'Deleting...' : 'Delete'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

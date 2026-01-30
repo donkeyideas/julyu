@@ -9,6 +9,7 @@ export default function StoreApplicationsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
   useEffect(() => {
     loadApplications()
@@ -123,6 +124,34 @@ export default function StoreApplicationsPage() {
     setIsModalOpen(false)
     setSelectedApplication(null)
     setError(null)
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this store application? This will also delete the associated store owner account and all related data. This action cannot be undone.')) {
+      return
+    }
+
+    setDeleting(id)
+    try {
+      const response = await fetch(`/api/admin/store-owners/${id}/delete`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        await loadApplications()
+        if (selectedApplication?.id === id) {
+          closeModal()
+        }
+      } else {
+        const data = await response.json()
+        alert(`Failed to delete store: ${data.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Error deleting store:', error)
+      alert('Failed to delete store. Please try again.')
+    } finally {
+      setDeleting(null)
+    }
   }
 
   return (
@@ -246,9 +275,16 @@ export default function StoreApplicationsPage() {
                         </button>
                       </>
                     )}
-                    {app.application_status !== 'pending' && (
-                      <span style={{ color: 'var(--text-muted)' }}>No actions</span>
-                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDelete(app.id)
+                      }}
+                      disabled={deleting === app.id}
+                      className="text-red-500 hover:text-red-400 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {deleting === app.id ? 'Deleting...' : 'Delete'}
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -403,13 +439,13 @@ export default function StoreApplicationsPage() {
             </div>
 
             {/* Actions */}
-            {selectedApplication.application_status === 'pending' && (
-              <div className="sticky bottom-0 px-8 py-6 space-y-4" style={{ backgroundColor: 'var(--bg-card)', borderTop: '1px solid var(--border-color)' }}>
-                {error && (
-                  <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3">
-                    <p className="text-sm text-red-500">{error}</p>
-                  </div>
-                )}
+            <div className="sticky bottom-0 px-8 py-6 space-y-4" style={{ backgroundColor: 'var(--bg-card)', borderTop: '1px solid var(--border-color)' }}>
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3">
+                  <p className="text-sm text-red-500">{error}</p>
+                </div>
+              )}
+              {selectedApplication.application_status === 'pending' ? (
                 <div className="flex gap-4">
                   <button
                     onClick={(e) => {
@@ -432,8 +468,19 @@ export default function StoreApplicationsPage() {
                     {actionLoading ? 'Processing...' : 'Reject Application'}
                   </button>
                 </div>
-              </div>
-            )}
+              ) : (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleDelete(selectedApplication.id)
+                  }}
+                  disabled={deleting === selectedApplication.id}
+                  className="w-full px-6 py-3 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {deleting === selectedApplication.id ? 'Deleting...' : 'Delete Application'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
