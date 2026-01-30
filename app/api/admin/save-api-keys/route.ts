@@ -496,6 +496,38 @@ export async function POST(request: NextRequest) {
       } else {
         console.log('[Save API Keys] RapidAPI key saved successfully')
       }
+    } else if (tescoApiEnabled !== undefined || groceryPricesEnabled !== undefined) {
+      // Update RapidAPI config flags even if no new key is provided
+      console.log('[Save API Keys] Updating RapidAPI config flags:', { tescoApiEnabled, groceryPricesEnabled })
+
+      // Get existing config
+      const { data: existingConfig } = await supabase
+        .from('ai_model_config')
+        .select('*')
+        .eq('model_name', 'rapidapi')
+        .single()
+
+      if (existingConfig) {
+        const { error: rapidapiError } = await supabase
+          .from('ai_model_config')
+          .update({
+            config: {
+              tescoEnabled: tescoApiEnabled !== undefined ? tescoApiEnabled : existingConfig.config?.tescoEnabled || false,
+              groceryPricesEnabled: groceryPricesEnabled !== undefined ? groceryPricesEnabled : existingConfig.config?.groceryPricesEnabled || false,
+            },
+            updated_at: new Date().toISOString(),
+          })
+          .eq('model_name', 'rapidapi')
+
+        if (rapidapiError) {
+          console.error('[Save API Keys] Error updating RapidAPI config:', rapidapiError)
+          return NextResponse.json({ success: false, error: 'Failed to update RapidAPI config' }, { status: 500 })
+        } else {
+          console.log('[Save API Keys] RapidAPI config updated successfully')
+        }
+      } else {
+        console.log('[Save API Keys] No existing RapidAPI config found, skipping update')
+      }
     }
 
     // Save Stripe API keys
