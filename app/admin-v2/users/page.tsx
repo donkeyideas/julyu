@@ -64,6 +64,8 @@ export default function UsersPage() {
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<User | null>(null)
 
   useEffect(() => {
     loadUsers()
@@ -155,22 +157,25 @@ export default function UsersPage() {
     }
   }
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-      return
-    }
+  const handleDeleteUser = (user: User) => {
+    setUserToDelete(user)
+    setDeleteModalOpen(true)
+  }
 
-    setDeleting(userId)
+  const confirmDelete = async () => {
+    if (!userToDelete) return
+
+    setDeleting(userToDelete.id)
     try {
-      const response = await fetch(`/api/admin/users/${userId}/delete`, {
+      const response = await fetch(`/api/admin/users/${userToDelete.id}/delete`, {
         method: 'DELETE',
       })
 
       if (response.ok) {
         // Remove user from local state
-        setUsers(users.filter(u => u.id !== userId))
+        setUsers(users.filter(u => u.id !== userToDelete.id))
         // Recalculate stats
-        const updatedUsers = users.filter(u => u.id !== userId)
+        const updatedUsers = users.filter(u => u.id !== userToDelete.id)
         const now = new Date()
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
         const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -182,6 +187,8 @@ export default function UsersPage() {
           newThisMonth: updatedUsers.filter(u => new Date(u.created_at) >= startOfMonth).length,
           activeToday: updatedUsers.filter(u => u.last_login && new Date(u.last_login) >= startOfToday).length,
         })
+        setDeleteModalOpen(false)
+        setUserToDelete(null)
       } else {
         console.error('Error deleting user:', response.statusText)
         alert('Failed to delete user. Please try again.')
@@ -362,7 +369,7 @@ export default function UsersPage() {
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDeleteUser(user.id)}
+                          onClick={() => handleDeleteUser(user)}
                           disabled={deleting === user.id}
                           className="px-4 py-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20 transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -486,6 +493,83 @@ export default function UsersPage() {
                 className="px-6 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition disabled:opacity-50"
               >
                 {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && userToDelete && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div
+            className="rounded-2xl p-8 max-w-md w-full"
+            style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
+          >
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-full bg-red-500/15 flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                  Delete User
+                </h2>
+                <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+                  This action cannot be undone
+                </p>
+              </div>
+            </div>
+
+            <div className="mb-6 p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+              <p className="mb-3" style={{ color: 'var(--text-secondary)' }}>
+                Are you sure you want to delete this user?
+              </p>
+              <div className="flex items-center gap-3 mb-3">
+                {userToDelete.avatar_url ? (
+                  <img
+                    src={userToDelete.avatar_url}
+                    alt=""
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-secondary)' }}>
+                    {(userToDelete.full_name || userToDelete.email)[0].toUpperCase()}
+                  </div>
+                )}
+                <div>
+                  <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                    {userToDelete.full_name || 'No name'}
+                  </div>
+                  <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                    {userToDelete.email}
+                  </div>
+                </div>
+              </div>
+              <p className="text-sm text-red-400">
+                All user data, including receipts, lists, alerts, and activity history will be permanently deleted.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setDeleteModalOpen(false)
+                  setUserToDelete(null)
+                }}
+                disabled={deleting === userToDelete.id}
+                className="flex-1 px-6 py-3 rounded-lg transition hover:opacity-80 disabled:opacity-50"
+                style={{ border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleting === userToDelete.id}
+                className="flex-1 px-6 py-3 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition disabled:opacity-50"
+              >
+                {deleting === userToDelete.id ? 'Deleting...' : 'Delete User'}
               </button>
             </div>
           </div>
