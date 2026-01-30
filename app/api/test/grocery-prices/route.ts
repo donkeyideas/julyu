@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 
     console.log('[Test] Grocery Prices API test with query:', query)
 
-    const result = await searchGroceryPrices({ product: query, limit: 5 })
+    const result = await searchGroceryPrices(query, { limit: 5 })
 
     return NextResponse.json({
       test: 'Grocery Prices API Test',
