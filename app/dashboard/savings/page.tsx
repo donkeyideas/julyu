@@ -164,7 +164,7 @@ export default function SavingsPage() {
                     <div className="mt-2 text-xs text-center" style={{ color: 'var(--text-muted)' }}>
                       {(() => {
                         try {
-                          const monthDate = new Date(s.month + '-01')
+                          const monthDate = new Date(s.month)
                           return isNaN(monthDate.getTime())
                             ? s.month
                             : monthDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })

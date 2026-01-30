@@ -592,7 +592,7 @@ export default function DashboardPage() {
                           fontSize="11"
                           fill="var(--text-muted)"
                         >
-                          {new Date(data.month + '-01').toLocaleDateString('en-US', { month: 'short', year: '2-digit' })}
+                          {new Date(data.month).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })}
                         </text>
                         <text
                           x={x}
