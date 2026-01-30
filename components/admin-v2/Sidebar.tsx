@@ -29,6 +29,7 @@ export default function AdminSidebar() {
     { href: '/admin-v2/content/testimonials', label: 'Testimonials', icon: '', section: 'Content' },
     { href: '/admin-v2/content/seo', label: 'SEO Settings', icon: '', section: 'Content' },
     { href: '/admin-v2/ai-models', label: 'AI Models', icon: '', section: 'AI/LLM Systems' },
+    { href: '/admin-v2/rate-limits', label: 'Rate Limits', icon: '', section: 'AI/LLM Systems' },
     { href: '/admin-v2/ai-performance', label: 'AI Performance', icon: '', section: 'AI/LLM Systems' },
     { href: '/admin-v2/usage', label: 'Usage & Costs', icon: '', section: 'AI/LLM Systems' },
     { href: '/admin-v2/ai-training', label: 'Training Data', icon: '', section: 'AI/LLM Systems' },
