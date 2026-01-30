@@ -4,6 +4,7 @@ import { deepseekClient } from '@/lib/api/deepseek'
 import { krogerClient, NormalizedKrogerProduct } from '@/lib/api/kroger'
 import { compareShoppingList, getAggregatedPrices } from '@/lib/services/price-aggregator'
 import { geocodeLocation } from '@/lib/services/geocoding'
+import { searchGroceryPrices } from '@/lib/api/grocery-prices-rapidapi'
 
 /**
  * Save comparison to database and update user savings
@@ -369,7 +370,46 @@ async function analyzeWithKroger(
   const itemsWithoutPrices = productResults.filter(p => p.price === null)
   const total = itemsWithPrices.reduce((sum, p) => sum + (p.price || 0), 0)
 
-  // Step 4: Calculate distances for each store
+  // Step 4: Search RapidAPI Grocery Prices (Amazon & Walmart)
+  const rapidApiResults: { amazon: any[], walmart: any[] } = { amazon: [], walmart: [] }
+  try {
+    console.log('[ListAnalyze] Searching RapidAPI Grocery Prices')
+    const rapidPromises = items.map(async (item) => {
+      try {
+        const result = await searchGroceryPrices(item, { limit: 1 })
+        if (result.success && result.products.length > 0) {
+          return {
+            userInput: item,
+            product: result.products[0],
+            price: result.products[0].price || null
+          }
+        }
+        return { userInput: item, product: null, price: null }
+      } catch (error) {
+        console.error(`[ListAnalyze] RapidAPI search failed for ${item}:`, error)
+        return { userInput: item, product: null, price: null }
+      }
+    })
+
+    const rapidResults = await Promise.all(rapidPromises)
+
+    // Separate by retailer
+    for (const result of rapidResults) {
+      if (result.product) {
+        if (result.product.retailer?.toLowerCase().includes('amazon')) {
+          rapidApiResults.amazon.push(result)
+        } else if (result.product.retailer?.toLowerCase().includes('walmart')) {
+          rapidApiResults.walmart.push(result)
+        }
+      }
+    }
+
+    console.log('[ListAnalyze] RapidAPI results: Amazon:', rapidApiResults.amazon.length, 'Walmart:', rapidApiResults.walmart.length)
+  } catch (rapidError: any) {
+    console.error('[ListAnalyze] RapidAPI search failed:', rapidError.message)
+  }
+
+  // Step 5: Calculate distances for each store
   const userCoords = coordinates // Use the geocoded coordinates from above
   console.log('[ListAnalyze] User coordinates:', userCoords)
 
@@ -408,8 +448,90 @@ async function analyzeWithKroger(
     return parseFloat(a.distance) - parseFloat(b.distance)
   })
 
-  // Best option is the closest store with most items
-  const bestOptionStore = storeResults[0]
+  // Add Amazon results if available
+  if (rapidApiResults.amazon.length > 0) {
+    const amazonTotal = rapidApiResults.amazon.reduce((sum, r) => sum + (r.price || 0), 0)
+    const amazonItems = items.map(item => {
+      const found = rapidApiResults.amazon.find(r => r.userInput === item)
+      return {
+        userInput: item,
+        product: found?.product ? {
+          id: found.product.id || '',
+          name: found.product.name || item,
+          brand: found.product.brand || null,
+          price: { regular: found.product.price, sale: null },
+          size: found.product.size || null,
+          imageUrl: found.product.image_url || null,
+          upc: null,
+        } : null,
+        price: found?.price || null,
+      }
+    })
+
+    storeResults.push({
+      storeId: 'amazon',
+      storeName: 'Amazon',
+      retailer: 'Amazon',
+      distance: null,
+      address: 'Online',
+      items: amazonItems,
+      total: amazonTotal,
+      itemsFound: rapidApiResults.amazon.length,
+      itemsMissing: items.length - rapidApiResults.amazon.length,
+    })
+  }
+
+  // Add Walmart results if available
+  if (rapidApiResults.walmart.length > 0) {
+    const walmartTotal = rapidApiResults.walmart.reduce((sum, r) => sum + (r.price || 0), 0)
+    const walmartItems = items.map(item => {
+      const found = rapidApiResults.walmart.find(r => r.userInput === item)
+      return {
+        userInput: item,
+        product: found?.product ? {
+          id: found.product.id || '',
+          name: found.product.name || item,
+          brand: found.product.brand || null,
+          price: { regular: found.product.price, sale: null },
+          size: found.product.size || null,
+          imageUrl: found.product.image_url || null,
+          upc: null,
+        } : null,
+        price: found?.price || null,
+      }
+    })
+
+    storeResults.push({
+      storeId: 'walmart',
+      storeName: 'Walmart',
+      retailer: 'Walmart',
+      distance: null,
+      address: 'Online',
+      items: walmartItems,
+      total: walmartTotal,
+      itemsFound: rapidApiResults.walmart.length,
+      itemsMissing: items.length - rapidApiResults.walmart.length,
+    })
+  }
+
+  // Best option is the cheapest store with most items (prioritize Kroger stores with distance)
+  const bestOptionStore = storeResults.sort((a, b) => {
+    // Prioritize stores with prices
+    if (a.total === 0 && b.total > 0) return 1
+    if (b.total === 0 && a.total > 0) return -1
+
+    // Then by price (lowest first)
+    if (a.total !== b.total) return a.total - b.total
+
+    // Then by distance (closest first) for physical stores
+    if (a.distance && b.distance) {
+      return parseFloat(a.distance) - parseFloat(b.distance)
+    }
+    if (a.distance && !b.distance) return -1 // Prefer physical stores
+    if (!a.distance && b.distance) return 1
+
+    return 0
+  })[0]
 
   const result = {
     success: true,
@@ -450,8 +572,8 @@ async function analyzeWithKroger(
       totalItems: items.length,
       itemsFound: itemsWithPrices.length,
       itemsMissing: itemsWithoutPrices.length,
-      estimatedTotal: total,
-      storesSearched: stores.length,
+      estimatedTotal: bestOptionStore?.total || total,
+      storesSearched: storeResults.length,
     },
   }
 
