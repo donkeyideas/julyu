@@ -117,9 +117,11 @@ export async function searchTescoProducts(query: string, page: number = 1, limit
   error?: string
   rateLimitInfo?: any
 }> {
+  // Import rate limiter functions
+  const { canMakeApiCall, trackApiCall } = await import('@/lib/services/rate-limiter')
+
   try {
     // Check rate limit first
-    const { canMakeApiCall, trackApiCall } = await import('@/lib/services/rate-limiter')
     const rateLimitCheck = await canMakeApiCall('tesco')
 
     if (!rateLimitCheck.allowed) {
@@ -201,9 +203,11 @@ export async function getTescoProduct(tpnb: string): Promise<{
   error?: string
   rateLimitInfo?: any
 }> {
+  // Import rate limiter functions
+  const { canMakeApiCall, trackApiCall } = await import('@/lib/services/rate-limiter')
+
   try {
     // Check rate limit
-    const { canMakeApiCall, trackApiCall } = await import('@/lib/services/rate-limiter')
     const rateLimitCheck = await canMakeApiCall('tesco')
 
     if (!rateLimitCheck.allowed) {

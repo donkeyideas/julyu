@@ -124,9 +124,11 @@ export async function searchGroceryPrices(
   error?: string
   rateLimitInfo?: any
 }> {
+  // Import rate limiter functions
+  const { canMakeApiCall, trackApiCall } = await import('@/lib/services/rate-limiter')
+
   try {
     // Check rate limit first
-    const { canMakeApiCall, trackApiCall } = await import('@/lib/services/rate-limiter')
     const rateLimitCheck = await canMakeApiCall('grocery-prices')
 
     if (!rateLimitCheck.allowed) {
