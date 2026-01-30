@@ -396,9 +396,9 @@ async function analyzeWithKroger(
     // Separate by retailer
     for (const result of rapidResults) {
       if (result.product) {
-        if (result.product.retailer?.toLowerCase().includes('amazon')) {
+        if (result.product.store?.toLowerCase().includes('amazon')) {
           rapidApiResults.amazon.push(result)
-        } else if (result.product.retailer?.toLowerCase().includes('walmart')) {
+        } else if (result.product.store?.toLowerCase().includes('walmart')) {
           rapidApiResults.walmart.push(result)
         }
       }
@@ -456,12 +456,12 @@ async function analyzeWithKroger(
       return {
         userInput: item,
         product: found?.product ? {
-          id: found.product.id || '',
-          name: found.product.name || item,
+          id: found.product.product_id || '',
+          name: found.product.title || item,
           brand: found.product.brand || null,
           price: { regular: found.product.price, sale: null },
-          size: found.product.size || null,
-          imageUrl: found.product.image_url || null,
+          size: null,
+          imageUrl: found.product.image || null,
           upc: null,
         } : null,
         price: found?.price || null,
@@ -489,12 +489,12 @@ async function analyzeWithKroger(
       return {
         userInput: item,
         product: found?.product ? {
-          id: found.product.id || '',
-          name: found.product.name || item,
+          id: found.product.product_id || '',
+          name: found.product.title || item,
           brand: found.product.brand || null,
           price: { regular: found.product.price, sale: null },
-          size: found.product.size || null,
-          imageUrl: found.product.image_url || null,
+          size: null,
+          imageUrl: found.product.image || null,
           upc: null,
         } : null,
         price: found?.price || null,
