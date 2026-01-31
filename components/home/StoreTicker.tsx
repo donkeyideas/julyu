@@ -46,8 +46,8 @@ export default function StoreTicker() {
     // Get the width of one complete set of logos
     const setWidth = firstSet.offsetWidth
 
-    // Move 1 pixel per frame (adjust speed here)
-    positionRef.current += 0.5
+    // Move pixels per frame (adjust speed here - lower = slower)
+    positionRef.current += 0.3
 
     // Reset position seamlessly when we've scrolled past the first set
     if (positionRef.current >= setWidth) {
