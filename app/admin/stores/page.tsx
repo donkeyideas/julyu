@@ -77,6 +77,8 @@ export default function AllStoresPage() {
         await loadStores()
         setAlertModal({ open: true, title: 'Success', message: `${storeName} has been deleted successfully.`, type: 'success' })
       } else {
+        // Refresh the list in case the item was already deleted
+        await loadStores()
         setAlertModal({ open: true, title: 'Delete Failed', message: data.error || data.details || 'Unknown error occurred', type: 'error' })
       }
     } catch (error) {
@@ -119,12 +121,24 @@ export default function AllStoresPage() {
           <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>All Stores</h1>
           <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>Manage all store owners and locations</p>
         </div>
-        <Link
-          href="/admin/stores/applications"
-          className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition"
-        >
-          View Applications
-        </Link>
+        <div className="flex gap-4">
+          <button
+            onClick={() => {
+              setLoading(true)
+              loadStores()
+            }}
+            className="px-4 py-3 rounded-lg font-semibold transition"
+            style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
+          >
+            Refresh
+          </button>
+          <Link
+            href="/admin/stores/applications"
+            className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition"
+          >
+            View Applications
+          </Link>
+        </div>
       </div>
 
       {/* Stats */}
