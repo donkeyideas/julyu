@@ -6,7 +6,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const authClient = createServerClient()
+    const authClient = await createServerClient()
     const { data: { user } } = await authClient.auth.getUser()
 
     // Check for Firebase user ID in header (for Google sign-in users)
@@ -20,7 +20,7 @@ export async function GET(
     }
 
     // Use service role client for database operations
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     // Verify user is participant
     const { data: conversation, error: convError } = await supabase
@@ -83,7 +83,7 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const authClient = createServerClient()
+    const authClient = await createServerClient()
     const { data: { user } } = await authClient.auth.getUser()
 
     // Check for Firebase user ID in header (for Google sign-in users)
@@ -104,7 +104,7 @@ export async function POST(
     }
 
     // Use service role client for database operations
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     // Verify user is participant
     const { data: conversation, error: convError } = await supabase
@@ -189,7 +189,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const authClient = createServerClient()
+    const authClient = await createServerClient()
     const { data: { user } } = await authClient.auth.getUser()
 
     const firebaseUserId = request.headers.get('x-user-id')
@@ -201,7 +201,7 @@ export async function PATCH(
     }
 
     const { typing } = await request.json()
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     // Verify user is participant
     const { data: conversation, error: convError } = await supabase

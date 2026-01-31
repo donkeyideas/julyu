@@ -4,7 +4,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server'
 // GET - List all commission tiers
 export async function GET() {
   try {
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     const { data: tiers, error } = await supabase
       .from('commission_tiers')
@@ -26,7 +26,7 @@ export async function GET() {
 // POST - Create a new commission tier
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
     const body = await request.json()
 
     const { name, description, commission_percentage, min_monthly_orders, min_monthly_revenue, features, is_default } = body
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update a commission tier
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
     const body = await request.json()
 
     const { id, name, description, commission_percentage, min_monthly_orders, min_monthly_revenue, features, is_active, is_default } = body

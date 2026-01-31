@@ -8,7 +8,7 @@ export async function GET(
 ) {
   try {
     const { id } = params
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     const firebaseUserId = request.headers.get('x-user-id')
@@ -18,7 +18,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const dbClient = createServiceRoleClient()
+    const dbClient = createServiceRoleClient() as any
 
     const { data: alert, error } = await dbClient
       .from('price_alerts')
@@ -57,7 +57,7 @@ export async function PUT(
 ) {
   try {
     const { id } = params
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     const firebaseUserId = request.headers.get('x-user-id')
@@ -71,7 +71,7 @@ export async function PUT(
     const userName = user?.user_metadata?.full_name || request.headers.get('x-user-name')
     await ensureUserExists(userId, userEmail, userName as string | null)
 
-    const dbClient = createServiceRoleClient()
+    const dbClient = createServiceRoleClient() as any
 
     // Verify ownership
     const { data: existing, error: existError } = await dbClient
@@ -140,7 +140,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = params
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     const firebaseUserId = request.headers.get('x-user-id')
@@ -150,7 +150,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const dbClient = createServiceRoleClient()
+    const dbClient = createServiceRoleClient() as any
 
     // Hard delete
     const { error } = await dbClient

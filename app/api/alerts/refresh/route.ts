@@ -5,7 +5,7 @@ import { spoonacularClient } from '@/lib/api/spoonacular'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     const firebaseUserId = request.headers.get('x-user-id')
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     const userName = user?.user_metadata?.full_name || request.headers.get('x-user-name')
     await ensureUserExists(userId, userEmail, userName as string | null)
 
-    const dbClient = createServiceRoleClient()
+    const dbClient = createServiceRoleClient() as any
 
     // Fetch all active alerts with product info
     const { data: alerts, error: fetchError } = await dbClient

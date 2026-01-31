@@ -7,7 +7,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabaseAdmin = createServiceRoleClient()
+    const supabaseAdmin = createServiceRoleClient() as any
     const { id } = await params
 
     // Get store owner details first

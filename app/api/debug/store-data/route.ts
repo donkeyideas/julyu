@@ -3,7 +3,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabaseAdmin = createServiceRoleClient()
+    const supabaseAdmin = createServiceRoleClient() as any
 
     // Check store owners
     const { data: owners, error: ownersError } = await supabaseAdmin

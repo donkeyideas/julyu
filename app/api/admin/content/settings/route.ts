@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const key = searchParams.get('key')
 
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
 
     if (key) {
       const { data, error } = await supabase
@@ -48,7 +48,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Key is required' }, { status: 400 })
     }
 
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
 
     // Upsert the setting
     const { error } = await supabase
@@ -83,7 +83,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Key is required' }, { status: 400 })
     }
 
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
 
     const { error } = await supabase
       .from('site_settings')

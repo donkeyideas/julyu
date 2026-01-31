@@ -14,7 +14,7 @@ type TrainingDataRecord = {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
     const body = await request.json()
     const { use_case, validated_only, format = 'jsonl' } = body
 
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
 // Get export history
 export async function GET() {
   try {
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     const { data: exports, error } = await supabase
       .from('training_data_exports')

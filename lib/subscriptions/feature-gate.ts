@@ -15,7 +15,7 @@ const CACHE_TTL_MS = 30_000 // 30 seconds
  * Falls back to the free plan if no subscription exists.
  */
 export async function getUserPlan(userId: string): Promise<SubscriptionPlan> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   // Try to get the user's active subscription with joined plan
   const { data: subscription } = await supabase

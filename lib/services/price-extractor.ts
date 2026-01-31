@@ -52,7 +52,7 @@ export async function extractPricesFromReceipt(
   userId: string,
   ocrResult: ReceiptOCRResult
 ): Promise<ExtractionResult> {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
   const errors: string[] = []
   let pricesUpdated = 0
   let newProductsCreated = 0

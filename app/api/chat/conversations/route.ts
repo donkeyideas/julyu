@@ -12,7 +12,7 @@ interface ConversationRow {
 
 export async function GET(request: NextRequest) {
   try {
-    const authClient = createServerClient()
+    const authClient = await createServerClient()
     const { data: { user } } = await authClient.auth.getUser()
 
     // Check for Firebase user ID in header (for Google sign-in users)
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Use service role client for database operations (bypasses RLS)
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     // Fetch conversations where user is a participant
     const { data: conversations, error } = await supabase
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
   let requestBody: { participant_id?: string; participant_email?: string; participant_name?: string } = {}
 
   try {
-    const authClient = createServerClient()
+    const authClient = await createServerClient()
     const { data: { user } } = await authClient.auth.getUser()
 
     // Check for Firebase user ID in header (for Google sign-in users)
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Use service role client for database operations (bypasses RLS)
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     // Check if conversation already exists between these two users
     const { data: existing, error: existingError } = await supabase

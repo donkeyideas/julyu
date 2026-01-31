@@ -47,7 +47,7 @@ interface CollectionResult {
 async function collectProductMatchCorrections(
   sinceDate: string
 ): Promise<TrainingPair[]> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const pairs: TrainingPair[] = []
 
   // From receipt_items where user corrected the match
@@ -129,7 +129,7 @@ async function collectProductMatchCorrections(
  * Collect training pairs from chat conversations with user ratings.
  */
 async function collectChatQuality(sinceDate: string): Promise<TrainingPair[]> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const pairs: TrainingPair[] = []
 
   // Get feedback with conversation data
@@ -190,7 +190,7 @@ async function collectChatQuality(sinceDate: string): Promise<TrainingPair[]> {
  * Collect training pairs from price alert effectiveness.
  */
 async function collectAlertEffectiveness(sinceDate: string): Promise<TrainingPair[]> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const pairs: TrainingPair[] = []
 
   // Get triggered alerts and whether the user acted on them
@@ -243,7 +243,7 @@ async function collectAlertEffectiveness(sinceDate: string): Promise<TrainingPai
  * Collect training pairs from product substitutions.
  */
 async function collectSubstitutions(sinceDate: string): Promise<TrainingPair[]> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const pairs: TrainingPair[] = []
 
   const { data: outcomes } = await supabase
@@ -337,7 +337,7 @@ export async function collectTrainingData(
   }
 
   // Store collected pairs in ai_training_data
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   let storedCount = 0
 
   for (const pair of allPairs) {
@@ -365,7 +365,7 @@ export async function getTrainingDataStats(): Promise<{
   byLabel: Record<string, number>
   recentCount: number
 }> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   const { data: allData } = await supabase
     .from('ai_training_data')

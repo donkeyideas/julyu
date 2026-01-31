@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     // Use anon client for auth checks
     const supabase = await createServerClient()
     // Use service role client for database operations (bypasses RLS)
-    const supabaseAdmin = createServiceRoleClient()
+    const supabaseAdmin = createServiceRoleClient() as any
 
     // Parse request body first to get email
     const body = await request.json()

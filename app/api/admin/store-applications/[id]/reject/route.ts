@@ -7,7 +7,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabaseAdmin = createServiceRoleClient()
+    const supabaseAdmin = createServiceRoleClient() as any
     const { id } = await params
     const body = await request.json()
     const { reason } = body

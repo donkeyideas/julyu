@@ -10,7 +10,7 @@ async function execute(
   params: Record<string, unknown>,
   userId: string
 ): Promise<ActionResult> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   const productName = params.product as string
   const targetPrice = params.targetPrice as number

@@ -37,7 +37,7 @@ export async function authenticateB2B(request: NextRequest): Promise<AuthResult>
     return { authenticated: false, error: 'Invalid API key format' }
   }
 
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   const { data, error } = await supabase
     .from('b2b_clients')
@@ -72,7 +72,7 @@ export async function logB2BCall(
   responseSize: number,
   latencyMs: number
 ): Promise<void> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   // Log the API call
   await supabase.from('b2b_api_logs').insert({

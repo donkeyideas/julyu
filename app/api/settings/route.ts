@@ -3,7 +3,7 @@ import { createServerClient, createServiceRoleClient } from '@/lib/supabase/serv
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     // Check for Firebase user ID in header (for Google sign-in users)
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Use service role client to bypass RLS (needed for Firebase/Google users)
-    const adminSupabase = createServiceRoleClient()
+    const adminSupabase = createServiceRoleClient() as any
 
     // Get user preferences
     const { data: preferences, error } = await adminSupabase
@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     // Check for Firebase user ID in header (for Google sign-in users)
@@ -120,7 +120,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Use service role client to bypass RLS (needed for Firebase/Google users)
-    const adminSupabase = createServiceRoleClient()
+    const adminSupabase = createServiceRoleClient() as any
 
     const body = await request.json()
     const {

@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     let userName: string | null = null
 
     try {
-      const supabase = createServerClient()
+      const supabase = await createServerClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         userId = user.id
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
       console.error('[Alerts] Feature gate check failed (allowing access):', featureError)
     }
 
-    const dbClient = createServiceRoleClient()
+    const dbClient = createServiceRoleClient() as any
 
     // Try query with products join first
     const { data: alerts, error } = await dbClient
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
     let userName: string | null = null
 
     try {
-      const supabase = createServerClient()
+      const supabase = await createServerClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         userId = user.id
@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Product name or ID is required' }, { status: 400 })
     }
 
-    const dbClient = createServiceRoleClient()
+    const dbClient = createServiceRoleClient() as any
 
     // Find or create product
     console.log('[Alerts] Finding or creating product...')

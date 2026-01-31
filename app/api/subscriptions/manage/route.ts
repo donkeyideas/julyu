@@ -20,12 +20,12 @@ function resolveUserId(request: NextRequest, user: { id: string } | null): strin
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
     const userId = resolveUserId(request, user)
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const adminSupabase = createServiceRoleClient()
+    const adminSupabase = createServiceRoleClient() as any
 
     // Check for existing subscription
     let { data: subscription } = await adminSupabase
@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
     const userId = resolveUserId(request, user)
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { action } = body as { action: 'cancel' | 'reactivate' | 'portal' }
 
-    const adminSupabase = createServiceRoleClient()
+    const adminSupabase = createServiceRoleClient() as any
     const { data: subscription } = await adminSupabase
       .from('user_subscriptions')
       .select('*')

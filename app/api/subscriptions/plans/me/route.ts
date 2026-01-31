@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     let userId: string | null = null
 
     // Try Supabase auth
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (user) {
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     ])
 
     // Get subscription details
-    const adminSupabase = createServiceRoleClient()
+    const adminSupabase = createServiceRoleClient() as any
     const { data: subscription } = await adminSupabase
       .from('user_subscriptions')
       .select('*')

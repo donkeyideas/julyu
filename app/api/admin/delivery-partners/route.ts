@@ -18,7 +18,7 @@ interface PartnerRecord {
 // GET - List all delivery partners
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { searchParams } = new URL(request.url)
     const activeOnly = searchParams.get('active') === 'true'
 
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
 // POST - Create new delivery partner
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const body = await request.json()
 
     const {
@@ -184,7 +184,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update delivery partner
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const body = await request.json()
     const { id, ...updateFields } = body
 
@@ -249,7 +249,7 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete delivery partner
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 

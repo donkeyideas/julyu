@@ -8,7 +8,7 @@ export async function PUT(
 ) {
   try {
     const { id } = params
-    const authClient = createServerClient()
+    const authClient = await createServerClient()
     const { data: { user } } = await authClient.auth.getUser()
 
     // Check for Firebase user ID in header (for Google sign-in users)
@@ -21,7 +21,7 @@ export async function PUT(
     }
 
     // Use service role client for database operations (bypasses RLS)
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     const body = await request.json()
     const { action } = body // 'accept' or 'decline'
@@ -108,7 +108,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = params
-    const authClient = createServerClient()
+    const authClient = await createServerClient()
     const { data: { user } } = await authClient.auth.getUser()
 
     // Check for Firebase user ID in header (for Google sign-in users)
@@ -121,7 +121,7 @@ export async function DELETE(
     }
 
     // Use service role client for database operations (bypasses RLS)
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     // Delete the request (only if user is the sender)
     const { error } = await supabase

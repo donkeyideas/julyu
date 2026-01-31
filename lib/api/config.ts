@@ -69,7 +69,7 @@ export async function getApiKey(modelName: string): Promise<string | null> {
   try {
     // First try database (user-configured keys)
     try {
-      const supabase = createServerClient()
+      const supabase = await createServerClient()
       const { data: config, error: configError } = await supabase
         .from('ai_model_config')
         .select('api_key_encrypted, is_active')

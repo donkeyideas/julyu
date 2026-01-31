@@ -64,7 +64,7 @@ type AlertRow = {
  * All queries are parallelized for performance.
  */
 export async function buildUserContext(userId: string): Promise<UserContext> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   const now = new Date()
   const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()

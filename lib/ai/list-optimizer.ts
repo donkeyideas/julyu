@@ -60,7 +60,7 @@ export async function optimizeShoppingList(
   ingredients: RawIngredient[],
   userId: string
 ): Promise<OptimizedList> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const optimizedItems: OptimizedItem[] = []
   const storeMap = new Map<string, { name: string; total: number; available: number }>()
 
@@ -194,7 +194,7 @@ export async function saveOptimizedList(
   listName: string,
   items: OptimizedItem[]
 ): Promise<{ listId: string | null; error: string | null }> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   const { data: list, error: listError } = await supabase
     .from('shopping_lists')

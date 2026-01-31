@@ -9,7 +9,7 @@ type TrainingDataStat = {
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
 // Update training data record (validate, add notes, feedback)
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
     const body = await request.json()
     const { id, validated, validation_notes, user_feedback, accuracy_score } = body
 
@@ -118,7 +118,7 @@ export async function PUT(request: NextRequest) {
 // Delete training data record
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 

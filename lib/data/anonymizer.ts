@@ -86,7 +86,7 @@ export async function getAnonymizedPrices(options: {
   region?: string
   weeks?: number
 }): Promise<AnonymizedPriceData[]> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const weeksBack = options.weeks ?? 4
   const cutoff = new Date(Date.now() - weeksBack * 7 * 24 * 60 * 60 * 1000).toISOString()
 
@@ -243,7 +243,7 @@ export async function getAnonymizedCategoryInsights(options: {
   region?: string
   weeks?: number
 }): Promise<AnonymizedCategoryInsight[]> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const weeksBack = options.weeks ?? 4
   const cutoff = new Date(Date.now() - weeksBack * 7 * 24 * 60 * 60 * 1000).toISOString()
 

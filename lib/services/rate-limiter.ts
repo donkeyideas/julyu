@@ -44,7 +44,7 @@ export async function canMakeApiCall(apiName: 'tesco' | 'grocery-prices'): Promi
   try {
     // Use service role client to bypass RLS for system operations
     const { createServiceRoleClient } = await import('@/lib/supabase/server')
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     // Check if API is enabled
     const { data: config } = await supabase
@@ -146,7 +146,7 @@ export async function trackApiCall(apiName: 'tesco' | 'grocery-prices', callSucc
   try {
     // Use service role client to bypass RLS for system operations
     const { createServiceRoleClient } = await import('@/lib/supabase/server')
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
     const today = new Date().toISOString().split('T')[0]
 
     // Get or create today's usage record
@@ -215,7 +215,7 @@ export async function getUsageStats(): Promise<{
  */
 export async function resetRateLimits(apiName?: 'tesco' | 'grocery-prices'): Promise<void> {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
 
     if (apiName) {
       // Reset specific API

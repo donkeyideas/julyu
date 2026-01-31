@@ -9,7 +9,7 @@ import * as XLSX from 'xlsx'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
     const firebaseUserId = request.headers.get('x-user-id')
     const userId = user?.id || firebaseUserId

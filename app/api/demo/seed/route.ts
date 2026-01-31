@@ -55,7 +55,7 @@ function variedPrice(basePrice: number): number {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     // Allow test mode
@@ -450,7 +450,7 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     const isTestMode = !process.env.NEXT_PUBLIC_SUPABASE_URL ||

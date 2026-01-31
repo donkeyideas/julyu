@@ -25,7 +25,7 @@ interface Receipt {
 }
 
 async function getReceipts() {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) return []
@@ -51,7 +51,7 @@ async function getReceipts() {
 }
 
 async function calculatePotentialSavings(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   receipt: Receipt
 ): Promise<number> {
   if (!receipt.ocr_result?.items || receipt.ocr_result.items.length === 0) {

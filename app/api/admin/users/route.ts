@@ -18,7 +18,7 @@ interface UserRecord {
 // GET - List all users (for admin dashboard)
 export async function GET() {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
 
     const { data: users, error } = await supabase
       .from('users')
@@ -57,7 +57,7 @@ export async function GET() {
 // PUT - Update user (for admin dashboard)
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const body = await request.json()
     const { id, full_name, phone, subscription_tier } = body
 

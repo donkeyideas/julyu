@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     let userName: string | null = null
 
     try {
-      const supabase = createServerClient()
+      const supabase = await createServerClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         userId = user.id
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create receipt record using service role client
-    const dbClient = createServiceRoleClient()
+    const dbClient = createServiceRoleClient() as any
 
     const { data: receipt, error: receiptError } = await dbClient
       .from('receipts')

@@ -13,7 +13,7 @@ import { invalidateFeatureCache } from '@/lib/subscriptions/feature-gate'
  * Handle checkout.session.completed — user just subscribed.
  */
 export async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const userId = session.metadata?.userId
   const planSlug = session.metadata?.planSlug
   const promoCodeId = session.metadata?.promoCodeId
@@ -91,7 +91,7 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session):
  * Handle customer.subscription.updated — status/period changes.
  */
 export async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   // Find the user subscription by stripe_subscription_id
   const { data: userSub } = await supabase
@@ -140,7 +140,7 @@ export async function handleSubscriptionUpdated(subscription: Stripe.Subscriptio
  * Handle customer.subscription.deleted — subscription canceled.
  */
 export async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   const { data: userSub } = await supabase
     .from('user_subscriptions')
@@ -173,7 +173,7 @@ export async function handleSubscriptionDeleted(subscription: Stripe.Subscriptio
  * Handle invoice.payment_failed — mark as past_due.
  */
 export async function handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   // In Stripe v20+, subscription is under parent.subscription_details
   const subRef = invoice.parent?.subscription_details?.subscription

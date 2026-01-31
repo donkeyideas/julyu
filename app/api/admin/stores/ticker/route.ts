@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 // GET - Returns all stores (including inactive) for admin
 export async function GET() {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
 
     const { data, error } = await supabase
       .from('store_ticker')
@@ -27,7 +27,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
 
     const { name, logo_url, website_url, display_order, is_active, parent_network } = body
 
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
 
     const { id, name, logo_url, website_url, display_order, is_active, parent_network } = body
 
@@ -106,7 +106,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Store ID is required' }, { status: 400 })
     }
 
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
 
     const { error } = await supabase
       .from('store_ticker')

@@ -33,7 +33,7 @@ export interface UserDataExport {
  * Export all data for a user (GDPR right of access).
  */
 export async function exportUserData(userId: string): Promise<UserDataExport> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   // Run all queries in parallel for speed
   const [

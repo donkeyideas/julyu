@@ -12,7 +12,7 @@ import { deleteUserData, previewUserData } from '@/lib/privacy/data-deletion'
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
     const firebaseUserId = request.headers.get('x-user-id')
     const userId = user?.id || firebaseUserId
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
     const firebaseUserId = request.headers.get('x-user-id')
     const userId = user?.id || firebaseUserId

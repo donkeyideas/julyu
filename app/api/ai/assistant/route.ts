@@ -27,7 +27,7 @@ async function logTrainingData(params: {
   conversationId?: string | null
 }) {
   try {
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
     await supabase.from('ai_training_data').insert({
       user_id: params.userId,
       input_text: params.inputText,
@@ -45,7 +45,7 @@ async function logTrainingData(params: {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     // Check for Firebase user ID in header (for Google sign-in users)
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
       if (!convId) {
         console.error('[AI Assistant] createConversation returned null, trying direct insert for user:', userId)
         try {
-          const dbClient = createServiceRoleClient()
+          const dbClient = createServiceRoleClient() as any
           const fallbackTitle = lastUserMessage.content.slice(0, 60).replace(/\s+/g, ' ').trim() || 'New Conversation'
           const { data: directConv, error: directError } = await dbClient
             .from('ai_conversations')
@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
         console.error('[AI Assistant] Failed to save conversation memory:', memoryError)
         // Fallback: try direct message inserts
         try {
-          const dbClient = createServiceRoleClient()
+          const dbClient = createServiceRoleClient() as any
           await dbClient.from('ai_messages').insert([
             { conversation_id: convId, role: 'user', content: lastUserMessage.content },
             { conversation_id: convId, role: 'assistant', content: response, metadata: { tokens, actions: actionResults.length > 0 ? actionResults : undefined } },
@@ -209,7 +209,7 @@ export async function POST(request: NextRequest) {
 // Get conversation history
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     // Check for Firebase user ID in header (for Google sign-in users)
@@ -221,7 +221,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Use service role client for database operations (bypasses RLS for Firebase users)
-    const dbClient = createServiceRoleClient()
+    const dbClient = createServiceRoleClient() as any
 
     const { searchParams } = new URL(request.url)
     const conversationId = searchParams.get('conversation_id')

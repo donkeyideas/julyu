@@ -20,7 +20,7 @@ interface PartnerRecord {
 // GET - List active delivery partners for frontend
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { searchParams } = new URL(request.url)
     const retailer = searchParams.get('retailer')?.toLowerCase()
 

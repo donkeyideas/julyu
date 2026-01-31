@@ -8,7 +8,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
     const { searchParams } = new URL(request.url)
     const days = parseInt(searchParams.get('days') || '30', 10)
     const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()

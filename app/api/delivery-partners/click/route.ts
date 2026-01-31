@@ -22,7 +22,7 @@ interface ClickRequest {
 // POST - Log a click and generate deep link
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const body: ClickRequest = await request.json()
     const { partnerId, store, items, sessionId } = body
 

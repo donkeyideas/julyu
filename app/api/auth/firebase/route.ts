@@ -3,7 +3,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server'
 
 // Try to insert user with progressively fewer columns if some don't exist
 async function createUserWithFallback(
-  supabase: ReturnType<typeof createServiceRoleClient>,
+  supabase: any,
   userData: {
     email: string
     full_name: string
@@ -61,7 +61,7 @@ async function createUserWithFallback(
 }
 
 async function updateUserWithFallback(
-  supabase: ReturnType<typeof createServiceRoleClient>,
+  supabase: any,
   userId: string,
   userData: {
     full_name?: string
@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 })
     }
 
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     // Check if user already exists by email
     const { data: existingUser, error: findError } = await supabase

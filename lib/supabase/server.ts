@@ -10,8 +10,8 @@ export const createServiceRoleClient = () => {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
   if (!url || !serviceKey) {
-    console.warn('[Supabase] Service role key not configured, using anon client')
-    return createServerClient()
+    console.error('[Supabase] CRITICAL: Service role key not configured! URL:', !!url, 'Key:', !!serviceKey)
+    throw new Error('Service role key is required for admin operations')
   }
 
   return createClient<Database>(url, serviceKey, {
@@ -22,7 +22,7 @@ export const createServiceRoleClient = () => {
   })
 }
 
-export const createServerClient = () => {
+export const createServerClient = async () => {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
@@ -39,8 +39,8 @@ export const createServerClient = () => {
     return createTestServerClient()
   }
 
-  // Use real Supabase
-  const cookieStore = cookies()
+  // Use real Supabase - await cookies() in Next.js 15
+  const cookieStore = await cookies()
 
   return createSupabaseServerClient<Database>(
     url,

@@ -23,7 +23,7 @@ export async function uploadReceiptImage(
   mimeType: string = 'image/jpeg'
 ): Promise<UploadResult> {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
 
     // Generate unique filename
     const timestamp = Date.now()
@@ -70,7 +70,7 @@ export async function uploadReceiptImage(
  */
 export async function deleteReceiptImage(path: string): Promise<boolean> {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
 
     const { error } = await supabase.storage
       .from(BUCKET_NAME)
@@ -96,7 +96,7 @@ export async function getReceiptSignedUrl(
   expiresIn: number = 3600
 ): Promise<string | null> {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
 
     const { data, error } = await supabase.storage
       .from(BUCKET_NAME)

@@ -9,7 +9,7 @@ import type { SubscriptionPlan, FeatureKey } from '@/shared/types/subscriptions'
  * Get all active plans, sorted by sort_order (for pricing page).
  */
 export async function getActivePlans(): Promise<SubscriptionPlan[]> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const { data, error } = await supabase
     .from('subscription_plans')
     .select('*')
@@ -24,7 +24,7 @@ export async function getActivePlans(): Promise<SubscriptionPlan[]> {
  * Get all plans including inactive (for admin).
  */
 export async function getAllPlans(): Promise<SubscriptionPlan[]> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const { data, error } = await supabase
     .from('subscription_plans')
     .select('*')
@@ -38,7 +38,7 @@ export async function getAllPlans(): Promise<SubscriptionPlan[]> {
  * Get a plan by its slug.
  */
 export async function getPlanBySlug(slug: string): Promise<SubscriptionPlan | null> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const { data, error } = await supabase
     .from('subscription_plans')
     .select('*')
@@ -53,7 +53,7 @@ export async function getPlanBySlug(slug: string): Promise<SubscriptionPlan | nu
  * Get a plan by its ID.
  */
 export async function getPlanById(id: string): Promise<SubscriptionPlan | null> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const { data, error } = await supabase
     .from('subscription_plans')
     .select('*')
@@ -90,7 +90,7 @@ export async function updatePlan(
     throw new Error(`Invalid Stripe Price ID. Must start with "price_" (you may have entered a Product ID starting with "prod_"). Go to Stripe > Product > click the price row to copy the Price ID.`)
   }
 
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const { data, error } = await supabase
     .from('subscription_plans')
     .update({ ...updates, updated_at: new Date().toISOString() })

@@ -41,7 +41,7 @@ interface AlertRow {
 export async function contextualizeAlert(
   alert: AlertRow
 ): Promise<AlertContext> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const productName = alert.products?.name || 'Unknown Product'
 
   const defaultContext: AlertContext = {
@@ -156,7 +156,7 @@ export async function contextualizeAlert(
 export async function contextualizeTriggeredAlerts(
   userId: string
 ): Promise<AlertContext[]> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   const { data: alerts } = await supabase
     .from('price_alerts')

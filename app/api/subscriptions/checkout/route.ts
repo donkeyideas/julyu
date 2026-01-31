@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     let userEmail: string | null = null
 
     // Try Supabase auth
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (user) {
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 
     // Look up email from DB if not available from auth
     if (!userEmail) {
-      const adminSupabase = createServiceRoleClient()
+      const adminSupabase = createServiceRoleClient() as any
       const { data: userData } = await adminSupabase
         .from('users')
         .select('email')

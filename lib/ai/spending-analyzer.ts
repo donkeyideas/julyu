@@ -49,7 +49,7 @@ export async function analyzeSpending(
   userId: string,
   days: number = 90
 ): Promise<SpendingAnalysis> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
 
   // Get receipts with store info

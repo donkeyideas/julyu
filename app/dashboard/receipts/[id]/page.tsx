@@ -15,7 +15,7 @@ interface ItemWithSavings extends ReceiptItem {
 }
 
 async function getReceipt(id: string) {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) return null

@@ -18,7 +18,7 @@ const VALID_ACTIONS: ActionType[] = [
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     const firebaseUserId = request.headers.get('x-user-id')

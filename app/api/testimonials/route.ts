@@ -4,7 +4,7 @@ import { createServerClient } from '@/lib/supabase/server'
 // Public API - no authentication required
 export async function GET() {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
 
     // Check if testimonials section is enabled
     const { data: setting } = await supabase

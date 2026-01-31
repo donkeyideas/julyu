@@ -11,7 +11,7 @@ const VALID_CONSENT_TYPES: ConsentType[] = ['data_aggregation', 'ai_training', '
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
     const firebaseUserId = request.headers.get('x-user-id')
     const userId = user?.id || firebaseUserId
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
     const firebaseUserId = request.headers.get('x-user-id')
     const userId = user?.id || firebaseUserId

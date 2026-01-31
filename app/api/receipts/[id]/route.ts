@@ -12,7 +12,7 @@ export async function GET(
     let userId: string | null = null
 
     try {
-      const supabase = createServerClient()
+      const supabase = await createServerClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         userId = user.id
@@ -29,7 +29,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const dbClient = createServiceRoleClient()
+    const dbClient = createServiceRoleClient() as any
 
     const { data: receipt, error } = await dbClient
       .from('receipts')

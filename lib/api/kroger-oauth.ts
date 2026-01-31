@@ -186,7 +186,7 @@ export async function refreshAccessToken(refreshToken: string): Promise<KrogerTo
  * Store user's OAuth tokens in database
  */
 export async function storeUserToken(userId: string, tokenResponse: KrogerTokenResponse): Promise<void> {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
 
   const encryptedAccess = encryptToken(tokenResponse.access_token)
   const encryptedRefresh = encryptToken(tokenResponse.refresh_token)
@@ -217,7 +217,7 @@ export async function storeUserToken(userId: string, tokenResponse: KrogerTokenR
  * Get user's OAuth token from database (and refresh if expired)
  */
 export async function getUserToken(userId: string): Promise<string | null> {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
 
   const { data, error } = await supabase
     .from('kroger_user_tokens')
@@ -263,7 +263,7 @@ export async function getUserToken(userId: string): Promise<string | null> {
  * Check if user has connected their Kroger account
  */
 export async function hasKrogerConnection(userId: string): Promise<boolean> {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
 
   const { data, error } = await supabase
     .from('kroger_user_tokens')
@@ -278,7 +278,7 @@ export async function hasKrogerConnection(userId: string): Promise<boolean> {
  * Disconnect user's Kroger account
  */
 export async function disconnectKrogerAccount(userId: string): Promise<void> {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
 
   await supabase
     .from('kroger_user_tokens')

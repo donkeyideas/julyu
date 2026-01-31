@@ -42,7 +42,7 @@ export async function getStripeClient(): Promise<Stripe> {
 
   if (!secretKey) {
     // Fallback: read from ai_model_config table (keys are stored encrypted)
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
     const { data } = await supabase
       .from('ai_model_config')
       .select('api_key_encrypted')
@@ -76,7 +76,7 @@ export async function getWebhookSecret(): Promise<string> {
   let secret = process.env.STRIPE_WEBHOOK_SECRET
 
   if (!secret) {
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
     const { data } = await supabase
       .from('ai_model_config')
       .select('api_key_encrypted')

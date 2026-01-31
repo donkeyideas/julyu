@@ -35,7 +35,7 @@ const DEFAULT_CONSENT: ConsentStatus = {
  * Get all consent records for a user.
  */
 export async function getUserConsent(userId: string): Promise<ConsentStatus> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   const { data: records } = await supabase
     .from('user_consent')
@@ -63,7 +63,7 @@ export async function updateConsent(
   granted: boolean,
   ipAddress?: string
 ): Promise<{ success: boolean; error?: string }> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   const now = new Date().toISOString()
 
@@ -118,7 +118,7 @@ export async function hasConsent(
   userId: string,
   consentType: ConsentType
 ): Promise<boolean> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   const { data } = await supabase
     .from('user_consent')
@@ -135,7 +135,7 @@ export async function hasConsent(
  * Revoke all consents for a user (used during account deletion).
  */
 export async function revokeAllConsent(userId: string): Promise<void> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const now = new Date().toISOString()
 
   await supabase

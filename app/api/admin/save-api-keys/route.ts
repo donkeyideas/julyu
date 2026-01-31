@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
     if (hasSupabase) {
       console.log('[API Key Save] Supabase configured - checking authentication')
       try {
-        const supabase = createServerClient()
+        const supabase = await createServerClient()
         const { data: { user }, error: authError } = await supabase.auth.getUser()
         
         // If auth fails or no user, but Supabase is configured, allow anyway
@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'At least one API key required' }, { status: 400 })
     }
 
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
 
     // Save DeepSeek API key
     if (deepseek) {
@@ -673,7 +673,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
 
     // Get API key configs (without decrypting - just check if they exist)
     const { data: configs, error } = await supabase

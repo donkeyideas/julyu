@@ -75,7 +75,7 @@ export async function deleteUserData(userId: string): Promise<{
   results: DeletionResult[]
   totalDeleted: number
 }> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const results: DeletionResult[] = []
   let totalDeleted = 0
 
@@ -219,7 +219,7 @@ export async function previewUserData(userId: string): Promise<{
   tables: Array<{ table: string; description: string; recordCount: number }>
   totalRecords: number
 }> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const tables: Array<{ table: string; description: string; recordCount: number }> = []
   let totalRecords = 0
 

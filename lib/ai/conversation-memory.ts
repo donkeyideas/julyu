@@ -34,7 +34,7 @@ export async function loadConversationMemory(
   conversationId: string,
   userId: string
 ): Promise<ConversationMemory> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   // Get message count
   const { data: allMessages } = await supabase
@@ -137,7 +137,7 @@ export async function updateConversationMemory(
   assistantResponse: string,
   metadata?: Record<string, unknown>
 ): Promise<void> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   // Store user message
   await supabase.from('ai_messages').insert({
@@ -173,7 +173,7 @@ export async function createConversation(
   userId: string,
   firstMessage: string
 ): Promise<string | null> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   // Use a simple title first to ensure conversation is created quickly
   // Title generation can be slow/flaky — don't let it block conversation creation
@@ -222,7 +222,7 @@ async function checkAndSummarize(
   conversationId: string,
   userId: string
 ): Promise<void> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   // Count messages
   const { data: messages } = await supabase
@@ -250,7 +250,7 @@ async function generateConversationSummary(
   messages: ConversationMessage[],
   userId: string
 ): Promise<string> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   // Build conversation text for summarization
   const conversationText = messages

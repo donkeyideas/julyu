@@ -14,7 +14,7 @@ function resolveUserId(request: NextRequest, user: { id: string } | null): strin
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
     const userId = resolveUserId(request, user)
 
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const adminSupabase = createServiceRoleClient()
+    const adminSupabase = createServiceRoleClient() as any
 
     // Get existing non-dismissed insights
     const { data: insights, error } = await adminSupabase
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
 // Dismiss an insight
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
     const userId = resolveUserId(request, user)
 
@@ -99,7 +99,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Missing insight_id' }, { status: 400 })
     }
 
-    const adminSupabase = createServiceRoleClient()
+    const adminSupabase = createServiceRoleClient() as any
 
     const { error } = await adminSupabase
       .from('ai_insights')
@@ -120,7 +120,7 @@ export async function PUT(request: NextRequest) {
 }
 
 async function generateUserInsights(
-  supabase: ReturnType<typeof createServiceRoleClient>,
+  supabase: any,
   userId: string
 ) {
   // Fetch all user data in parallel

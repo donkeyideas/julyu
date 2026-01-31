@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const { slug } = await params
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     // Fetch the page
     const { data: page, error: pageError } = await supabase
@@ -65,7 +65,7 @@ export async function PUT(
     const body = await request.json()
     const { page: pageData, sections: sectionsData } = body
 
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     // Get or create the page
     let { data: existingPage, error: fetchError } = await supabase
@@ -195,7 +195,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Section key is required' }, { status: 400 })
     }
 
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     // Get the page ID
     const { data: page, error: pageError } = await supabase

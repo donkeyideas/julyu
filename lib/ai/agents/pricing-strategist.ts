@@ -35,7 +35,7 @@ export interface PricingAnalysis {
  * Run pricing strategy analysis.
  */
 export async function analyzePricingStrategy(): Promise<PricingAnalysis> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
 
   // User counts by tier

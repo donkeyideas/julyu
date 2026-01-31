@@ -22,7 +22,7 @@ export interface ApiCallLog {
  */
 export async function logApiCall(log: ApiCallLog): Promise<void> {
   try {
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     // Sanitize request params - remove any potential secrets
     const sanitizedParams = log.requestParams
@@ -122,7 +122,7 @@ export async function getApiStats(options?: {
   endDate?: Date
   limit?: number
 }) {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   let query = supabase
     .from('api_call_logs')

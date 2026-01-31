@@ -16,7 +16,7 @@ export async function trackServerEvent(
   sessionId?: string
 ): Promise<void> {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     await supabase.from('user_events').insert({
       user_id: userId,
       event_type: eventType,
@@ -37,7 +37,7 @@ export async function trackBatchEvents(
   events: Array<{ eventType: string; eventData: Record<string, unknown>; sessionId?: string }>
 ): Promise<void> {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const rows = events.map(e => ({
       user_id: userId,
       event_type: e.eventType,

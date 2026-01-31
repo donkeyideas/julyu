@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceRoleClient, createServerClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabaseAdmin = createServiceRoleClient()
+    console.log('[Admin Store Applications] Starting fetch...')
+
+    const supabaseAdmin = createServiceRoleClient() as any
+    console.log('[Admin Store Applications] Service role client created')
 
     // Fetch all store applications with store owner and store details
     const { data: applications, error } = await supabaseAdmin
@@ -14,19 +17,25 @@ export async function GET(request: NextRequest) {
       `)
       .order('created_at', { ascending: false })
 
+    console.log('[Admin Store Applications] Query result:', {
+      count: applications?.length || 0,
+      error: error?.message || null
+    })
+
     if (error) {
-      console.error('Fetch applications error:', error)
+      console.error('[Admin Store Applications] Fetch error:', error)
       return NextResponse.json(
         { error: 'Failed to fetch applications', details: error.message },
         { status: 500 }
       )
     }
 
+    console.log('[Admin Store Applications] Returning', applications?.length || 0, 'applications')
     return NextResponse.json({ applications: applications || [] })
   } catch (error) {
-    console.error('Error loading applications:', error)
+    console.error('[Admin Store Applications] Error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

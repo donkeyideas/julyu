@@ -32,7 +32,7 @@ interface ClickRecord {
 // GET - Get delivery partner analytics
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { searchParams } = new URL(request.url)
 
     // Parse date range

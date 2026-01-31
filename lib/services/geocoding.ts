@@ -46,7 +46,7 @@ function normalizeLookupKey(input: string): string {
  */
 async function checkCache(lookupKey: string): Promise<GeocodeResult | null> {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const normalizedKey = normalizeLookupKey(lookupKey)
 
     const { data, error } = await supabase
@@ -83,7 +83,7 @@ async function saveToCache(
   result: GeocodeResult
 ): Promise<void> {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const normalizedKey = normalizeLookupKey(lookupKey)
 
     const { error } = await supabase

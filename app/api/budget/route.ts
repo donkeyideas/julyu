@@ -46,7 +46,7 @@ function categorizeItem(description: string): string {
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     // In test mode, allow requests even if auth fails

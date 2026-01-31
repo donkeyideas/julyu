@@ -70,7 +70,7 @@ export async function getCachedResponse(
 
   // 2. Check Supabase cache
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data, error } = await supabase
       .from('llm_cache')
       .select('response, expires_at')
@@ -121,7 +121,7 @@ export async function setCachedResponse(
 
   // 2. Store in Supabase (fire-and-forget)
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     await supabase
       .from('llm_cache')
       .upsert(
@@ -144,7 +144,7 @@ export async function setCachedResponse(
  */
 export async function clearExpiredCache(): Promise<number> {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data, error } = await supabase
       .from('llm_cache')
       .delete()

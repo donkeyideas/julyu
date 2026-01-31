@@ -9,7 +9,7 @@ import type { PromoCode } from '@/shared/types/subscriptions'
  * Get all promo codes (for admin).
  */
 export async function getPromoCodes(): Promise<PromoCode[]> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const { data, error } = await supabase
     .from('promo_codes')
     .select('*')
@@ -32,7 +32,7 @@ export async function createPromoCode(input: {
   valid_until?: string | null
   applicable_plans?: string[]
 }): Promise<PromoCode> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const { data, error } = await supabase
     .from('promo_codes')
     .insert({
@@ -69,7 +69,7 @@ export async function updatePromoCode(
     is_active: boolean
   }>
 ): Promise<PromoCode> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   const payload: Record<string, unknown> = { ...updates, updated_at: new Date().toISOString() }
   if (payload.code && typeof payload.code === 'string') {
@@ -91,7 +91,7 @@ export async function updatePromoCode(
  * Delete a promo code.
  */
 export async function deletePromoCode(id: string): Promise<void> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const { error } = await supabase.from('promo_codes').delete().eq('id', id)
   if (error) throw new Error(`Failed to delete promo code: ${error.message}`)
 }
@@ -104,7 +104,7 @@ export async function validatePromoCode(
   code: string,
   planSlug: string
 ): Promise<PromoCode> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const { data, error } = await supabase
     .from('promo_codes')
     .select('*')
@@ -145,7 +145,7 @@ export async function validatePromoCode(
  * Check if a user has already redeemed a specific promo code.
  */
 export async function hasUserRedeemedCode(userId: string, promoCodeId: string): Promise<boolean> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const { data } = await supabase
     .from('promo_code_redemptions')
     .select('id')
@@ -165,7 +165,7 @@ export async function redeemPromoCode(
   promoCodeId: string,
   subscriptionId?: string
 ): Promise<void> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   // Insert redemption record (will fail on duplicate due to UNIQUE constraint)
   const { error: redemptionError } = await supabase

@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     // Get rate limit configs
     const { data: configs, error: configError } = await supabase
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     // Upsert rate limit config
     const { data, error } = await supabase

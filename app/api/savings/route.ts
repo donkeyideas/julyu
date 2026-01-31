@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     let userId: string | null = null
 
     try {
-      const supabase = createServerClient()
+      const supabase = await createServerClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (user) userId = user.id
     } catch {
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const adminSupabase = createServiceRoleClient()
+    const adminSupabase = createServiceRoleClient() as any
 
     // Get last 6 months of savings data
     const { data: savings, error } = await adminSupabase

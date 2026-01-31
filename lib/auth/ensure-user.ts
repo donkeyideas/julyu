@@ -11,7 +11,7 @@ export async function ensureUserExists(
   fullName?: string | null
 ): Promise<void> {
   try {
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
     const { data: existing } = await supabase
       .from('users')
       .select('id')

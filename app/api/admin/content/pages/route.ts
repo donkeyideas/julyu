@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const slug = searchParams.get('slug')
 
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     if (slug) {
       // Fetch specific page with sections
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Page slug is required' }, { status: 400 })
     }
 
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     const { data, error } = await supabase
       .from('page_content')
@@ -107,7 +107,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Slug is required' }, { status: 400 })
     }
 
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     // First, get or create the page
     let { data: existingPage, error: fetchError } = await supabase

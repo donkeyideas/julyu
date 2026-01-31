@@ -39,7 +39,7 @@ export interface PageWithSections {
 // Legacy function - kept for backward compatibility
 export async function getPageContent(slug: string): Promise<PageContent | null> {
   try {
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     const { data, error } = await supabase
       .from('site_settings')
@@ -61,7 +61,7 @@ export async function getPageContent(slug: string): Promise<PageContent | null> 
 // New function - fetches page with all sections from proper CMS tables
 export async function getPageWithSections(slug: string): Promise<PageWithSections> {
   try {
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     // Fetch the page
     const { data: page, error: pageError } = await supabase
@@ -108,7 +108,7 @@ export async function getPageWithSections(slug: string): Promise<PageWithSection
 // Get a specific section for a page
 export async function getPageSection(slug: string, sectionKey: string): Promise<Record<string, any> | null> {
   try {
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     // First get the page ID
     const { data: page, error: pageError } = await supabase

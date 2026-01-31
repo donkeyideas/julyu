@@ -32,7 +32,7 @@ export async function sendStoreApprovalEmail({
     const storePortalUrl = `${appUrl}/store-portal`
 
     const { data, error } = await client.emails.send({
-      from: 'Julyu <onboarding@resend.dev>', // Replace with your verified domain
+      from: 'Julyu <noreply@julyu.com>',
       to: businessEmail,
       subject: 'Your Store Application Has Been Approved! 🎉',
       html: `
@@ -175,7 +175,7 @@ export async function sendStoreRejectionEmail({
     }
 
     const { data, error } = await client.emails.send({
-      from: 'Julyu <onboarding@resend.dev>', // Replace with your verified domain
+      from: 'Julyu <noreply@julyu.com>',
       to: businessEmail,
       subject: 'Update on Your Store Application',
       html: `
@@ -282,7 +282,7 @@ export async function sendStoreApplicationSubmittedEmail({
     }
 
     const { data, error } = await client.emails.send({
-      from: 'Julyu <onboarding@resend.dev>', // Replace with your verified domain
+      from: 'Julyu <noreply@julyu.com>',
       to: businessEmail,
       subject: 'Store Application Received - Under Review',
       html: `
@@ -402,7 +402,7 @@ export async function sendStoreAccountCreatedEmail({
     const storePortalUrl = `${appUrl}/store-portal`
 
     const { data, error } = await client.emails.send({
-      from: 'Julyu <onboarding@resend.dev>', // Replace with your verified domain
+      from: 'Julyu <noreply@julyu.com>',
       to: businessEmail,
       subject: 'Your Julyu Store Account Has Been Created',
       html: `

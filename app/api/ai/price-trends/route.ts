@@ -12,7 +12,7 @@ import { hasFeature } from '@/lib/subscriptions/feature-gate'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     const firebaseUserId = request.headers.get('x-user-id')
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     const firebaseUserId = request.headers.get('x-user-id')

@@ -53,7 +53,7 @@ export async function runDataQualityChecks(): Promise<QualityReport> {
 
   issues.push(...priceIssues, ...staleIssues, ...missingFieldIssues, ...duplicateIssues, ...ocrIssues)
 
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const [products, prices, receipts, stores] = await Promise.all([
     supabase.from('products').select('id', { count: 'exact', head: true }),
     supabase.from('prices').select('id', { count: 'exact', head: true }),
@@ -84,7 +84,7 @@ export async function runDataQualityChecks(): Promise<QualityReport> {
  * Check for price outliers (>3 standard deviations from mean per product).
  */
 async function checkPriceOutliers(): Promise<QualityIssue[]> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const issues: QualityIssue[] = []
 
   const { data: products } = await supabase
@@ -139,7 +139,7 @@ async function checkPriceOutliers(): Promise<QualityIssue[]> {
  * Check for stale data (products not updated in 7+ days).
  */
 async function checkStaleData(): Promise<QualityIssue[]> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const issues: QualityIssue[] = []
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
@@ -171,7 +171,7 @@ async function checkStaleData(): Promise<QualityIssue[]> {
  * Check for products with missing critical fields.
  */
 async function checkMissingFields(): Promise<QualityIssue[]> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const issues: QualityIssue[] = []
 
   // Products missing brand
@@ -238,7 +238,7 @@ async function checkMissingFields(): Promise<QualityIssue[]> {
  * Check for duplicate products (same name + brand).
  */
 async function checkDuplicateProducts(): Promise<QualityIssue[]> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const issues: QualityIssue[] = []
 
   // Get all products and check for name similarities
@@ -297,7 +297,7 @@ async function checkDuplicateProducts(): Promise<QualityIssue[]> {
  * Check for receipts with low OCR confidence.
  */
 async function checkLowOCRConfidence(): Promise<QualityIssue[]> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const issues: QualityIssue[] = []
 
   const { data: lowConfidence } = await supabase

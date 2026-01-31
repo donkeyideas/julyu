@@ -16,7 +16,7 @@ export async function GET(
 ) {
   try {
     const { id } = params
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
 
     const { data: partner, error } = await supabase
       .from('delivery_partners')
@@ -78,7 +78,7 @@ export async function PUT(
 ) {
   try {
     const { id } = params
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const body = await request.json()
 
     // Validate slug format if provided
@@ -145,7 +145,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = params
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { searchParams } = new URL(request.url)
     const hardDelete = searchParams.get('hard') === 'true'
 

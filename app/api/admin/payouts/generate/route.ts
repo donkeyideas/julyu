@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     // Use service role client for admin operations
     // Admin access is already verified by the admin layout
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     const body = await request.json()
     const { periodStart, periodEnd } = body

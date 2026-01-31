@@ -77,7 +77,7 @@ export async function enforceRetentionPolicies(): Promise<{
  * Enforce a single retention policy.
  */
 async function enforcePolicy(policy: RetentionPolicy): Promise<RetentionResult> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   const cutoffDate = new Date(
     Date.now() - policy.retentionDays * 24 * 60 * 60 * 1000
@@ -146,7 +146,7 @@ export async function getRetentionStatus(): Promise<{
     executed_at: string
   }>
 }> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   // Check how many records each policy would affect
   const policiesWithCounts = await Promise.all(

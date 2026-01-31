@@ -20,7 +20,7 @@ export async function createCheckoutSession(
   promoCode?: string
 ): Promise<{ url: string; sessionId: string }> {
   const stripe = await getStripeClient()
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   // Get the plan
   const plan = await getPlanBySlug(planSlug)

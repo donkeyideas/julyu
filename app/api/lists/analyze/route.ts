@@ -9,7 +9,7 @@ import { geocodeLocation } from '@/lib/services/geocoding'
  * Save comparison to database and update user savings
  */
 async function saveComparison(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   userId: string,
   items: string[],
   result: {
@@ -161,7 +161,7 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     // In test mode, allow requests even if auth fails
@@ -225,7 +225,7 @@ async function analyzeWithKroger(
   items: string[],
   zipCode: string | undefined,
   address: string | undefined,
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   userId: string
 ) {
   console.log('[ListAnalyze] Using Kroger API with zip:', zipCode, 'address:', address)
@@ -484,7 +484,7 @@ async function analyzeWithKroger(
  */
 async function analyzeWithDatabase(
   items: string[],
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   userId: string
 ) {
   console.log('[ListAnalyze] Using database fallback')

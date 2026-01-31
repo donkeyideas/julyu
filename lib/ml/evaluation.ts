@@ -57,7 +57,7 @@ interface TestSample {
 async function evaluateProductMatching(
   sampleSize: number
 ): Promise<EvaluationResult> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const startTime = Date.now()
 
   // Get validated training samples
@@ -151,7 +151,7 @@ async function evaluateProductMatching(
  * Evaluate chat response quality using rated conversations.
  */
 async function evaluateChatQuality(sampleSize: number): Promise<EvaluationResult> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   // Get conversations with feedback
   const { data } = await supabase
@@ -205,7 +205,7 @@ async function evaluateChatQuality(sampleSize: number): Promise<EvaluationResult
  * Evaluate alert effectiveness using user actions.
  */
 async function evaluateAlertEffectiveness(sampleSize: number): Promise<EvaluationResult> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   const { data } = await supabase
     .from('ai_training_data')
@@ -340,7 +340,7 @@ export async function getEvaluationHistory(): Promise<Array<{
   performance_metrics: Record<string, unknown> | null
   created_at: string
 }>> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   const { data } = await supabase
     .from('model_registry')

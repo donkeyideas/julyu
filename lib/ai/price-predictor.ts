@@ -52,7 +52,7 @@ export async function analyzePriceTrend(
   productId: string,
   days: number = 90
 ): Promise<PriceTrendResult | null> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   // Get product info
   const { data: product } = await supabase

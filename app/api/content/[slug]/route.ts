@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const { slug } = await params
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
 
     // Fetch the page (must be published)
     const { data: page, error: pageError } = await supabase

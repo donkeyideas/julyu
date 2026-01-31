@@ -10,7 +10,7 @@ async function execute(
   params: Record<string, unknown>,
   userId: string
 ): Promise<ActionResult> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   const category = params.category as string | undefined
   const now = new Date()

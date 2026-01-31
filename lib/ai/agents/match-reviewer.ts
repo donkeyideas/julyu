@@ -41,7 +41,7 @@ export async function getPendingReviews(
   minConfidence: number = 0,
   maxConfidence: number = 0.8
 ): Promise<MatchReviewItem[]> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
   const items: MatchReviewItem[] = []
 
   // Get low-confidence list item matches
@@ -152,7 +152,7 @@ export async function reviewMatch(
   action: 'approve' | 'reject' | 'correct',
   correctedProductId?: string
 ): Promise<{ success: boolean; error?: string }> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   if (action === 'approve') {
     // Boost confidence to indicate human approval
@@ -207,7 +207,7 @@ export async function reviewMatch(
  * Get match review statistics.
  */
 export async function getMatchReviewStats(): Promise<MatchReviewStats> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   // Count low confidence matches in list_items
   const { data: lowConfList } = await supabase
@@ -257,7 +257,7 @@ async function findAlternativeMatches(
   userInput: string,
   excludeProductId: string
 ): Promise<Array<{ productId: string; name: string; brand: string | null; similarity: number }>> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   // Simple text search for alternatives
   const words = userInput.split(/\s+/).filter(w => w.length > 2).slice(0, 3)

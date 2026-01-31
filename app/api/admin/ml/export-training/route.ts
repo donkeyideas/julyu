@@ -22,7 +22,7 @@ interface TrainingRow {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
     const body = await request.json()
     const {
       format = 'openai',

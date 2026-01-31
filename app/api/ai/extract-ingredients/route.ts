@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     let userId: string | null = null
 
     try {
-      const authClient = createServerClient()
+      const authClient = await createServerClient()
       const { data: { user } } = await authClient.auth.getUser()
       if (user) userId = user.id
     } catch {

@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     let userId: string | null = null
 
     try {
-      const supabase = createServerClient()
+      const supabase = await createServerClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (user) userId = user.id
     } catch {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'store_name and shopping_method are required' }, { status: 400 })
     }
 
-    const adminSupabase = createServiceRoleClient()
+    const adminSupabase = createServiceRoleClient() as any
 
     // Insert shopping trip
     const { data: trip, error } = await adminSupabase
@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
     let userId: string | null = null
 
     try {
-      const supabase = createServerClient()
+      const supabase = await createServerClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (user) userId = user.id
     } catch {
@@ -133,7 +133,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const adminSupabase = createServiceRoleClient()
+    const adminSupabase = createServiceRoleClient() as any
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '20')
 

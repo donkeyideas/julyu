@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       user_id: providedUserId,
     } = body
 
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
 
     // Get user_id from auth or use provided
     let userId = providedUserId

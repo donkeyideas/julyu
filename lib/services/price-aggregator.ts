@@ -67,7 +67,7 @@ interface ComparisonResult {
 export async function getAggregatedPrices(
   productIds: string[]
 ): Promise<AggregatedPrice[]> {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
   const results: AggregatedPrice[] = []
 
   for (const productId of productIds) {
@@ -231,7 +231,7 @@ async function getProductPrices(
 export async function compareShoppingList(
   listId: string
 ): Promise<ComparisonResult> {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
 
   // Get list items
   const { data: items, error: itemsError } = await supabase
@@ -318,7 +318,7 @@ export async function compareShoppingList(
 export async function enrichProductData(
   productId: string
 ): Promise<{ success: boolean; enriched?: NormalizedProduct }> {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
 
   // Get product UPC
   const { data: product, error: productError } = await supabase
@@ -370,7 +370,7 @@ export async function getPriceTrends(
   productId: string,
   days: number = 30
 ): Promise<Array<{ date: string; avgPrice: number; minPrice: number; maxPrice: number }>> {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
 
   const startDate = new Date()
   startDate.setDate(startDate.getDate() - days)

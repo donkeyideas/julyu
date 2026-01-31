@@ -3,7 +3,7 @@ import { createServerClient, createServiceRoleClient } from '@/lib/supabase/serv
 
 export async function GET(request: NextRequest) {
   try {
-    const authClient = createServerClient()
+    const authClient = await createServerClient()
     const { data: { user } } = await authClient.auth.getUser()
 
     // Check for Firebase user ID in header (for Google sign-in users)
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Use service role client for database operations (bypasses RLS)
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     // Fetch friends in BOTH directions (don't use foreign key joins):
     // 1. Where current user sent the request (user_id = me, friend is in friend_id)
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const authClient = createServerClient()
+    const authClient = await createServerClient()
     const { data: { user } } = await authClient.auth.getUser()
 
     // Check for Firebase user ID in header (for Google sign-in users)
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Use service role client for database operations (bypasses RLS)
-    const supabase = createServiceRoleClient()
+    const supabase = createServiceRoleClient() as any
 
     // Get user email from database - ensure user exists first
     let userEmail = user?.email

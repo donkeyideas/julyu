@@ -88,7 +88,7 @@ export async function saveMealPlan(
   options: GenerateMealPlanOptions,
   createShoppingList: boolean = false
 ): Promise<{ mealPlanId: string | null; shoppingListId: string | null }> {
-  const supabase = createServiceRoleClient()
+  const supabase = createServiceRoleClient() as any
 
   // Calculate week start (next Monday)
   const now = new Date()
