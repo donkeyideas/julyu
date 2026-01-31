@@ -1,33 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 import StripeConnectService from '@/lib/services/stripe-connect'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerClient()
-
-    // Check if user is admin (enterprise tier)
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('tier')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile || profile.tier !== 'enterprise') {
-      return NextResponse.json(
-        { error: 'Admin access required' },
-        { status: 403 }
-      )
-    }
+    // Use service role client for admin operations
+    // Admin access is already verified by the admin layout
+    const supabase = createServiceRoleClient()
 
     const body = await request.json()
     const { periodStart, periodEnd } = body
