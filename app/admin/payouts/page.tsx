@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import PayoutGeneratorForm from '@/components/admin/PayoutGeneratorForm'
 
 export default function PayoutsPage() {
@@ -79,7 +77,10 @@ export default function PayoutsPage() {
             Generate and manage payouts to store owners
           </p>
         </div>
-        <button className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition">
+        <button
+          onClick={() => document.getElementById('payout-generator')?.scrollIntoView({ behavior: 'smooth' })}
+          className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition"
+        >
           Generate Payouts
         </button>
       </div>
@@ -119,7 +120,7 @@ export default function PayoutsPage() {
       </div>
 
       {/* Payout Generator */}
-      <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+      <div id="payout-generator" className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <h2 className="text-2xl font-black mb-4" style={{ color: 'var(--text-primary)' }}>Quick Payout Generator</h2>
         <PayoutGeneratorForm />
       </div>
@@ -201,12 +202,12 @@ export default function PayoutsPage() {
         {allPayouts.length === 0 && (
           <div className="text-center py-12">
             <p style={{ color: 'var(--text-secondary)' }}>No payouts yet</p>
-            <Link
-              href="/admin/payouts/generate"
+            <button
+              onClick={() => document.getElementById('payout-generator')?.scrollIntoView({ behavior: 'smooth' })}
               className="mt-4 inline-block px-6 py-3 bg-green-500 text-black font-black rounded-xl hover:bg-green-400 transition"
             >
               Generate First Payout
-            </Link>
+            </button>
           </div>
         )}
       </div>
