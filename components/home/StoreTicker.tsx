@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import Image from 'next/image'
 
 interface Store {
@@ -14,6 +14,10 @@ interface Store {
 export default function StoreTicker() {
   const [stores, setStores] = useState<Store[]>([])
   const [loading, setLoading] = useState(true)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const animationRef = useRef<number | null>(null)
+  const positionRef = useRef(0)
+  const isPausedRef = useRef(false)
 
   useEffect(() => {
     fetch('/api/stores/ticker')
@@ -25,11 +29,57 @@ export default function StoreTicker() {
       .catch(() => setLoading(false))
   }, [])
 
+  const animate = useCallback(() => {
+    if (!scrollRef.current || isPausedRef.current) {
+      animationRef.current = requestAnimationFrame(animate)
+      return
+    }
+
+    const container = scrollRef.current
+    const firstSet = container.children[0] as HTMLElement
+
+    if (!firstSet) {
+      animationRef.current = requestAnimationFrame(animate)
+      return
+    }
+
+    // Get the width of one complete set of logos
+    const setWidth = firstSet.offsetWidth
+
+    // Move 1 pixel per frame (adjust speed here)
+    positionRef.current += 0.5
+
+    // Reset position seamlessly when we've scrolled past the first set
+    if (positionRef.current >= setWidth) {
+      positionRef.current = 0
+    }
+
+    container.style.transform = `translateX(-${positionRef.current}px)`
+    animationRef.current = requestAnimationFrame(animate)
+  }, [])
+
+  useEffect(() => {
+    if (stores.length > 0) {
+      animationRef.current = requestAnimationFrame(animate)
+    }
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+    }
+  }, [stores, animate])
+
+  const handleMouseEnter = () => {
+    isPausedRef.current = true
+  }
+
+  const handleMouseLeave = () => {
+    isPausedRef.current = false
+  }
+
   // Don't render if loading or no stores
   if (loading || stores.length === 0) return null
-
-  // Create a single flat array with duplicated stores for seamless loop
-  const allStores = [...stores, ...stores]
 
   return (
     <section className="py-10 px-[5%] bg-black overflow-hidden">
@@ -41,45 +91,91 @@ export default function StoreTicker() {
           Compare prices across your favorite retailers in real-time
         </p>
 
-        <div className="relative">
+        <div
+          className="relative"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
           {/* Gradient masks for fade effect */}
           <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
           <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
 
-          {/* Single continuous scrolling strip */}
-          <div className="flex gap-12 items-center animate-ticker-scroll">
-            {allStores.map((store, index) => (
-              <div
-                key={`${store.id}-${index}`}
-                className="flex-shrink-0 hover:scale-110 transition-transform duration-300"
-              >
-                {store.website_url ? (
-                  <a
-                    href={store.website_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={store.name}
-                  >
+          {/* Scrolling container */}
+          <div
+            ref={scrollRef}
+            className="flex will-change-transform"
+            style={{ transform: 'translateX(0)' }}
+          >
+            {/* First set */}
+            <div className="flex gap-12 items-center shrink-0 pr-12">
+              {stores.map((store) => (
+                <div
+                  key={store.id}
+                  className="flex-shrink-0 hover:scale-110 transition-transform duration-300"
+                >
+                  {store.website_url ? (
+                    <a
+                      href={store.website_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={store.name}
+                    >
+                      <Image
+                        src={store.logo_url}
+                        alt={store.name}
+                        width={200}
+                        height={80}
+                        className="h-20 md:h-24 w-auto object-contain"
+                      />
+                    </a>
+                  ) : (
                     <Image
                       src={store.logo_url}
                       alt={store.name}
                       width={200}
                       height={80}
                       className="h-20 md:h-24 w-auto object-contain"
+                      title={store.name}
                     />
-                  </a>
-                ) : (
-                  <Image
-                    src={store.logo_url}
-                    alt={store.name}
-                    width={200}
-                    height={80}
-                    className="h-20 md:h-24 w-auto object-contain"
-                    title={store.name}
-                  />
-                )}
-              </div>
-            ))}
+                  )}
+                </div>
+              ))}
+            </div>
+            {/* Second set (duplicate for seamless loop) */}
+            <div className="flex gap-12 items-center shrink-0 pr-12">
+              {stores.map((store) => (
+                <div
+                  key={`dup-${store.id}`}
+                  className="flex-shrink-0 hover:scale-110 transition-transform duration-300"
+                >
+                  {store.website_url ? (
+                    <a
+                      href={store.website_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={store.name}
+                    >
+                      <Image
+                        src={store.logo_url}
+                        alt={store.name}
+                        width={200}
+                        height={80}
+                        className="h-20 md:h-24 w-auto object-contain"
+                      />
+                    </a>
+                  ) : (
+                    <Image
+                      src={store.logo_url}
+                      alt={store.name}
+                      width={200}
+                      height={80}
+                      className="h-20 md:h-24 w-auto object-contain"
+                      title={store.name}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
