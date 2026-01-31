@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 
 type TrainingDataStat = {
   use_case: string | null
@@ -9,7 +9,7 @@ type TrainingDataStat = {
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
 
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
 // Update training data record (validate, add notes, feedback)
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
     const body = await request.json()
     const { id, validated, validation_notes, user_feedback, accuracy_score } = body
 
@@ -110,7 +110,7 @@ export async function PUT(request: NextRequest) {
 // Delete training data record
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 

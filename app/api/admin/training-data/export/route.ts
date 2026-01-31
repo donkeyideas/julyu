@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 
 type TrainingDataRecord = {
   id: string | number
@@ -14,7 +14,7 @@ type TrainingDataRecord = {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
     const body = await request.json()
     const { use_case, validated_only, format = 'jsonl' } = body
 
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
 // Get export history
 export async function GET() {
   try {
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
 
     const { data: exports, error } = await supabase
       .from('training_data_exports')
