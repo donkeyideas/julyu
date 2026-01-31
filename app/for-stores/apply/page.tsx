@@ -41,6 +41,8 @@ export default function StoreApplicationPage() {
     setLoading(true)
     setError(null)
 
+    console.log('[StoreApply Form] Submitting application...', formData)
+
     try {
       const response = await fetch('/api/store-portal/apply', {
         method: 'POST',
@@ -50,15 +52,20 @@ export default function StoreApplicationPage() {
         body: JSON.stringify(formData),
       })
 
+      console.log('[StoreApply Form] Response status:', response.status)
       const data = await response.json()
+      console.log('[StoreApply Form] Response data:', data)
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to submit application')
+        const errorMsg = data.details ? `${data.error}: ${data.details}` : data.error
+        throw new Error(errorMsg || 'Failed to submit application')
       }
 
+      console.log('[StoreApply Form] Success! Store Owner ID:', data.data?.storeOwnerId)
       // Redirect to thank you page
       router.push('/for-stores/apply/thank-you')
     } catch (err) {
+      console.error('[StoreApply Form] Error:', err)
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setLoading(false)
