@@ -61,33 +61,33 @@ export default function AddInventoryPage() {
       <div className="mb-6">
         <Link
           href="/store-portal/inventory"
-          className="text-sm text-blue-600 hover:text-blue-700 flex items-center"
+          className="text-sm text-green-500 hover:text-green-400 flex items-center"
         >
           <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
           Back to Inventory
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900 mt-2">Add Product</h1>
-        <p className="text-gray-600 mt-1">
+        <h1 className="text-2xl font-bold mt-2" style={{ color: 'var(--text-primary)' }}>Add Product</h1>
+        <p className="mt-1" style={{ color: 'var(--text-secondary)' }}>
           Manually add a product to your inventory
         </p>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
-            <p className="text-sm text-red-800">{error}</p>
+          <div className="mb-6 rounded-md p-4 bg-red-500/10 border border-red-500/30">
+            <p className="text-sm text-red-500">{error}</p>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Product Details */}
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Product Details</h2>
+            <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Product Details</h2>
             <div className="space-y-4">
               <div>
-                <label htmlFor="customName" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="customName" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                   Product Name *
                 </label>
                 <input
@@ -97,14 +97,15 @@ export default function AddInventoryPage() {
                   required
                   value={formData.customName}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   placeholder="Coca-Cola Classic"
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="customBrand" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="customBrand" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                     Brand
                   </label>
                   <input
@@ -113,13 +114,14 @@ export default function AddInventoryPage() {
                     name="customBrand"
                     value={formData.customBrand}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                     placeholder="Coca-Cola"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="customSize" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="customSize" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                     Size
                   </label>
                   <input
@@ -128,14 +130,15 @@ export default function AddInventoryPage() {
                     name="customSize"
                     value={formData.customSize}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                     placeholder="12 oz"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="sku" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="sku" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                   SKU (Optional)
                 </label>
                 <input
@@ -144,13 +147,14 @@ export default function AddInventoryPage() {
                   name="sku"
                   value={formData.sku}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   placeholder="SKU-12345"
                 />
               </div>
 
               <div>
-                <label htmlFor="customImageUrl" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="customImageUrl" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                   Image URL (Optional)
                 </label>
                 <input
@@ -159,7 +163,8 @@ export default function AddInventoryPage() {
                   name="customImageUrl"
                   value={formData.customImageUrl}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   placeholder="https://example.com/image.jpg"
                 />
               </div>
@@ -168,10 +173,10 @@ export default function AddInventoryPage() {
 
           {/* Pricing & Stock */}
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Pricing & Stock</h2>
+            <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Pricing & Stock</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label htmlFor="stockQuantity" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="stockQuantity" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                   Stock Quantity *
                 </label>
                 <input
@@ -182,17 +187,18 @@ export default function AddInventoryPage() {
                   min="0"
                   value={formData.stockQuantity}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   placeholder="0"
                 />
               </div>
 
               <div>
-                <label htmlFor="salePrice" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="salePrice" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                   Sale Price *
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2 text-gray-500">$</span>
+                  <span className="absolute left-3 top-2" style={{ color: 'var(--text-muted)' }}>$</span>
                   <input
                     type="number"
                     id="salePrice"
@@ -202,18 +208,19 @@ export default function AddInventoryPage() {
                     step="0.01"
                     value={formData.salePrice}
                     onChange={handleChange}
-                    className="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-7 pr-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                     placeholder="0.00"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="costPrice" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="costPrice" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                   Cost Price (Optional)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2 text-gray-500">$</span>
+                  <span className="absolute left-3 top-2" style={{ color: 'var(--text-muted)' }}>$</span>
                   <input
                     type="number"
                     id="costPrice"
@@ -222,7 +229,8 @@ export default function AddInventoryPage() {
                     step="0.01"
                     value={formData.costPrice}
                     onChange={handleChange}
-                    className="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-7 pr-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                     placeholder="0.00"
                   />
                 </div>
@@ -231,18 +239,18 @@ export default function AddInventoryPage() {
           </div>
 
           {/* Submit */}
-          <div className="border-t border-gray-200 pt-6">
+          <div className="pt-6" style={{ borderTop: '1px solid var(--border-color)' }}>
             <div className="flex items-center justify-between">
               <Link
                 href="/store-portal/inventory"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900"
+                className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}
               >
                 Cancel
               </Link>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 bg-green-500 text-black font-medium rounded-md hover:bg-green-400 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Adding...' : 'Add Product'}
               </button>
@@ -250,20 +258,20 @@ export default function AddInventoryPage() {
           </div>
         </form>
 
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-md p-4">
-          <p className="text-sm text-blue-800">
-            <strong>Tip:</strong> You can also import products from a receipt or connect your POS system for automatic syncing.
+        <div className="mt-6 rounded-md p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            <strong style={{ color: 'var(--text-primary)' }}>Tip:</strong> You can also import products from a receipt or connect your POS system for automatic syncing.
           </p>
           <div className="mt-2 flex space-x-3">
             <Link
               href="/store-portal/inventory/import"
-              className="text-sm text-blue-700 underline hover:text-blue-600"
+              className="text-sm text-green-500 hover:text-green-400"
             >
               Import from Receipt →
             </Link>
             <Link
               href="/store-portal/inventory/pos-sync"
-              className="text-sm text-blue-700 underline hover:text-blue-600"
+              className="text-sm text-green-500 hover:text-green-400"
             >
               Connect POS System →
             </Link>

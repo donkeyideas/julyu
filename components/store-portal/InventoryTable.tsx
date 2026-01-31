@@ -126,43 +126,43 @@ export default function InventoryTable({ items, storeId }: Props) {
   return (
     <div className="overflow-x-auto">
       {error && (
-        <div className="m-4 bg-red-50 border border-red-200 rounded-md p-3">
-          <p className="text-sm text-red-800">{error}</p>
+        <div className="m-4 rounded-md p-3 bg-red-500/10 border border-red-500/30">
+          <p className="text-sm text-red-500">{error}</p>
         </div>
       )}
 
       <table className="w-full">
-        <thead className="bg-gray-50 border-b border-gray-200">
+        <thead style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
               Product
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
               Brand
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
               Size
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
               Stock
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
               Price
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
               Status
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
               Source
             </th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
               Actions
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {items.map((item) => (
-            <tr key={item.id} className="hover:bg-gray-50">
+        <tbody style={{ backgroundColor: 'var(--bg-card)' }}>
+          {items.map((item, index) => (
+            <tr key={item.id} className="transition-colors" style={{ borderBottom: '1px solid var(--border-color)' }}>
               <td className="px-6 py-4">
                 <div className="flex items-center">
                   {getDisplayImage(item) ? (
@@ -172,21 +172,21 @@ export default function InventoryTable({ items, storeId }: Props) {
                       className="h-10 w-10 rounded object-cover mr-3"
                     />
                   ) : (
-                    <div className="h-10 w-10 rounded bg-gray-200 flex items-center justify-center mr-3">
-                      <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="h-10 w-10 rounded flex items-center justify-center mr-3" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                      <svg className="h-6 w-6" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                       </svg>
                     </div>
                   )}
-                  <div className="text-sm font-medium text-gray-900">
+                  <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                     {getDisplayName(item)}
                   </div>
                 </div>
               </td>
-              <td className="px-6 py-4 text-sm text-gray-600">
+              <td className="px-6 py-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
                 {getDisplayBrand(item)}
               </td>
-              <td className="px-6 py-4 text-sm text-gray-600">
+              <td className="px-6 py-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
                 {getDisplaySize(item)}
               </td>
               <td className="px-6 py-4">
@@ -196,14 +196,15 @@ export default function InventoryTable({ items, storeId }: Props) {
                     min="0"
                     value={editForm.stock_quantity}
                     onChange={(e) => setEditForm({ ...editForm, stock_quantity: parseInt(e.target.value) || 0 })}
-                    className="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-20 px-2 py-1 text-sm rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   />
                 ) : (
                   <span className={`text-sm font-medium ${
-                    item.stock_quantity === 0 ? 'text-red-600' :
-                    item.stock_quantity <= 5 ? 'text-yellow-600' :
-                    'text-gray-900'
-                  }`}>
+                    item.stock_quantity === 0 ? 'text-red-500' :
+                    item.stock_quantity <= 5 ? 'text-yellow-500' :
+                    ''
+                  }`} style={item.stock_quantity > 5 ? { color: 'var(--text-primary)' } : {}}>
                     {item.stock_quantity}
                   </span>
                 )}
@@ -216,10 +217,11 @@ export default function InventoryTable({ items, storeId }: Props) {
                     min="0"
                     value={editForm.sale_price}
                     onChange={(e) => setEditForm({ ...editForm, sale_price: e.target.value })}
-                    className="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-24 px-2 py-1 text-sm rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   />
                 ) : (
-                  <span className="text-sm font-medium text-gray-900">
+                  <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                     ${parseFloat(item.sale_price).toFixed(2)}
                   </span>
                 )}
@@ -231,21 +233,22 @@ export default function InventoryTable({ items, storeId }: Props) {
                       type="checkbox"
                       checked={editForm.in_stock}
                       onChange={(e) => setEditForm({ ...editForm, in_stock: e.target.checked })}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-green-500 focus:ring-green-500 rounded"
+                      style={{ borderColor: 'var(--border-color)' }}
                     />
-                    <span className="ml-2 text-sm text-gray-700">In Stock</span>
+                    <span className="ml-2 text-sm" style={{ color: 'var(--text-secondary)' }}>In Stock</span>
                   </label>
                 ) : (
                   <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                     item.in_stock && item.stock_quantity > 0
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
+                      ? 'bg-green-500/15 text-green-500'
+                      : 'bg-red-500/15 text-red-500'
                   }`}>
                     {item.in_stock && item.stock_quantity > 0 ? 'In Stock' : 'Out of Stock'}
                   </span>
                 )}
               </td>
-              <td className="px-6 py-4 text-sm text-gray-600">
+              <td className="px-6 py-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
                 <span className="capitalize">{item.update_method}</span>
               </td>
               <td className="px-6 py-4 text-right text-sm font-medium">
@@ -254,7 +257,7 @@ export default function InventoryTable({ items, storeId }: Props) {
                     <button
                       onClick={() => handleSave(item.id)}
                       disabled={loading}
-                      className="text-green-600 hover:text-green-900 disabled:opacity-50"
+                      className="text-green-500 hover:text-green-400 disabled:opacity-50"
                     >
                       Save
                     </button>
@@ -264,7 +267,8 @@ export default function InventoryTable({ items, storeId }: Props) {
                         setError(null)
                       }}
                       disabled={loading}
-                      className="text-gray-600 hover:text-gray-900 disabled:opacity-50"
+                      className="hover:opacity-80 disabled:opacity-50"
+                      style={{ color: 'var(--text-secondary)' }}
                     >
                       Cancel
                     </button>
@@ -273,14 +277,14 @@ export default function InventoryTable({ items, storeId }: Props) {
                   <div className="flex justify-end space-x-3">
                     <button
                       onClick={() => handleEdit(item)}
-                      className="text-blue-600 hover:text-blue-900"
+                      className="text-green-500 hover:text-green-400"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(item.id)}
                       disabled={loading}
-                      className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                      className="text-red-500 hover:text-red-400 disabled:opacity-50"
                     >
                       Delete
                     </button>
