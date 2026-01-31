@@ -34,11 +34,13 @@ export default function AllStoresPage() {
 
   const loadStores = async () => {
     try {
-      // Use API route to fetch stores (bypasses RLS)
-      const response = await fetch('/api/admin/stores')
+      // Use unified API route to fetch stores (bypasses RLS)
+      console.log('[All Stores] Fetching from unified API...')
+      const response = await fetch('/api/admin/stores/manage')
 
       if (response.ok) {
         const data = await response.json()
+        console.log('[All Stores] Loaded', data.stores?.length || 0, 'stores')
         setStores(data.stores || [])
       } else {
         console.error('Failed to fetch stores:', response.statusText)
@@ -66,7 +68,7 @@ export default function AllStoresPage() {
 
     try {
       console.log('[Delete] Attempting to delete store owner:', storeId)
-      const response = await fetch(`/api/admin/store-owners/${storeId}/delete`, {
+      const response = await fetch(`/api/admin/stores/manage?id=${encodeURIComponent(storeId)}`, {
         method: 'DELETE',
       })
 
