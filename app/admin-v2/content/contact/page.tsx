@@ -56,9 +56,7 @@ export default function ContactPageEditor() {
     },
     support_options: {
       options: [
-        { icon: 'email', title: 'Email Support', description: 'Send us an email and we\'ll get back to you within 24 hours.', action: 'support@julyu.com' },
-        { icon: 'chat', title: 'Live Chat', description: 'Chat with our team in real-time during business hours.', action: 'Start Chat' },
-        { icon: 'book', title: 'Help Center', description: 'Browse our knowledge base for answers to common questions.', action: '/help' }
+        { icon: 'email', title: 'Email Support', description: 'Send us an email and we\'ll get back to you within 24 hours.', action: 'support@julyu.com' }
       ]
     }
   })

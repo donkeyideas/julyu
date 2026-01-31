@@ -54,7 +54,7 @@ export default function Testimonials() {
   const currentTestimonial = testimonials[activeIndex]
 
   return (
-    <section className="py-24 px-[5%] bg-gradient-to-b from-green-950/40 to-green-950/60">
+    <section className="py-24 px-[5%] bg-green-950/60">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-black mb-4">
