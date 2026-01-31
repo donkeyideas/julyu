@@ -3,11 +3,11 @@ import { createServiceRoleClient } from '@/lib/supabase/server'
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabaseAdmin = createServiceRoleClient()
-    const { id } = params
+    const { id } = await params
 
     // Get store owner to find user_id
     const { data: storeOwner, error: fetchError } = await supabaseAdmin
