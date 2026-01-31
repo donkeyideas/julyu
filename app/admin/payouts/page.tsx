@@ -5,7 +5,6 @@ import { createClient } from '@/lib/supabase/client'
 import PayoutGeneratorForm from '@/components/admin/PayoutGeneratorForm'
 
 export default function PayoutsPage() {
-  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [payouts, setPayouts] = useState<any[]>([])
 
