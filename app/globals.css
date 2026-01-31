@@ -151,15 +151,14 @@ body {
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-33.333%);
+    transform: translateX(-50%);
   }
 }
 
 .animate-ticker-scroll {
-  animation: ticker-scroll 25s linear infinite;
+  animation: ticker-scroll 20s linear infinite;
 }
 
-.animate-ticker-scroll:hover,
-.pause-animation {
+.animate-ticker-scroll:hover {
   animation-play-state: paused;
 }
