@@ -72,28 +72,10 @@ export async function POST(
       console.error('Activate stores error:', storeError)
     }
 
-    // Generate password reset link for store owner
-    let resetPasswordLink: string | undefined
-    if (storeOwner.user_id) {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-      const { data, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
-        type: 'recovery',
-        email: storeOwner.business_email,
-        options: {
-          redirectTo: `${appUrl}/store-portal`,
-        },
-      })
-
-      if (!resetError && data?.properties?.action_link) {
-        resetPasswordLink = data.properties.action_link
-      }
-    }
-
-    // Send approval email
+    // Send approval email (no password reset link - they already have temp password from signup)
     const emailResult = await sendStoreApprovalEmail({
       businessName: storeOwner.business_name,
       businessEmail: storeOwner.business_email,
-      resetPasswordLink,
     })
 
     if (!emailResult.success) {

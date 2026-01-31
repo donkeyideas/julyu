@@ -13,13 +13,11 @@ function getResendClient() {
 interface StoreApprovalEmailProps {
   businessName: string
   businessEmail: string
-  resetPasswordLink?: string
 }
 
 export async function sendStoreApprovalEmail({
   businessName,
   businessEmail,
-  resetPasswordLink,
 }: StoreApprovalEmailProps) {
   try {
     const client = getResendClient()
@@ -78,28 +76,21 @@ export async function sendStoreApprovalEmail({
                           </ol>
                         </div>
 
+                        <!-- Login Info Box -->
+                        <div style="background-color: #1a1a1a; border-left: 4px solid #3b82f6; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                          <h3 style="margin: 0 0 12px 0; color: #60a5fa; font-size: 16px; font-weight: 600;">How to Log In</h3>
+                          <p style="color: #d1d5db; font-size: 15px; margin: 0 0 8px 0;">Use the temporary password we sent you when you submitted your application:</p>
+                          <p style="color: #d1d5db; font-size: 15px; margin: 0 0 4px 0;"><strong style="color: #9ca3af;">Email:</strong> <span style="color: #ffffff;">${businessEmail}</span></p>
+                          <p style="color: #d1d5db; font-size: 15px; margin: 0 0 12px 0;"><strong style="color: #9ca3af;">Password:</strong> <span style="color: #ffffff;">The temporary password from your "Account Created" email</span></p>
+                          <p style="color: #9ca3af; font-size: 14px; margin: 0;">Can't find it? Use "Forgot Password" on the login page to reset it.</p>
+                        </div>
+
                         <!-- CTA Button -->
                         <div style="text-align: center; margin: 32px 0;">
                           <a href="${storePortalUrl}" style="display: inline-block; background-color: #22c55e; color: #000000; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                            Access Store Dashboard →
+                            Log In to Store Dashboard →
                           </a>
                         </div>
-
-                        ${resetPasswordLink ? `
-                        <!-- Password Reset Box -->
-                        <div style="background-color: #1a1a1a; border-left: 4px solid #3b82f6; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
-                          <h3 style="margin: 0 0 12px 0; color: #60a5fa; font-size: 16px; font-weight: 600;">Login Instructions</h3>
-                          <p style="color: #d1d5db; font-size: 15px; margin: 0 0 12px 0;">If you need to set or reset your password, click the link below:</p>
-                          <a href="${resetPasswordLink}" style="color: #60a5fa; font-size: 15px;">Set Your Password</a>
-                        </div>
-                        ` : `
-                        <!-- Login Info Box -->
-                        <div style="background-color: #1a1a1a; border-left: 4px solid #3b82f6; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
-                          <h3 style="margin: 0 0 12px 0; color: #60a5fa; font-size: 16px; font-weight: 600;">Login Instructions</h3>
-                          <p style="color: #d1d5db; font-size: 15px; margin: 0 0 8px 0;">Use the email address <strong style="color: #ffffff;">${businessEmail}</strong> and your password to log in.</p>
-                          <p style="color: #9ca3af; font-size: 14px; margin: 0;">If you've forgotten your password, you can reset it on the login page.</p>
-                        </div>
-                        `}
 
                         <p style="color: #9ca3af; font-size: 15px; line-height: 1.7; margin: 0 0 24px 0;">
                           If you have any questions or need assistance getting started, please don't hesitate to reach out to our support team.
