@@ -18,9 +18,10 @@ export async function GET(request: NextRequest) {
     const validated = searchParams.get('validated')
     const feedback = searchParams.get('feedback')
 
+    // Build query with explicit column selection to avoid schema mismatches
     let query = supabase
       .from('ai_training_data')
-      .select('*', { count: 'exact' })
+      .select('id, use_case, input_text, actual_output, user_feedback, validated, validation_notes, model_name, accuracy_score, metadata, created_at', { count: 'exact' })
       .order('created_at', { ascending: false })
       .range((page - 1) * limit, page * limit - 1)
 
@@ -36,12 +37,19 @@ export async function GET(request: NextRequest) {
 
     const { data: trainingData, error, count } = await query
 
-    if (error) throw error
+    if (error) {
+      console.error('Training data query error:', error)
+      throw error
+    }
 
     // Get summary stats
-    const { data: stats } = await supabase
+    const { data: stats, error: statsError } = await supabase
       .from('ai_training_data')
       .select('use_case, validated, user_feedback')
+
+    if (statsError) {
+      console.error('Training data stats error:', statsError)
+    }
 
     const statList: TrainingDataStat[] = stats ?? []
     const summary = {
