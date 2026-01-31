@@ -17,6 +17,32 @@ interface Message {
   content: string
 }
 
+// Log training data for AI model improvement
+async function logTrainingData(params: {
+  userId: string
+  inputText: string
+  outputText: string
+  useCase: string
+  modelName: string
+  conversationId?: string | null
+}) {
+  try {
+    const supabase = createServiceRoleClient()
+    await supabase.from('ai_training_data').insert({
+      user_id: params.userId,
+      input_text: params.inputText,
+      actual_output: params.outputText,
+      use_case: params.useCase,
+      model_name: params.modelName,
+      validated: false,
+      metadata: { conversation_id: params.conversationId },
+    })
+  } catch (error) {
+    // Don't fail the request if training data logging fails
+    console.error('[Training Data] Failed to log:', error)
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = createServerClient()
@@ -155,6 +181,16 @@ export async function POST(request: NextRequest) {
         }
       }
     }
+
+    // Log training data for AI improvement (async, non-blocking)
+    logTrainingData({
+      userId,
+      inputText: lastUserMessage.content,
+      outputText: response,
+      useCase: 'shopping_assistant',
+      modelName: llmResponse.model || 'unknown',
+      conversationId: convId,
+    })
 
     return NextResponse.json({
       response,

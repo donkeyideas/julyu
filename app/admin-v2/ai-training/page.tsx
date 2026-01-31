@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 interface TrainingRecord {
   id: string
   input_text: string
-  output_text: string
+  actual_output: string
   use_case: string
   model_name: string
   accuracy_score: number | null
@@ -13,6 +13,7 @@ interface TrainingRecord {
   validated: boolean
   validation_notes: string | null
   created_at: string
+  metadata?: Record<string, unknown>
 }
 
 interface Summary {
@@ -392,7 +393,7 @@ export default function AITrainingPage() {
               <div>
                 <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Output</div>
                 <pre className="p-4 rounded-lg text-sm overflow-x-auto whitespace-pre-wrap" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-                  {selectedRecord.output_text || 'N/A'}
+                  {selectedRecord.actual_output || 'N/A'}
                 </pre>
               </div>
 

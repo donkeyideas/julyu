@@ -4,7 +4,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server'
 type TrainingDataRecord = {
   id: string | number
   input_text: string | null
-  output_text: string | null
+  actual_output: string | null
   use_case: string | null
   model_name: string | null
   accuracy_score: number | null
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
         .map((record: TrainingDataRecord) => {
           const formatted = {
             input: record.input_text,
-            output: record.output_text,
+            output: record.actual_output,
             metadata: {
               id: record.id,
               use_case: record.use_case,
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
         return [
           record.id,
           `"${(record.input_text || '').replace(/"/g, '""')}"`,
-          `"${(record.output_text || '').replace(/"/g, '""')}"`,
+          `"${(record.actual_output || '').replace(/"/g, '""')}"`,
           record.use_case || '',
           record.model_name || '',
           record.accuracy_score || '',
