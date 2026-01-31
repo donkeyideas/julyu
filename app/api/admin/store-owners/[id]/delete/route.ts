@@ -6,10 +6,19 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log('[Delete Store Owner] Starting deletion process...')
+    console.log('[Delete Store Owner] ====== STARTING DELETE ======')
     const supabaseAdmin = createServiceRoleClient() as any
     const { id } = await params
-    console.log('[Delete Store Owner] Processing store owner ID:', id)
+    console.log('[Delete Store Owner] ID received:', id, 'Type:', typeof id)
+
+    // First, let's verify the record exists by listing all store owners
+    const { data: allOwners, error: listError } = await supabaseAdmin
+      .from('store_owners')
+      .select('id, business_name')
+
+    console.log('[Delete Store Owner] All store owners in DB:', allOwners?.map((o: any) => ({ id: o.id, name: o.business_name })))
+    console.log('[Delete Store Owner] Looking for ID:', id)
+    console.log('[Delete Store Owner] ID exists in list:', allOwners?.some((o: any) => o.id === id))
 
     // Get store owner to find user_id
     const { data: storeOwner, error: fetchError } = await supabaseAdmin
