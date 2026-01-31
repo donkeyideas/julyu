@@ -4,11 +4,13 @@ import { hasStoreOwnerAccount } from '@/lib/auth/store-portal-auth'
 import { sendStoreApplicationSubmittedEmail, sendStoreAccountCreatedEmail } from '@/lib/services/email'
 
 export async function POST(request: NextRequest) {
+  console.log('[Store Apply] ====== NEW APPLICATION SUBMISSION ======')
   try {
     // Use anon client for auth checks
     const supabase = await createServerClient()
     // Use service role client for database operations (bypasses RLS)
     const supabaseAdmin = createServiceRoleClient() as any
+    console.log('[Store Apply] Supabase clients initialized')
 
     // Parse request body first to get email
     const body = await request.json()
@@ -133,8 +135,8 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (ownerError) {
-      console.error('Store owner creation error:', ownerError)
-      console.error('Store owner error details:', JSON.stringify(ownerError, null, 2))
+      console.error('[Store Apply] Store owner creation FAILED:', ownerError)
+      console.error('[Store Apply] Error details:', JSON.stringify(ownerError, null, 2))
       return NextResponse.json(
         {
           error: 'Failed to create store owner account',
@@ -144,6 +146,7 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+    console.log('[Store Apply] Store owner created successfully:', storeOwner.id)
 
     // Geocode the store address
     let latitude: number | null = null
@@ -186,8 +189,8 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (storeError) {
-      console.error('Bodega store creation error:', storeError)
-      console.error('Bodega store error details:', JSON.stringify(storeError, null, 2))
+      console.error('[Store Apply] Bodega store creation FAILED:', storeError)
+      console.error('[Store Apply] Error details:', JSON.stringify(storeError, null, 2))
 
       // Rollback - delete store owner
       await supabaseAdmin
@@ -204,6 +207,7 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+    console.log('[Store Apply] Bodega store created successfully:', bodegaStore.id)
 
     // If POS system info provided, create a note (we'll implement full POS integration later)
     if (hasPosSystem && posSystemName) {
@@ -219,9 +223,16 @@ export async function POST(request: NextRequest) {
     })
 
     if (!confirmationEmailResult.success) {
-      console.error('Failed to send application confirmation email:', confirmationEmailResult.error)
+      console.error('[Store Apply] Confirmation email FAILED:', confirmationEmailResult.error)
       // Don't fail the entire request if email fails
+    } else {
+      console.log('[Store Apply] Confirmation email sent successfully')
     }
+
+    console.log('[Store Apply] ====== APPLICATION COMPLETE ======')
+    console.log('[Store Apply] Store Owner ID:', storeOwner.id)
+    console.log('[Store Apply] Bodega Store ID:', bodegaStore.id)
+    console.log('[Store Apply] Status: pending')
 
     return NextResponse.json({
       success: true,

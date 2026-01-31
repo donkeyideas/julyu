@@ -3,7 +3,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server'
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('[Admin Store Applications] Starting fetch...')
+    console.log('[Admin Store Applications] ====== FETCHING APPLICATIONS ======')
 
     const supabaseAdmin = createServiceRoleClient() as any
     console.log('[Admin Store Applications] Service role client created')
@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
 
     console.log('[Admin Store Applications] Query result:', {
       count: applications?.length || 0,
-      error: error?.message || null
+      error: error?.message || null,
+      applicationIds: applications?.map((a: any) => ({ id: a.id, status: a.application_status, name: a.business_name })) || []
     })
 
     if (error) {
