@@ -9,25 +9,38 @@ export async function DELETE(
     const supabaseAdmin = createServiceRoleClient()
     const { id } = params
 
-    // Delete user from auth
+    console.log('[DeleteUser] Deleting user:', id)
+
+    // Try to delete user from auth (may not exist for manually created users)
     const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(id)
 
     if (authError) {
-      console.error('Delete user auth error:', authError)
+      // Log but don't fail - user might only exist in public.users table
+      console.log('[DeleteUser] Auth delete result:', authError.message)
+    }
+
+    // Also delete from public.users table directly (in case CASCADE doesn't trigger or user was manually created)
+    const { error: usersError } = await supabaseAdmin
+      .from('users')
+      .delete()
+      .eq('id', id)
+
+    if (usersError) {
+      console.error('[DeleteUser] Users table delete error:', usersError)
       return NextResponse.json(
-        { error: 'Failed to delete user', details: authError.message },
+        { error: 'Failed to delete user from database', details: usersError.message },
         { status: 500 }
       )
     }
 
-    // Note: Related data will be deleted automatically via CASCADE in database schema
+    console.log('[DeleteUser] User deleted successfully:', id)
 
     return NextResponse.json({
       success: true,
       message: 'User deleted successfully'
     })
   } catch (error) {
-    console.error('Error deleting user:', error)
+    console.error('[DeleteUser] Error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
