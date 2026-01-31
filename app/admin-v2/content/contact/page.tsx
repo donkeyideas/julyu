@@ -52,9 +52,7 @@ export default function ContactPageEditor() {
     },
     contact_info: {
       email: 'support@julyu.com',
-      response_time: 'We typically respond within 24 hours',
-      office_hours: 'Monday - Friday, 9am - 6pm EST',
-      address: 'Cincinnati, OH'
+      response_time: 'We typically respond within 24 hours'
     },
     support_options: {
       options: [
@@ -206,18 +204,6 @@ export default function ContactPageEditor() {
                 value={content.contact_info?.response_time || ''}
                 onChange={(value) => setContent(prev => ({ ...prev, contact_info: { ...prev.contact_info, response_time: value } }))}
                 placeholder="We typically respond within 24 hours"
-              />
-              <InputField
-                label="Office Hours"
-                value={content.contact_info?.office_hours || ''}
-                onChange={(value) => setContent(prev => ({ ...prev, contact_info: { ...prev.contact_info, office_hours: value } }))}
-                placeholder="Monday - Friday, 9am - 6pm EST"
-              />
-              <InputField
-                label="Address"
-                value={content.contact_info?.address || ''}
-                onChange={(value) => setContent(prev => ({ ...prev, contact_info: { ...prev.contact_info, address: value } }))}
-                placeholder="Cincinnati, OH"
               />
             </div>
           </div>
