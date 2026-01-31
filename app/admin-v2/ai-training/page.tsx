@@ -34,13 +34,16 @@ export default function AITrainingPage() {
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [totalRecords, setTotalRecords] = useState(0)
   const [filters, setFilters] = useState({
     use_case: '',
     validated: '',
     feedback: ''
   })
   const [selectedRecord, setSelectedRecord] = useState<TrainingRecord | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [exporting, setExporting] = useState(false)
+  const [bulkProcessing, setBulkProcessing] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -62,7 +65,9 @@ export default function AITrainingPage() {
         const result = await response.json()
         setData(result.data)
         setTotalPages(result.pagination.totalPages)
+        setTotalRecords(result.pagination.total)
         setSummary(result.summary)
+        setSelectedIds(new Set()) // Clear selection on page change
       }
     } catch (error) {
       console.error('Failed to load training data:', error)
@@ -139,6 +144,93 @@ export default function AITrainingPage() {
     }
   }
 
+  // Bulk validate selected records
+  const bulkValidate = async (validated: boolean) => {
+    if (selectedIds.size === 0) return
+    setBulkProcessing(true)
+    try {
+      const promises = Array.from(selectedIds).map(id =>
+        fetch('/api/admin/training-data', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, validated })
+        })
+      )
+      await Promise.all(promises)
+      setData(prev => prev.map(r => selectedIds.has(r.id) ? { ...r, validated } : r))
+      setSelectedIds(new Set())
+      loadData() // Refresh to update summary stats
+    } catch (error) {
+      console.error('Bulk validation failed:', error)
+    } finally {
+      setBulkProcessing(false)
+    }
+  }
+
+  // Bulk delete selected records
+  const bulkDelete = async () => {
+    if (selectedIds.size === 0) return
+    if (!confirm(`Are you sure you want to delete ${selectedIds.size} record(s)?`)) return
+    setBulkProcessing(true)
+    try {
+      const promises = Array.from(selectedIds).map(id =>
+        fetch(`/api/admin/training-data?id=${id}`, { method: 'DELETE' })
+      )
+      await Promise.all(promises)
+      setData(prev => prev.filter(r => !selectedIds.has(r.id)))
+      setSelectedIds(new Set())
+      loadData()
+    } catch (error) {
+      console.error('Bulk delete failed:', error)
+    } finally {
+      setBulkProcessing(false)
+    }
+  }
+
+  // Auto-validate: Validate all records with positive feedback (server-side bulk operation)
+  const autoValidatePositive = async () => {
+    if (!confirm('This will validate ALL records with positive user feedback. Continue?')) return
+    setBulkProcessing(true)
+    try {
+      const response = await fetch('/api/admin/training-data/bulk-validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rule: 'positive_feedback' })
+      })
+      if (response.ok) {
+        const result = await response.json()
+        alert(`Auto-validated ${result.count} records with positive feedback`)
+        loadData()
+      }
+    } catch (error) {
+      console.error('Auto-validate failed:', error)
+    } finally {
+      setBulkProcessing(false)
+    }
+  }
+
+  // Toggle selection
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(id)) {
+        newSet.delete(id)
+      } else {
+        newSet.add(id)
+      }
+      return newSet
+    })
+  }
+
+  // Select all on current page
+  const selectAllOnPage = () => {
+    if (selectedIds.size === data.length) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(data.map(r => r.id)))
+    }
+  }
+
   const useCases = summary ? Object.keys(summary.byUseCase) : []
 
   return (
@@ -194,7 +286,7 @@ export default function AITrainingPage() {
       )}
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-4 mb-6">
+      <div className="flex flex-wrap gap-4 mb-4">
         <select
           value={filters.use_case}
           onChange={(e) => { setFilters(f => ({ ...f, use_case: e.target.value })); setPage(1); }}
@@ -231,6 +323,61 @@ export default function AITrainingPage() {
         </select>
       </div>
 
+      {/* Bulk Actions */}
+      <div className="flex flex-wrap items-center gap-4 mb-6 p-4 rounded-xl" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <div className="flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
+          <span className="font-semibold">Bulk Actions:</span>
+          {selectedIds.size > 0 && (
+            <span className="px-2 py-1 bg-green-500/20 text-green-500 rounded text-sm">
+              {selectedIds.size} selected
+            </span>
+          )}
+        </div>
+
+        <button
+          onClick={() => bulkValidate(true)}
+          disabled={selectedIds.size === 0 || bulkProcessing}
+          className="px-3 py-1.5 text-sm rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ backgroundColor: selectedIds.size > 0 ? 'var(--accent-primary)' : 'var(--bg-secondary)', color: selectedIds.size > 0 ? 'black' : 'var(--text-muted)' }}
+        >
+          Validate Selected
+        </button>
+
+        <button
+          onClick={() => bulkValidate(false)}
+          disabled={selectedIds.size === 0 || bulkProcessing}
+          className="px-3 py-1.5 text-sm rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}
+        >
+          Unvalidate Selected
+        </button>
+
+        <button
+          onClick={bulkDelete}
+          disabled={selectedIds.size === 0 || bulkProcessing}
+          className="px-3 py-1.5 text-sm rounded-lg text-red-500 transition disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-500/10"
+          style={{ border: '1px solid var(--border-color)' }}
+        >
+          Delete Selected
+        </button>
+
+        <div className="h-6 w-px" style={{ backgroundColor: 'var(--border-color)' }} />
+
+        <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Auto-Validate:</span>
+
+        <button
+          onClick={autoValidatePositive}
+          disabled={bulkProcessing || (summary?.byFeedback.positive || 0) === 0}
+          className="px-3 py-1.5 text-sm rounded-lg bg-blue-500 text-white transition disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600"
+        >
+          All Positive Feedback ({summary?.byFeedback.positive || 0})
+        </button>
+
+        {bulkProcessing && (
+          <span className="text-sm text-yellow-500 animate-pulse">Processing...</span>
+        )}
+      </div>
+
       {/* Data Table */}
       <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         {loading ? (
@@ -239,6 +386,15 @@ export default function AITrainingPage() {
           <table className="w-full">
             <thead style={{ backgroundColor: 'var(--bg-secondary)' }}>
               <tr>
+                <th className="text-left p-4">
+                  <input
+                    type="checkbox"
+                    checked={data.length > 0 && selectedIds.size === data.length}
+                    onChange={selectAllOnPage}
+                    className="w-4 h-4 rounded border-gray-500 accent-green-500 cursor-pointer"
+                    title="Select all on page"
+                  />
+                </th>
                 <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Date</th>
                 <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Use Case</th>
                 <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Input Preview</th>
@@ -251,6 +407,14 @@ export default function AITrainingPage() {
               {data.length > 0 ? (
                 data.map(record => (
                   <tr key={record.id} style={{ borderTop: '1px solid var(--border-color)' }} className="hover:opacity-80 transition">
+                    <td className="p-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(record.id)}
+                        onChange={() => toggleSelect(record.id)}
+                        className="w-4 h-4 rounded border-gray-500 accent-green-500 cursor-pointer"
+                      />
+                    </td>
                     <td className="p-4 text-sm">
                       {new Date(record.created_at).toLocaleDateString()}
                     </td>
@@ -309,7 +473,7 @@ export default function AITrainingPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center" style={{ color: 'var(--text-secondary)' }}>
+                  <td colSpan={7} className="p-8 text-center" style={{ color: 'var(--text-secondary)' }}>
                     No training data found
                   </td>
                 </tr>
