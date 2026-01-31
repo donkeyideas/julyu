@@ -46,14 +46,13 @@ export async function POST(request: NextRequest) {
         parent_network: parent_network || null
       })
       .select()
-      .single()
 
     if (error) {
       console.error('[Store Ticker API] Error creating:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ store: data })
+    return NextResponse.json({ store: data?.[0] || null, success: true })
   } catch (error: any) {
     console.error('[Store Ticker API] Error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
@@ -72,7 +71,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Store ID is required' }, { status: 400 })
     }
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('store_ticker')
       .update({
         name,
@@ -84,15 +83,13 @@ export async function PUT(request: NextRequest) {
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
-      .select()
-      .single()
 
     if (error) {
       console.error('[Store Ticker API] Error updating:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ store: data })
+    return NextResponse.json({ success: true })
   } catch (error: any) {
     console.error('[Store Ticker API] Error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
