@@ -168,6 +168,27 @@ export async function POST(request: NextRequest) {
     }
     console.log('[Store Apply] Store owner created successfully:', storeOwner.id)
 
+    // VERIFY the store owner was actually created
+    const { data: verifyOwner, error: verifyOwnerError } = await supabaseAdmin
+      .from('store_owners')
+      .select('id, business_name')
+      .eq('id', storeOwner.id)
+      .single()
+
+    if (verifyOwnerError || !verifyOwner) {
+      console.error('[Store Apply] CRITICAL: Store owner insert verification FAILED!')
+      console.error('[Store Apply] Verify error:', verifyOwnerError)
+      return NextResponse.json(
+        {
+          error: 'Failed to save application. Please try again.',
+          details: 'Data verification failed after insert',
+          code: 'VERIFY_FAILED'
+        },
+        { status: 500 }
+      )
+    }
+    console.log('[Store Apply] Store owner verified in database:', verifyOwner.business_name)
+
     // Geocode the store address
     let latitude: number | null = null
     let longitude: number | null = null
@@ -228,6 +249,29 @@ export async function POST(request: NextRequest) {
       )
     }
     console.log('[Store Apply] Bodega store created successfully:', bodegaStore.id)
+
+    // VERIFY the bodega store was actually created
+    const { data: verifyStore, error: verifyStoreError } = await supabaseAdmin
+      .from('bodega_stores')
+      .select('id, name')
+      .eq('id', bodegaStore.id)
+      .single()
+
+    if (verifyStoreError || !verifyStore) {
+      console.error('[Store Apply] CRITICAL: Bodega store insert verification FAILED!')
+      console.error('[Store Apply] Verify error:', verifyStoreError)
+      // Rollback store owner
+      await supabaseAdmin.from('store_owners').delete().eq('id', storeOwner.id)
+      return NextResponse.json(
+        {
+          error: 'Failed to save store location. Please try again.',
+          details: 'Store data verification failed after insert',
+          code: 'VERIFY_FAILED'
+        },
+        { status: 500 }
+      )
+    }
+    console.log('[Store Apply] Bodega store verified in database:', verifyStore.name)
 
     // If POS system info provided, create a note (we'll implement full POS integration later)
     if (hasPosSystem && posSystemName) {
