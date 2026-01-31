@@ -89,6 +89,11 @@ export default function AdminOrdersPage() {
   }
 
   const exportToExcel = () => {
+    if (allOrders.length === 0) {
+      alert('No orders to export')
+      return
+    }
+
     const exportData = allOrders.map((order: any) => ({
       'Order #': order.order_number,
       'Customer Name': order.customer_name || '',
@@ -190,8 +195,7 @@ export default function AdminOrdersPage() {
           </select>
           <button
             onClick={exportToExcel}
-            disabled={allOrders.length === 0}
-            className="px-6 py-2 bg-green-500 text-black font-black rounded-xl hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="px-6 py-2 bg-green-500 text-black font-black rounded-xl hover:bg-green-400 transition"
           >
             Export
           </button>
