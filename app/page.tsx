@@ -8,8 +8,25 @@ import WhyJulyu from '@/components/home/WhyJulyu'
 import Testimonials from '@/components/home/Testimonials'
 import StoreOwnerCTA from '@/components/home/StoreOwnerCTA'
 import CTASection from '@/components/home/CTASection'
+import { getPageWithSections } from '@/lib/content/getPageContent'
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Fetch content from database
+  const { content } = await getPageWithSections('home')
+
+  // Extract hero content with defaults
+  const hero = content.hero || {}
+  const badge = hero.badge || 'Now in Early Access'
+  const headline = hero.headline || 'Stop Overpaying for Groceries'
+  const subheadline = hero.subheadline || 'Compare prices across Kroger, Walmart, and more in seconds. Scan receipts, track spending, and discover savings with AI-powered intelligence.'
+  const primaryCta = hero.primary_cta || { text: 'Get Early Access', link: '/auth/signup' }
+  const secondaryCta = hero.secondary_cta || { text: 'Try Demo', link: '#demo' }
+  const stats = hero.stats || [
+    { value: 'Real-Time', label: 'Price Data' },
+    { value: 'AI', label: 'Powered' },
+    { value: 'Free', label: 'To Start' }
+  ]
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-green-950/30 to-black text-white">
       <Header transparent />
@@ -20,41 +37,38 @@ export default function HomePage() {
           <div>
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/30 rounded-full text-green-400 text-sm mb-6">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              Now in Early Access
+              {badge}
             </div>
             <h1 className="text-5xl md:text-7xl font-black leading-tight mb-6">
-              Stop Overpaying for <span className="bg-gradient-to-r from-green-500 to-green-300 bg-clip-text text-transparent">Groceries</span>
+              {headline.split(' ').slice(0, -1).join(' ')}{' '}
+              <span className="bg-gradient-to-r from-green-500 to-green-300 bg-clip-text text-transparent">
+                {headline.split(' ').slice(-1)[0]}
+              </span>
             </h1>
             <p className="text-xl text-gray-400 mb-10 leading-relaxed">
-              Compare prices across Kroger, Walmart, and more in seconds. Scan receipts, track spending, and discover savings with AI-powered intelligence.
+              {subheadline}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 mb-12">
               <Link
-                href="/auth/signup"
+                href={primaryCta.link}
                 className="px-8 py-4 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition text-lg text-center"
               >
-                Get Early Access
+                {primaryCta.text}
               </Link>
               <Link
-                href="#demo"
+                href={secondaryCta.link}
                 className="px-8 py-4 border border-gray-700 text-white font-semibold rounded-lg hover:border-green-500 transition text-lg text-center"
               >
-                Try Demo
+                {secondaryCta.text}
               </Link>
             </div>
             <div className="flex justify-center md:justify-start gap-8 md:gap-12">
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-black text-green-500 mb-1">Real-Time</div>
-                <div className="text-xs md:text-sm text-gray-500">Price Data</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-black text-green-500 mb-1">AI</div>
-                <div className="text-xs md:text-sm text-gray-500">Powered</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-black text-green-500 mb-1">Free</div>
-                <div className="text-xs md:text-sm text-gray-500">To Start</div>
-              </div>
+              {stats.map((stat: { value: string; label: string }, index: number) => (
+                <div key={index} className="text-center">
+                  <div className="text-3xl md:text-4xl font-black text-green-500 mb-1">{stat.value}</div>
+                  <div className="text-xs md:text-sm text-gray-500">{stat.label}</div>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -66,22 +80,22 @@ export default function HomePage() {
       </section>
 
       {/* How It Works - seamless transition */}
-      <HowItWorks />
+      <HowItWorks content={content.how_it_works} />
 
       {/* Feature Showcase */}
-      <FeatureShowcase />
+      <FeatureShowcase content={content.features} />
 
       {/* Why Julyu */}
-      <WhyJulyu />
+      <WhyJulyu content={content.why_julyu} />
 
       {/* Testimonials - from database, can be enabled/disabled in admin */}
       <Testimonials />
 
       {/* Store Owner CTA */}
-      <StoreOwnerCTA />
+      <StoreOwnerCTA content={content.store_cta} />
 
       {/* CTA Section */}
-      <CTASection />
+      <CTASection content={content.final_cta} />
 
       <Footer />
     </div>

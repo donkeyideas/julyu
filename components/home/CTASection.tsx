@@ -1,6 +1,28 @@
 import Link from 'next/link'
 
-export default function CTASection() {
+interface CTASectionContent {
+  headline?: string
+  subheadline?: string
+  primary_cta?: {
+    text: string
+    link: string
+  }
+  secondary_cta?: {
+    text: string
+    link: string
+  }
+}
+
+interface CTASectionProps {
+  content?: CTASectionContent
+}
+
+export default function CTASection({ content }: CTASectionProps) {
+  const headline = content?.headline || 'Ready to Save?'
+  const subheadline = content?.subheadline || 'Join Julyu today and take control of your grocery spending. Compare prices, track receipts, and discover savings with AI.'
+  const primaryCta = content?.primary_cta || { text: 'Get Started Free', link: '/auth/signup' }
+  const secondaryCta = content?.secondary_cta || { text: 'See Pricing', link: '/pricing' }
+
   return (
     <section className="py-24 px-[5%] bg-gradient-to-b from-green-950/60 to-black">
       <div className="max-w-4xl mx-auto text-center">
@@ -13,27 +35,27 @@ export default function CTASection() {
 
           <div className="relative z-10">
             <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
-              Ready to Save?
+              {headline}
             </h2>
             <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-              Join Julyu today and take control of your grocery spending. Compare prices, track receipts, and discover savings with AI.
+              {subheadline}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                href="/auth/signup"
+                href={primaryCta.link}
                 className="px-8 py-4 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition text-lg inline-flex items-center justify-center gap-2"
               >
-                Get Started Free
+                {primaryCta.text}
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
               </Link>
               <Link
-                href="/pricing"
+                href={secondaryCta.link}
                 className="px-8 py-4 bg-white/10 text-white font-semibold rounded-lg hover:bg-white/20 transition text-lg border border-white/20"
               >
-                See Pricing
+                {secondaryCta.text}
               </Link>
             </div>
 

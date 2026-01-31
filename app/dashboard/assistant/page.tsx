@@ -522,8 +522,8 @@ export default function AssistantPage() {
             </svg>
           </div>
           <div>
-            <h1 className="text-xl font-bold">AI Assistant</h1>
-            <p className="text-sm text-gray-500">Your smart shopping companion</p>
+            <h1 className="text-xl font-bold">Jules</h1>
+            <p className="text-sm text-gray-500">Your personal shopping buddy</p>
           </div>
         </div>
 

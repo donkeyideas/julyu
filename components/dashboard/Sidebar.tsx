@@ -133,7 +133,7 @@ export default function Sidebar() {
     { href: '/dashboard/lists', label: 'My Lists', icon: '' },
     { href: '/dashboard/alerts', label: 'Price Alerts', icon: '' },
     // AI Features
-    { href: '/dashboard/assistant', label: 'AI Assistant', icon: '' },
+    { href: '/dashboard/assistant', label: 'Jules', icon: '' },
     { href: '/dashboard/chat', label: 'Chat', icon: '' },
     { href: '/dashboard/insights', label: 'Smart Insights', icon: '' },
     { href: '/dashboard/budget', label: 'Budget Optimizer', icon: '' },

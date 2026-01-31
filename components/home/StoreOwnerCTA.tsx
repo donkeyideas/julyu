@@ -1,6 +1,24 @@
 import Link from 'next/link'
 
-export default function StoreOwnerCTA() {
+interface StoreOwnerCTAContent {
+  headline?: string
+  subheadline?: string
+  cta?: {
+    text: string
+    link: string
+  }
+}
+
+interface StoreOwnerCTAProps {
+  content?: StoreOwnerCTAContent
+}
+
+export default function StoreOwnerCTA({ content }: StoreOwnerCTAProps) {
+  const headline = content?.headline || 'Bring Your Store Online'
+  const subheadline = content?.subheadline || 'Own a bodega, corner store, or small grocery? Join Julyu and start receiving orders from customers in your neighborhood. No tech experience needed.'
+  const ctaText = content?.cta?.text || 'Apply Now'
+  const ctaLink = content?.cta?.link || '/for-stores/apply'
+
   return (
     <section className="py-24 px-[5%] bg-green-950/60">
       <div className="max-w-7xl mx-auto">
@@ -15,11 +33,14 @@ export default function StoreOwnerCTA() {
             </div>
 
             <h2 className="text-4xl md:text-5xl font-black mb-6">
-              Bring Your Store <span className="bg-gradient-to-r from-green-500 to-green-300 bg-clip-text text-transparent">Online</span>
+              {headline.split(' ').slice(0, -1).join(' ')}{' '}
+              <span className="bg-gradient-to-r from-green-500 to-green-300 bg-clip-text text-transparent">
+                {headline.split(' ').slice(-1)[0]}
+              </span>
             </h2>
 
             <p className="text-xl text-gray-400 mb-8 leading-relaxed">
-              Own a bodega, corner store, or small grocery? Join Julyu and start receiving orders from customers in your neighborhood. No tech experience needed.
+              {subheadline}
             </p>
 
             <div className="space-y-4 mb-10">
@@ -62,10 +83,10 @@ export default function StoreOwnerCTA() {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
-                href="/for-stores/apply"
+                href={ctaLink}
                 className="px-8 py-4 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition text-lg text-center"
               >
-                Apply Now
+                {ctaText}
               </Link>
               <Link
                 href="/for-stores"

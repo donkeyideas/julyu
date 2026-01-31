@@ -24,10 +24,12 @@ export default function AdminSidebar() {
 
   const navItems: NavItem[] = [
     { href: '/admin-v2', label: 'Dashboard', icon: '', section: 'Overview' },
-    { href: '/admin-v2/content/home-editor', label: 'Home Page', icon: '', section: 'Content' },
-    { href: '/admin-v2/content/pages', label: 'All Pages', icon: '', section: 'Content' },
+    { href: '/admin-v2/content/home', label: 'Home Page', icon: '', section: 'Content' },
+    { href: '/admin-v2/content/features', label: 'Features Page', icon: '', section: 'Content' },
+    { href: '/admin-v2/content/for-stores', label: 'For Stores Page', icon: '', section: 'Content' },
+    { href: '/admin-v2/content/contact', label: 'Contact Page', icon: '', section: 'Content' },
     { href: '/admin-v2/content/testimonials', label: 'Testimonials', icon: '', section: 'Content' },
-    { href: '/admin-v2/content/seo', label: 'SEO Settings', icon: '', section: 'Content' },
+    { href: '/admin-v2/content/global', label: 'Global Settings', icon: '', section: 'Content' },
     { href: '/admin-v2/ai-models', label: 'AI Models', icon: '', section: 'AI/LLM Systems' },
     { href: '/admin-v2/rate-limits', label: 'Rate Limits', icon: '', section: 'AI/LLM Systems' },
     { href: '/admin-v2/ai-performance', label: 'AI Performance', icon: '', section: 'AI/LLM Systems' },
