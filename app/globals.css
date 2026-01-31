@@ -144,3 +144,22 @@ body {
 .theme-border {
   border-color: var(--border-color);
 }
+
+/* Store Ticker Animation */
+@keyframes ticker-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-33.333%);
+  }
+}
+
+.animate-ticker-scroll {
+  animation: ticker-scroll 25s linear infinite;
+}
+
+.animate-ticker-scroll:hover,
+.pause-animation {
+  animation-play-state: paused;
+}

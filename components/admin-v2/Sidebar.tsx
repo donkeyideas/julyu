@@ -29,6 +29,7 @@ export default function AdminSidebar() {
     { href: '/admin-v2/content/for-stores', label: 'For Stores Page', icon: '', section: 'Content' },
     { href: '/admin-v2/content/contact', label: 'Contact Page', icon: '', section: 'Content' },
     { href: '/admin-v2/content/testimonials', label: 'Testimonials', icon: '', section: 'Content' },
+    { href: '/admin-v2/content/store-ticker', label: 'Store Ticker', icon: '', section: 'Content' },
     { href: '/admin-v2/content/global', label: 'Global Settings', icon: '', section: 'Content' },
     { href: '/admin-v2/ai-models', label: 'AI Models', icon: '', section: 'AI/LLM Systems' },
     { href: '/admin-v2/rate-limits', label: 'Rate Limits', icon: '', section: 'AI/LLM Systems' },

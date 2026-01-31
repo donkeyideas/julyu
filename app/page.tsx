@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Header from '@/components/shared/Header'
 import Footer from '@/components/shared/Footer'
 import InteractiveDemo from '@/components/home/InteractiveDemo'
+import StoreTicker from '@/components/home/StoreTicker'
 import HowItWorks from '@/components/home/HowItWorks'
 import FeatureShowcase from '@/components/home/FeatureShowcase'
 import WhyJulyu from '@/components/home/WhyJulyu'
@@ -78,6 +79,9 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Store Ticker - partner stores */}
+      <StoreTicker />
 
       {/* How It Works - seamless transition */}
       <HowItWorks content={content.how_it_works} />
