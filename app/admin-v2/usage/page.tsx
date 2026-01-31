@@ -112,20 +112,26 @@ export default function UsagePage() {
         .select('api_name')
         .gte('created_at', startDate.toISOString())
 
-      const uniqueApis = Array.from(new Set<string>((apiNames || []).map((a: { api_name: string }) => a.api_name)))
-      setAvailableApis(uniqueApis)
+      const externalApis = Array.from(new Set<string>((apiNames || []).map((a: { api_name: string }) => a.api_name)))
+      // Also add AI model names to the available APIs list
+      const aiModelNamesArray = Array.from(new Set<string>((aiData || []).map((a: AiUsageRecord) => a.model_name)))
+      setAvailableApis([...aiModelNamesArray, ...externalApis])
 
       // Combine and transform records
       const aiRecords: CombinedRecord[] = ((aiData || []) as AiUsageRecord[]).map(r => ({
         id: r.id,
         source: 'ai' as const,
         name: r.model_name,
+        useCase: 'AI Chat',  // Show something meaningful in endpoint column
         responseTimeMs: r.response_time_ms || 0,
         success: r.success ?? true,
         cost: r.cost || 0,
         tokens: (r.input_tokens || 0) + (r.output_tokens || 0),
         createdAt: r.created_at,
       }))
+
+      // Track AI model names for filtering
+      const aiModelNames = new Set(aiRecords.map(r => r.name))
 
       const apiRecords: CombinedRecord[] = ((apiData || []) as ApiCallRecord[]).map(r => ({
         id: r.id,
@@ -149,8 +155,11 @@ export default function UsagePage() {
         combined = aiRecords
       } else if (apiFilter === 'all') {
         combined = [...aiRecords, ...apiRecords]
+      } else if (aiModelNames.has(apiFilter)) {
+        // Filter is an AI model name - filter AI records by model name
+        combined = aiRecords.filter(r => r.name === apiFilter)
       } else {
-        combined = apiRecords // Already filtered in query
+        combined = apiRecords // Already filtered in query for api_call_logs
       }
 
       // Sort by date
