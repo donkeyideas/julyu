@@ -189,7 +189,7 @@ export async function PUT(request: NextRequest) {
           await sendStoreRejectionEmail({
             businessName: existingStore.business_name,
             businessEmail: existingStore.business_email,
-            rejectionReason: reason
+            reason: reason
           })
           log('PUT', 'Rejection email sent')
         } catch (emailError) {
