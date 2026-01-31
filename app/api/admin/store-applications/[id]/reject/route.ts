@@ -6,13 +6,41 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  console.log('[Reject] ====== REJECTION PROCESS STARTED ======')
+  console.log('[Reject] Timestamp:', new Date().toISOString())
+
   try {
-    console.log('[Reject] Starting rejection process...')
-    const supabaseAdmin = createServiceRoleClient() as any
+    // Validate environment
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('[Reject] CRITICAL: SUPABASE_SERVICE_ROLE_KEY not configured')
+      return NextResponse.json(
+        { error: 'Server configuration error', code: 'CONFIG_ERROR' },
+        { status: 500 }
+      )
+    }
+
+    let supabaseAdmin: any
+    try {
+      supabaseAdmin = createServiceRoleClient() as any
+    } catch (clientError) {
+      console.error('[Reject] Failed to create service role client:', clientError)
+      return NextResponse.json(
+        { error: 'Database connection failed', code: 'DB_CLIENT_ERROR' },
+        { status: 500 }
+      )
+    }
+
     const { id } = await params
     const body = await request.json()
     const { reason } = body
     console.log('[Reject] Processing store owner ID:', id)
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Store owner ID is required', code: 'MISSING_ID' },
+        { status: 400 }
+      )
+    }
 
     // Get store owner details first
     const { data: storeOwner, error: fetchError } = await supabaseAdmin
@@ -73,15 +101,47 @@ export async function POST(
       // Don't fail the entire request if email fails
     }
 
+    // Verify the update actually persisted
+    const { data: verifyData, error: verifyError } = await supabaseAdmin
+      .from('store_owners')
+      .select('application_status, rejection_reason')
+      .eq('id', id)
+      .single()
+
+    if (verifyError || verifyData?.application_status !== 'rejected') {
+      console.error('[Reject] VERIFICATION FAILED: Update may not have persisted')
+      console.error('[Reject] Verify error:', verifyError)
+      console.error('[Reject] Current status:', verifyData?.application_status)
+      return NextResponse.json(
+        { error: 'Rejection may not have been saved properly. Please try again.', code: 'VERIFY_FAILED' },
+        { status: 500 }
+      )
+    }
+
+    console.log('[Reject] ====== REJECTION SUCCESSFUL ======')
+    console.log('[Reject] Final status:', verifyData.application_status)
+
     return NextResponse.json({
       success: true,
-      message: 'Application rejected',
-      emailSent: emailResult.success
+      message: 'Application rejected successfully',
+      emailSent: emailResult.success,
+      data: {
+        status: verifyData.application_status,
+        reason: verifyData.rejection_reason
+      }
     })
   } catch (error) {
-    console.error('Error rejecting application:', error)
+    console.error('[Reject] ====== CRITICAL ERROR ======')
+    console.error('[Reject] Error type:', error instanceof Error ? error.constructor.name : typeof error)
+    console.error('[Reject] Error message:', error instanceof Error ? error.message : String(error))
+    console.error('[Reject] Full error:', error)
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: 'Failed to reject application due to an internal error',
+        code: 'INTERNAL_ERROR',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }

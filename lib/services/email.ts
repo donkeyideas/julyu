@@ -10,6 +10,22 @@ function getResendClient() {
   return resend
 }
 
+// Helper to get and validate the app URL
+function getAppUrl(): string {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
+  // Log warning if not using production URL
+  if (!appUrl.includes('julyu.com')) {
+    console.warn('[Email Service] WARNING: NEXT_PUBLIC_APP_URL is not set to julyu.com')
+    console.warn('[Email Service] Current URL:', appUrl)
+    console.warn('[Email Service] Email links will use this URL - set NEXT_PUBLIC_APP_URL=https://julyu.com in Vercel and redeploy')
+  } else {
+    console.log('[Email Service] Using production URL:', appUrl)
+  }
+
+  return appUrl
+}
+
 interface StoreApprovalEmailProps {
   businessName: string
   businessEmail: string
@@ -19,15 +35,18 @@ export async function sendStoreApprovalEmail({
   businessName,
   businessEmail,
 }: StoreApprovalEmailProps) {
+  console.log('[Email Service] Sending approval email to:', businessEmail)
+
   try {
     const client = getResendClient()
     if (!client) {
-      console.warn('Resend API key not configured - skipping email send')
+      console.warn('[Email Service] Resend API key not configured - skipping email send')
       return { success: false, error: 'Email service not configured' }
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const appUrl = getAppUrl()
     const storePortalUrl = `${appUrl}/store-portal`
+    console.log('[Email Service] Store portal URL in email:', storePortalUrl)
 
     const { data, error } = await client.emails.send({
       from: 'Julyu <noreply@julyu.com>',
@@ -355,15 +374,18 @@ export async function sendStoreAccountCreatedEmail({
   businessEmail,
   temporaryPassword,
 }: StoreAccountCreatedEmailProps) {
+  console.log('[Email Service] Sending account created email to:', businessEmail)
+
   try {
     const client = getResendClient()
     if (!client) {
-      console.warn('Resend API key not configured - skipping email send')
+      console.warn('[Email Service] Resend API key not configured - skipping email send')
       return { success: false, error: 'Email service not configured' }
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const appUrl = getAppUrl()
     const storePortalUrl = `${appUrl}/store-portal`
+    console.log('[Email Service] Store portal URL in email:', storePortalUrl)
 
     const { data, error } = await client.emails.send({
       from: 'Julyu <noreply@julyu.com>',

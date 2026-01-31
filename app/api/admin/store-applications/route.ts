@@ -2,11 +2,30 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
 export async function GET(request: NextRequest) {
-  try {
-    console.log('[Admin Store Applications] ====== FETCHING APPLICATIONS ======')
+  console.log('[Admin Store Applications] ====== FETCHING APPLICATIONS ======')
+  console.log('[Admin Store Applications] Timestamp:', new Date().toISOString())
 
-    const supabaseAdmin = createServiceRoleClient() as any
-    console.log('[Admin Store Applications] Service role client created')
+  try {
+    // Check environment configuration
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('[Admin Store Applications] CRITICAL: SUPABASE_SERVICE_ROLE_KEY not set')
+      return NextResponse.json(
+        { error: 'Server configuration error - service role key missing', applications: [] },
+        { status: 500 }
+      )
+    }
+
+    let supabaseAdmin: any
+    try {
+      supabaseAdmin = createServiceRoleClient() as any
+      console.log('[Admin Store Applications] Service role client created successfully')
+    } catch (clientError) {
+      console.error('[Admin Store Applications] Failed to create service role client:', clientError)
+      return NextResponse.json(
+        { error: 'Database connection failed', details: clientError instanceof Error ? clientError.message : 'Unknown', applications: [] },
+        { status: 500 }
+      )
+    }
 
     // Fetch all store applications with store owner and store details
     const { data: applications, error } = await supabaseAdmin

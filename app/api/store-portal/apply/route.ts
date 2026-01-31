@@ -5,12 +5,32 @@ import { sendStoreApplicationSubmittedEmail, sendStoreAccountCreatedEmail } from
 
 export async function POST(request: NextRequest) {
   console.log('[Store Apply] ====== NEW APPLICATION SUBMISSION ======')
+  console.log('[Store Apply] Timestamp:', new Date().toISOString())
+
   try {
+    // Verify environment before proceeding
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('[Store Apply] CRITICAL: SUPABASE_SERVICE_ROLE_KEY not configured')
+      return NextResponse.json(
+        { error: 'Server configuration error. Please contact support.', code: 'CONFIG_ERROR' },
+        { status: 500 }
+      )
+    }
+
     // Use anon client for auth checks
     const supabase = await createServerClient()
     // Use service role client for database operations (bypasses RLS)
-    const supabaseAdmin = createServiceRoleClient() as any
-    console.log('[Store Apply] Supabase clients initialized')
+    let supabaseAdmin: any
+    try {
+      supabaseAdmin = createServiceRoleClient() as any
+      console.log('[Store Apply] Supabase clients initialized successfully')
+    } catch (clientError) {
+      console.error('[Store Apply] Failed to create service role client:', clientError)
+      return NextResponse.json(
+        { error: 'Database connection error. Please try again.', code: 'DB_CLIENT_ERROR' },
+        { status: 500 }
+      )
+    }
 
     // Parse request body first to get email
     const body = await request.json()
@@ -245,9 +265,17 @@ export async function POST(request: NextRequest) {
     }, { status: 201 })
 
   } catch (error) {
-    console.error('Application submission error:', error)
+    console.error('[Store Apply] ====== CRITICAL ERROR ======')
+    console.error('[Store Apply] Error type:', error instanceof Error ? error.constructor.name : typeof error)
+    console.error('[Store Apply] Error message:', error instanceof Error ? error.message : String(error))
+    console.error('[Store Apply] Full error:', error)
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: 'An unexpected error occurred while processing your application. Please try again.',
+        code: 'INTERNAL_ERROR',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }

@@ -6,11 +6,39 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  console.log('[Approve] ====== APPROVAL PROCESS STARTED ======')
+  console.log('[Approve] Timestamp:', new Date().toISOString())
+
   try {
-    console.log('[Approve] Starting approval process...')
-    const supabaseAdmin = createServiceRoleClient() as any
+    // Validate environment
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('[Approve] CRITICAL: SUPABASE_SERVICE_ROLE_KEY not configured')
+      return NextResponse.json(
+        { error: 'Server configuration error', code: 'CONFIG_ERROR' },
+        { status: 500 }
+      )
+    }
+
+    let supabaseAdmin: any
+    try {
+      supabaseAdmin = createServiceRoleClient() as any
+    } catch (clientError) {
+      console.error('[Approve] Failed to create service role client:', clientError)
+      return NextResponse.json(
+        { error: 'Database connection failed', code: 'DB_CLIENT_ERROR' },
+        { status: 500 }
+      )
+    }
+
     const { id } = await params
     console.log('[Approve] Processing store owner ID:', id)
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Store owner ID is required', code: 'MISSING_ID' },
+        { status: 400 }
+      )
+    }
 
     // Get store owner details first
     const { data: storeOwner, error: fetchError } = await supabaseAdmin
@@ -83,15 +111,47 @@ export async function POST(
       // Don't fail the entire request if email fails
     }
 
+    // Verify the update actually persisted
+    const { data: verifyData, error: verifyError } = await supabaseAdmin
+      .from('store_owners')
+      .select('application_status, accepts_orders')
+      .eq('id', id)
+      .single()
+
+    if (verifyError || verifyData?.application_status !== 'approved') {
+      console.error('[Approve] VERIFICATION FAILED: Update may not have persisted')
+      console.error('[Approve] Verify error:', verifyError)
+      console.error('[Approve] Current status:', verifyData?.application_status)
+      return NextResponse.json(
+        { error: 'Approval may not have been saved properly. Please try again.', code: 'VERIFY_FAILED' },
+        { status: 500 }
+      )
+    }
+
+    console.log('[Approve] ====== APPROVAL SUCCESSFUL ======')
+    console.log('[Approve] Final status:', verifyData.application_status)
+
     return NextResponse.json({
       success: true,
-      message: 'Application approved',
-      emailSent: emailResult.success
+      message: 'Application approved successfully',
+      emailSent: emailResult.success,
+      data: {
+        status: verifyData.application_status,
+        acceptsOrders: verifyData.accepts_orders
+      }
     })
   } catch (error) {
-    console.error('Error approving application:', error)
+    console.error('[Approve] ====== CRITICAL ERROR ======')
+    console.error('[Approve] Error type:', error instanceof Error ? error.constructor.name : typeof error)
+    console.error('[Approve] Error message:', error instanceof Error ? error.message : String(error))
+    console.error('[Approve] Full error:', error)
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: 'Failed to approve application due to an internal error',
+        code: 'INTERNAL_ERROR',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }

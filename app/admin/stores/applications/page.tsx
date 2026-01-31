@@ -23,18 +23,36 @@ export default function StoreApplicationsPage() {
 
   const loadApplications = async () => {
     try {
+      console.log('[Admin] Fetching store applications...')
       const response = await fetch('/api/admin/store-applications')
+      const data = await response.json()
 
       if (response.ok) {
-        const data = await response.json()
+        console.log('[Admin] Loaded', data.applications?.length || 0, 'applications')
         setApplications(data.applications || [])
+        setError(null)
       } else {
-        console.error('Failed to fetch applications:', response.statusText)
+        console.error('[Admin] Failed to fetch applications:', response.status, data)
         setApplications([])
+        const errorMsg = data.details || data.error || `Failed to load applications (${response.status})`
+        setError(errorMsg)
+        setAlertModal({
+          open: true,
+          title: 'Failed to Load Applications',
+          message: errorMsg,
+          type: 'error'
+        })
       }
     } catch (error) {
-      console.error('Error loading applications:', error)
+      console.error('[Admin] Network error loading applications:', error)
       setApplications([])
+      setError('Network error - could not connect to server')
+      setAlertModal({
+        open: true,
+        title: 'Connection Error',
+        message: 'Could not connect to the server. Please check your internet connection and try again.',
+        type: 'error'
+      })
     } finally {
       setLoading(false)
     }
@@ -319,7 +337,23 @@ export default function StoreApplicationsPage() {
 
         {allApplications.length === 0 && (
           <div className="text-center py-12">
-            <p style={{ color: 'var(--text-secondary)' }}>No applications found</p>
+            {error ? (
+              <>
+                <p className="text-red-500 mb-4">{error}</p>
+                <button
+                  onClick={() => {
+                    setLoading(true)
+                    setError(null)
+                    loadApplications()
+                  }}
+                  className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold transition"
+                >
+                  Retry
+                </button>
+              </>
+            ) : (
+              <p style={{ color: 'var(--text-secondary)' }}>No applications found</p>
+            )}
           </div>
         )}
       </div>

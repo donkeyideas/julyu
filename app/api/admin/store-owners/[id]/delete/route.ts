@@ -5,11 +5,39 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  console.log('[Delete Store Owner] ====== STARTING DELETE ======')
+  console.log('[Delete Store Owner] Timestamp:', new Date().toISOString())
+
   try {
-    console.log('[Delete Store Owner] ====== STARTING DELETE ======')
-    const supabaseAdmin = createServiceRoleClient() as any
+    // Validate environment
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('[Delete Store Owner] CRITICAL: SUPABASE_SERVICE_ROLE_KEY not configured')
+      return NextResponse.json(
+        { error: 'Server configuration error', code: 'CONFIG_ERROR' },
+        { status: 500 }
+      )
+    }
+
+    let supabaseAdmin: any
+    try {
+      supabaseAdmin = createServiceRoleClient() as any
+    } catch (clientError) {
+      console.error('[Delete Store Owner] Failed to create service role client:', clientError)
+      return NextResponse.json(
+        { error: 'Database connection failed', code: 'DB_CLIENT_ERROR' },
+        { status: 500 }
+      )
+    }
+
     const { id } = await params
     console.log('[Delete Store Owner] ID received:', id, 'Type:', typeof id)
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Store owner ID is required', code: 'MISSING_ID' },
+        { status: 400 }
+      )
+    }
 
     // First, let's verify the record exists by listing all store owners
     const { data: allOwners, error: listError } = await supabaseAdmin
@@ -87,15 +115,44 @@ export async function DELETE(
       }
     }
 
-    console.log('[Delete Store Owner] ✓ Deletion complete for:', storeOwner.business_name)
+    // Verify deletion
+    const { data: verifyData, error: verifyError } = await supabaseAdmin
+      .from('store_owners')
+      .select('id')
+      .eq('id', id)
+      .single()
+
+    if (!verifyError && verifyData) {
+      console.error('[Delete Store Owner] VERIFICATION FAILED: Record still exists!')
+      return NextResponse.json(
+        { error: 'Delete may not have completed. Please try again.', code: 'VERIFY_FAILED' },
+        { status: 500 }
+      )
+    }
+
+    console.log('[Delete Store Owner] ====== DELETION COMPLETE ======')
+    console.log('[Delete Store Owner] Deleted:', storeOwner.business_name)
+
     return NextResponse.json({
       success: true,
-      message: 'Store owner deleted successfully'
+      message: 'Store owner deleted successfully',
+      data: {
+        deletedBusinessName: storeOwner.business_name,
+        authUserDeleted: !!storeOwner.user_id
+      }
     })
   } catch (error) {
-    console.error('[Delete Store Owner] Error:', error)
+    console.error('[Delete Store Owner] ====== CRITICAL ERROR ======')
+    console.error('[Delete Store Owner] Error type:', error instanceof Error ? error.constructor.name : typeof error)
+    console.error('[Delete Store Owner] Error message:', error instanceof Error ? error.message : String(error))
+    console.error('[Delete Store Owner] Full error:', error)
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: 'Failed to delete store owner due to an internal error',
+        code: 'INTERNAL_ERROR',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
