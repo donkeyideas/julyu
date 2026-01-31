@@ -23,18 +23,22 @@ export default function StoreApplicationsPage() {
 
   const loadApplications = async () => {
     try {
-      console.log('[Admin] Fetching store applications...')
-      const response = await fetch('/api/admin/store-applications')
+      console.log('[Admin] Fetching stores from unified API...')
+      const response = await fetch('/api/admin/stores/manage')
       const data = await response.json()
 
+      console.log('[Admin] API Response:', { status: response.status, count: data.count, timestamp: data.timestamp })
+
       if (response.ok) {
-        console.log('[Admin] Loaded', data.applications?.length || 0, 'applications')
-        setApplications(data.applications || [])
+        const stores = data.stores || []
+        console.log('[Admin] Loaded', stores.length, 'stores')
+        console.log('[Admin] Store IDs:', stores.map((s: any) => ({ id: s.id, name: s.business_name })))
+        setApplications(stores)
         setError(null)
       } else {
-        console.error('[Admin] Failed to fetch applications:', response.status, data)
+        console.error('[Admin] Failed to fetch stores:', response.status, data)
         setApplications([])
-        const errorMsg = data.details || data.error || `Failed to load applications (${response.status})`
+        const errorMsg = data.details || data.error || `Failed to load stores (${response.status})`
         setError(errorMsg)
         setAlertModal({
           open: true,
@@ -44,7 +48,7 @@ export default function StoreApplicationsPage() {
         })
       }
     } catch (error) {
-      console.error('[Admin] Network error loading applications:', error)
+      console.error('[Admin] Network error loading stores:', error)
       setApplications([])
       setError('Network error - could not connect to server')
       setAlertModal({
@@ -88,11 +92,15 @@ export default function StoreApplicationsPage() {
     setActionLoading(true)
     setError(null)
     try {
-      const response = await fetch(`/api/admin/store-applications/${id}/approve`, {
-        method: 'POST',
+      console.log('[Admin] Approving store:', id)
+      const response = await fetch('/api/admin/stores/manage', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, action: 'approve' }),
       })
 
       const data = await response.json()
+      console.log('[Admin] Approve response:', response.status, data)
 
       if (response.ok) {
         await loadApplications()
@@ -122,13 +130,15 @@ export default function StoreApplicationsPage() {
     setActionLoading(true)
     setError(null)
     try {
-      const response = await fetch(`/api/admin/store-applications/${rejectModal.app.id}/reject`, {
-        method: 'POST',
+      console.log('[Admin] Rejecting store:', rejectModal.app.id)
+      const response = await fetch('/api/admin/stores/manage', {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: rejectReason }),
+        body: JSON.stringify({ id: rejectModal.app.id, action: 'reject', reason: rejectReason }),
       })
 
       const data = await response.json()
+      console.log('[Admin] Reject response:', response.status, data)
 
       if (response.ok) {
         await loadApplications()
@@ -168,12 +178,13 @@ export default function StoreApplicationsPage() {
     if (!deleteConfirmModal.app) return
 
     const id = deleteConfirmModal.app.id
+    const businessName = deleteConfirmModal.app.business_name
     setDeleting(id)
     setDeleteConfirmModal({ open: false, app: null })
 
     try {
-      console.log('[Delete] Attempting to delete store owner:', id)
-      const response = await fetch(`/api/admin/store-owners/${id}/delete`, {
+      console.log('[Delete] Attempting to delete store:', { id, businessName })
+      const response = await fetch(`/api/admin/stores/manage?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
       })
 
@@ -185,9 +196,13 @@ export default function StoreApplicationsPage() {
         if (selectedApplication?.id === id) {
           closeModal()
         }
-        setAlertModal({ open: true, title: 'Success', message: 'Store deleted successfully.', type: 'success' })
+        setAlertModal({ open: true, title: 'Success', message: `${businessName} deleted successfully.`, type: 'success' })
       } else {
-        setAlertModal({ open: true, title: 'Delete Failed', message: data.error || 'Unknown error occurred', type: 'error' })
+        console.error('[Delete] Failed:', data)
+        const errorMsg = data.debug
+          ? `${data.error}. Available IDs: ${data.debug.availableIds?.join(', ') || 'none'}`
+          : data.error || 'Unknown error occurred'
+        setAlertModal({ open: true, title: 'Delete Failed', message: errorMsg, type: 'error' })
       }
     } catch (error) {
       console.error('Error deleting store:', error)
@@ -204,6 +219,17 @@ export default function StoreApplicationsPage() {
           <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>Store Applications</h1>
           <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>Review and manage store owner applications</p>
         </div>
+        <button
+          onClick={() => {
+            setLoading(true)
+            setError(null)
+            loadApplications()
+          }}
+          className="px-4 py-3 rounded-lg font-semibold transition"
+          style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
+        >
+          Refresh
+        </button>
       </div>
 
       {/* Stats */}
