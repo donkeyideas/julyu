@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -17,13 +16,17 @@ export default function ForgotPasswordPage() {
     setSuccess(false)
 
     try {
-      const supabase = createClient()
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
+      // Use our custom API that sends branded emails via Resend
+      const response = await fetch('/api/auth/request-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
       })
 
-      if (error) {
-        throw error
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send reset email')
       }
 
       setSuccess(true)
@@ -51,6 +54,9 @@ export default function ForgotPasswordPage() {
               <div className="bg-green-500/10 border border-green-500 text-green-500 rounded-lg p-4 text-sm">
                 Check your email! We&apos;ve sent a password reset link to <strong>{email}</strong>
               </div>
+              <p className="text-gray-400 text-sm">
+                The email will come from <strong>Julyu</strong> (noreply@julyu.com). Check your spam folder if you don&apos;t see it.
+              </p>
               <Link
                 href="/auth/login"
                 className="block w-full py-3 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition text-center"
