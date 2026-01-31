@@ -5,6 +5,7 @@ import InteractiveDemo from '@/components/home/InteractiveDemo'
 import HowItWorks from '@/components/home/HowItWorks'
 import FeatureShowcase from '@/components/home/FeatureShowcase'
 import WhyJulyu from '@/components/home/WhyJulyu'
+import Testimonials from '@/components/home/Testimonials'
 import StoreOwnerCTA from '@/components/home/StoreOwnerCTA'
 import CTASection from '@/components/home/CTASection'
 
@@ -70,8 +71,11 @@ export default function HomePage() {
       {/* Feature Showcase */}
       <FeatureShowcase />
 
-      {/* Why Julyu - replaces fake testimonials */}
+      {/* Why Julyu */}
       <WhyJulyu />
+
+      {/* Testimonials - from database, can be enabled/disabled in admin */}
+      <Testimonials />
 
       {/* Store Owner CTA */}
       <StoreOwnerCTA />

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface Testimonial {
   id: string
@@ -17,60 +17,10 @@ interface Testimonial {
 }
 
 export default function TestimonialsPage() {
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([
-    {
-      id: '1',
-      author_name: 'Sarah M.',
-      author_title: 'Busy Parent',
-      author_location: 'Cincinnati, OH',
-      author_image_url: '',
-      quote: 'Julyu has completely changed how I shop for groceries. I save at least $50 every week just by knowing which store has the best prices for my regular items.',
-      savings_amount: 217,
-      rating: 5,
-      is_featured: true,
-      is_active: true,
-      display_order: 1,
-    },
-    {
-      id: '2',
-      author_name: 'Michael R.',
-      author_title: 'Budget Conscious',
-      author_location: 'Columbus, OH',
-      author_image_url: '',
-      quote: 'The receipt scanning feature is incredible. I just snap a photo and it tracks all my spending automatically. Now I can see exactly where my money goes.',
-      savings_amount: 342,
-      rating: 5,
-      is_featured: true,
-      is_active: true,
-      display_order: 2,
-    },
-    {
-      id: '3',
-      author_name: 'Jennifer L.',
-      author_title: 'Smart Shopper',
-      author_location: 'Cleveland, OH',
-      author_image_url: '',
-      quote: 'I was skeptical at first, but the price alerts have saved me so much money. I got notified when diapers went on sale and stocked up!',
-      savings_amount: 189,
-      rating: 5,
-      is_featured: true,
-      is_active: true,
-      display_order: 3,
-    },
-    {
-      id: '4',
-      author_name: 'David K.',
-      author_title: 'Family of Five',
-      author_location: 'Dayton, OH',
-      author_image_url: '',
-      quote: 'With five kids, every dollar counts. Julyu helps me find the best deals and plan my shopping trips efficiently. Game changer!',
-      savings_amount: 456,
-      rating: 5,
-      is_featured: true,
-      is_active: true,
-      display_order: 4,
-    },
-  ])
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([])
+  const [loading, setLoading] = useState(true)
+  const [sectionEnabled, setSectionEnabled] = useState(true)
+  const [savingSettings, setSavingSettings] = useState(false)
 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
@@ -87,6 +37,67 @@ export default function TestimonialsPage() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
+  // Load testimonials and settings on mount
+  useEffect(() => {
+    loadTestimonials()
+    loadSettings()
+  }, [])
+
+  const loadTestimonials = async () => {
+    try {
+      const response = await fetch('/api/admin/content/testimonials')
+      if (response.ok) {
+        const data = await response.json()
+        setTestimonials(data.testimonials || [])
+      }
+    } catch (error) {
+      console.error('Failed to load testimonials:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadSettings = async () => {
+    try {
+      const response = await fetch('/api/admin/content/settings?key=homepage_testimonials_enabled')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.setting?.value !== undefined) {
+          setSectionEnabled(data.setting.value === true || data.setting.value === 'true')
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load settings:', error)
+    }
+  }
+
+  const toggleSectionEnabled = async () => {
+    setSavingSettings(true)
+    const newValue = !sectionEnabled
+    try {
+      const response = await fetch('/api/admin/content/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          key: 'homepage_testimonials_enabled',
+          value: newValue,
+          description: 'Whether to show testimonials section on the homepage',
+        }),
+      })
+
+      if (response.ok) {
+        setSectionEnabled(newValue)
+        setMessage({ type: 'success', text: `Testimonials section ${newValue ? 'enabled' : 'disabled'} on homepage` })
+      } else {
+        setMessage({ type: 'error', text: 'Failed to update setting' })
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to update setting' })
+    } finally {
+      setSavingSettings(false)
+    }
+  }
+
   const handleSave = async (testimonial: Testimonial) => {
     setSaving(true)
     try {
@@ -99,6 +110,7 @@ export default function TestimonialsPage() {
       if (response.ok) {
         setMessage({ type: 'success', text: 'Testimonial saved successfully!' })
         setEditingId(null)
+        loadTestimonials()
       } else {
         setMessage({ type: 'error', text: 'Failed to save testimonial' })
       }
@@ -122,8 +134,6 @@ export default function TestimonialsPage() {
       })
 
       if (response.ok) {
-        const data = await response.json()
-        setTestimonials([...testimonials, { ...newTestimonial, id: data.id || String(Date.now()) } as Testimonial])
         setNewTestimonial({
           author_name: '',
           author_title: '',
@@ -136,6 +146,7 @@ export default function TestimonialsPage() {
         })
         setShowAddForm(false)
         setMessage({ type: 'success', text: 'Testimonial added successfully!' })
+        loadTestimonials()
       } else {
         setMessage({ type: 'error', text: 'Failed to add testimonial' })
       }
@@ -165,9 +176,28 @@ export default function TestimonialsPage() {
     }
   }
 
-  const updateTestimonial = (id: string, field: keyof Testimonial, value: any) => {
+  const updateTestimonial = (id: string, field: keyof Testimonial, value: unknown) => {
     setTestimonials(prev =>
       prev.map(t => (t.id === id ? { ...t, [field]: value } : t))
+    )
+  }
+
+  // Auto-hide message after 3 seconds
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => setMessage(null), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [message])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="inline-block w-12 h-12 border-4 rounded-full animate-spin mb-4" style={{ borderColor: 'var(--border-color)', borderTopColor: 'var(--accent-primary)' }}></div>
+          <div style={{ color: 'var(--text-secondary)' }}>Loading testimonials...</div>
+        </div>
+      </div>
     )
   }
 
@@ -185,6 +215,33 @@ export default function TestimonialsPage() {
         >
           + Add Testimonial
         </button>
+      </div>
+
+      {/* Section Toggle */}
+      <div className="rounded-xl p-6 mb-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Display on Homepage</h3>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+              {sectionEnabled
+                ? 'Testimonials section is visible on the homepage'
+                : 'Testimonials section is hidden from the homepage'}
+            </p>
+          </div>
+          <button
+            onClick={toggleSectionEnabled}
+            disabled={savingSettings}
+            className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+              sectionEnabled ? 'bg-green-500' : 'bg-gray-600'
+            } ${savingSettings ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+          >
+            <span
+              className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                sectionEnabled ? 'translate-x-7' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
       {/* Message */}
@@ -303,131 +360,165 @@ export default function TestimonialsPage() {
       )}
 
       {/* Testimonials List */}
-      <div className="space-y-4">
-        {testimonials.map((testimonial) => (
-          <div key={testimonial.id} className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-            {editingId === testimonial.id ? (
-              /* Edit Mode */
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Name</label>
-                    <input
-                      type="text"
-                      value={testimonial.author_name}
-                      onChange={(e) => updateTestimonial(testimonial.id, 'author_name', e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
-                      style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Title</label>
-                    <input
-                      type="text"
-                      value={testimonial.author_title}
-                      onChange={(e) => updateTestimonial(testimonial.id, 'author_title', e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
-                      style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Location</label>
-                    <input
-                      type="text"
-                      value={testimonial.author_location}
-                      onChange={(e) => updateTestimonial(testimonial.id, 'author_location', e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
-                      style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Monthly Savings ($)</label>
-                    <input
-                      type="number"
-                      value={testimonial.savings_amount}
-                      onChange={(e) => updateTestimonial(testimonial.id, 'savings_amount', parseFloat(e.target.value))}
-                      className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
-                      style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Quote</label>
-                  <textarea
-                    value={testimonial.quote}
-                    onChange={(e) => updateTestimonial(testimonial.id, 'quote', e.target.value)}
-                    rows={3}
-                    className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
-                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
-                  />
-                </div>
-                <div className="flex gap-4">
-                  <button
-                    onClick={() => handleSave(testimonial)}
-                    disabled={saving}
-                    className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition disabled:opacity-50"
-                  >
-                    {saving ? 'Saving...' : 'Save'}
-                  </button>
-                  <button
-                    onClick={() => setEditingId(null)}
-                    className="px-6 py-3 rounded-lg transition"
-                    style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            ) : (
-              /* View Mode */
-              <div>
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center text-green-500 font-bold">
-                      {testimonial.author_name.charAt(0)}
+      {testimonials.length === 0 ? (
+        <div className="rounded-xl p-12 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-6xl mb-4">💬</div>
+          <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>No testimonials yet</h3>
+          <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>Add your first testimonial to display on the homepage</p>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition"
+          >
+            + Add Testimonial
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {testimonials.map((testimonial) => (
+            <div key={testimonial.id} className="rounded-xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+              {editingId === testimonial.id ? (
+                /* Edit Mode */
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Name</label>
+                      <input
+                        type="text"
+                        value={testimonial.author_name}
+                        onChange={(e) => updateTestimonial(testimonial.id, 'author_name', e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                        style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+                      />
                     </div>
                     <div>
-                      <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{testimonial.author_name}</h3>
-                      <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{testimonial.author_title} • {testimonial.author_location}</p>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Title</label>
+                      <input
+                        type="text"
+                        value={testimonial.author_title}
+                        onChange={(e) => updateTestimonial(testimonial.id, 'author_title', e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                        style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+                      />
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {testimonial.is_featured && (
-                      <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-full">Featured</span>
-                    )}
-                    {testimonial.is_active ? (
-                      <span className="px-3 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">Active</span>
-                    ) : (
-                      <span className="px-3 py-1 bg-red-500/20 text-red-400 text-xs rounded-full">Inactive</span>
-                    )}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Location</label>
+                      <input
+                        type="text"
+                        value={testimonial.author_location}
+                        onChange={(e) => updateTestimonial(testimonial.id, 'author_location', e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                        style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Monthly Savings ($)</label>
+                      <input
+                        type="number"
+                        value={testimonial.savings_amount}
+                        onChange={(e) => updateTestimonial(testimonial.id, 'savings_amount', parseFloat(e.target.value))}
+                        className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                        style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+                      />
+                    </div>
                   </div>
-                </div>
-                <p className="mb-4 italic" style={{ color: 'var(--text-secondary)' }}>&ldquo;{testimonial.quote}&rdquo;</p>
-                <div className="flex justify-between items-center">
-                  <span className="text-green-500 font-semibold">Saves ${testimonial.savings_amount}/month</span>
-                  <div className="flex gap-2">
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Quote</label>
+                    <textarea
+                      value={testimonial.quote}
+                      onChange={(e) => updateTestimonial(testimonial.id, 'quote', e.target.value)}
+                      rows={3}
+                      className="w-full px-4 py-3 rounded-lg focus:border-green-500 focus:outline-none"
+                      style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+                    />
+                  </div>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={testimonial.is_featured}
+                        onChange={(e) => updateTestimonial(testimonial.id, 'is_featured', e.target.checked)}
+                        className="w-5 h-5 rounded"
+                      />
+                      <span style={{ color: 'var(--text-secondary)' }}>Featured</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={testimonial.is_active}
+                        onChange={(e) => updateTestimonial(testimonial.id, 'is_active', e.target.checked)}
+                        className="w-5 h-5 rounded"
+                      />
+                      <span style={{ color: 'var(--text-secondary)' }}>Active</span>
+                    </label>
+                  </div>
+                  <div className="flex gap-4">
                     <button
-                      onClick={() => setEditingId(testimonial.id)}
-                      className="px-4 py-2 rounded-lg transition"
+                      onClick={() => handleSave(testimonial)}
+                      disabled={saving}
+                      className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition disabled:opacity-50"
+                    >
+                      {saving ? 'Saving...' : 'Save'}
+                    </button>
+                    <button
+                      onClick={() => setEditingId(null)}
+                      className="px-6 py-3 rounded-lg transition"
                       style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
                     >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(testimonial.id)}
-                      className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition"
-                    >
-                      Delete
+                      Cancel
                     </button>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+              ) : (
+                /* View Mode */
+                <div>
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center text-green-500 font-bold">
+                        {testimonial.author_name.charAt(0)}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{testimonial.author_name}</h3>
+                        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{testimonial.author_title} • {testimonial.author_location}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {testimonial.is_featured && (
+                        <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-full">Featured</span>
+                      )}
+                      {testimonial.is_active ? (
+                        <span className="px-3 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">Active</span>
+                      ) : (
+                        <span className="px-3 py-1 bg-red-500/20 text-red-400 text-xs rounded-full">Inactive</span>
+                      )}
+                    </div>
+                  </div>
+                  <p className="mb-4 italic" style={{ color: 'var(--text-secondary)' }}>&ldquo;{testimonial.quote}&rdquo;</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-green-500 font-semibold">Saves ${testimonial.savings_amount}/month</span>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setEditingId(testimonial.id)}
+                        className="px-4 py-2 rounded-lg transition"
+                        style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(testimonial.id)}
+                        className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
