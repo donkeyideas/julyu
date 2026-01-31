@@ -557,7 +557,7 @@ export default function StoreApplicationsPage() {
                 Reject Application
               </h3>
               <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                Please provide a reason for rejecting <strong>{rejectModal.app.business_name}</strong>'s application.
+                Please provide a reason for rejecting <strong>{rejectModal.app.business_name}</strong>&apos;s application.
               </p>
             </div>
             <div className="mb-6">
