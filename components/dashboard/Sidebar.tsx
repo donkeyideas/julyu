@@ -52,6 +52,7 @@ export default function Sidebar() {
   const [user, setUser] = useState<User | null>(null)
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
   const [friendRequestCount, setFriendRequestCount] = useState(0)
+  const [isStoreOwner, setIsStoreOwner] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -112,15 +113,53 @@ export default function Sidebar() {
     fetchFriendRequests()
     // Poll for new friend requests every 30 seconds
     const interval = setInterval(fetchFriendRequests, 30000)
+
+    // Check if user is a store owner
+    const checkStoreOwner = async () => {
+      // First check localStorage (set during login)
+      if (typeof window !== 'undefined') {
+        const isStoreOwnerFlag = localStorage.getItem('julyu_is_store_owner')
+        if (isStoreOwnerFlag === 'true') {
+          setIsStoreOwner(true)
+          return
+        }
+      }
+
+      // If not in localStorage, check via API
+      const storedUser = localStorage.getItem('julyu_user')
+      if (storedUser) {
+        try {
+          const userData = JSON.parse(storedUser)
+          if (userData.id) {
+            const response = await fetch('/api/auth/check-store-owner', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: userData.id }),
+            })
+            const data = await response.json()
+            if (data.isStoreOwner) {
+              setIsStoreOwner(true)
+              localStorage.setItem('julyu_is_store_owner', 'true')
+            }
+          }
+        } catch (e) {
+          // Ignore errors
+        }
+      }
+    }
+
+    checkStoreOwner()
+
     return () => clearInterval(interval)
   }, [])
 
   const handleLogout = async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
-    // Clear Firebase user data from localStorage
+    // Clear user data from localStorage
     if (typeof window !== 'undefined') {
       localStorage.removeItem('julyu_user')
+      localStorage.removeItem('julyu_is_store_owner')
       localStorage.removeItem('pendingFriends')
     }
     router.push('/auth/login')
@@ -171,6 +210,22 @@ export default function Sidebar() {
               Upgrade Plan →
             </Link>
           )}
+        </div>
+      )}
+
+      {/* Store Portal Switcher - shown if user is a store owner */}
+      {isStoreOwner && (
+        <div className="mb-6 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
+          <Link
+            href="/store-portal"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold transition hover:bg-green-500/15"
+            style={{ color: 'var(--accent-primary)', border: '1px solid var(--accent-primary)' }}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+            </svg>
+            <span>Store Portal</span>
+          </Link>
         </div>
       )}
 

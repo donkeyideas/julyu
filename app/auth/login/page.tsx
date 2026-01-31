@@ -39,9 +39,29 @@ export default function LoginPage() {
           auth_provider: 'email',
           subscription_tier: 'free',
         }))
+
+        // Check if user is an approved store owner
+        try {
+          const storeOwnerResponse = await fetch('/api/auth/check-store-owner', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: data.user.id }),
+          })
+          const storeOwnerData = await storeOwnerResponse.json()
+
+          if (storeOwnerData.isStoreOwner) {
+            localStorage.setItem('julyu_is_store_owner', 'true')
+            router.push('/store-portal')
+            router.refresh()
+            return
+          }
+        } catch (e) {
+          // If check fails, default to regular dashboard
+          console.error('Store owner check failed:', e)
+        }
       }
 
-      // Success - redirect to dashboard
+      // Success - redirect to user dashboard
       router.push('/dashboard')
       router.refresh()
     } catch (err: any) {
@@ -114,7 +134,27 @@ export default function LoginPage() {
         subscription_tier: data.user.subscription_tier || 'free'
       }))
 
-      // Success - redirect to dashboard
+      // Check if user is an approved store owner
+      try {
+        const storeOwnerResponse = await fetch('/api/auth/check-store-owner', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: data.user.id }),
+        })
+        const storeOwnerData = await storeOwnerResponse.json()
+
+        if (storeOwnerData.isStoreOwner) {
+          localStorage.setItem('julyu_is_store_owner', 'true')
+          router.push('/store-portal')
+          router.refresh()
+          return
+        }
+      } catch (e) {
+        // If check fails, default to regular dashboard
+        console.error('Store owner check failed:', e)
+      }
+
+      // Success - redirect to user dashboard
       router.push('/dashboard')
       router.refresh()
     } catch (err: any) {
