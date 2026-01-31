@@ -106,12 +106,12 @@ export default function HomePageEditor() {
     hero: {
       badge: 'Now in Early Access',
       headline: 'Stop Overpaying for Groceries',
-      subheadline: 'Compare prices across Kroger, Walmart, and more in seconds. Scan receipts, track spending, and discover savings with AI-powered intelligence.',
+      subheadline: 'Compare prices across Kroger, Walmart, and more in seconds. Scan receipts, track spending, and discover savings with smart technology.',
       primary_cta: { text: 'Get Early Access', link: '/auth/signup' },
       secondary_cta: { text: 'Try Demo', link: '#demo' },
       stats: [
         { value: 'Real-Time', label: 'Price Data' },
-        { value: 'AI', label: 'Powered' },
+        { value: 'Smart', label: 'Technology' },
         { value: 'Free', label: 'To Start' }
       ]
     },
@@ -133,7 +133,12 @@ export default function HomePageEditor() {
       title: 'Why Julyu?',
       subtitle: '',
       problem_stats: [],
-      benefits: []
+      benefits: [],
+      trust_indicators: [
+        { icon: 'check', label: 'SSL Secured' },
+        { icon: 'shield', label: 'Privacy Protected' },
+        { icon: 'lightning', label: 'Smart Technology' }
+      ]
     },
     store_cta: {
       headline: 'Own a Local Store?',
@@ -646,6 +651,62 @@ export default function HomePageEditor() {
                           updateSection('why_julyu', { benefits: newBenefits })
                         }}
                         multiline
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Trust Indicators</p>
+                  <button
+                    onClick={() => {
+                      const newIndicators = [...(content.why_julyu?.trust_indicators || [])]
+                      newIndicators.push({ icon: 'check', label: '' })
+                      updateSection('why_julyu', { trust_indicators: newIndicators })
+                    }}
+                    className="text-sm text-green-500 hover:text-green-400"
+                  >
+                    + Add Indicator
+                  </button>
+                </div>
+                <p className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>
+                  Icons: check, shield, lightning, star
+                </p>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {(content.why_julyu?.trust_indicators || []).map((indicator: any, index: number) => (
+                    <div key={index} className="p-3 rounded-lg relative" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                      <button
+                        onClick={() => {
+                          const newIndicators = content.why_julyu?.trust_indicators.filter((_: any, i: number) => i !== index)
+                          updateSection('why_julyu', { trust_indicators: newIndicators })
+                        }}
+                        className="absolute top-2 right-2 text-red-400 hover:text-red-500"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                      <InputField
+                        label="Icon"
+                        value={indicator.icon || ''}
+                        onChange={(value) => {
+                          const newIndicators = [...(content.why_julyu?.trust_indicators || [])]
+                          newIndicators[index] = { ...newIndicators[index], icon: value }
+                          updateSection('why_julyu', { trust_indicators: newIndicators })
+                        }}
+                        placeholder="check, shield, lightning, star"
+                      />
+                      <InputField
+                        label="Label"
+                        value={indicator.label || ''}
+                        onChange={(value) => {
+                          const newIndicators = [...(content.why_julyu?.trust_indicators || [])]
+                          newIndicators[index] = { ...newIndicators[index], label: value }
+                          updateSection('why_julyu', { trust_indicators: newIndicators })
+                        }}
+                        placeholder="e.g., SSL Secured"
                       />
                     </div>
                   ))}

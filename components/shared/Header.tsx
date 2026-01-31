@@ -35,6 +35,11 @@ export default function Header({ transparent = false }: HeaderProps) {
             </Link>
           </li>
           <li>
+            <Link href="/for-stores" className="text-white hover:text-green-500 transition">
+              For Stores
+            </Link>
+          </li>
+          <li>
             <Link href="/contact" className="text-white hover:text-green-500 transition">
               Contact
             </Link>
@@ -92,6 +97,11 @@ export default function Header({ transparent = false }: HeaderProps) {
             <li>
               <Link href="/pricing" className="text-white hover:text-green-500 transition block py-2">
                 Pricing
+              </Link>
+            </li>
+            <li>
+              <Link href="/for-stores" className="text-white hover:text-green-500 transition block py-2">
+                For Stores
               </Link>
             </li>
             <li>

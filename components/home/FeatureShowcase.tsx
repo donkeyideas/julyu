@@ -19,7 +19,7 @@ interface FeatureShowcaseProps {
 const defaultFeatures = [
   {
     title: 'Receipt Scanning',
-    description: 'AI-powered OCR extracts every item from your receipts in seconds. No manual entry needed.',
+    description: 'Smart OCR technology extracts every item from your receipts in seconds. No manual entry needed.',
     color: 'green',
   },
   {
