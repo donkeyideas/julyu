@@ -156,7 +156,7 @@ body {
 }
 
 .animate-ticker-scroll {
-  animation: ticker-scroll 20s linear infinite;
+  animation: ticker-scroll 40s linear infinite;
 }
 
 .animate-ticker-scroll:hover {
