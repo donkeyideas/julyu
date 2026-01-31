@@ -29,9 +29,9 @@ ALTER TABLE store_ticker ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public can view active stores" ON store_ticker
   FOR SELECT USING (is_active = true);
 
--- Authenticated users can manage (for admin panel)
-CREATE POLICY "Authenticated users can manage store ticker" ON store_ticker
-  FOR ALL USING (auth.role() = 'authenticated');
+-- Allow all operations (admin API handles its own authentication)
+CREATE POLICY "Allow all operations on store ticker" ON store_ticker
+  FOR ALL USING (true) WITH CHECK (true);
 
 -- Index for efficient ordering
 CREATE INDEX IF NOT EXISTS idx_store_ticker_display_order ON store_ticker(display_order);
