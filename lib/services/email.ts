@@ -34,110 +34,94 @@ export async function sendStoreApprovalEmail({
     const { data, error } = await client.emails.send({
       from: 'Julyu <noreply@julyu.com>',
       to: businessEmail,
-      subject: 'Your Store Application Has Been Approved! 🎉',
+      subject: 'Your Store Application Has Been Approved!',
       html: `
         <!DOCTYPE html>
         <html>
           <head>
             <meta charset="utf-8">
-            <style>
-              body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-              }
-              .header {
-                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-                color: white;
-                padding: 30px;
-                border-radius: 10px 10px 0 0;
-                text-align: center;
-              }
-              .content {
-                background: #f9fafb;
-                padding: 30px;
-                border-radius: 0 0 10px 10px;
-              }
-              .button {
-                display: inline-block;
-                background: #10b981;
-                color: white;
-                padding: 12px 30px;
-                text-decoration: none;
-                border-radius: 6px;
-                font-weight: 600;
-                margin: 20px 0;
-              }
-              .button:hover {
-                background: #059669;
-              }
-              .info-box {
-                background: white;
-                border-left: 4px solid #10b981;
-                padding: 15px;
-                margin: 20px 0;
-                border-radius: 4px;
-              }
-              .footer {
-                text-align: center;
-                color: #6b7280;
-                font-size: 14px;
-                margin-top: 30px;
-                padding-top: 20px;
-                border-top: 1px solid #e5e7eb;
-              }
-            </style>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
           </head>
-          <body>
-            <div class="header">
-              <h1 style="margin: 0; font-size: 28px;">Congratulations, ${businessName}!</h1>
-              <p style="margin: 10px 0 0 0; opacity: 0.9;">Your store application has been approved</p>
-            </div>
+          <body style="margin: 0; padding: 0; background-color: #000000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #000000; padding: 40px 20px;">
+              <tr>
+                <td align="center">
+                  <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #111111; border-radius: 16px; overflow: hidden;">
+                    <!-- Header -->
+                    <tr>
+                      <td style="padding: 40px 40px 30px 40px; text-align: center;">
+                        <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background-color: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 50px; margin-bottom: 24px;">
+                          <span style="width: 8px; height: 8px; background-color: #22c55e; border-radius: 50%; display: inline-block;"></span>
+                          <span style="color: #4ade80; font-size: 14px;">Application Approved</span>
+                        </div>
+                        <h1 style="margin: 0; font-size: 32px; font-weight: 800; color: #ffffff; line-height: 1.2;">
+                          Congratulations, <span style="background: linear-gradient(to right, #22c55e, #86efac); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">${businessName}</span>!
+                        </h1>
+                        <p style="margin: 16px 0 0 0; color: #9ca3af; font-size: 18px;">Your store application has been approved</p>
+                      </td>
+                    </tr>
 
-            <div class="content">
-              <p>Great news! Your application to join the Julyu platform has been approved. You can now start managing your inventory and receiving orders from customers.</p>
+                    <!-- Content -->
+                    <tr>
+                      <td style="padding: 0 40px 40px 40px;">
+                        <p style="color: #d1d5db; font-size: 16px; line-height: 1.7; margin: 0 0 24px 0;">
+                          Great news! Your application to join the Julyu platform has been approved. You can now start managing your inventory and receiving orders from customers.
+                        </p>
 
-              <div class="info-box">
-                <h3 style="margin-top: 0; color: #10b981;">What's Next?</h3>
-                <ol style="margin: 10px 0; padding-left: 20px;">
-                  <li>Access your store owner dashboard</li>
-                  <li>Add your inventory (manually, via receipt scan, or POS integration)</li>
-                  <li>Start receiving and fulfilling customer orders</li>
-                </ol>
-              </div>
+                        <!-- Info Box -->
+                        <div style="background-color: #1a1a1a; border-left: 4px solid #22c55e; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                          <h3 style="margin: 0 0 12px 0; color: #22c55e; font-size: 16px; font-weight: 600;">What's Next?</h3>
+                          <ol style="margin: 0; padding-left: 20px; color: #d1d5db; font-size: 15px; line-height: 1.8;">
+                            <li>Access your store owner dashboard</li>
+                            <li>Add your inventory (manually, via receipt scan, or POS integration)</li>
+                            <li>Start receiving and fulfilling customer orders</li>
+                          </ol>
+                        </div>
 
-              <div style="text-align: center;">
-                <a href="${storePortalUrl}" class="button">
-                  Access Store Dashboard →
-                </a>
-              </div>
+                        <!-- CTA Button -->
+                        <div style="text-align: center; margin: 32px 0;">
+                          <a href="${storePortalUrl}" style="display: inline-block; background-color: #22c55e; color: #000000; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                            Access Store Dashboard →
+                          </a>
+                        </div>
 
-              ${resetPasswordLink ? `
-              <div class="info-box">
-                <h3 style="margin-top: 0; color: #3b82f6;">Login Instructions</h3>
-                <p>If you need to set or reset your password, click the link below:</p>
-                <p><a href="${resetPasswordLink}" style="color: #3b82f6;">Set Your Password</a></p>
-              </div>
-              ` : `
-              <div class="info-box">
-                <h3 style="margin-top: 0; color: #3b82f6;">Login Instructions</h3>
-                <p>Use the email address <strong>${businessEmail}</strong> and your password to log in.</p>
-                <p>If you've forgotten your password, you can reset it on the login page.</p>
-              </div>
-              `}
+                        ${resetPasswordLink ? `
+                        <!-- Password Reset Box -->
+                        <div style="background-color: #1a1a1a; border-left: 4px solid #3b82f6; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                          <h3 style="margin: 0 0 12px 0; color: #60a5fa; font-size: 16px; font-weight: 600;">Login Instructions</h3>
+                          <p style="color: #d1d5db; font-size: 15px; margin: 0 0 12px 0;">If you need to set or reset your password, click the link below:</p>
+                          <a href="${resetPasswordLink}" style="color: #60a5fa; font-size: 15px;">Set Your Password</a>
+                        </div>
+                        ` : `
+                        <!-- Login Info Box -->
+                        <div style="background-color: #1a1a1a; border-left: 4px solid #3b82f6; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                          <h3 style="margin: 0 0 12px 0; color: #60a5fa; font-size: 16px; font-weight: 600;">Login Instructions</h3>
+                          <p style="color: #d1d5db; font-size: 15px; margin: 0 0 8px 0;">Use the email address <strong style="color: #ffffff;">${businessEmail}</strong> and your password to log in.</p>
+                          <p style="color: #9ca3af; font-size: 14px; margin: 0;">If you've forgotten your password, you can reset it on the login page.</p>
+                        </div>
+                        `}
 
-              <p>If you have any questions or need assistance getting started, please don't hesitate to reach out to our support team.</p>
+                        <p style="color: #9ca3af; font-size: 15px; line-height: 1.7; margin: 0 0 24px 0;">
+                          If you have any questions or need assistance getting started, please don't hesitate to reach out to our support team.
+                        </p>
 
-              <p style="margin-top: 30px;">Welcome to Julyu!</p>
-              <p style="margin: 0;"><strong>The Julyu Team</strong></p>
-            </div>
+                        <p style="color: #22c55e; font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">Welcome to Julyu!</p>
+                        <p style="color: #9ca3af; font-size: 15px; margin: 0;">The Julyu Team</p>
+                      </td>
+                    </tr>
 
-            <div class="footer">
-              <p>This email was sent by Julyu. If you have questions, please contact support.</p>
-            </div>
+                    <!-- Footer -->
+                    <tr>
+                      <td style="padding: 24px 40px; border-top: 1px solid #222222; text-align: center;">
+                        <p style="color: #6b7280; font-size: 13px; margin: 0;">
+                          This email was sent by Julyu. If you have questions, please contact support.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
           </body>
         </html>
       `,
@@ -183,68 +167,60 @@ export async function sendStoreRejectionEmail({
         <html>
           <head>
             <meta charset="utf-8">
-            <style>
-              body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-              }
-              .header {
-                background: #6b7280;
-                color: white;
-                padding: 30px;
-                border-radius: 10px 10px 0 0;
-                text-align: center;
-              }
-              .content {
-                background: #f9fafb;
-                padding: 30px;
-                border-radius: 0 0 10px 10px;
-              }
-              .info-box {
-                background: white;
-                border-left: 4px solid #ef4444;
-                padding: 15px;
-                margin: 20px 0;
-                border-radius: 4px;
-              }
-              .footer {
-                text-align: center;
-                color: #6b7280;
-                font-size: 14px;
-                margin-top: 30px;
-                padding-top: 20px;
-                border-top: 1px solid #e5e7eb;
-              }
-            </style>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
           </head>
-          <body>
-            <div class="header">
-              <h1 style="margin: 0; font-size: 28px;">Application Status Update</h1>
-            </div>
+          <body style="margin: 0; padding: 0; background-color: #000000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #000000; padding: 40px 20px;">
+              <tr>
+                <td align="center">
+                  <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #111111; border-radius: 16px; overflow: hidden;">
+                    <!-- Header -->
+                    <tr>
+                      <td style="padding: 40px 40px 30px 40px; text-align: center;">
+                        <h1 style="margin: 0; font-size: 28px; font-weight: 800; color: #ffffff; line-height: 1.2;">
+                          Application Status Update
+                        </h1>
+                      </td>
+                    </tr>
 
-            <div class="content">
-              <p>Dear ${businessName},</p>
+                    <!-- Content -->
+                    <tr>
+                      <td style="padding: 0 40px 40px 40px;">
+                        <p style="color: #d1d5db; font-size: 16px; line-height: 1.7; margin: 0 0 16px 0;">
+                          Dear ${businessName},
+                        </p>
 
-              <p>Thank you for your interest in joining the Julyu platform. After careful review, we regret to inform you that we are unable to approve your store application at this time.</p>
+                        <p style="color: #d1d5db; font-size: 16px; line-height: 1.7; margin: 0 0 24px 0;">
+                          Thank you for your interest in joining the Julyu platform. After careful review, we regret to inform you that we are unable to approve your store application at this time.
+                        </p>
 
-              <div class="info-box">
-                <h3 style="margin-top: 0; color: #ef4444;">Reason:</h3>
-                <p style="margin: 0;">${reason}</p>
-              </div>
+                        <!-- Reason Box -->
+                        <div style="background-color: #1a1a1a; border-left: 4px solid #ef4444; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                          <h3 style="margin: 0 0 12px 0; color: #f87171; font-size: 16px; font-weight: 600;">Reason:</h3>
+                          <p style="color: #d1d5db; font-size: 15px; margin: 0;">${reason}</p>
+                        </div>
 
-              <p>If you believe this decision was made in error or if you'd like to discuss your application further, please don't hesitate to contact our support team.</p>
+                        <p style="color: #9ca3af; font-size: 15px; line-height: 1.7; margin: 0 0 24px 0;">
+                          If you believe this decision was made in error or if you'd like to discuss your application further, please don't hesitate to contact our support team.
+                        </p>
 
-              <p style="margin-top: 30px;">Best regards,</p>
-              <p style="margin: 0;"><strong>The Julyu Team</strong></p>
-            </div>
+                        <p style="color: #9ca3af; font-size: 15px; margin: 0 0 4px 0;">Best regards,</p>
+                        <p style="color: #ffffff; font-size: 15px; font-weight: 600; margin: 0;">The Julyu Team</p>
+                      </td>
+                    </tr>
 
-            <div class="footer">
-              <p>This email was sent by Julyu. If you have questions, please contact support.</p>
-            </div>
+                    <!-- Footer -->
+                    <tr>
+                      <td style="padding: 24px 40px; border-top: 1px solid #222222; text-align: center;">
+                        <p style="color: #6b7280; font-size: 13px; margin: 0;">
+                          This email was sent by Julyu. If you have questions, please contact support.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
           </body>
         </html>
       `,
@@ -290,78 +266,75 @@ export async function sendStoreApplicationSubmittedEmail({
         <html>
           <head>
             <meta charset="utf-8">
-            <style>
-              body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-              }
-              .header {
-                background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
-                color: white;
-                padding: 30px;
-                border-radius: 10px 10px 0 0;
-                text-align: center;
-              }
-              .content {
-                background: #f9fafb;
-                padding: 30px;
-                border-radius: 0 0 10px 10px;
-              }
-              .info-box {
-                background: white;
-                border-left: 4px solid #3b82f6;
-                padding: 15px;
-                margin: 20px 0;
-                border-radius: 4px;
-              }
-              .footer {
-                text-align: center;
-                color: #6b7280;
-                font-size: 14px;
-                margin-top: 30px;
-                padding-top: 20px;
-                border-top: 1px solid #e5e7eb;
-              }
-            </style>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
           </head>
-          <body>
-            <div class="header">
-              <h1 style="margin: 0; font-size: 28px;">Application Received!</h1>
-              <p style="margin: 10px 0 0 0; opacity: 0.9;">Thank you for applying to partner with Julyu</p>
-            </div>
+          <body style="margin: 0; padding: 0; background-color: #000000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #000000; padding: 40px 20px;">
+              <tr>
+                <td align="center">
+                  <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #111111; border-radius: 16px; overflow: hidden;">
+                    <!-- Header -->
+                    <tr>
+                      <td style="padding: 40px 40px 30px 40px; text-align: center;">
+                        <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background-color: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 50px; margin-bottom: 24px;">
+                          <span style="width: 8px; height: 8px; background-color: #3b82f6; border-radius: 50%; display: inline-block;"></span>
+                          <span style="color: #60a5fa; font-size: 14px;">Under Review</span>
+                        </div>
+                        <h1 style="margin: 0; font-size: 32px; font-weight: 800; color: #ffffff; line-height: 1.2;">
+                          Application Received!
+                        </h1>
+                        <p style="margin: 16px 0 0 0; color: #9ca3af; font-size: 18px;">Thank you for applying to partner with Julyu</p>
+                      </td>
+                    </tr>
 
-            <div class="content">
-              <p>Dear ${businessName},</p>
+                    <!-- Content -->
+                    <tr>
+                      <td style="padding: 0 40px 40px 40px;">
+                        <p style="color: #d1d5db; font-size: 16px; line-height: 1.7; margin: 0 0 16px 0;">
+                          Dear ${businessName},
+                        </p>
 
-              <p>We've successfully received your application to join the Julyu platform for <strong>${storeName}</strong>.</p>
+                        <p style="color: #d1d5db; font-size: 16px; line-height: 1.7; margin: 0 0 24px 0;">
+                          We've successfully received your application to join the Julyu platform for <strong style="color: #ffffff;">${storeName}</strong>.
+                        </p>
 
-              <div class="info-box">
-                <h3 style="margin-top: 0; color: #3b82f6;">What Happens Next?</h3>
-                <p style="margin-bottom: 0;">Our team will review your application within <strong>1-2 business days</strong>. We'll verify your business information and ensure everything is in order.</p>
-              </div>
+                        <!-- What Happens Next Box -->
+                        <div style="background-color: #1a1a1a; border-left: 4px solid #3b82f6; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                          <h3 style="margin: 0 0 12px 0; color: #60a5fa; font-size: 16px; font-weight: 600;">What Happens Next?</h3>
+                          <p style="color: #d1d5db; font-size: 15px; margin: 0;">Our team will review your application within <strong style="color: #ffffff;">1-2 business days</strong>. We'll verify your business information and ensure everything is in order.</p>
+                        </div>
 
-              <div class="info-box">
-                <h3 style="margin-top: 0; color: #10b981;">Once Approved, You'll Receive:</h3>
-                <ul style="margin: 10px 0; padding-left: 20px;">
-                  <li>Login credentials for your store owner dashboard</li>
-                  <li>Instructions on how to set up your inventory</li>
-                  <li>Next steps to start receiving customer orders</li>
-                </ul>
-              </div>
+                        <!-- Once Approved Box -->
+                        <div style="background-color: #1a1a1a; border-left: 4px solid #22c55e; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                          <h3 style="margin: 0 0 12px 0; color: #4ade80; font-size: 16px; font-weight: 600;">Once Approved, You'll Receive:</h3>
+                          <ul style="margin: 0; padding-left: 20px; color: #d1d5db; font-size: 15px; line-height: 1.8;">
+                            <li>Login credentials for your store owner dashboard</li>
+                            <li>Instructions on how to set up your inventory</li>
+                            <li>Next steps to start receiving customer orders</li>
+                          </ul>
+                        </div>
 
-              <p>If you have any questions in the meantime, please don't hesitate to reach out to our support team.</p>
+                        <p style="color: #9ca3af; font-size: 15px; line-height: 1.7; margin: 0 0 24px 0;">
+                          If you have any questions in the meantime, please don't hesitate to reach out to our support team.
+                        </p>
 
-              <p style="margin-top: 30px;">Best regards,</p>
-              <p style="margin: 0;"><strong>The Julyu Team</strong></p>
-            </div>
+                        <p style="color: #9ca3af; font-size: 15px; margin: 0 0 4px 0;">Best regards,</p>
+                        <p style="color: #ffffff; font-size: 15px; font-weight: 600; margin: 0;">The Julyu Team</p>
+                      </td>
+                    </tr>
 
-            <div class="footer">
-              <p>This email was sent by Julyu. If you have questions, please contact support.</p>
-            </div>
+                    <!-- Footer -->
+                    <tr>
+                      <td style="padding: 24px 40px; border-top: 1px solid #222222; text-align: center;">
+                        <p style="color: #6b7280; font-size: 13px; margin: 0;">
+                          This email was sent by Julyu. If you have questions, please contact support.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
           </body>
         </html>
       `,
@@ -410,111 +383,85 @@ export async function sendStoreAccountCreatedEmail({
         <html>
           <head>
             <meta charset="utf-8">
-            <style>
-              body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-              }
-              .header {
-                background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
-                color: white;
-                padding: 30px;
-                border-radius: 10px 10px 0 0;
-                text-align: center;
-              }
-              .content {
-                background: #f9fafb;
-                padding: 30px;
-                border-radius: 0 0 10px 10px;
-              }
-              .credentials-box {
-                background: white;
-                border: 2px solid #3b82f6;
-                padding: 20px;
-                margin: 20px 0;
-                border-radius: 8px;
-                text-align: center;
-              }
-              .password {
-                background: #fee2e2;
-                color: #991b1b;
-                padding: 10px;
-                font-family: 'Courier New', monospace;
-                font-size: 18px;
-                font-weight: bold;
-                border-radius: 4px;
-                margin: 10px 0;
-              }
-              .button {
-                display: inline-block;
-                background: #3b82f6;
-                color: white;
-                padding: 12px 30px;
-                text-decoration: none;
-                border-radius: 6px;
-                font-weight: 600;
-                margin: 20px 0;
-              }
-              .warning {
-                background: #fef3c7;
-                border-left: 4px solid #f59e0b;
-                padding: 15px;
-                margin: 20px 0;
-                border-radius: 4px;
-              }
-              .footer {
-                text-align: center;
-                color: #6b7280;
-                font-size: 14px;
-                margin-top: 30px;
-                padding-top: 20px;
-                border-top: 1px solid #e5e7eb;
-              }
-            </style>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
           </head>
-          <body>
-            <div class="header">
-              <h1 style="margin: 0; font-size: 28px;">Account Created!</h1>
-              <p style="margin: 10px 0 0 0; opacity: 0.9;">Your store owner account is ready</p>
-            </div>
+          <body style="margin: 0; padding: 0; background-color: #000000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #000000; padding: 40px 20px;">
+              <tr>
+                <td align="center">
+                  <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #111111; border-radius: 16px; overflow: hidden;">
+                    <!-- Header -->
+                    <tr>
+                      <td style="padding: 40px 40px 30px 40px; text-align: center;">
+                        <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background-color: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 50px; margin-bottom: 24px;">
+                          <span style="width: 8px; height: 8px; background-color: #22c55e; border-radius: 50%; display: inline-block;"></span>
+                          <span style="color: #4ade80; font-size: 14px;">Account Ready</span>
+                        </div>
+                        <h1 style="margin: 0; font-size: 32px; font-weight: 800; color: #ffffff; line-height: 1.2;">
+                          Account Created!
+                        </h1>
+                        <p style="margin: 16px 0 0 0; color: #9ca3af; font-size: 18px;">Your store owner account is ready</p>
+                      </td>
+                    </tr>
 
-            <div class="content">
-              <p>Dear ${businessName},</p>
+                    <!-- Content -->
+                    <tr>
+                      <td style="padding: 0 40px 40px 40px;">
+                        <p style="color: #d1d5db; font-size: 16px; line-height: 1.7; margin: 0 0 16px 0;">
+                          Dear ${businessName},
+                        </p>
 
-              <p>Your store owner account has been created as part of your application submission. Below are your temporary login credentials:</p>
+                        <p style="color: #d1d5db; font-size: 16px; line-height: 1.7; margin: 0 0 24px 0;">
+                          Your store owner account has been created as part of your application submission. Below are your temporary login credentials:
+                        </p>
 
-              <div class="credentials-box">
-                <h3 style="margin-top: 0; color: #3b82f6;">Login Credentials</h3>
-                <p style="margin: 5px 0;"><strong>Email:</strong> ${businessEmail}</p>
-                <p style="margin: 5px 0;"><strong>Temporary Password:</strong></p>
-                <div class="password">${temporaryPassword}</div>
-              </div>
+                        <!-- Credentials Box -->
+                        <div style="background-color: #1a1a1a; border: 2px solid #22c55e; padding: 24px; border-radius: 12px; margin-bottom: 24px; text-align: center;">
+                          <h3 style="margin: 0 0 16px 0; color: #22c55e; font-size: 18px; font-weight: 600;">Login Credentials</h3>
+                          <p style="color: #d1d5db; font-size: 15px; margin: 0 0 8px 0;"><strong style="color: #9ca3af;">Email:</strong> <span style="color: #ffffff;">${businessEmail}</span></p>
+                          <p style="color: #9ca3af; font-size: 15px; margin: 16px 0 8px 0;"><strong>Temporary Password:</strong></p>
+                          <div style="background-color: #0d0d0d; color: #22c55e; padding: 12px 20px; font-family: 'Courier New', monospace; font-size: 18px; font-weight: bold; border-radius: 8px; border: 1px solid #333333; display: inline-block;">
+                            ${temporaryPassword}
+                          </div>
+                        </div>
 
-              <div class="warning">
-                <p style="margin: 0;"><strong>⚠️ Important:</strong> Please change this temporary password after your first login for security purposes.</p>
-              </div>
+                        <!-- Warning Box -->
+                        <div style="background-color: #1a1a1a; border-left: 4px solid #f59e0b; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                          <p style="color: #fbbf24; font-size: 15px; margin: 0;"><strong>Important:</strong> <span style="color: #d1d5db;">Please change this temporary password after your first login for security purposes.</span></p>
+                        </div>
 
-              <p>You can log in to your store portal once your application is approved. You'll receive another email when that happens.</p>
+                        <p style="color: #d1d5db; font-size: 15px; line-height: 1.7; margin: 0 0 24px 0;">
+                          You can log in to your store portal once your application is approved. You'll receive another email when that happens.
+                        </p>
 
-              <div style="text-align: center;">
-                <a href="${storePortalUrl}" class="button">
-                  Go to Store Portal →
-                </a>
-              </div>
+                        <!-- CTA Button -->
+                        <div style="text-align: center; margin: 32px 0;">
+                          <a href="${storePortalUrl}" style="display: inline-block; background-color: #22c55e; color: #000000; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                            Go to Store Portal →
+                          </a>
+                        </div>
 
-              <p style="margin-top: 30px;">If you have any questions, please contact our support team.</p>
+                        <p style="color: #9ca3af; font-size: 15px; line-height: 1.7; margin: 0 0 24px 0;">
+                          If you have any questions, please contact our support team.
+                        </p>
 
-              <p style="margin-top: 30px;">Best regards,</p>
-              <p style="margin: 0;"><strong>The Julyu Team</strong></p>
-            </div>
+                        <p style="color: #9ca3af; font-size: 15px; margin: 0 0 4px 0;">Best regards,</p>
+                        <p style="color: #ffffff; font-size: 15px; font-weight: 600; margin: 0;">The Julyu Team</p>
+                      </td>
+                    </tr>
 
-            <div class="footer">
-              <p>This email was sent by Julyu. If you have questions, please contact support.</p>
-            </div>
+                    <!-- Footer -->
+                    <tr>
+                      <td style="padding: 24px 40px; border-top: 1px solid #222222; text-align: center;">
+                        <p style="color: #6b7280; font-size: 13px; margin: 0;">
+                          This email was sent by Julyu. If you have questions, please contact support.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
           </body>
         </html>
       `,
