@@ -29,12 +29,12 @@ export default function StoreTicker() {
   if (loading || stores.length === 0) return null
 
   return (
-    <section className="py-20 px-[5%] bg-black overflow-hidden">
+    <section className="py-10 px-[5%] bg-black overflow-hidden">
       <div className="max-w-7xl mx-auto">
         <h2 className="text-center text-2xl md:text-3xl font-bold text-white mb-4">
           Prices From Stores You <span className="text-green-500">Love</span>
         </h2>
-        <p className="text-center text-gray-400 mb-12 max-w-2xl mx-auto">
+        <p className="text-center text-gray-400 mb-8 max-w-2xl mx-auto">
           Compare prices across your favorite retailers in real-time
         </p>
 
@@ -62,9 +62,9 @@ export default function StoreTicker() {
                       <Image
                         src={store.logo_url}
                         alt={store.name}
-                        width={160}
-                        height={64}
-                        className="h-14 md:h-16 w-auto object-contain"
+                        width={200}
+                        height={80}
+                        className="h-20 md:h-24 w-auto object-contain"
                       />
                     </a>
                   ) : (
@@ -97,9 +97,9 @@ export default function StoreTicker() {
                       <Image
                         src={store.logo_url}
                         alt={store.name}
-                        width={160}
-                        height={64}
-                        className="h-14 md:h-16 w-auto object-contain"
+                        width={200}
+                        height={80}
+                        className="h-20 md:h-24 w-auto object-contain"
                       />
                     </a>
                   ) : (
