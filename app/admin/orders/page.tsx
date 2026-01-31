@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import * as XLSX from 'xlsx'
 
 export default function AdminOrdersPage() {
-  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [orders, setOrders] = useState<any[]>([])
 
@@ -89,6 +88,45 @@ export default function AdminOrdersPage() {
     cancelled: 'Cancelled',
   }
 
+  const exportToExcel = () => {
+    const exportData = allOrders.map((order: any) => ({
+      'Order #': order.order_number,
+      'Customer Name': order.customer_name || '',
+      'Customer Email': order.customer_email || '',
+      'Customer Phone': order.customer_phone || '',
+      'Store': order.bodega_store?.name || 'Unknown',
+      'Store Owner': order.store_owner?.business_name || 'Unknown',
+      'Items': order.items?.length || 0,
+      'Subtotal': parseFloat(order.subtotal || 0).toFixed(2),
+      'Tax': parseFloat(order.tax_amount || 0).toFixed(2),
+      'Delivery Fee': parseFloat(order.delivery_fee || 0).toFixed(2),
+      'Total': parseFloat(order.total_amount || 0).toFixed(2),
+      'Commission Rate': `${order.commission_rate || 0}%`,
+      'Commission Amount': parseFloat(order.commission_amount || 0).toFixed(2),
+      'Store Payout': parseFloat(order.store_payout || 0).toFixed(2),
+      'Status': statusLabels[order.status] || order.status,
+      'Delivery Method': order.delivery_method || '',
+      'Delivery Address': order.delivery_address || '',
+      'Order Date': new Date(order.ordered_at).toLocaleString(),
+      'Accepted At': order.accepted_at ? new Date(order.accepted_at).toLocaleString() : '',
+      'Completed At': order.completed_at ? new Date(order.completed_at).toLocaleString() : '',
+    }))
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Orders')
+
+    // Auto-size columns
+    const maxWidth = 30
+    const colWidths = Object.keys(exportData[0] || {}).map(key => ({
+      wch: Math.min(maxWidth, Math.max(key.length, ...exportData.map(row => String(row[key as keyof typeof row] || '').length)))
+    }))
+    worksheet['!cols'] = colWidths
+
+    const fileName = `julyu-orders-${new Date().toISOString().split('T')[0]}.xlsx`
+    XLSX.writeFile(workbook, fileName)
+  }
+
   return (
     <div className="space-y-6">
       <div className="mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
@@ -150,7 +188,11 @@ export default function AdminOrdersPage() {
             <option value="delivered">Completed</option>
             <option value="cancelled">Cancelled</option>
           </select>
-          <button className="px-6 py-2 bg-green-500 text-black font-black rounded-xl hover:bg-green-400 transition">
+          <button
+            onClick={exportToExcel}
+            disabled={allOrders.length === 0}
+            className="px-6 py-2 bg-green-500 text-black font-black rounded-xl hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          >
             Export
           </button>
         </div>
