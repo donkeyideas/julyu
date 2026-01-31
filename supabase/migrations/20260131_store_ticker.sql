@@ -29,12 +29,10 @@ ALTER TABLE store_ticker ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public can view active stores" ON store_ticker
   FOR SELECT USING (is_active = true);
 
--- Admin full access
-CREATE POLICY "Admins can manage store ticker" ON store_ticker
-  FOR ALL USING (
-    EXISTS (SELECT 1 FROM users WHERE users.id = auth.uid() AND users.role = 'admin')
-  );
+-- Authenticated users can manage (for admin panel)
+CREATE POLICY "Authenticated users can manage store ticker" ON store_ticker
+  FOR ALL USING (auth.role() = 'authenticated');
 
 -- Index for efficient ordering
-CREATE INDEX idx_store_ticker_display_order ON store_ticker(display_order);
-CREATE INDEX idx_store_ticker_active ON store_ticker(is_active);
+CREATE INDEX IF NOT EXISTS idx_store_ticker_display_order ON store_ticker(display_order);
+CREATE INDEX IF NOT EXISTS idx_store_ticker_active ON store_ticker(is_active);
