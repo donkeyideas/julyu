@@ -4,10 +4,12 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import * as XLSX from 'xlsx'
+import NotificationModal from '@/components/ui/NotificationModal'
 
 export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true)
   const [orders, setOrders] = useState<any[]>([])
+  const [notification, setNotification] = useState<{ message: string; type: 'info' | 'success' | 'warning' | 'error' } | null>(null)
 
   useEffect(() => {
     loadOrders()
@@ -90,7 +92,7 @@ export default function AdminOrdersPage() {
 
   const exportToExcel = () => {
     if (allOrders.length === 0) {
-      alert('No orders to export')
+      setNotification({ message: 'No orders to export', type: 'info' })
       return
     }
 
@@ -134,6 +136,14 @@ export default function AdminOrdersPage() {
 
   return (
     <div className="space-y-6">
+      {notification && (
+        <NotificationModal
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
+
       <div className="mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
         <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>Bodega Orders</h1>
         <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>
