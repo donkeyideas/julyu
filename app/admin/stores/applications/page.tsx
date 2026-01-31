@@ -11,13 +11,18 @@ export default function StoreApplicationsPage() {
   const [error, setError] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
 
+  // Modal states
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState<{ open: boolean; app: any | null }>({ open: false, app: null })
+  const [rejectModal, setRejectModal] = useState<{ open: boolean; app: any | null }>({ open: false, app: null })
+  const [rejectReason, setRejectReason] = useState('')
+  const [alertModal, setAlertModal] = useState<{ open: boolean; title: string; message: string; type: 'error' | 'success' }>({ open: false, title: '', message: '', type: 'error' })
+
   useEffect(() => {
     loadApplications()
   }, [])
 
   const loadApplications = async () => {
     try {
-      // Use API route to fetch applications (bypasses RLS)
       const response = await fetch('/api/admin/store-applications')
 
       if (response.ok) {
@@ -74,28 +79,35 @@ export default function StoreApplicationsPage() {
       if (response.ok) {
         await loadApplications()
         setIsModalOpen(false)
+        setAlertModal({ open: true, title: 'Success', message: 'Application approved successfully!', type: 'success' })
       } else {
         setError(data.error || 'Failed to approve application')
+        setAlertModal({ open: true, title: 'Error', message: data.error || 'Failed to approve application', type: 'error' })
       }
     } catch (error) {
       console.error('Error approving application:', error)
       setError('Network error. Please try again.')
+      setAlertModal({ open: true, title: 'Error', message: 'Network error. Please try again.', type: 'error' })
     } finally {
       setActionLoading(false)
     }
   }
 
-  const handleReject = async (id: string) => {
-    const reason = prompt('Rejection reason:')
-    if (!reason) return
+  const openRejectModal = (app: any) => {
+    setRejectModal({ open: true, app })
+    setRejectReason('')
+  }
+
+  const handleReject = async () => {
+    if (!rejectModal.app || !rejectReason.trim()) return
 
     setActionLoading(true)
     setError(null)
     try {
-      const response = await fetch(`/api/admin/store-applications/${id}/reject`, {
+      const response = await fetch(`/api/admin/store-applications/${rejectModal.app.id}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason }),
+        body: JSON.stringify({ reason: rejectReason }),
       })
 
       const data = await response.json()
@@ -103,12 +115,16 @@ export default function StoreApplicationsPage() {
       if (response.ok) {
         await loadApplications()
         setIsModalOpen(false)
+        setRejectModal({ open: false, app: null })
+        setAlertModal({ open: true, title: 'Success', message: 'Application rejected.', type: 'success' })
       } else {
         setError(data.error || 'Failed to reject application')
+        setAlertModal({ open: true, title: 'Error', message: data.error || 'Failed to reject application', type: 'error' })
       }
     } catch (error) {
       console.error('Error rejecting application:', error)
       setError('Network error. Please try again.')
+      setAlertModal({ open: true, title: 'Error', message: 'Network error. Please try again.', type: 'error' })
     } finally {
       setActionLoading(false)
     }
@@ -126,29 +142,38 @@ export default function StoreApplicationsPage() {
     setError(null)
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this store application? This will also delete the associated store owner account and all related data. This action cannot be undone.')) {
-      return
-    }
+  const openDeleteConfirm = (app: any) => {
+    setDeleteConfirmModal({ open: true, app })
+  }
 
+  const handleDelete = async () => {
+    if (!deleteConfirmModal.app) return
+
+    const id = deleteConfirmModal.app.id
     setDeleting(id)
+    setDeleteConfirmModal({ open: false, app: null })
+
     try {
+      console.log('[Delete] Attempting to delete store owner:', id)
       const response = await fetch(`/api/admin/store-owners/${id}/delete`, {
         method: 'DELETE',
       })
+
+      const data = await response.json()
+      console.log('[Delete] Response:', response.status, data)
 
       if (response.ok) {
         await loadApplications()
         if (selectedApplication?.id === id) {
           closeModal()
         }
+        setAlertModal({ open: true, title: 'Success', message: 'Store deleted successfully.', type: 'success' })
       } else {
-        const data = await response.json()
-        alert(`Failed to delete store: ${data.error || 'Unknown error'}`)
+        setAlertModal({ open: true, title: 'Delete Failed', message: data.error || 'Unknown error occurred', type: 'error' })
       }
     } catch (error) {
       console.error('Error deleting store:', error)
-      alert('Failed to delete store. Please try again.')
+      setAlertModal({ open: true, title: 'Delete Failed', message: 'Network error. Please try again.', type: 'error' })
     } finally {
       setDeleting(null)
     }
@@ -267,7 +292,7 @@ export default function StoreApplicationsPage() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
-                            handleReject(app.id)
+                            openRejectModal(app)
                           }}
                           className="text-red-500 hover:text-red-400 font-semibold"
                         >
@@ -278,7 +303,7 @@ export default function StoreApplicationsPage() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
-                        handleDelete(app.id)
+                        openDeleteConfirm(app)
                       }}
                       disabled={deleting === app.id}
                       className="text-red-500 hover:text-red-400 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
@@ -391,14 +416,6 @@ export default function StoreApplicationsPage() {
                           {store.address}, {store.city}, {store.state} {store.zip}
                         </div>
                       </div>
-                      {store.latitude && store.longitude && (
-                        <div className="md:col-span-2">
-                          <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Coordinates</div>
-                          <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>
-                            {store.latitude}, {store.longitude}
-                          </div>
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
@@ -448,20 +465,14 @@ export default function StoreApplicationsPage() {
               {selectedApplication.application_status === 'pending' ? (
                 <div className="flex gap-4">
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleApprove(selectedApplication.id)
-                    }}
+                    onClick={() => handleApprove(selectedApplication.id)}
                     disabled={actionLoading}
                     className="flex-1 px-6 py-3 rounded-xl font-bold text-white bg-green-500 hover:bg-green-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {actionLoading ? 'Processing...' : 'Approve Application'}
                   </button>
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleReject(selectedApplication.id)
-                    }}
+                    onClick={() => openRejectModal(selectedApplication)}
                     disabled={actionLoading}
                     className="flex-1 px-6 py-3 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -470,16 +481,154 @@ export default function StoreApplicationsPage() {
                 </div>
               ) : (
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleDelete(selectedApplication.id)
-                  }}
+                  onClick={() => openDeleteConfirm(selectedApplication)}
                   disabled={deleting === selectedApplication.id}
                   className="w-full px-6 py-3 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {deleting === selectedApplication.id ? 'Deleting...' : 'Delete Application'}
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmModal.open && deleteConfirmModal.app && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.85)' }}
+          onClick={() => setDeleteConfirmModal({ open: false, app: null })}
+        >
+          <div
+            className="rounded-2xl max-w-md w-full p-8"
+            style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
+                <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
+                Delete Store Application?
+              </h3>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                Are you sure you want to delete <strong>{deleteConfirmModal.app.business_name}</strong>? This will also delete the associated store owner account and all related data.
+              </p>
+              <p className="text-sm text-red-500 mt-2 font-semibold">
+                This action cannot be undone.
+              </p>
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setDeleteConfirmModal({ open: false, app: null })}
+                className="flex-1 px-6 py-3 rounded-xl font-bold transition"
+                style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="flex-1 px-6 py-3 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 transition"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Modal with Reason Input */}
+      {rejectModal.open && rejectModal.app && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.85)' }}
+          onClick={() => setRejectModal({ open: false, app: null })}
+        >
+          <div
+            className="rounded-2xl max-w-md w-full p-8"
+            style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-6">
+              <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
+                Reject Application
+              </h3>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                Please provide a reason for rejecting <strong>{rejectModal.app.business_name}</strong>'s application.
+              </p>
+            </div>
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
+                Rejection Reason *
+              </label>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="Enter the reason for rejection..."
+                rows={4}
+                className="w-full px-4 py-3 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+                style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
+              />
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setRejectModal({ open: false, app: null })}
+                className="flex-1 px-6 py-3 rounded-xl font-bold transition"
+                style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleReject}
+                disabled={!rejectReason.trim() || actionLoading}
+                className="flex-1 px-6 py-3 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {actionLoading ? 'Rejecting...' : 'Reject Application'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Alert Modal */}
+      {alertModal.open && (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.85)' }}
+          onClick={() => setAlertModal({ ...alertModal, open: false })}
+        >
+          <div
+            className="rounded-2xl max-w-sm w-full p-8"
+            style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center">
+              <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${alertModal.type === 'success' ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
+                {alertModal.type === 'success' ? (
+                  <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                )}
+              </div>
+              <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
+                {alertModal.title}
+              </h3>
+              <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
+                {alertModal.message}
+              </p>
+              <button
+                onClick={() => setAlertModal({ ...alertModal, open: false })}
+                className={`w-full px-6 py-3 rounded-xl font-bold text-white transition ${alertModal.type === 'success' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'}`}
+              >
+                OK
+              </button>
             </div>
           </div>
         </div>
