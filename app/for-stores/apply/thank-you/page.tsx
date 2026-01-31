@@ -103,8 +103,8 @@ export default function ThankYouPage() {
                   <h3 className="text-lg font-bold text-white mb-2">Have Questions?</h3>
                   <p className="text-gray-400">
                     If you have any questions about your application or the onboarding process, feel free to reach out to our support team at{' '}
-                    <a href="mailto:support@julyu.com" className="text-blue-400 hover:text-blue-300 underline">
-                      support@julyu.com
+                    <a href="mailto:info@donkeyideas.com" className="text-blue-400 hover:text-blue-300 underline">
+                      info@donkeyideas.com
                     </a>
                   </p>
                 </div>

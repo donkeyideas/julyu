@@ -4,11 +4,11 @@ import { sendStoreApprovalEmail } from '@/lib/services/email'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabaseAdmin = createServiceRoleClient()
-    const { id } = params
+    const { id } = await params
 
     // Get store owner details first
     const { data: storeOwner, error: fetchError } = await supabaseAdmin

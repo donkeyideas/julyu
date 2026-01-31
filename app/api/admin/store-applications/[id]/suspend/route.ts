@@ -4,7 +4,7 @@ import { verifyAdminAccess } from '@/lib/auth/store-portal-auth'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify admin access
@@ -20,7 +20,7 @@ export async function POST(
     const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    const storeOwnerId = params.id
+    const { id: storeOwnerId } = await params
 
     // Get store owner
     const { data: storeOwner, error: fetchError } = await supabase
