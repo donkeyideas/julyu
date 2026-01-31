@@ -34,8 +34,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check if Stripe is configured
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return NextResponse.json(
+        { error: 'Stripe is not configured. Please add STRIPE_SECRET_KEY to your environment variables.' },
+        { status: 400 }
+      )
+    }
+
+    // Check if there are any store owners to process
+    if (storeOwners.length === 0) {
+      return NextResponse.json({
+        success: true,
+        message: 'No approved store owners found',
+        payoutsCreated: 0,
+        totalAmount: 0,
+      })
+    }
+
     const stripeService = new StripeConnectService({
-      secretKey: process.env.STRIPE_SECRET_KEY || '',
+      secretKey: process.env.STRIPE_SECRET_KEY,
       connectClientId: process.env.STRIPE_CONNECT_CLIENT_ID || '',
     })
 
