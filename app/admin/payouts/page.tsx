@@ -77,7 +77,12 @@ export default function PayoutsPage() {
           </p>
         </div>
         <button
-          onClick={() => document.getElementById('payout-generator')?.scrollIntoView({ behavior: 'smooth' })}
+          onClick={() => {
+            document.getElementById('payout-generator')?.scrollIntoView({ behavior: 'smooth' })
+            setTimeout(() => {
+              (document.getElementById('payout-form') as HTMLFormElement)?.requestSubmit()
+            }, 300)
+          }}
           className="px-6 py-3 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition"
         >
           Generate Payouts
@@ -202,7 +207,12 @@ export default function PayoutsPage() {
           <div className="text-center py-12">
             <p style={{ color: 'var(--text-secondary)' }}>No payouts yet</p>
             <button
-              onClick={() => document.getElementById('payout-generator')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => {
+                document.getElementById('payout-generator')?.scrollIntoView({ behavior: 'smooth' })
+                setTimeout(() => {
+                  (document.getElementById('payout-form') as HTMLFormElement)?.requestSubmit()
+                }, 300)
+              }}
               className="mt-4 inline-block px-6 py-3 bg-green-500 text-black font-black rounded-xl hover:bg-green-400 transition"
             >
               Generate First Payout

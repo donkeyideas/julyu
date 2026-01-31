@@ -79,7 +79,7 @@ export default function PayoutGeneratorForm() {
   }
 
   return (
-    <form onSubmit={handleGenerate} className="space-y-4">
+    <form id="payout-form" onSubmit={handleGenerate} className="space-y-4">
       {error && (
         <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3">
           <p className="text-sm text-red-400">{error}</p>
