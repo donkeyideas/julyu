@@ -499,8 +499,8 @@ export default function SettingsForm({ initialStoreOwner, initialStore }: Props)
         <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
           Contact our support team if you need assistance with your store settings.
         </p>
-        <a href="mailto:support@julyu.com" className="text-sm text-green-500 hover:text-green-400">
-          support@julyu.com
+        <a href="mailto:info@donkeyideas.com" className="text-sm text-green-500 hover:text-green-400">
+          info@donkeyideas.com
         </a>
       </div>
     </>

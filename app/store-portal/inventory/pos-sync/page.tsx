@@ -1,11 +1,58 @@
+'use client'
+
+import { useState } from 'react'
 import Link from 'next/link'
 
-export const metadata = {
-  title: 'POS Integration - Store Portal - Julyu',
-  description: 'Connect your POS system to automatically sync inventory',
+interface POSSystem {
+  id: string
+  name: string
+  description: string
+  status: 'available' | 'coming_soon'
+  icon: string
 }
 
+const posSystems: POSSystem[] = [
+  {
+    id: 'square',
+    name: 'Square',
+    description: 'OAuth integration with automatic sync',
+    status: 'available',
+    icon: '⬜',
+  },
+  {
+    id: 'clover',
+    name: 'Clover',
+    description: 'OAuth integration with automatic sync',
+    status: 'available',
+    icon: '🍀',
+  },
+  {
+    id: 'toast',
+    name: 'Toast',
+    description: 'Restaurant POS system',
+    status: 'coming_soon',
+    icon: '🍞',
+  },
+  {
+    id: 'shopify',
+    name: 'Shopify',
+    description: 'E-commerce POS integration',
+    status: 'coming_soon',
+    icon: '🛒',
+  },
+]
+
 export default function POSSyncPage() {
+  const [selectedPOS, setSelectedPOS] = useState<string | null>(null)
+  const [showSetupModal, setShowSetupModal] = useState(false)
+
+  const handleConnect = (posId: string) => {
+    setSelectedPOS(posId)
+    setShowSetupModal(true)
+  }
+
+  const selectedSystem = posSystems.find(pos => pos.id === selectedPOS)
+
   return (
     <div className="max-w-2xl">
       <div className="mb-6">
@@ -24,59 +71,86 @@ export default function POSSyncPage() {
         </p>
       </div>
 
-      <div className="rounded-lg shadow-sm p-12 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-        <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-500/15 mb-4">
-          <svg className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      {/* Status Banner */}
+      <div className="rounded-lg p-4 mb-6 bg-blue-500/10 border border-blue-500/30">
+        <div className="flex items-center">
+          <svg className="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-        </div>
-        <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Coming Soon</h2>
-        <p className="mb-6" style={{ color: 'var(--text-secondary)' }}>
-          POS integration will be available in Phase 2 of development.
-        </p>
-        <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
-          This feature will automatically sync your inventory from Square, Clover, and other popular POS systems,
-          keeping your Julyu store always up-to-date with your in-store inventory.
-        </p>
-        <div className="flex justify-center space-x-3">
-          <Link
-            href="/store-portal/inventory/add"
-            className="px-4 py-2 bg-green-500 text-black font-medium rounded-md hover:bg-green-400"
-          >
-            Add Products Manually
-          </Link>
-          <Link
-            href="/store-portal/inventory"
-            className="px-4 py-2 font-medium rounded-md"
-            style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
-          >
-            View Inventory
-          </Link>
+          <p className="text-sm text-blue-500">
+            POS integration requires API credentials. Contact us at{' '}
+            <a href="mailto:info@donkeyideas.com" className="underline">info@donkeyideas.com</a>
+            {' '}to set up your connection.
+          </p>
         </div>
       </div>
 
-      <div className="mt-6 rounded-lg p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-        <h3 className="text-sm font-medium mb-3" style={{ color: 'var(--text-primary)' }}>Supported POS Systems:</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-lg p-3" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
-            <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>Square</div>
-            <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>OAuth integration with automatic sync</div>
-          </div>
-          <div className="rounded-lg p-3" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
-            <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>Clover</div>
-            <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>OAuth integration with automatic sync</div>
-          </div>
-          <div className="rounded-lg p-3 opacity-60" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
-            <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>Toast</div>
-            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Coming later</div>
-          </div>
-          <div className="rounded-lg p-3 opacity-60" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
-            <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>Shopify</div>
-            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Coming later</div>
-          </div>
+      {/* POS Systems Grid */}
+      <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
+          Select Your POS System
+        </h2>
+        <div className="grid grid-cols-2 gap-4">
+          {posSystems.map((pos) => (
+            <button
+              key={pos.id}
+              onClick={() => pos.status === 'available' ? handleConnect(pos.id) : null}
+              disabled={pos.status === 'coming_soon'}
+              className={`rounded-lg p-4 text-left transition-all ${
+                pos.status === 'available'
+                  ? 'hover:border-green-500 cursor-pointer'
+                  : 'opacity-50 cursor-not-allowed'
+              }`}
+              style={{
+                backgroundColor: 'var(--bg-secondary)',
+                border: '1px solid var(--border-color)'
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center">
+                    <span className="text-xl mr-2">{pos.icon}</span>
+                    <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                      {pos.name}
+                    </span>
+                  </div>
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                    {pos.description}
+                  </p>
+                </div>
+                {pos.status === 'available' ? (
+                  <span className="text-xs px-2 py-1 rounded-full bg-green-500/15 text-green-500">
+                    Connect
+                  </span>
+                ) : (
+                  <span className="text-xs px-2 py-1 rounded-full bg-gray-500/15" style={{ color: 'var(--text-muted)' }}>
+                    Soon
+                  </span>
+                )}
+              </div>
+            </button>
+          ))}
         </div>
       </div>
 
+      {/* Quick Actions */}
+      <div className="mt-6 flex justify-center space-x-3">
+        <Link
+          href="/store-portal/inventory/add"
+          className="px-4 py-2 bg-green-500 text-black font-medium rounded-md hover:bg-green-400"
+        >
+          Add Products Manually
+        </Link>
+        <Link
+          href="/store-portal/inventory"
+          className="px-4 py-2 font-medium rounded-md"
+          style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
+        >
+          View Inventory
+        </Link>
+      </div>
+
+      {/* Benefits */}
       <div className="mt-6 rounded-lg p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <div className="flex items-start">
           <svg className="h-5 w-5 text-green-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -94,6 +168,61 @@ export default function POSSyncPage() {
           </div>
         </div>
       </div>
+
+      {/* Setup Modal */}
+      {showSetupModal && selectedSystem && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div
+            className="rounded-lg p-6 max-w-md w-full mx-4"
+            style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
+                Connect {selectedSystem.name}
+              </h3>
+              <button
+                onClick={() => setShowSetupModal(false)}
+                className="p-1 hover:bg-gray-500/20 rounded"
+              >
+                <svg className="w-5 h-5" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="text-center py-4">
+              <span className="text-4xl">{selectedSystem.icon}</span>
+            </div>
+
+            <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+              To connect your {selectedSystem.name} account, we need to set up OAuth integration.
+              This requires API credentials that our team will help configure for you.
+            </p>
+
+            <div className="rounded-lg p-3 mb-4 bg-yellow-500/10 border border-yellow-500/30">
+              <p className="text-sm text-yellow-500">
+                <strong>Setup Required:</strong> Contact our team to enable {selectedSystem.name} integration for your store.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <a
+                href={`mailto:info@donkeyideas.com?subject=POS Integration Request - ${selectedSystem.name}&body=Hi,%0A%0AI would like to connect my ${selectedSystem.name} POS system to Julyu.%0A%0AStore Name: [Your Store Name]%0ABusiness Name: [Your Business Name]%0A%0AThank you!`}
+                className="block w-full text-center px-4 py-2 bg-green-500 text-black font-medium rounded-md hover:bg-green-400"
+              >
+                Request {selectedSystem.name} Setup
+              </a>
+              <button
+                onClick={() => setShowSetupModal(false)}
+                className="block w-full text-center px-4 py-2 font-medium rounded-md"
+                style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

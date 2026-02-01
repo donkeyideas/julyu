@@ -240,12 +240,8 @@ export async function getStoreOwnerStores(storeOwnerId: string): Promise<{ store
       return { stores: [], error: error.message }
     }
 
-    // Transform data to include aliased properties for compatibility with components
-    const stores = (data || []).map((store: any) => ({
-      ...store,
-      address: store.street_address,
-      zip: store.zip_code,
-    })) as BodegaStore[]
+    // Data already has correct column names (address, zip) from database
+    const stores = (data || []) as BodegaStore[]
 
     return { stores, error: null }
   } catch (error) {
