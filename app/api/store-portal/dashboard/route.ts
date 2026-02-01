@@ -26,24 +26,46 @@ export async function GET(request: NextRequest) {
       .select('*', { count: 'exact', head: true })
       .eq('bodega_store_id', primaryStore?.id || '')
 
-    // Get orders statistics
-    const { data: orders } = await supabase
-      .from('bodega_orders')
-      .select('id, status, total_amount, ordered_at')
-      .eq('store_owner_id', storeOwner.id)
-      .order('ordered_at', { ascending: false })
-      .limit(10)
+    // Get order statistics in parallel for performance
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
 
-    const totalOrders = orders?.length || 0
-    const pendingOrders = orders?.filter((o: any) => o.status === 'pending' || o.status === 'accepted').length || 0
-    const todayRevenue = orders?.reduce((sum: number, o: any) => {
-      const orderDate = new Date(o.ordered_at)
-      const today = new Date()
-      if (orderDate.toDateString() === today.toDateString()) {
-        return sum + parseFloat(o.total_amount)
-      }
-      return sum
-    }, 0) || 0
+    const [
+      totalOrdersResult,
+      pendingOrdersResult,
+      todayOrdersResult,
+      recentOrdersResult
+    ] = await Promise.all([
+      // Total orders count
+      supabase
+        .from('bodega_orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('store_owner_id', storeOwner.id),
+      // Pending orders count
+      supabase
+        .from('bodega_orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('store_owner_id', storeOwner.id)
+        .in('status', ['pending', 'accepted']),
+      // Today's orders with revenue
+      supabase
+        .from('bodega_orders')
+        .select('total_amount')
+        .eq('store_owner_id', storeOwner.id)
+        .gte('ordered_at', today.toISOString()),
+      // Recent orders (limit 5 for faster load)
+      supabase
+        .from('bodega_orders')
+        .select('id, status, total_amount, ordered_at')
+        .eq('store_owner_id', storeOwner.id)
+        .order('ordered_at', { ascending: false })
+        .limit(5)
+    ])
+
+    const totalOrders = totalOrdersResult.count || 0
+    const pendingOrders = pendingOrdersResult.count || 0
+    const todayRevenue = todayOrdersResult.data?.reduce((sum: number, o: any) => sum + parseFloat(o.total_amount), 0) || 0
+    const orders = recentOrdersResult.data || []
 
     return NextResponse.json({
       success: true,

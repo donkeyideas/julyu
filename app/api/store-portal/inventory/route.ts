@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { getStoreOwnerAnyStatus, getStoreOwnerStores } from '@/lib/auth/store-portal-auth'
 
-// GET - Get all inventory for store owner
+// GET - Get inventory for store owner with pagination
 export async function GET(request: NextRequest) {
   try {
     const { storeOwner, error: authError } = await getStoreOwnerAnyStatus()
@@ -27,15 +27,44 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get inventory
-    const { data: inventory, error: inventoryError } = await supabase
+    // Parse pagination params
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '25')
+    const search = searchParams.get('search') || ''
+    const stockFilter = searchParams.get('stock') || '' // 'in_stock', 'low_stock', 'out_of_stock'
+
+    const offset = (page - 1) * limit
+
+    // Build query for inventory items
+    let query = supabase
       .from('bodega_inventory')
       .select(`
         *,
         product:products(*)
-      `)
+      `, { count: 'exact' })
       .eq('bodega_store_id', primaryStore.id)
+
+    // Apply search filter
+    if (search) {
+      query = query.or(`custom_name.ilike.%${search}%,custom_brand.ilike.%${search}%,sku.ilike.%${search}%`)
+    }
+
+    // Apply stock filter
+    if (stockFilter === 'in_stock') {
+      query = query.eq('in_stock', true).gt('stock_quantity', 5)
+    } else if (stockFilter === 'low_stock') {
+      query = query.gt('stock_quantity', 0).lte('stock_quantity', 5)
+    } else if (stockFilter === 'out_of_stock') {
+      query = query.or('in_stock.eq.false,stock_quantity.eq.0')
+    }
+
+    // Apply pagination and ordering
+    query = query
       .order('updated_at', { ascending: false })
+      .range(offset, offset + limit - 1)
+
+    const { data: inventory, error: inventoryError, count } = await query
 
     if (inventoryError) {
       console.error('Fetch inventory error:', inventoryError)
@@ -45,9 +74,52 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Get stats in parallel (efficient count queries)
+    const [totalResult, inStockResult, lowStockResult, outOfStockResult] = await Promise.all([
+      supabase
+        .from('bodega_inventory')
+        .select('*', { count: 'exact', head: true })
+        .eq('bodega_store_id', primaryStore.id),
+      supabase
+        .from('bodega_inventory')
+        .select('*', { count: 'exact', head: true })
+        .eq('bodega_store_id', primaryStore.id)
+        .eq('in_stock', true)
+        .gt('stock_quantity', 5),
+      supabase
+        .from('bodega_inventory')
+        .select('*', { count: 'exact', head: true })
+        .eq('bodega_store_id', primaryStore.id)
+        .gt('stock_quantity', 0)
+        .lte('stock_quantity', 5),
+      supabase
+        .from('bodega_inventory')
+        .select('*', { count: 'exact', head: true })
+        .eq('bodega_store_id', primaryStore.id)
+        .or('in_stock.eq.false,stock_quantity.eq.0')
+    ])
+
+    const stats = {
+      total: totalResult.count || 0,
+      inStock: inStockResult.count || 0,
+      lowStock: lowStockResult.count || 0,
+      outOfStock: outOfStockResult.count || 0
+    }
+
+    const totalPages = Math.ceil((count || 0) / limit)
+
     return NextResponse.json({
       success: true,
-      data: inventory || []
+      data: inventory || [],
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+        totalPages,
+        hasMore: page < totalPages
+      },
+      stats,
+      storeId: primaryStore.id
     })
 
   } catch (error) {

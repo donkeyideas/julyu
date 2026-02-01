@@ -29,9 +29,10 @@ interface InventoryItem {
 interface Props {
   items: InventoryItem[]
   storeId: string
+  onRefresh?: () => void
 }
 
-export default function InventoryTable({ items, storeId }: Props) {
+export default function InventoryTable({ items, storeId, onRefresh }: Props) {
   const router = useRouter()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState<{
@@ -72,7 +73,11 @@ export default function InventoryTable({ items, storeId }: Props) {
       }
 
       setEditingId(null)
-      router.refresh()
+      if (onRefresh) {
+        onRefresh()
+      } else {
+        router.refresh()
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -99,7 +104,11 @@ export default function InventoryTable({ items, storeId }: Props) {
         throw new Error(data.error || 'Failed to delete inventory item')
       }
 
-      router.refresh()
+      if (onRefresh) {
+        onRefresh()
+      } else {
+        router.refresh()
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
