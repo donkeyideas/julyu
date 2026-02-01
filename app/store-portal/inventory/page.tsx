@@ -1,5 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server'
-import { getStoreOwnerStores } from '@/lib/auth/store-portal-auth'
+import { getStoreOwnerAnyStatus, getStoreOwnerStores } from '@/lib/auth/store-portal-auth'
 import Link from 'next/link'
 import InventoryTable from '@/components/store-portal/InventoryTable'
 
@@ -9,32 +9,13 @@ export const metadata = {
 }
 
 export default async function InventoryPage() {
-  const supabase = await createServerClient()
+  // Use cached auth helper - same as layout for consistent auth state
+  const { storeOwner, user, error } = await getStoreOwnerAnyStatus()
 
-  // Get user and store owner directly - layout handles auth redirects
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return (
-      <div className="p-12 text-center">
-        <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
-      </div>
-    )
-  }
-
-  // Get store owner record directly
-  const { data: storeOwner } = await supabase
-    .from('store_owners')
-    .select('*')
-    .eq('user_id', user.id)
-    .single()
-
-  if (!storeOwner) {
-    return (
-      <div className="p-12 text-center">
-        <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
-      </div>
-    )
+  // Layout handles redirects, but if somehow we get here without auth, show nothing
+  // The layout will redirect to login
+  if (!storeOwner || !user) {
+    return null
   }
 
   // Get store owner's stores
