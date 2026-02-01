@@ -18,6 +18,8 @@ export default async function InventoryPage() {
     return null
   }
 
+  const supabase = await createServerClient()
+
   // Get store owner's stores
   const { stores } = await getStoreOwnerStores(storeOwner.id)
   const primaryStore = stores[0]
