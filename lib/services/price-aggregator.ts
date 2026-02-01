@@ -1,6 +1,7 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { openFoodFactsClient, NormalizedProduct } from '@/lib/api/openfoodfacts'
 import { krogerClient, NormalizedKrogerProduct } from '@/lib/api/kroger'
+import { serpApiWalmartClient, NormalizedWalmartProduct } from '@/lib/api/serpapi-walmart'
 
 /**
  * Price Aggregator Service
@@ -8,7 +9,7 @@ import { krogerClient, NormalizedKrogerProduct } from '@/lib/api/kroger'
  * - Receipt scans (crowdsourced)
  * - Open Food Facts (product info)
  * - Kroger API (real-time prices)
- * - Future: Instacart, Walmart, Target, etc.
+ * - Walmart via SerpApi (real-time prices)
  */
 
 interface PriceSource {
@@ -170,6 +171,32 @@ async function getProductPrices(
         }
       } catch (krogerError) {
         console.warn('[PriceAggregator] Kroger fetch failed:', krogerError)
+      }
+    }
+
+    // Try to get Walmart prices via SerpApi if product name exists
+    if (product.name && serpApiWalmartClient.isConfigured()) {
+      try {
+        // Search by product name, limit to 3 results to conserve API quota
+        const walmartProducts = await serpApiWalmartClient.searchProducts(product.name, { limit: 3 })
+        for (const wp of walmartProducts) {
+          if (wp.price) {
+            const walmartStoreId = `walmart-${wp.id}`
+            if (!pricesByStore.has(walmartStoreId)) {
+              pricesByStore.set(walmartStoreId, {
+                source: 'serpapi_walmart',
+                price: wp.price.sale || wp.price.regular,
+                storeName: 'Walmart',
+                storeId: walmartStoreId,
+                confidence: 0.9, // Slightly lower than direct API due to search-based matching
+                lastUpdated: new Date().toISOString(),
+                isOnSale: !!wp.price.sale,
+              })
+            }
+          }
+        }
+      } catch (walmartError) {
+        console.warn('[PriceAggregator] Walmart fetch failed:', walmartError)
       }
     }
 

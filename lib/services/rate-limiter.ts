@@ -6,8 +6,10 @@
 
 import { createServerClient } from '@/lib/supabase/server'
 
+export type ApiName = 'tesco' | 'grocery-prices' | 'serpapi'
+
 export interface RateLimitConfig {
-  api_name: 'tesco' | 'grocery-prices'
+  api_name: ApiName
   daily_limit: number
   monthly_limit: number
   alert_threshold_50: boolean
@@ -36,7 +38,7 @@ interface ApiUsageRecord {
 /**
  * Check if an API call can be made (rate limit check)
  */
-export async function canMakeApiCall(apiName: 'tesco' | 'grocery-prices'): Promise<{
+export async function canMakeApiCall(apiName: ApiName): Promise<{
   allowed: boolean
   reason?: string
   usage?: UsageStats
@@ -58,9 +60,15 @@ export async function canMakeApiCall(apiName: 'tesco' | 'grocery-prices'): Promi
       return { allowed: false, reason: 'RapidAPI not configured' }
     }
 
-    const isEnabled = apiName === 'tesco'
-      ? config.config?.tescoEnabled
-      : config.config?.groceryPricesEnabled
+    let isEnabled = false
+    if (apiName === 'tesco') {
+      isEnabled = config.config?.tescoEnabled
+    } else if (apiName === 'grocery-prices') {
+      isEnabled = config.config?.groceryPricesEnabled
+    } else if (apiName === 'serpapi') {
+      // SerpApi is enabled if we have an API key configured
+      isEnabled = true
+    }
 
     if (!isEnabled) {
       return { allowed: false, reason: `${apiName} API is not enabled` }
@@ -142,7 +150,7 @@ export async function canMakeApiCall(apiName: 'tesco' | 'grocery-prices'): Promi
 /**
  * Track an API call (increment counter)
  */
-export async function trackApiCall(apiName: 'tesco' | 'grocery-prices', callSuccessful: boolean = true): Promise<void> {
+export async function trackApiCall(apiName: ApiName, callSuccessful: boolean = true): Promise<void> {
   try {
     // Use service role client to bypass RLS for system operations
     const { createServiceRoleClient } = await import('@/lib/supabase/server')
@@ -194,26 +202,29 @@ export async function trackApiCall(apiName: 'tesco' | 'grocery-prices', callSucc
 export async function getUsageStats(): Promise<{
   tesco: UsageStats | null
   groceryPrices: UsageStats | null
+  serpapi: UsageStats | null
 }> {
   try {
-    // Get Tesco stats
+    // Get stats for all APIs
     const tescoCheck = await canMakeApiCall('tesco')
     const groceryCheck = await canMakeApiCall('grocery-prices')
+    const serpapiCheck = await canMakeApiCall('serpapi')
 
     return {
       tesco: tescoCheck.usage || null,
       groceryPrices: groceryCheck.usage || null,
+      serpapi: serpapiCheck.usage || null,
     }
   } catch (error: any) {
     console.error('[Rate Limiter] Error getting usage stats:', error)
-    return { tesco: null, groceryPrices: null }
+    return { tesco: null, groceryPrices: null, serpapi: null }
   }
 }
 
 /**
  * Reset rate limits (for testing or new billing cycle)
  */
-export async function resetRateLimits(apiName?: 'tesco' | 'grocery-prices'): Promise<void> {
+export async function resetRateLimits(apiName?: ApiName): Promise<void> {
   try {
     const supabase = await createServerClient()
 
@@ -228,7 +239,7 @@ export async function resetRateLimits(apiName?: 'tesco' | 'grocery-prices'): Pro
       await supabase
         .from('api_usage_tracking')
         .delete()
-        .in('api_name', ['tesco', 'grocery-prices'])
+        .in('api_name', ['tesco', 'grocery-prices', 'serpapi'])
     }
 
     console.log(`[Rate Limiter] Reset rate limits for ${apiName || 'all APIs'}`)

@@ -175,6 +175,14 @@ export async function getApiKey(modelName: string): Promise<string | null> {
       }
     }
 
+    // SerpApi (Walmart price data)
+    if (modelName === 'serpapi' || modelName.includes('serpapi')) {
+      const envKey = process.env.SERPAPI_API_KEY
+      if (envKey && envKey.trim() !== '') {
+        return envKey
+      }
+    }
+
     return null
   } catch (error: any) {
     console.error(`Error getting API key for ${modelName}:`, error)
@@ -212,6 +220,11 @@ export async function getApiKey(modelName: string): Promise<string | null> {
       return process.env.POSITIONSTACK_API_KEY || null
     }
 
+    // SerpApi fallback
+    if (modelName === 'serpapi' || modelName.includes('serpapi')) {
+      return process.env.SERPAPI_API_KEY || null
+    }
+
     return null
   }
 }
@@ -238,5 +251,12 @@ export async function getKrogerCredentials(): Promise<{ clientId: string; client
     clientId: parts[0],
     clientSecret: parts[1],
   }
+}
+
+/**
+ * Get SerpApi API key (for Walmart price data)
+ */
+export async function getSerpApiKey(): Promise<string | null> {
+  return await getApiKey('serpapi')
 }
 

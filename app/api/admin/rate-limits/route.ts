@@ -17,7 +17,7 @@ export async function GET() {
     const { data: configs, error: configError } = await supabase
       .from('rate_limit_config')
       .select('*')
-      .in('api_name', ['tesco', 'grocery-prices'])
+      .in('api_name', ['tesco', 'grocery-prices', 'serpapi'])
 
     if (configError && !configError.message?.includes('relation')) {
       throw configError
@@ -26,10 +26,12 @@ export async function GET() {
     // Get usage stats
     const usage = await getUsageStats()
 
+    // Return usage stats directly for frontend consumption
     return NextResponse.json({
-      success: true,
+      tesco: usage.tesco,
+      groceryPrices: usage.groceryPrices,
+      serpapi: usage.serpapi,
       configs: configs || [],
-      usage,
     })
   } catch (error: any) {
     console.error('[Rate Limits] Error:', error)
@@ -45,7 +47,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { api_name, daily_limit, monthly_limit, is_enabled } = body
 
-    if (!api_name || !['tesco', 'grocery-prices'].includes(api_name)) {
+    if (!api_name || !['tesco', 'grocery-prices', 'serpapi'].includes(api_name)) {
       return NextResponse.json(
         { success: false, error: 'Invalid API name' },
         { status: 400 }
