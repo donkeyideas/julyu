@@ -1,5 +1,5 @@
-import { createServerClient as createSupabaseServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { createServerClient } from '@/lib/supabase/server'
+import { getStoreOwnerAnyStatus, getStoreOwnerStores } from '@/lib/auth/store-portal-auth'
 import Link from 'next/link'
 import InventoryTable from '@/components/store-portal/InventoryTable'
 
@@ -8,73 +8,27 @@ export const metadata = {
   description: 'Manage your store inventory',
 }
 
-// Force dynamic rendering - no caching
+// Force dynamic rendering - required for auth cookies
 export const dynamic = 'force-dynamic'
 
 export default async function InventoryPage() {
-  // Create Supabase client directly in the component
-  const cookieStore = await cookies()
+  // Get auth - layout handles redirects for unauthenticated users
+  const { storeOwner, user, error } = await getStoreOwnerAnyStatus()
 
-  const supabase = createSupabaseServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
-          } catch {
-            // Ignore - middleware handles session refresh
-          }
-        },
-      },
-    }
-  )
-
-  // Get authenticated user directly
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-  if (!user) {
+  // If no auth, show a refresh message (layout should have redirected, but just in case)
+  if (!storeOwner || !user) {
     return (
       <div className="p-12 text-center">
-        <p style={{ color: 'var(--text-muted)' }}>
-          Unable to load session. Please try refreshing the page or logging in again.
-        </p>
-        <Link href="/auth/login?redirect=/store-portal/inventory" className="text-green-500 hover:text-green-400 mt-4 inline-block">
-          Go to Login
-        </Link>
+        <p style={{ color: 'var(--text-muted)' }}>Session loading... If this persists, please refresh the page.</p>
       </div>
     )
   }
 
-  // Get store owner directly
-  const { data: storeOwner } = await supabase
-    .from('store_owners')
-    .select('*')
-    .eq('user_id', user.id)
-    .single()
-
-  if (!storeOwner) {
-    return (
-      <div className="p-12 text-center">
-        <p style={{ color: 'var(--text-muted)' }}>Store owner account not found.</p>
-      </div>
-    )
-  }
+  const supabase = await createServerClient()
 
   // Get store owner's stores
-  const { data: stores } = await supabase
-    .from('bodega_stores')
-    .select('*')
-    .eq('store_owner_id', storeOwner.id)
-    .order('created_at', { ascending: false })
-
-  const primaryStore = stores?.[0]
+  const { stores } = await getStoreOwnerStores(storeOwner.id)
+  const primaryStore = stores[0]
 
   // Get inventory with product details
   const { data: inventory, error: inventoryError } = await supabase
