@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
+import { cache } from 'react'
 
 /**
  * Store Portal Authentication Helper
@@ -100,8 +101,9 @@ export async function getStoreOwner(request?: NextRequest): Promise<StoreOwnerAu
 /**
  * Get store owner with less strict checks (for application status page)
  * Returns store owner even if not approved
+ * Cached per request to ensure consistent auth state across layout and pages
  */
-export async function getStoreOwnerAnyStatus(request?: NextRequest): Promise<StoreOwnerAuthResult> {
+export const getStoreOwnerAnyStatus = cache(async (request?: NextRequest): Promise<StoreOwnerAuthResult> => {
   try {
     const supabase = await createServerClient()
 
@@ -138,7 +140,7 @@ export async function getStoreOwnerAnyStatus(request?: NextRequest): Promise<Sto
       status: 500
     }
   }
-}
+})
 
 /**
  * Check if user has an existing store owner account
