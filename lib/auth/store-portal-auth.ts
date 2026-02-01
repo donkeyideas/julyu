@@ -128,24 +128,31 @@ export async function getStoreOwner(request?: NextRequest): Promise<StoreOwnerAu
  */
 export async function getStoreOwnerAnyStatus(): Promise<StoreOwnerAuthResult> {
   try {
+    console.log('[StorePortalAuth] ====== getStoreOwnerAnyStatus START ======')
+
     // First try to get user ID from the header set by middleware
-    // Headers ARE passed from middleware to server components via NextResponse.next({ request: { headers } })
     const headersList = await headers()
     const userIdFromHeader = headersList.get('x-user-id')
+    console.log('[StorePortalAuth] userIdFromHeader:', userIdFromHeader ? 'FOUND' : 'NOT FOUND')
 
     // Also check cookie as fallback (for subsequent requests)
     const cookieStore = await cookies()
     const userIdFromCookie = cookieStore.get('x-user-id')?.value
+    console.log('[StorePortalAuth] userIdFromCookie:', userIdFromCookie ? 'FOUND' : 'NOT FOUND')
 
     let userId: string | undefined = userIdFromHeader || userIdFromCookie
     let user: any = userId ? { id: userId } : null
+    console.log('[StorePortalAuth] userId from header/cookie:', userId ? 'YES' : 'NO')
 
     // If no header or cookie, fall back to getUser() call
     if (!userId) {
+      console.log('[StorePortalAuth] No header/cookie, calling supabase.auth.getUser()...')
       const supabase = await createServerClient()
       const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
+      console.log('[StorePortalAuth] getUser result:', authUser ? 'USER FOUND' : 'NO USER', authError ? `ERROR: ${authError.message}` : '')
 
       if (authError || !authUser) {
+        console.log('[StorePortalAuth] ====== RETURNING 401 - No auth ======')
         return {
           error: 'Unauthorized - Please log in',
           status: 401
@@ -156,9 +163,12 @@ export async function getStoreOwnerAnyStatus(): Promise<StoreOwnerAuthResult> {
       user = authUser
     }
 
+    console.log('[StorePortalAuth] Final userId:', userId)
+
     // Use service role client to fetch store owner data (bypasses RLS)
     const serviceClient = createServiceRoleClient()
 
+    console.log('[StorePortalAuth] Looking up store_owner for user:', userId)
     const { data: storeOwner, error: storeError } = await serviceClient
       .from('store_owners')
       .select('*')
@@ -166,18 +176,20 @@ export async function getStoreOwnerAnyStatus(): Promise<StoreOwnerAuthResult> {
       .single()
 
     if (storeError || !storeOwner) {
+      console.log('[StorePortalAuth] ====== RETURNING 403 - Not a store owner ======', storeError?.message)
       return {
         error: 'Not a store owner',
         status: 403
       }
     }
 
+    console.log('[StorePortalAuth] ====== SUCCESS - Found store owner:', (storeOwner as StoreOwner).business_name, '======')
     return {
       storeOwner: storeOwner as StoreOwner,
       user
     }
   } catch (error) {
-    console.error('Store owner auth error:', error)
+    console.error('[StorePortalAuth] ====== ERROR ======', error)
     return {
       error: 'Authentication failed',
       status: 500

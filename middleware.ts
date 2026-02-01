@@ -48,6 +48,13 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Log for store-portal routes
+  const isStorePortal = request.nextUrl.pathname.startsWith('/store-portal')
+  if (isStorePortal) {
+    console.log('[Middleware] store-portal route:', request.nextUrl.pathname)
+    console.log('[Middleware] user found:', user ? 'YES - ' + user.id : 'NO')
+  }
+
   // Store user ID in request headers for Server Components to read
   // Headers set on request ARE passed to server components via NextResponse.next({ request })
   // Unlike cookies, headers() in server components reads from the modified request
@@ -55,6 +62,10 @@ export async function middleware(request: NextRequest) {
     // Set user ID in request header - this IS accessible via headers() in server components
     const requestHeaders = new Headers(request.headers)
     requestHeaders.set('x-user-id', user.id)
+
+    if (isStorePortal) {
+      console.log('[Middleware] Setting x-user-id header:', user.id)
+    }
 
     supabaseResponse = NextResponse.next({
       request: {
