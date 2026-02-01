@@ -7,6 +7,9 @@ export const metadata = {
   description: 'Store owner dashboard',
 }
 
+// Force dynamic rendering - required for auth cookies
+export const dynamic = 'force-dynamic'
+
 export default async function StorePortalDashboard() {
   // Get auth - layout handles redirects for unauthenticated users
   const { storeOwner, user, error } = await getStoreOwnerAnyStatus()

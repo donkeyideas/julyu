@@ -8,6 +8,9 @@ export const metadata = {
   description: 'Manage customer orders',
 }
 
+// Force dynamic rendering - required for auth cookies
+export const dynamic = 'force-dynamic'
+
 export default async function OrdersPage() {
   // Get auth - layout handles redirects for unauthenticated users
   const { storeOwner, user, error } = await getStoreOwnerAnyStatus()

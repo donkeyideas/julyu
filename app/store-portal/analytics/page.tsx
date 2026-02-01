@@ -6,6 +6,9 @@ export const metadata = {
   description: 'View your store analytics and sales reports',
 }
 
+// Force dynamic rendering - required for auth cookies
+export const dynamic = 'force-dynamic'
+
 export default async function AnalyticsPage() {
   // Get auth - layout handles redirects for unauthenticated users
   const { storeOwner, user, error } = await getStoreOwnerAnyStatus()

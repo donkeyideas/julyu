@@ -8,6 +8,9 @@ export const metadata = {
   description: 'Manage your payout settings and view earnings',
 }
 
+// Force dynamic rendering - required for auth cookies
+export const dynamic = 'force-dynamic'
+
 export default async function PayoutsPage() {
   // Get auth - layout handles redirects for unauthenticated users
   const { storeOwner, user, error } = await getStoreOwnerAnyStatus()

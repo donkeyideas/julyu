@@ -8,6 +8,9 @@ export const metadata = {
   description: 'Manage your store inventory and orders',
 }
 
+// Force dynamic rendering - required for auth cookies
+export const dynamic = 'force-dynamic'
+
 export default async function StorePortalLayout({
   children,
 }: {
