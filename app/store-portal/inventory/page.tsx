@@ -12,12 +12,25 @@ export const metadata = {
 export default async function InventoryPage() {
   // Layout already verifies store owner is approved
   // Just get the store owner data without redirects
-  const { storeOwner } = await getStoreOwner()
+  const { storeOwner, error } = await getStoreOwner()
 
-  // If no store owner (edge case), redirect to main store portal
-  // Layout will handle showing appropriate content
+  // If no store owner (edge case), show error message instead of silent redirect
   if (!storeOwner) {
-    redirect('/store-portal')
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Inventory</h1>
+          <p className="mt-1" style={{ color: 'var(--text-secondary)' }}>
+            Manage your store&apos;s products and stock levels
+          </p>
+        </div>
+        <div className="rounded-lg p-8 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <p style={{ color: 'var(--text-secondary)' }}>
+            {error || 'Unable to load inventory. Please try refreshing the page.'}
+          </p>
+        </div>
+      </div>
+    )
   }
 
   const supabase = await createServerClient()
