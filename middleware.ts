@@ -51,6 +51,11 @@ export async function middleware(request: NextRequest) {
   // Store user ID in a custom cookie for easy access in Server Components
   // This avoids issues with multiple getUser() calls in the same request
   if (user) {
+    // Set on REQUEST so pages can read it in the same request cycle
+    request.cookies.set('x-user-id', user.id)
+    // Re-create response with modified request
+    supabaseResponse = NextResponse.next({ request })
+    // Also set on RESPONSE for future requests
     supabaseResponse.cookies.set('x-user-id', user.id, {
       path: '/',
       httpOnly: true,
@@ -60,6 +65,8 @@ export async function middleware(request: NextRequest) {
     })
   } else {
     // Clear the cookie if no user
+    request.cookies.delete('x-user-id')
+    supabaseResponse = NextResponse.next({ request })
     supabaseResponse.cookies.delete('x-user-id')
   }
 
