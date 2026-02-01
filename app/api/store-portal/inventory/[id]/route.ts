@@ -5,9 +5,10 @@ import { getStoreOwnerAnyStatus } from '@/lib/auth/store-portal-auth'
 // PUT - Update inventory item
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: inventoryId } = await params
     const { storeOwner, user, error: authError } = await getStoreOwnerAnyStatus()
 
     if (authError || !storeOwner) {
@@ -18,7 +19,6 @@ export async function PUT(
     }
 
     const supabase = await createServerClient()
-    const inventoryId = params.id
 
     // Get inventory item to verify ownership
     const { data: inventoryItem, error: fetchError } = await supabase
@@ -120,9 +120,10 @@ export async function PUT(
 // DELETE - Delete inventory item
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: inventoryId } = await params
     const { storeOwner, error: authError } = await getStoreOwnerAnyStatus()
 
     if (authError || !storeOwner) {
@@ -133,7 +134,6 @@ export async function DELETE(
     }
 
     const supabase = await createServerClient()
-    const inventoryId = params.id
 
     // Get inventory item to verify ownership
     const { data: inventoryItem, error: fetchError } = await supabase
