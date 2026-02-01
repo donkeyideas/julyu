@@ -10,16 +10,18 @@ export const metadata = {
 }
 
 export default async function OrdersPage() {
-  // Layout already verifies store owner is approved
-  // Use getStoreOwnerAnyStatus since layout handles approval check
+  // Layout already verifies store owner is approved - no need to check again
   const { storeOwner } = await getStoreOwnerAnyStatus()
-
-  // If no store owner, redirect to store portal (layout will handle)
-  if (!storeOwner) {
-    redirect('/store-portal')
-  }
-
   const supabase = await createServerClient()
+
+  // If somehow no store owner, show empty state (layout handles redirect)
+  if (!storeOwner) {
+    return (
+      <div className="p-12 text-center">
+        <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
+      </div>
+    )
+  }
 
   // Get orders for this store owner
   const { data: orders, error: ordersError } = await supabase

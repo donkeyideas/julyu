@@ -10,10 +10,16 @@ export const metadata = {
 }
 
 export default async function SettingsPage() {
+  // Layout already verifies store owner is approved - no need to check again
   const { storeOwner } = await getStoreOwnerAnyStatus()
 
+  // If somehow no store owner, show empty state (layout handles redirect)
   if (!storeOwner) {
-    redirect('/store-portal')
+    return (
+      <div className="p-12 text-center">
+        <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
+      </div>
+    )
   }
 
   // Get store owner's stores
