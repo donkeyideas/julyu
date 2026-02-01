@@ -1,4 +1,4 @@
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
@@ -17,8 +17,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  let supabaseResponse = NextResponse.next({
-    request,
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
   })
 
   const supabase = createServerClient(
@@ -29,25 +31,49 @@ export async function middleware(request: NextRequest) {
         get(name: string) {
           return request.cookies.get(name)?.value
         },
-        set(name: string, value: string, options: any) {
-          request.cookies.set(name, value)
-          supabaseResponse = NextResponse.next({ request })
-          supabaseResponse.cookies.set(name, value, options)
+        set(name: string, value: string, options: CookieOptions) {
+          request.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+          })
         },
-        remove(name: string, options: any) {
-          request.cookies.delete(name)
-          supabaseResponse = NextResponse.next({ request })
-          supabaseResponse.cookies.set(name, '', { ...options, maxAge: 0 })
+        remove(name: string, options: CookieOptions) {
+          request.cookies.set({
+            name,
+            value: '',
+            ...options,
+          })
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          response.cookies.set({
+            name,
+            value: '',
+            ...options,
+          })
         },
       },
     }
   )
 
-  // Refresh session if expired - this is required for Server Components
+  // IMPORTANT: Refresh session if expired - required for Server Components
   // https://supabase.com/docs/guides/auth/server-side/nextjs
   await supabase.auth.getUser()
 
-  return supabaseResponse
+  return response
 }
 
 export const config = {
