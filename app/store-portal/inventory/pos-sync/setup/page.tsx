@@ -28,16 +28,6 @@ const providerInfo: Record<string, {
       'Configure OAuth redirect URL',
     ],
   },
-  toast: {
-    name: 'Toast',
-    setupUrl: 'https://doc.toasttab.com/doc/devguide/index.html',
-    requirements: [
-      'Apply for Toast Partner Program',
-      'Get approved as a Toast integration partner',
-      'Receive API credentials from Toast',
-      'Configure OAuth settings',
-    ],
-  },
   shopify: {
     name: 'Shopify',
     setupUrl: 'https://partners.shopify.com',

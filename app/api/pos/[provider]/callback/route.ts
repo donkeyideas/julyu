@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceRoleClient } from '@/lib/supabase/server'
+// TODO: Uncomment when pos_connections table is created in Supabase
+// import { createServiceRoleClient } from '@/lib/supabase/server'
 
 // POS Provider configurations for token exchange
 const POS_CONFIGS: Record<string, {
@@ -19,12 +20,6 @@ const POS_CONFIGS: Record<string, {
     envClientId: 'CLOVER_APP_ID',
     envClientSecret: 'CLOVER_APP_SECRET',
     tokenUrl: 'https://sandbox.dev.clover.com/oauth/token', // Use www.clover.com for production
-  },
-  toast: {
-    name: 'Toast',
-    envClientId: 'TOAST_CLIENT_ID',
-    envClientSecret: 'TOAST_CLIENT_SECRET',
-    tokenUrl: 'https://ws-api.toasttab.com/usermgmt/v1/oauth/token',
   },
   shopify: {
     name: 'Shopify',
@@ -121,7 +116,19 @@ export async function GET(
 
     const tokenData = await tokenResponse.json()
 
-    // Store the connection in database
+    // TODO: Store the connection in database once pos_connections table is created
+    // To enable this, create the pos_connections table in Supabase with columns:
+    // - id (uuid, primary key)
+    // - store_owner_id (uuid, foreign key to store_owners)
+    // - provider (text)
+    // - access_token (text)
+    // - refresh_token (text, nullable)
+    // - expires_at (timestamptz, nullable)
+    // - merchant_id (text, nullable)
+    // - connected_at (timestamptz)
+    // - is_active (boolean)
+    // Then uncomment the code below:
+    /*
     const supabase = createServiceRoleClient()
 
     const { error: dbError } = await supabase
@@ -145,6 +152,15 @@ export async function GET(
         new URL(`/store-portal/inventory/pos-sync?error=save_failed&provider=${provider}`, request.url)
       )
     }
+    */
+
+    // Log successful token exchange (for debugging)
+    console.log(`POS connection successful for ${provider}:`, {
+      storeOwnerId: stateData.storeOwnerId,
+      provider,
+      hasAccessToken: !!tokenData.access_token,
+      hasRefreshToken: !!tokenData.refresh_token,
+    })
 
     // Success - redirect back to POS page
     return NextResponse.redirect(

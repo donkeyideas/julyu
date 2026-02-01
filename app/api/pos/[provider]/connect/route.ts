@@ -23,13 +23,6 @@ const POS_CONFIGS: Record<string, {
     authUrl: 'https://sandbox.dev.clover.com/oauth/authorize', // Use www.clover.com for production
     scopes: ['INVENTORY_READ', 'INVENTORY_WRITE'],
   },
-  toast: {
-    name: 'Toast',
-    envClientId: 'TOAST_CLIENT_ID',
-    envClientSecret: 'TOAST_CLIENT_SECRET',
-    authUrl: 'https://ws-api.toasttab.com/usermgmt/v1/oauth/authorize',
-    scopes: ['inventory:read', 'inventory:write'],
-  },
   shopify: {
     name: 'Shopify',
     envClientId: 'SHOPIFY_API_KEY',

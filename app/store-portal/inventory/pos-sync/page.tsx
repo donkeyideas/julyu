@@ -22,11 +22,6 @@ const posSystems: POSSystem[] = [
     description: 'Sync inventory from Clover POS',
   },
   {
-    id: 'toast',
-    name: 'Toast',
-    description: 'Sync inventory from Toast POS',
-  },
-  {
     id: 'shopify',
     name: 'Shopify',
     description: 'Sync inventory from Shopify',
@@ -66,13 +61,6 @@ export default function POSSyncPage() {
             <circle cx="9" cy="9" r="4" stroke="currentColor" strokeWidth="2"/>
             <circle cx="15" cy="9" r="4" stroke="currentColor" strokeWidth="2"/>
             <circle cx="12" cy="15" r="4" stroke="currentColor" strokeWidth="2"/>
-          </svg>
-        )
-      case 'toast':
-        return (
-          <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" style={{ color: 'var(--text-primary)' }}>
-            <rect x="4" y="8" width="16" height="12" rx="2" stroke="currentColor" strokeWidth="2"/>
-            <path d="M8 8V6a4 4 0 018 0v2" stroke="currentColor" strokeWidth="2"/>
           </svg>
         )
       case 'shopify':
