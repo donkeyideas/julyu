@@ -39,6 +39,26 @@ export interface StoreOwnerAuthResult {
   status?: number
 }
 
+export interface BodegaStore {
+  id: string
+  store_owner_id: string
+  name: string
+  street_address?: string
+  city?: string
+  state?: string
+  zip_code?: string
+  latitude?: number
+  longitude?: number
+  phone?: string
+  is_active: boolean
+  accepts_delivery: boolean
+  accepts_pickup: boolean
+  delivery_radius_miles?: number
+  opening_hours?: any
+  created_at: string
+  updated_at: string
+}
+
 /**
  * Get authenticated store owner from request
  * Verifies user is logged in and has an approved store owner account
@@ -184,7 +204,7 @@ export async function hasStoreOwnerAccount(userId: string): Promise<boolean> {
  * Get store owner's bodega stores
  * Uses service role client to bypass RLS
  */
-export async function getStoreOwnerStores(storeOwnerId: string) {
+export async function getStoreOwnerStores(storeOwnerId: string): Promise<{ stores: BodegaStore[]; error: string | null }> {
   try {
     const serviceClient = createServiceRoleClient()
 
@@ -199,7 +219,7 @@ export async function getStoreOwnerStores(storeOwnerId: string) {
       return { stores: [], error: error.message }
     }
 
-    return { stores: data || [], error: null }
+    return { stores: (data || []) as BodegaStore[], error: null }
   } catch (error) {
     console.error('Get stores error:', error)
     return { stores: [], error: 'Failed to fetch stores' }
