@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { deepseekClient } from '@/lib/api/deepseek'
 import { krogerClient, NormalizedKrogerProduct } from '@/lib/api/kroger'
+import { serpApiWalmartClient, NormalizedWalmartProduct } from '@/lib/api/serpapi-walmart'
 import { compareShoppingList, getAggregatedPrices } from '@/lib/services/price-aggregator'
 import { geocodeLocation } from '@/lib/services/geocoding'
 
@@ -257,7 +258,7 @@ interface StoreResult {
   address?: string
   items: Array<{
     userInput: string
-    product: NormalizedKrogerProduct | null
+    product: NormalizedKrogerProduct | NormalizedWalmartProduct | null
     price: number | null
   }>
   total: number
@@ -515,6 +516,48 @@ async function analyzeWithKroger(
   const bodegaStoreIds = bodegaStores.map((s: any) => s.id)
   const bodegaInventory = await searchBodegaInventory(supabase, bodegaStoreIds, items)
 
+  // Step 3.5: Search Walmart via SerpApi (if configured)
+  const walmartResults: Array<{
+    userInput: string
+    walmartProduct: NormalizedWalmartProduct | null
+    price: number | null
+  }> = []
+
+  const walmartConfigured = await serpApiWalmartClient.isConfiguredAsync()
+  if (walmartConfigured) {
+    console.log('[ListAnalyze] Searching Walmart via SerpApi...')
+    for (const item of items) {
+      try {
+        const walmartProducts = await serpApiWalmartClient.searchProducts(item, { limit: 1 })
+        if (walmartProducts.length > 0) {
+          const product = walmartProducts[0]
+          walmartResults.push({
+            userInput: item,
+            walmartProduct: product,
+            price: product.price?.sale || product.price?.regular || null,
+          })
+          console.log(`[ListAnalyze] Walmart found: ${product.name} - $${product.price?.regular}`)
+        } else {
+          walmartResults.push({
+            userInput: item,
+            walmartProduct: null,
+            price: null,
+          })
+        }
+      } catch (walmartError: any) {
+        console.error(`[ListAnalyze] Walmart search failed for ${item}:`, walmartError.message)
+        walmartResults.push({
+          userInput: item,
+          walmartProduct: null,
+          price: null,
+        })
+      }
+    }
+    console.log(`[ListAnalyze] Walmart search complete: ${walmartResults.filter(r => r.price).length}/${items.length} items found`)
+  } else {
+    console.log('[ListAnalyze] Walmart/SerpApi not configured, skipping')
+  }
+
   // Step 4: Calculate totals for Kroger
   const itemsWithPrices = productResults.filter(p => p.price !== null)
   const itemsWithoutPrices = productResults.filter(p => p.price === null)
@@ -575,10 +618,47 @@ async function analyzeWithKroger(
     })
   }
 
-  // Sort by distance (closest first) if distances are available
+  // Add Walmart store result (if we have Walmart data)
+  if (walmartResults.length > 0) {
+    const walmartItemsWithPrices = walmartResults.filter(r => r.price !== null)
+    const walmartTotal = walmartItemsWithPrices.reduce((sum, r) => sum + (r.price || 0), 0)
+
+    // Only add Walmart if we found at least one item
+    if (walmartItemsWithPrices.length > 0) {
+      storeResults.push({
+        storeId: 'walmart-online',
+        storeName: 'Walmart',
+        retailer: 'WALMART',
+        distance: null, // Online pricing, no specific store
+        address: 'Online / Pickup Available',
+        items: walmartResults.map(r => ({
+          userInput: r.userInput,
+          product: r.walmartProduct,
+          price: r.price,
+        })),
+        total: walmartTotal,
+        itemsFound: walmartItemsWithPrices.length,
+        itemsMissing: items.length - walmartItemsWithPrices.length,
+      })
+      console.log(`[ListAnalyze] Added Walmart with ${walmartItemsWithPrices.length} items, total: $${walmartTotal.toFixed(2)}`)
+    }
+  }
+
+  // Sort by: 1) items found (most first), 2) price (lowest first), 3) distance (closest first)
   storeResults.sort((a, b) => {
+    // First, prioritize stores with more items found
+    if (a.itemsFound !== b.itemsFound) {
+      return b.itemsFound - a.itemsFound
+    }
+
+    // Then by total price (lowest first)
+    if (a.total !== b.total && a.total > 0 && b.total > 0) {
+      return a.total - b.total
+    }
+
+    // Then by distance (closest first), putting online stores last
     if (!a.distance && !b.distance) return 0
-    if (!a.distance) return 1
+    if (!a.distance) return 1 // Online stores (no distance) go after physical stores
     if (!b.distance) return -1
     return parseFloat(a.distance) - parseFloat(b.distance)
   })
