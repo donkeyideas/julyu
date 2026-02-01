@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
 interface StoreOwner {
@@ -9,16 +8,46 @@ interface StoreOwner {
   business_name: string
   business_type: string
   business_email?: string
+  business_phone?: string
+  business_address?: string
+  tax_id?: string
+  business_license?: string
   application_status: string
   commission_rate: number
   accepts_orders: boolean
+  stripe_account_id?: string
+  stripe_account_status?: string
+  rejection_reason?: string
   created_at: string
   bodega_stores?: Array<{
     id: string
     name: string
+    address: string
     city: string
     state: string
+    zip: string
+    phone?: string
+    is_active: boolean
+    verified: boolean
+    latitude?: number
+    longitude?: number
   }>
+}
+
+interface Order {
+  id: string
+  order_number: string
+  customer_name: string
+  status: string
+  total_amount: string
+  store_payout: string
+  ordered_at: string
+}
+
+interface StoreDetails {
+  storeOwner: StoreOwner
+  orders: Order[]
+  inventoryCount: number
 }
 
 export default function AllStoresPage() {
@@ -28,13 +57,15 @@ export default function AllStoresPage() {
   const [deleteConfirmModal, setDeleteConfirmModal] = useState<{ open: boolean; store: StoreOwner | null }>({ open: false, store: null })
   const [alertModal, setAlertModal] = useState<{ open: boolean; title: string; message: string; type: 'error' | 'success' }>({ open: false, title: '', message: '', type: 'error' })
 
+  // Store Details Modal State
+  const [detailsModal, setDetailsModal] = useState<{ open: boolean; loading: boolean; data: StoreDetails | null }>({ open: false, loading: false, data: null })
+
   useEffect(() => {
     loadStores()
   }, [])
 
   const loadStores = async () => {
     try {
-      // Use unified API route to fetch stores (bypasses RLS)
       console.log('[All Stores] Fetching from unified API...')
       const response = await fetch('/api/admin/stores/manage')
 
@@ -51,6 +82,25 @@ export default function AllStoresPage() {
       setStores([])
     } finally {
       setLoading(false)
+    }
+  }
+
+  const openDetailsModal = async (storeId: string) => {
+    setDetailsModal({ open: true, loading: true, data: null })
+
+    try {
+      const response = await fetch(`/api/admin/stores/${storeId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setDetailsModal({ open: true, loading: false, data })
+      } else {
+        setDetailsModal({ open: false, loading: false, data: null })
+        setAlertModal({ open: true, title: 'Error', message: 'Failed to load store details', type: 'error' })
+      }
+    } catch (error) {
+      console.error('Error loading store details:', error)
+      setDetailsModal({ open: false, loading: false, data: null })
+      setAlertModal({ open: true, title: 'Error', message: 'Failed to load store details', type: 'error' })
     }
   }
 
@@ -79,7 +129,6 @@ export default function AllStoresPage() {
         await loadStores()
         setAlertModal({ open: true, title: 'Success', message: `${storeName} has been deleted successfully.`, type: 'success' })
       } else {
-        // Refresh the list in case the item was already deleted
         await loadStores()
         setAlertModal({ open: true, title: 'Delete Failed', message: data.error || data.details || 'Unknown error occurred', type: 'error' })
       }
@@ -114,6 +163,21 @@ export default function AllStoresPage() {
         </div>
       </div>
     )
+  }
+
+  // Calculate stats for details modal
+  const getModalStats = () => {
+    if (!detailsModal.data) return { totalOrders: 0, completedOrders: 0, totalRevenue: 0, totalPayout: 0 }
+    const orders = detailsModal.data.orders
+    const totalOrders = orders.length
+    const completedOrders = orders.filter(o => o.status === 'delivered').length
+    const totalRevenue = orders
+      .filter(o => o.status === 'delivered')
+      .reduce((sum, o) => sum + parseFloat(o.total_amount || '0'), 0)
+    const totalPayout = orders
+      .filter(o => o.status === 'delivered')
+      .reduce((sum, o) => sum + parseFloat(o.store_payout || '0'), 0)
+    return { totalOrders, completedOrders, totalRevenue, totalPayout }
   }
 
   return (
@@ -242,12 +306,12 @@ export default function AllStoresPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <div className="flex gap-4">
-                      <Link
-                        href={`/admin/stores/${store.id}`}
+                      <button
+                        onClick={() => openDetailsModal(store.id)}
                         className="text-green-500 hover:text-green-400 font-semibold"
                       >
                         View Details
-                      </Link>
+                      </button>
                       <button
                         onClick={() => openDeleteConfirm(store)}
                         disabled={deleting === store.id}
@@ -269,6 +333,214 @@ export default function AllStoresPage() {
           </div>
         )}
       </div>
+
+      {/* Store Details Modal */}
+      {detailsModal.open && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.85)' }}
+          onClick={() => setDetailsModal({ open: false, loading: false, data: null })}
+        >
+          <div
+            className="rounded-2xl w-full max-w-4xl my-8 max-h-[90vh] overflow-y-auto"
+            style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {detailsModal.loading ? (
+              <div className="flex items-center justify-center p-12">
+                <div className="text-center">
+                  <div className="inline-block w-12 h-12 border-4 border-t-green-500 rounded-full animate-spin mb-4" style={{ borderColor: 'var(--border-color)', borderTopColor: '#10b981' }}></div>
+                  <div style={{ color: 'var(--text-secondary)' }}>Loading store details...</div>
+                </div>
+              </div>
+            ) : detailsModal.data ? (
+              <div className="p-6 space-y-6">
+                {/* Header */}
+                <div className="flex items-center justify-between pb-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <div>
+                    <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                      {detailsModal.data.storeOwner.business_name}
+                    </h2>
+                    <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+                      Store ID: {detailsModal.data.storeOwner.id}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`px-3 py-1 text-sm font-semibold rounded-lg ${statusColors[detailsModal.data.storeOwner.application_status]}`}>
+                      {detailsModal.data.storeOwner.application_status.replace('_', ' ')}
+                    </span>
+                    <button
+                      onClick={() => setDetailsModal({ open: false, loading: false, data: null })}
+                      className="p-2 rounded-lg hover:bg-gray-700 transition"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--text-secondary)' }}>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Stats */}
+                {(() => {
+                  const stats = getModalStats()
+                  return (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                        <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Total Orders</div>
+                        <div className="text-2xl font-bold mt-1" style={{ color: 'var(--text-primary)' }}>{stats.totalOrders}</div>
+                      </div>
+                      <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                        <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Completed</div>
+                        <div className="text-2xl font-bold text-green-500 mt-1">{stats.completedOrders}</div>
+                      </div>
+                      <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                        <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Total Revenue</div>
+                        <div className="text-2xl font-bold text-blue-500 mt-1">${stats.totalRevenue.toFixed(2)}</div>
+                      </div>
+                      <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                        <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Inventory</div>
+                        <div className="text-2xl font-bold text-purple-500 mt-1">{detailsModal.data.inventoryCount} items</div>
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* Business Information */}
+                <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                  <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Business Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Business Name</label>
+                      <p className="text-sm mt-1" style={{ color: 'var(--text-primary)' }}>{detailsModal.data.storeOwner.business_name}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Business Type</label>
+                      <p className="text-sm mt-1 capitalize" style={{ color: 'var(--text-primary)' }}>{detailsModal.data.storeOwner.business_type || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Email</label>
+                      <p className="text-sm mt-1" style={{ color: 'var(--text-primary)' }}>{detailsModal.data.storeOwner.business_email || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Phone</label>
+                      <p className="text-sm mt-1" style={{ color: 'var(--text-primary)' }}>{detailsModal.data.storeOwner.business_phone || 'N/A'}</p>
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Address</label>
+                      <p className="text-sm mt-1" style={{ color: 'var(--text-primary)' }}>{detailsModal.data.storeOwner.business_address || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Commission Rate</label>
+                      <p className="text-sm mt-1 font-semibold text-green-500">{detailsModal.data.storeOwner.commission_rate}%</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Accepting Orders</label>
+                      <p className={`text-sm mt-1 font-semibold ${detailsModal.data.storeOwner.accepts_orders ? 'text-green-500' : 'text-red-500'}`}>
+                        {detailsModal.data.storeOwner.accepts_orders ? 'Yes' : 'No'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stripe Connect */}
+                <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                  <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Stripe Connect</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Account ID</label>
+                      <p className="text-sm mt-1 font-mono" style={{ color: 'var(--text-primary)' }}>{detailsModal.data.storeOwner.stripe_account_id || 'Not connected'}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Status</label>
+                      <p className="text-sm mt-1 capitalize" style={{ color: 'var(--text-primary)' }}>{detailsModal.data.storeOwner.stripe_account_status || 'N/A'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Locations */}
+                {detailsModal.data.storeOwner.bodega_stores && detailsModal.data.storeOwner.bodega_stores.length > 0 && (
+                  <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                    <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
+                      Locations ({detailsModal.data.storeOwner.bodega_stores.length})
+                    </h3>
+                    <div className="space-y-3">
+                      {detailsModal.data.storeOwner.bodega_stores.map((location) => (
+                        <div key={location.id} className="rounded-lg p-3" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{location.name}</p>
+                              <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+                                {location.address}, {location.city}, {location.state} {location.zip}
+                              </p>
+                              {location.phone && (
+                                <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Phone: {location.phone}</p>
+                              )}
+                            </div>
+                            <div className="flex flex-col items-end gap-1">
+                              <span className={`px-2 py-1 text-xs font-semibold rounded-lg ${location.is_active ? 'bg-green-500/15 text-green-500' : 'bg-gray-500/15 text-gray-500'}`}>
+                                {location.is_active ? 'Active' : 'Inactive'}
+                              </span>
+                              <span className={`px-2 py-1 text-xs font-semibold rounded-lg ${location.verified ? 'bg-blue-500/15 text-blue-500' : 'bg-yellow-500/15 text-yellow-500'}`}>
+                                {location.verified ? 'Verified' : 'Unverified'}
+                              </span>
+                              <span className={`px-2 py-1 text-xs font-semibold rounded-lg ${location.latitude && location.longitude ? 'bg-green-500/15 text-green-500' : 'bg-gray-500/15 text-gray-500'}`}>
+                                {location.latitude && location.longitude ? 'Location Set' : 'No Location'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Recent Orders */}
+                {detailsModal.data.orders.length > 0 && (
+                  <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                    <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
+                      Recent Orders ({detailsModal.data.orders.length})
+                    </h3>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full">
+                        <thead style={{ borderBottom: '1px solid var(--border-color)' }}>
+                          <tr>
+                            <th className="px-3 py-2 text-left text-xs font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Order #</th>
+                            <th className="px-3 py-2 text-left text-xs font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Customer</th>
+                            <th className="px-3 py-2 text-left text-xs font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Status</th>
+                            <th className="px-3 py-2 text-left text-xs font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Total</th>
+                            <th className="px-3 py-2 text-left text-xs font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Date</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {detailsModal.data.orders.slice(0, 5).map((order) => (
+                            <tr key={order.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                              <td className="px-3 py-2 text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{order.order_number}</td>
+                              <td className="px-3 py-2 text-sm" style={{ color: 'var(--text-secondary)' }}>{order.customer_name}</td>
+                              <td className="px-3 py-2 text-sm capitalize" style={{ color: 'var(--text-primary)' }}>{order.status.replace('_', ' ')}</td>
+                              <td className="px-3 py-2 text-sm" style={{ color: 'var(--text-primary)' }}>${parseFloat(order.total_amount).toFixed(2)}</td>
+                              <td className="px-3 py-2 text-sm" style={{ color: 'var(--text-secondary)' }}>{new Date(order.ordered_at).toLocaleDateString()}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Close Button */}
+                <div className="flex justify-end pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
+                  <button
+                    onClick={() => setDetailsModal({ open: false, loading: false, data: null })}
+                    className="px-6 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmModal.open && deleteConfirmModal.store && (
