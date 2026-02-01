@@ -690,6 +690,7 @@ async function analyzeWithKroger(
   const result = {
     success: true,
     dataSource: isBodegaBestOption ? 'local_store' : 'kroger_api',
+    userItems: items, // Original user search terms for frontend comparison table
     stores: storeResults,
     bestOption: bestOptionStore ? {
       store: {

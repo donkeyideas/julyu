@@ -49,6 +49,7 @@ interface StoreOption {
 interface AnalyzeResult {
   success: boolean
   dataSource: string
+  userItems?: string[] // Original user search terms
   bestOption: StoreOption | null
   alternatives: StoreOption[]
   products: ProductResult[]
@@ -924,47 +925,143 @@ function ComparePageContent() {
             </table>
           </div>
 
-          {/* Product Details */}
-          <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Item Details</h2>
-          <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-            <table className="w-full">
-              <thead style={{ backgroundColor: 'var(--bg-secondary)' }}>
-                <tr>
-                  <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Your Item</th>
-                  <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Matched Product</th>
-                  <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Brand</th>
-                  <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Price</th>
-                  <th className="text-left p-4 text-sm font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {results.products?.map((product, idx) => (
-                  <tr key={idx} className="hover:opacity-80" style={{ borderTop: '1px solid var(--border-color)' }}>
-                    <td className="p-4" style={{ color: 'var(--text-muted)' }}>{product.userInput}</td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        {product.imageUrl && (
-                          <img src={product.imageUrl} alt="" className="w-10 h-10 object-cover rounded" />
-                        )}
-                        <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{product.name}</span>
-                      </div>
-                    </td>
-                    <td className="p-4" style={{ color: 'var(--text-muted)' }}>{product.brand || '-'}</td>
-                    <td className="p-4 font-bold" style={{ color: 'var(--text-primary)' }}>
-                      {product.price ? `$${product.price.toFixed(2)}` : '-'}
-                    </td>
-                    <td className="p-4">
-                      {product.available ? (
-                        <span className="text-sm" style={{ color: 'var(--accent-primary)' }}>Found</span>
-                      ) : (
-                        <span className="text-red-500 text-sm">Not Found</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {/* Side-by-Side Store Comparison */}
+          <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Item Comparison by Store</h2>
+          {(() => {
+            // Build all stores array: best option first, then alternatives
+            const allStores: StoreOption[] = []
+            if (results.bestOption) allStores.push(results.bestOption)
+            if (results.alternatives) allStores.push(...results.alternatives)
+
+            // Get user items from API response, or fallback to extracting from products
+            const userItems = results.userItems || results.products?.map(p => p.userInput) || []
+
+            // Find cheapest total among all stores
+            const cheapestTotal = Math.min(...allStores.filter(s => s.total > 0).map(s => s.total))
+
+            return (
+              <div className="rounded-2xl overflow-x-auto" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                <table className="w-full min-w-[600px]">
+                  <thead style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                    <tr>
+                      <th className="text-left p-4 text-sm font-semibold uppercase sticky left-0" style={{ color: 'var(--text-muted)', backgroundColor: 'var(--bg-secondary)', minWidth: '120px' }}>
+                        Your Item
+                      </th>
+                      {allStores.map((storeOption, idx) => (
+                        <th
+                          key={storeOption.store.id || idx}
+                          className="text-left p-4 text-sm font-semibold uppercase"
+                          style={{ color: 'var(--text-muted)', minWidth: '200px' }}
+                        >
+                          <div className="flex items-center gap-2">
+                            {idx === 0 && (
+                              <span className="px-2 py-0.5 text-xs font-bold rounded" style={{ backgroundColor: 'var(--accent-primary)', color: 'white' }}>
+                                BEST
+                              </span>
+                            )}
+                            <span>{storeOption.store.name}</span>
+                          </div>
+                          {storeOption.store.distance && (
+                            <span className="text-xs font-normal block mt-1" style={{ color: 'var(--text-muted)' }}>
+                              {storeOption.store.distance} mi
+                            </span>
+                          )}
+                          {!storeOption.store.distance && storeOption.store.retailer === 'WALMART' && (
+                            <span className="text-xs font-normal block mt-1" style={{ color: 'var(--text-muted)' }}>
+                              Online / Pickup
+                            </span>
+                          )}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {userItems.map((userItem, itemIdx) => {
+                      // Find cheapest price for this item across all stores
+                      const itemPrices = allStores.map(store => {
+                        const match = store.items?.find((i: any) => i.userInput === userItem)
+                        return match?.price || null
+                      }).filter((p): p is number => p !== null)
+                      const cheapestPrice = itemPrices.length > 0 ? Math.min(...itemPrices) : null
+
+                      return (
+                        <tr key={itemIdx} style={{ borderTop: '1px solid var(--border-color)' }}>
+                          <td className="p-4 sticky left-0" style={{ color: 'var(--text-muted)', backgroundColor: 'var(--bg-card)' }}>
+                            {userItem}
+                          </td>
+                          {allStores.map((storeOption, storeIdx) => {
+                            const matchedItem = storeOption.items?.find((i: any) => i.userInput === userItem)
+                            const isCheapest = matchedItem?.price && cheapestPrice && matchedItem.price === cheapestPrice && itemPrices.length > 1
+
+                            return (
+                              <td key={storeOption.store.id || storeIdx} className="p-4" style={{ borderLeft: '1px solid var(--border-color)' }}>
+                                {matchedItem?.product ? (
+                                  <div className="flex items-start gap-3">
+                                    {matchedItem.product.imageUrl && (
+                                      <img
+                                        src={matchedItem.product.imageUrl}
+                                        alt=""
+                                        className="w-12 h-12 object-cover rounded flex-shrink-0"
+                                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                                      />
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }} title={matchedItem.product.name}>
+                                        {matchedItem.product.name}
+                                      </p>
+                                      {matchedItem.product.brand && (
+                                        <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
+                                          {matchedItem.product.brand}
+                                        </p>
+                                      )}
+                                      <p className={`text-sm font-bold mt-1 ${isCheapest ? '' : ''}`} style={{ color: isCheapest ? 'var(--accent-primary)' : 'var(--text-primary)' }}>
+                                        ${matchedItem.price?.toFixed(2)}
+                                        {isCheapest && <span className="ml-1 text-xs font-normal">Best</span>}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="text-center py-2">
+                                    <span className="text-sm italic" style={{ color: 'var(--text-muted)' }}>Not found</span>
+                                  </div>
+                                )}
+                              </td>
+                            )
+                          })}
+                        </tr>
+                      )
+                    })}
+                    {/* Total Row */}
+                    <tr style={{ borderTop: '2px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}>
+                      <td className="p-4 sticky left-0 font-bold" style={{ color: 'var(--text-primary)', backgroundColor: 'var(--bg-secondary)' }}>
+                        TOTAL
+                      </td>
+                      {allStores.map((storeOption, storeIdx) => {
+                        const isCheapest = storeOption.total === cheapestTotal && storeOption.total > 0
+                        return (
+                          <td
+                            key={storeOption.store.id || storeIdx}
+                            className="p-4 font-bold text-lg"
+                            style={{
+                              borderLeft: '1px solid var(--border-color)',
+                              color: isCheapest ? 'var(--accent-primary)' : 'var(--text-primary)'
+                            }}
+                          >
+                            ${storeOption.total.toFixed(2)}
+                            {isCheapest && allStores.length > 1 && (
+                              <span className="ml-2 text-xs font-normal px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--accent-primary-10)', color: 'var(--accent-primary)' }}>
+                                Cheapest
+                              </span>
+                            )}
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )
+          })()}
         </div>
       )}
 
