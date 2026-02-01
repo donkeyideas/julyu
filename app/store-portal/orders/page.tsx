@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import OrderCard from '@/components/store-portal/OrderCard'
+import { OrdersSkeleton } from '@/components/store-portal/Skeleton'
 
 export default function OrdersPage() {
   const [loading, setLoading] = useState(true)
@@ -37,20 +38,7 @@ export default function OrdersPage() {
   const completedOrders = allOrders.filter((o: any) => o.status === 'delivered')
 
   if (loading) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Orders</h1>
-          <p className="mt-1" style={{ color: 'var(--text-secondary)' }}>
-            Manage and fulfill customer orders
-          </p>
-        </div>
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
-          <span className="ml-3" style={{ color: 'var(--text-secondary)' }}>Loading orders...</span>
-        </div>
-      </div>
-    )
+    return <OrdersSkeleton />
   }
 
   if (error) {

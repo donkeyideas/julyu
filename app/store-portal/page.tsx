@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { DashboardSkeleton } from '@/components/store-portal/Skeleton'
 
 interface DashboardData {
   storeOwner: any
@@ -41,17 +42,7 @@ export default function StorePortalDashboard() {
   }, [])
 
   if (loading) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Dashboard</h1>
-        </div>
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
-          <span className="ml-3" style={{ color: 'var(--text-secondary)' }}>Loading dashboard...</span>
-        </div>
-      </div>
-    )
+    return <DashboardSkeleton />
   }
 
   if (error || !data) {

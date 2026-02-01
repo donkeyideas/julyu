@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import InventoryTable from '@/components/store-portal/InventoryTable'
+import { InventorySkeleton } from '@/components/store-portal/Skeleton'
 
 // Metadata must be in a separate layout or use generateMetadata for client components
 // export const metadata = { ... } - not supported in client components
@@ -46,22 +47,7 @@ export default function InventoryPage() {
   const outOfStockCount = inventoryItems.filter((item: any) => !item.in_stock || item.stock_quantity === 0).length
 
   if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Inventory</h1>
-            <p className="mt-1" style={{ color: 'var(--text-secondary)' }}>
-              Manage your store&apos;s products and stock levels
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
-          <span className="ml-3" style={{ color: 'var(--text-secondary)' }}>Loading inventory...</span>
-        </div>
-      </div>
-    )
+    return <InventorySkeleton />
   }
 
   if (error) {
