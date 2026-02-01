@@ -30,14 +30,14 @@ export async function middleware(request: NextRequest) {
           return request.cookies.get(name)?.value
         },
         set(name: string, value: string, options: any) {
-          request.cookies.set({ name, value, ...options })
+          request.cookies.set(name, value)
           supabaseResponse = NextResponse.next({ request })
-          supabaseResponse.cookies.set({ name, value, ...options })
+          supabaseResponse.cookies.set(name, value, options)
         },
         remove(name: string, options: any) {
-          request.cookies.set({ name, value: '', ...options })
+          request.cookies.delete(name)
           supabaseResponse = NextResponse.next({ request })
-          supabaseResponse.cookies.set({ name, value: '', ...options })
+          supabaseResponse.cookies.set(name, '', { ...options, maxAge: 0 })
         },
       },
     }
