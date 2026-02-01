@@ -48,30 +48,36 @@ export async function canMakeApiCall(apiName: ApiName): Promise<{
     const { createServiceRoleClient } = await import('@/lib/supabase/server')
     const supabase = createServiceRoleClient() as any
 
-    // Check if API is enabled
-    const { data: config } = await supabase
-      .from('ai_model_config')
-      .select('config')
-      .eq('model_name', 'rapidapi')
-      .eq('is_active', true)
-      .single()
+    // SerpApi is a separate service - check its env var directly, not RapidAPI config
+    if (apiName === 'serpapi') {
+      const serpApiKey = process.env.SERPAPI_API_KEY
+      if (!serpApiKey) {
+        return { allowed: false, reason: 'SerpApi not configured (no SERPAPI_API_KEY)' }
+      }
+      // Skip to rate limit check below
+    } else {
+      // For RapidAPI-based APIs (tesco, grocery-prices), check the config
+      const { data: config } = await supabase
+        .from('ai_model_config')
+        .select('config')
+        .eq('model_name', 'rapidapi')
+        .eq('is_active', true)
+        .single()
 
-    if (!config) {
-      return { allowed: false, reason: 'RapidAPI not configured' }
-    }
+      if (!config) {
+        return { allowed: false, reason: 'RapidAPI not configured' }
+      }
 
-    let isEnabled = false
-    if (apiName === 'tesco') {
-      isEnabled = config.config?.tescoEnabled
-    } else if (apiName === 'grocery-prices') {
-      isEnabled = config.config?.groceryPricesEnabled
-    } else if (apiName === 'serpapi') {
-      // SerpApi is enabled if we have an API key configured
-      isEnabled = true
-    }
+      let isEnabled = false
+      if (apiName === 'tesco') {
+        isEnabled = config.config?.tescoEnabled
+      } else if (apiName === 'grocery-prices') {
+        isEnabled = config.config?.groceryPricesEnabled
+      }
 
-    if (!isEnabled) {
-      return { allowed: false, reason: `${apiName} API is not enabled` }
+      if (!isEnabled) {
+        return { allowed: false, reason: `${apiName} API is not enabled` }
+      }
     }
 
     // Get rate limit configuration
