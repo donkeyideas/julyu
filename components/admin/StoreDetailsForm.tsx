@@ -163,139 +163,148 @@ export default function StoreDetailsForm({ storeOwner }: Props) {
   return (
     <div className="space-y-6">
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-3">
-          <p className="text-sm text-red-800">{error}</p>
+        <div className="bg-red-500/15 border border-red-500/30 rounded-lg p-3">
+          <p className="text-sm text-red-500">{error}</p>
         </div>
       )}
 
       {success && (
-        <div className="bg-green-50 border border-green-200 rounded-md p-3">
-          <p className="text-sm text-green-800">{success}</p>
+        <div className="bg-green-500/15 border border-green-500/30 rounded-lg p-3">
+          <p className="text-sm text-green-500">{success}</p>
         </div>
       )}
 
       {/* Business Info (Read-only) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
             Business Name
           </label>
           <input
             type="text"
             value={storeOwner.business_name}
             disabled
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600"
+            className="w-full px-3 py-2 rounded-lg opacity-75"
+            style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
             Business Type
           </label>
           <input
             type="text"
             value={storeOwner.business_type}
             disabled
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600 capitalize"
+            className="w-full px-3 py-2 rounded-lg capitalize opacity-75"
+            style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
             Business Email
           </label>
           <input
             type="email"
             value={storeOwner.business_email || 'N/A'}
             disabled
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600"
+            className="w-full px-3 py-2 rounded-lg opacity-75"
+            style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
             Business Phone
           </label>
           <input
             type="tel"
             value={storeOwner.business_phone || 'N/A'}
             disabled
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600"
+            className="w-full px-3 py-2 rounded-lg opacity-75"
+            style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
           />
         </div>
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
             Business Address
           </label>
           <input
             type="text"
             value={storeOwner.business_address || 'N/A'}
             disabled
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600"
+            className="w-full px-3 py-2 rounded-lg opacity-75"
+            style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
             Tax ID
           </label>
           <input
             type="text"
             value={storeOwner.tax_id || 'N/A'}
             disabled
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600"
+            className="w-full px-3 py-2 rounded-lg opacity-75"
+            style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
             Business License
           </label>
           <input
             type="text"
             value={storeOwner.business_license || 'N/A'}
             disabled
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600"
+            className="w-full px-3 py-2 rounded-lg opacity-75"
+            style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
           />
         </div>
       </div>
 
       {/* Stripe Connect Info */}
-      <div className="border-t border-gray-200 pt-4">
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">Stripe Connect</h3>
+      <div className="pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
+        <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>Stripe Connect</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
               Account ID
             </label>
             <input
               type="text"
               value={storeOwner.stripe_account_id || 'Not connected'}
               disabled
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600 font-mono text-xs"
+              className="w-full px-3 py-2 rounded-lg font-mono text-xs opacity-75"
+              style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
               Account Status
             </label>
             <input
               type="text"
               value={storeOwner.stripe_account_status || 'N/A'}
               disabled
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600 capitalize"
+              className="w-full px-3 py-2 rounded-lg capitalize opacity-75"
+              style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
             />
           </div>
         </div>
       </div>
 
       {/* Commission Rate (Editable) */}
-      <div className="border-t border-gray-200 pt-4">
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">Commission Settings</h3>
+      <div className="pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
+        <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>Commission Settings</h3>
         <div className="flex items-end gap-3">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
               Commission Rate (%)
             </label>
             <input
@@ -305,29 +314,30 @@ export default function StoreDetailsForm({ storeOwner }: Props) {
               step="0.01"
               value={commissionRate}
               onChange={(e) => setCommissionRate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
             />
           </div>
           <button
             onClick={handleUpdateCommission}
             disabled={loading || commissionRate === storeOwner.commission_rate.toString()}
-            className="px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
             Update Rate
           </button>
         </div>
-        <p className="text-xs text-gray-500 mt-2">
+        <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
           Current: {storeOwner.commission_rate}% | New rate will apply to future orders only
         </p>
       </div>
 
       {/* Order Acceptance Toggle */}
-      <div className="border-t border-gray-200 pt-4">
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">Order Settings</h3>
+      <div className="pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
+        <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>Order Settings</h3>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-900">Accept Orders</p>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Accept Orders</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
               {acceptsOrders
                 ? 'Store is currently accepting orders from customers'
                 : 'Store is not accepting new orders'}
@@ -336,10 +346,10 @@ export default function StoreDetailsForm({ storeOwner }: Props) {
           <button
             onClick={handleToggleOrders}
             disabled={loading || storeOwner.application_status !== 'approved'}
-            className={`px-4 py-2 font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`px-4 py-2 font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition ${
               acceptsOrders
-                ? 'bg-red-600 text-white hover:bg-red-700'
-                : 'bg-green-600 text-white hover:bg-green-700'
+                ? 'bg-red-500 text-white hover:bg-red-600'
+                : 'bg-green-500 text-black hover:bg-green-600'
             }`}
           >
             {acceptsOrders ? 'Disable Orders' : 'Enable Orders'}
@@ -349,23 +359,23 @@ export default function StoreDetailsForm({ storeOwner }: Props) {
 
       {/* Rejection Reason (if rejected) */}
       {storeOwner.application_status === 'rejected' && storeOwner.rejection_reason && (
-        <div className="border-t border-gray-200 pt-4">
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">Rejection Reason</h3>
-          <div className="bg-red-50 border border-red-200 rounded-md p-3">
-            <p className="text-sm text-red-800">{storeOwner.rejection_reason}</p>
+        <div className="pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
+          <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>Rejection Reason</h3>
+          <div className="bg-red-500/15 border border-red-500/30 rounded-lg p-3">
+            <p className="text-sm text-red-500">{storeOwner.rejection_reason}</p>
           </div>
         </div>
       )}
 
       {/* Store Actions */}
-      <div className="border-t border-gray-200 pt-4">
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">Store Actions</h3>
+      <div className="pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
+        <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>Store Actions</h3>
         <div className="flex gap-3">
           {storeOwner.application_status === 'approved' && (
             <button
               onClick={handleSuspend}
               disabled={loading}
-              className="px-4 py-2 bg-yellow-600 text-white font-medium rounded-md hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-yellow-500 text-black font-semibold rounded-lg hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               Suspend Store
             </button>
@@ -375,7 +385,7 @@ export default function StoreDetailsForm({ storeOwner }: Props) {
             <button
               onClick={handleReactivate}
               disabled={loading}
-              className="px-4 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               Reactivate Store
             </button>

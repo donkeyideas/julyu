@@ -51,59 +51,59 @@ export default function StoreLocationCard({ location }: Props) {
   }
 
   return (
-    <div className="border border-gray-200 rounded-lg p-4">
+    <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="font-medium text-gray-900">{location.name}</h3>
-          <p className="text-sm text-gray-600 mt-1">
+          <h3 className="font-medium" style={{ color: 'var(--text-primary)' }}>{location.name}</h3>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
             {location.address}
           </p>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
             {location.city}, {location.state} {location.zip}
           </p>
           {location.phone && (
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
               Phone: {location.phone}
             </p>
           )}
           {error && (
-            <p className="text-sm text-red-600 mt-2">{error}</p>
+            <p className="text-sm text-red-500 mt-2">{error}</p>
           )}
         </div>
         <div className="flex flex-col items-end gap-2">
           {location.is_active ? (
-            <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+            <span className="px-2 py-1 text-xs font-semibold rounded-lg bg-green-500/15 text-green-500">
               Active
             </span>
           ) : (
-            <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+            <span className="px-2 py-1 text-xs font-semibold rounded-lg bg-gray-500/15 text-gray-500">
               Inactive
             </span>
           )}
           {verified ? (
-            <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+            <span className="px-2 py-1 text-xs font-semibold rounded-lg bg-blue-500/15 text-blue-500">
               Verified
             </span>
           ) : (
             <div className="flex items-center gap-2">
-              <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+              <span className="px-2 py-1 text-xs font-semibold rounded-lg bg-yellow-500/15 text-yellow-500">
                 Unverified
               </span>
               <button
                 onClick={handleVerify}
                 disabled={isVerifying}
-                className="px-2 py-1 text-xs font-medium rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                className="px-2 py-1 text-xs font-semibold rounded-lg bg-green-500 text-black hover:bg-green-600 disabled:opacity-50 transition"
               >
                 {isVerifying ? 'Verifying...' : 'Verify'}
               </button>
             </div>
           )}
           {hasCoordinates ? (
-            <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+            <span className="px-2 py-1 text-xs font-semibold rounded-lg bg-green-500/15 text-green-500">
               Location Set
             </span>
           ) : (
-            <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">
+            <span className="px-2 py-1 text-xs font-semibold rounded-lg bg-gray-500/15" style={{ color: 'var(--text-muted)' }}>
               No Location
             </span>
           )}
