@@ -49,24 +49,18 @@ export const createServerClient = cache(async () => {
     key,
     {
       cookies: {
-        get(key: string) {
-          const cookie = cookieStore.get(key)
-          return cookie?.value ?? null
+        getAll() {
+          return cookieStore.getAll()
         },
-        set(key: string, value: string, options: any) {
+        setAll(cookiesToSet) {
           try {
-            cookieStore.set(key, value, options)
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
           } catch {
-            // The `set` method was called from a Server Component.
+            // The `setAll` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing
             // user sessions.
-          }
-        },
-        remove(key: string, options: any) {
-          try {
-            cookieStore.set(key, '', { ...options, maxAge: 0 })
-          } catch {
-            // Ignore errors
           }
         },
       },
