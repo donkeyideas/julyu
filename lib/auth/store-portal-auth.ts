@@ -44,9 +44,11 @@ export interface BodegaStore {
   store_owner_id: string
   name: string
   street_address?: string
+  address?: string  // Alias for street_address (used by SettingsForm)
   city?: string
   state?: string
   zip_code?: string
+  zip?: string  // Alias for zip_code (used by SettingsForm)
   latitude?: number
   longitude?: number
   phone?: string
@@ -219,7 +221,14 @@ export async function getStoreOwnerStores(storeOwnerId: string): Promise<{ store
       return { stores: [], error: error.message }
     }
 
-    return { stores: (data || []) as BodegaStore[], error: null }
+    // Transform data to include aliased properties for compatibility with components
+    const stores = (data || []).map((store: any) => ({
+      ...store,
+      address: store.street_address,
+      zip: store.zip_code,
+    })) as BodegaStore[]
+
+    return { stores, error: null }
   } catch (error) {
     console.error('Get stores error:', error)
     return { stores: [], error: 'Failed to fetch stores' }
