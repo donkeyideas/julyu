@@ -1,5 +1,7 @@
 import { NextRequest } from 'next/server'
+import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 
 /**
  * Store Portal Authentication Helper
@@ -100,25 +102,42 @@ export async function getStoreOwner(request?: NextRequest): Promise<StoreOwnerAu
 /**
  * Get store owner with less strict checks (for application status page)
  * Returns store owner even if not approved
- * Each component calling this makes its own auth check
+ * Uses x-user-id cookie set by middleware to avoid multiple getUser() calls
  */
 export async function getStoreOwnerAnyStatus(): Promise<StoreOwnerAuthResult> {
   try {
-    const supabase = await createServerClient()
+    const cookieStore = await cookies()
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    // First try to get user ID from the cookie set by middleware
+    // This avoids issues with multiple getUser() calls in the same request
+    const userIdFromCookie = cookieStore.get('x-user-id')?.value
 
-    if (authError || !user) {
-      return {
-        error: 'Unauthorized - Please log in',
-        status: 401
+    let userId: string | undefined = userIdFromCookie
+    let user: any = userIdFromCookie ? { id: userIdFromCookie } : null
+
+    // If no cookie, fall back to getUser() call
+    if (!userId) {
+      const supabase = await createServerClient()
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
+
+      if (authError || !authUser) {
+        return {
+          error: 'Unauthorized - Please log in',
+          status: 401
+        }
       }
+
+      userId = authUser.id
+      user = authUser
     }
 
-    const { data: storeOwner, error: storeError } = await supabase
+    // Use service role client to fetch store owner data (bypasses RLS)
+    const serviceClient = createServiceRoleClient()
+
+    const { data: storeOwner, error: storeError } = await serviceClient
       .from('store_owners')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single()
 
     if (storeError || !storeOwner) {
@@ -163,12 +182,13 @@ export async function hasStoreOwnerAccount(userId: string): Promise<boolean> {
 
 /**
  * Get store owner's bodega stores
+ * Uses service role client to bypass RLS
  */
 export async function getStoreOwnerStores(storeOwnerId: string) {
   try {
-    const supabase = await createServerClient()
+    const serviceClient = createServiceRoleClient()
 
-    const { data, error } = await supabase
+    const { data, error } = await serviceClient
       .from('bodega_stores')
       .select('*')
       .eq('store_owner_id', storeOwnerId)

@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 import { getStoreOwnerAnyStatus } from '@/lib/auth/store-portal-auth'
 import Link from 'next/link'
 import OrderCard from '@/components/store-portal/OrderCard'
@@ -24,7 +24,8 @@ export default async function OrdersPage() {
     )
   }
 
-  const supabase = await createServerClient()
+  // Use service role client to bypass RLS
+  const supabase = createServiceRoleClient()
 
   // Get orders for this store owner
   const { data: orders, error: ordersError } = await supabase

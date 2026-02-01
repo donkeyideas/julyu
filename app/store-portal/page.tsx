@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 import { getStoreOwnerAnyStatus, getStoreOwnerStores } from '@/lib/auth/store-portal-auth'
 import Link from 'next/link'
 
@@ -23,7 +23,8 @@ export default async function StorePortalDashboard() {
     )
   }
 
-  const supabase = await createServerClient()
+  // Use service role client to bypass RLS
+  const supabase = createServiceRoleClient()
 
   // Get store owner's stores
   const { stores } = await getStoreOwnerStores(storeOwner.id)

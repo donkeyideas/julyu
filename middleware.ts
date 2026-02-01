@@ -48,6 +48,21 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Store user ID in a custom cookie for easy access in Server Components
+  // This avoids issues with multiple getUser() calls in the same request
+  if (user) {
+    supabaseResponse.cookies.set('x-user-id', user.id, {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    })
+  } else {
+    // Clear the cookie if no user
+    supabaseResponse.cookies.delete('x-user-id')
+  }
+
   return supabaseResponse
 }
 
