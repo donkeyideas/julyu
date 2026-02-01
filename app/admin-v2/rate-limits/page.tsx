@@ -53,6 +53,10 @@ export default function RateLimitsPage() {
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<Record<string, UsageStats | null>>({})
   const [error, setError] = useState<string | null>(null)
+  const [editingApi, setEditingApi] = useState<string | null>(null)
+  const [editValues, setEditValues] = useState<{ daily: number; monthly: number }>({ daily: 0, monthly: 0 })
+  const [saving, setSaving] = useState(false)
+  const [resetting, setResetting] = useState<string | null>(null)
 
   useEffect(() => {
     fetchStats()
@@ -73,6 +77,66 @@ export default function RateLimitsPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  async function handleSave(apiName: string) {
+    try {
+      setSaving(true)
+      const response = await fetch('/api/admin/rate-limits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          api_name: apiName,
+          daily_limit: editValues.daily,
+          monthly_limit: editValues.monthly,
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to update limits')
+      }
+
+      setEditingApi(null)
+      await fetchStats()
+    } catch (err: any) {
+      console.error('Error saving rate limits:', err)
+      setError(err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleResetUsage(apiName: string) {
+    if (!confirm(`Reset today's usage counter for ${apiName}? This will allow more API calls.`)) {
+      return
+    }
+
+    try {
+      setResetting(apiName)
+      const response = await fetch('/api/admin/rate-limits/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ api_name: apiName }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to reset usage')
+      }
+
+      await fetchStats()
+    } catch (err: any) {
+      console.error('Error resetting usage:', err)
+      setError(err.message)
+    } finally {
+      setResetting(null)
+    }
+  }
+
+  function startEditing(apiName: string, currentDaily: number, currentMonthly: number) {
+    setEditingApi(apiName)
+    setEditValues({ daily: currentDaily, monthly: currentMonthly })
   }
 
   if (loading) {
@@ -97,7 +161,14 @@ export default function RateLimitsPage() {
 
       {error && (
         <div className="rounded-xl p-4 mb-6" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
-          <p className="text-red-400">{error}</p>
+          <div className="flex justify-between items-center">
+            <p className="text-red-400">{error}</p>
+            <button onClick={() => setError(null)} className="text-red-400 hover:text-red-300">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
       )}
 
@@ -105,6 +176,7 @@ export default function RateLimitsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {API_CONFIGS.map((api) => {
           const apiStats = stats[api.name === 'grocery-prices' ? 'groceryPrices' : api.name]
+          const isEditing = editingApi === api.name
 
           if (!apiStats) {
             return (
@@ -146,55 +218,126 @@ export default function RateLimitsPage() {
                 )}
               </div>
 
-              {/* Daily Usage */}
-              <div className="mb-4">
-                <div className="flex justify-between text-sm mb-1">
-                  <span style={{ color: 'var(--text-secondary)' }}>Daily Usage</span>
-                  <span style={{ color: dailyColor }}>
-                    {apiStats.calls_today} / {apiStats.daily_limit}
-                  </span>
+              {isEditing ? (
+                /* Edit Mode */
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Daily Limit</label>
+                    <input
+                      type="number"
+                      value={editValues.daily}
+                      onChange={(e) => setEditValues(v => ({ ...v, daily: parseInt(e.target.value) || 0 }))}
+                      className="w-full px-3 py-2 rounded-lg text-sm"
+                      style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+                      min={0}
+                      max={100000}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Monthly Limit</label>
+                    <input
+                      type="number"
+                      value={editValues.monthly}
+                      onChange={(e) => setEditValues(v => ({ ...v, monthly: parseInt(e.target.value) || 0 }))}
+                      className="w-full px-3 py-2 rounded-lg text-sm"
+                      style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+                      min={0}
+                      max={1000000}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleSave(api.name)}
+                      disabled={saving}
+                      className="flex-1 py-2 rounded-lg font-medium text-sm transition-colors"
+                      style={{ backgroundColor: 'var(--accent-primary)', color: 'white' }}
+                    >
+                      {saving ? 'Saving...' : 'Save'}
+                    </button>
+                    <button
+                      onClick={() => setEditingApi(null)}
+                      className="flex-1 py-2 rounded-lg font-medium text-sm transition-colors"
+                      style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-                <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{
-                      width: `${Math.min(apiStats.daily_percentage, 100)}%`,
-                      backgroundColor: dailyColor,
-                    }}
-                  />
-                </div>
-              </div>
+              ) : (
+                /* Display Mode */
+                <>
+                  {/* Daily Usage */}
+                  <div className="mb-4">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span style={{ color: 'var(--text-secondary)' }}>Daily Usage</span>
+                      <span style={{ color: dailyColor }}>
+                        {apiStats.calls_today} / {apiStats.daily_limit}
+                      </span>
+                    </div>
+                    <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{
+                          width: `${Math.min(apiStats.daily_percentage, 100)}%`,
+                          backgroundColor: dailyColor,
+                        }}
+                      />
+                    </div>
+                  </div>
 
-              {/* Monthly Usage */}
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span style={{ color: 'var(--text-secondary)' }}>Monthly Usage</span>
-                  <span style={{ color: monthlyColor }}>
-                    {apiStats.calls_this_month} / {apiStats.monthly_limit}
-                  </span>
-                </div>
-                <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{
-                      width: `${Math.min(apiStats.monthly_percentage, 100)}%`,
-                      backgroundColor: monthlyColor,
-                    }}
-                  />
-                </div>
-              </div>
+                  {/* Monthly Usage */}
+                  <div className="mb-4">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span style={{ color: 'var(--text-secondary)' }}>Monthly Usage</span>
+                      <span style={{ color: monthlyColor }}>
+                        {apiStats.calls_this_month} / {apiStats.monthly_limit}
+                      </span>
+                    </div>
+                    <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{
+                          width: `${Math.min(apiStats.monthly_percentage, 100)}%`,
+                          backgroundColor: monthlyColor,
+                        }}
+                      />
+                    </div>
+                  </div>
 
-              <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
-                <a
-                  href={api.docsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs hover:underline"
-                  style={{ color: 'var(--accent-primary)' }}
-                >
-                  View API Docs
-                </a>
-              </div>
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 mt-4 pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
+                    <button
+                      onClick={() => startEditing(api.name, apiStats.daily_limit, apiStats.monthly_limit)}
+                      className="flex-1 py-2 rounded-lg font-medium text-sm transition-colors hover:opacity-80"
+                      style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
+                    >
+                      Edit Limits
+                    </button>
+                    {apiStats.calls_today > 0 && (
+                      <button
+                        onClick={() => handleResetUsage(api.name)}
+                        disabled={resetting === api.name}
+                        className="flex-1 py-2 rounded-lg font-medium text-sm transition-colors hover:opacity-80"
+                        style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'rgb(239, 68, 68)', border: '1px solid rgba(239, 68, 68, 0.3)' }}
+                      >
+                        {resetting === api.name ? 'Resetting...' : 'Reset Usage'}
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="mt-3">
+                    <a
+                      href={api.docsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs hover:underline"
+                      style={{ color: 'var(--accent-primary)' }}
+                    >
+                      View API Docs
+                    </a>
+                  </div>
+                </>
+              )}
             </div>
           )
         })}
