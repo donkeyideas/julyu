@@ -159,7 +159,7 @@ export async function getStoreOwnerAnyStatus(): Promise<StoreOwnerAuthResult> {
     const { data: storeOwner, error: storeError } = await serviceClient
       .from('store_owners')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', userId!)
       .single()
 
     if (storeError || !storeOwner) {
