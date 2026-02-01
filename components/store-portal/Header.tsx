@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import ThemeToggle from '@/components/ThemeToggle'
 
 interface StorePortalHeaderProps {
@@ -10,6 +11,12 @@ interface StorePortalHeaderProps {
 }
 
 export default function StorePortalHeader({ businessName, userEmail, isApproved }: StorePortalHeaderProps) {
+  const router = useRouter()
+
+  const handleSignOut = () => {
+    router.push('/api/auth/signout')
+  }
+
   return (
     <header style={{ backgroundColor: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -80,13 +87,13 @@ export default function StorePortalHeader({ businessName, userEmail, isApproved 
             <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
               {isApproved ? businessName : userEmail}
             </span>
-            <Link
-              href="/api/auth/signout"
+            <button
+              onClick={handleSignOut}
               className="text-sm hover:text-green-500 transition"
-              style={{ color: 'var(--text-secondary)' }}
+              style={{ color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer' }}
             >
               Sign Out
-            </Link>
+            </button>
           </div>
         </div>
       </div>
