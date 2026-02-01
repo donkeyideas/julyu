@@ -13,6 +13,7 @@ export default async function StorePortalLayout({
 }: {
   children: React.ReactNode
 }) {
+  // Auth handled at layout level - pages should not redirect
   const { storeOwner, user, error } = await getStoreOwnerAnyStatus()
 
   // Redirect to login if not authenticated
