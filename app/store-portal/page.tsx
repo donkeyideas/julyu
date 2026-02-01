@@ -1,59 +1,79 @@
-import { createServiceRoleClient } from '@/lib/supabase/server'
-import { getStoreOwnerAnyStatus, getStoreOwnerStores } from '@/lib/auth/store-portal-auth'
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
-export const metadata = {
-  title: 'Dashboard - Store Portal - Julyu',
-  description: 'Store owner dashboard',
+interface DashboardData {
+  storeOwner: any
+  primaryStore: any
+  inventoryCount: number
+  totalOrders: number
+  pendingOrders: number
+  todayRevenue: number
+  recentOrders: any[]
 }
 
-// Force dynamic rendering - required for auth cookies
-export const dynamic = 'force-dynamic'
+export default function StorePortalDashboard() {
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [data, setData] = useState<DashboardData | null>(null)
 
-export default async function StorePortalDashboard() {
-  // Get auth - layout handles redirects for unauthenticated users
-  const { storeOwner, user, error } = await getStoreOwnerAnyStatus()
+  useEffect(() => {
+    async function fetchDashboard() {
+      try {
+        const response = await fetch('/api/store-portal/dashboard')
+        const result = await response.json()
 
-  // If no auth, show a refresh message (layout should have redirected, but just in case)
-  if (!storeOwner || !user) {
+        if (!response.ok) {
+          setError(result.error || 'Failed to load dashboard')
+          return
+        }
+
+        setData(result.data)
+      } catch (err) {
+        setError('Failed to load dashboard')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchDashboard()
+  }, [])
+
+  if (loading) {
     return (
-      <div className="p-12 text-center">
-        <p style={{ color: 'var(--text-muted)' }}>Session loading... If this persists, please refresh the page.</p>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Dashboard</h1>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+          <span className="ml-3" style={{ color: 'var(--text-secondary)' }}>Loading dashboard...</span>
+        </div>
       </div>
     )
   }
 
-  // Use service role client to bypass RLS
-  const supabase = createServiceRoleClient()
+  if (error || !data) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Dashboard</h1>
+        </div>
+        <div className="rounded-lg p-8 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <p className="text-red-500 mb-4">{error || 'Failed to load dashboard'}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-green-500 text-black font-medium rounded-md hover:bg-green-400"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
 
-  // Get store owner's stores
-  const { stores } = await getStoreOwnerStores(storeOwner.id)
-  const primaryStore = stores[0]
-
-  // Get inventory count
-  const { count: inventoryCount } = await supabase
-    .from('bodega_inventory')
-    .select('*', { count: 'exact', head: true })
-    .eq('bodega_store_id', primaryStore?.id || '')
-
-  // Get orders statistics
-  const { data: orders } = await supabase
-    .from('bodega_orders')
-    .select('id, status, total_amount, ordered_at')
-    .eq('store_owner_id', storeOwner.id)
-    .order('ordered_at', { ascending: false })
-    .limit(10)
-
-  const totalOrders = orders?.length || 0
-  const pendingOrders = orders?.filter((o: any) => o.status === 'pending' || o.status === 'accepted').length || 0
-  const todayRevenue = orders?.reduce((sum: number, o: any) => {
-    const orderDate = new Date(o.ordered_at)
-    const today = new Date()
-    if (orderDate.toDateString() === today.toDateString()) {
-      return sum + parseFloat(o.total_amount)
-    }
-    return sum
-  }, 0) || 0
+  const { storeOwner, primaryStore, inventoryCount, totalOrders, pendingOrders, todayRevenue, recentOrders } = data
 
   return (
     <div className="space-y-6">
@@ -74,7 +94,7 @@ export default async function StorePortalDashboard() {
             <div className="flex-1">
               <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Products</p>
               <p className="text-2xl font-bold mt-1" style={{ color: 'var(--text-primary)' }}>
-                {inventoryCount || 0}
+                {inventoryCount}
               </p>
             </div>
             <div className="bg-blue-500/15 rounded-full p-3">
@@ -209,9 +229,9 @@ export default async function StorePortalDashboard() {
           </Link>
         </div>
 
-        {orders && orders.length > 0 ? (
+        {recentOrders && recentOrders.length > 0 ? (
           <div className="space-y-3">
-            {orders.map((order: any) => (
+            {recentOrders.map((order: any) => (
               <div key={order.id} className="flex items-center justify-between p-4 rounded-lg" style={{ border: '1px solid var(--border-color)' }}>
                 <div className="flex-1">
                   <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>

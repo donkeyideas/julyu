@@ -1,46 +1,76 @@
-import { createServiceRoleClient } from '@/lib/supabase/server'
-import { getStoreOwnerAnyStatus } from '@/lib/auth/store-portal-auth'
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import OrderCard from '@/components/store-portal/OrderCard'
 
-export const metadata = {
-  title: 'Orders - Store Portal - Julyu',
-  description: 'Manage customer orders',
-}
+export default function OrdersPage() {
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [allOrders, setAllOrders] = useState<any[]>([])
 
-// Force dynamic rendering - required for auth cookies
-export const dynamic = 'force-dynamic'
+  useEffect(() => {
+    async function fetchOrders() {
+      try {
+        const response = await fetch('/api/store-portal/orders')
+        const data = await response.json()
 
-export default async function OrdersPage() {
-  // Get auth - layout handles redirects for unauthenticated users
-  const { storeOwner, user, error } = await getStoreOwnerAnyStatus()
+        if (!response.ok) {
+          setError(data.error || 'Failed to load orders')
+          return
+        }
 
-  // If no auth, show a refresh message (layout should have redirected, but just in case)
-  if (!storeOwner || !user) {
-    return (
-      <div className="p-12 text-center">
-        <p style={{ color: 'var(--text-muted)' }}>Session loading... If this persists, please refresh the page.</p>
-      </div>
-    )
-  }
+        setAllOrders(data.data || [])
+      } catch (err) {
+        setError('Failed to load orders')
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  // Use service role client to bypass RLS
-  const supabase = createServiceRoleClient()
-
-  // Get orders for this store owner
-  const { data: orders, error: ordersError } = await supabase
-    .from('bodega_orders')
-    .select('*')
-    .eq('store_owner_id', storeOwner.id)
-    .order('ordered_at', { ascending: false })
-
-  const allOrders = orders || []
+    fetchOrders()
+  }, [])
 
   // Separate orders by status
   const pendingOrders = allOrders.filter((o: any) => o.status === 'pending')
   const activeOrders = allOrders.filter((o: any) => ['accepted', 'preparing', 'ready', 'out_for_delivery'].includes(o.status))
   const completedOrders = allOrders.filter((o: any) => o.status === 'delivered')
-  const cancelledOrders = allOrders.filter((o: any) => o.status === 'cancelled')
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Orders</h1>
+          <p className="mt-1" style={{ color: 'var(--text-secondary)' }}>
+            Manage and fulfill customer orders
+          </p>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+          <span className="ml-3" style={{ color: 'var(--text-secondary)' }}>Loading orders...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Orders</h1>
+        </div>
+        <div className="rounded-lg p-8 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <p className="text-red-500 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-green-500 text-black font-medium rounded-md hover:bg-green-400"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

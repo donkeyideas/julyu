@@ -1,53 +1,89 @@
-import { createServiceRoleClient } from '@/lib/supabase/server'
-import { getStoreOwnerAnyStatus, getStoreOwnerStores } from '@/lib/auth/store-portal-auth'
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import InventoryTable from '@/components/store-portal/InventoryTable'
 
-export const metadata = {
-  title: 'Inventory - Store Portal - Julyu',
-  description: 'Manage your store inventory',
-}
+// Metadata must be in a separate layout or use generateMetadata for client components
+// export const metadata = { ... } - not supported in client components
 
-// Force dynamic rendering - required for auth cookies
-export const dynamic = 'force-dynamic'
+export default function InventoryPage() {
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [inventoryItems, setInventoryItems] = useState<any[]>([])
+  const [storeId, setStoreId] = useState<string>('')
 
-export default async function InventoryPage() {
-  // Get auth - layout handles redirects for unauthenticated users
-  const { storeOwner, user, error } = await getStoreOwnerAnyStatus()
+  useEffect(() => {
+    async function fetchInventory() {
+      try {
+        const response = await fetch('/api/store-portal/inventory')
+        const data = await response.json()
 
-  // If no auth, show a refresh message (layout should have redirected, but just in case)
-  if (!storeOwner || !user) {
-    return (
-      <div className="p-12 text-center">
-        <p style={{ color: 'var(--text-muted)' }}>Session loading... If this persists, please refresh the page.</p>
-      </div>
-    )
-  }
+        if (!response.ok) {
+          setError(data.error || 'Failed to load inventory')
+          return
+        }
 
-  // Use service role client to bypass RLS
-  const supabase = createServiceRoleClient()
+        setInventoryItems(data.data || [])
+        // Get store ID from first item or we'll need another API call
+        if (data.data && data.data.length > 0) {
+          setStoreId(data.data[0].bodega_store_id)
+        }
+      } catch (err) {
+        setError('Failed to load inventory')
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  // Get store owner's stores
-  const { stores } = await getStoreOwnerStores(storeOwner.id)
-  const primaryStore = stores[0]
-
-  // Get inventory with product details
-  const { data: inventory, error: inventoryError } = await supabase
-    .from('bodega_inventory')
-    .select(`
-      *,
-      product:products(*)
-    `)
-    .eq('bodega_store_id', primaryStore?.id || '')
-    .order('updated_at', { ascending: false })
-
-  const inventoryItems = inventory || []
+    fetchInventory()
+  }, [])
 
   // Calculate stats
   const totalProducts = inventoryItems.length
   const inStockCount = inventoryItems.filter((item: any) => item.in_stock && item.stock_quantity > 0).length
   const lowStockCount = inventoryItems.filter((item: any) => item.stock_quantity > 0 && item.stock_quantity <= 5).length
   const outOfStockCount = inventoryItems.filter((item: any) => !item.in_stock || item.stock_quantity === 0).length
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Inventory</h1>
+            <p className="mt-1" style={{ color: 'var(--text-secondary)' }}>
+              Manage your store&apos;s products and stock levels
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+          <span className="ml-3" style={{ color: 'var(--text-secondary)' }}>Loading inventory...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Inventory</h1>
+          </div>
+        </div>
+        <div className="rounded-lg p-8 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <p className="text-red-500 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-green-500 text-black font-medium rounded-md hover:bg-green-400"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -119,7 +155,7 @@ export default async function InventoryPage() {
       {/* Inventory Table */}
       <div className="rounded-lg" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         {inventoryItems.length > 0 ? (
-          <InventoryTable items={inventoryItems} storeId={primaryStore?.id || ''} />
+          <InventoryTable items={inventoryItems} storeId={storeId} />
         ) : (
           <div className="p-12 text-center">
             <svg className="mx-auto h-12 w-12 mb-4" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
