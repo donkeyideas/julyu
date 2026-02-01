@@ -19,7 +19,6 @@ interface ApiConfig {
   displayName: string
   description: string
   docsUrl: string
-  icon: string
 }
 
 const API_CONFIGS: ApiConfig[] = [
@@ -28,21 +27,18 @@ const API_CONFIGS: ApiConfig[] = [
     displayName: 'SerpApi (Walmart)',
     description: 'Walmart product and price data via SerpApi',
     docsUrl: 'https://serpapi.com/',
-    icon: '🛒',
   },
   {
     name: 'tesco',
     displayName: 'Tesco API',
     description: 'UK grocery data from Tesco',
     docsUrl: 'https://rapidapi.com/',
-    icon: '🏪',
   },
   {
     name: 'grocery-prices',
     displayName: 'Grocery Prices API',
     description: 'Multi-store grocery price comparison',
     docsUrl: 'https://rapidapi.com/',
-    icon: '💰',
   },
 ]
 
@@ -51,13 +47,6 @@ function getStatusColor(percentage: number): string {
   if (percentage >= 75) return 'rgb(249, 115, 22)' // orange
   if (percentage >= 50) return 'rgb(234, 179, 8)' // yellow
   return 'rgb(34, 197, 94)' // green
-}
-
-function getStatusBgColor(percentage: number): string {
-  if (percentage >= 90) return 'rgba(239, 68, 68, 0.1)'
-  if (percentage >= 75) return 'rgba(249, 115, 22, 0.1)'
-  if (percentage >= 50) return 'rgba(234, 179, 8, 0.1)'
-  return 'rgba(34, 197, 94, 0.1)'
 }
 
 export default function RateLimitsPage() {
@@ -124,12 +113,9 @@ export default function RateLimitsPage() {
                 className="rounded-2xl p-6"
                 style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', opacity: 0.6 }}
               >
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-2xl">{api.icon}</span>
-                  <div>
-                    <h3 className="font-bold" style={{ color: 'var(--text-primary)' }}>{api.displayName}</h3>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Not configured</p>
-                  </div>
+                <div className="mb-4">
+                  <h3 className="font-bold" style={{ color: 'var(--text-primary)' }}>{api.displayName}</h3>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Not configured</p>
                 </div>
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{api.description}</p>
               </div>
@@ -149,12 +135,9 @@ export default function RateLimitsPage() {
               }}
             >
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{api.icon}</span>
-                  <div>
-                    <h3 className="font-bold" style={{ color: 'var(--text-primary)' }}>{api.displayName}</h3>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{api.description}</p>
-                  </div>
+                <div>
+                  <h3 className="font-bold" style={{ color: 'var(--text-primary)' }}>{api.displayName}</h3>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{api.description}</p>
                 </div>
                 {apiStats.limit_reached && (
                   <span className="px-2 py-1 text-xs font-bold rounded" style={{ backgroundColor: 'rgba(239, 68, 68, 0.2)', color: 'rgb(239, 68, 68)' }}>
