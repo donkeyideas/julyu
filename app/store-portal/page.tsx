@@ -9,14 +9,18 @@ export const metadata = {
 }
 
 export default async function StorePortalDashboard() {
-  const { storeOwner, error } = await getStoreOwner()
+  // Layout already verifies store owner is approved
+  // Just get the store owner data without redirects
+  const { storeOwner } = await getStoreOwner()
 
-  if (error) {
-    redirect('/store-portal/apply')
-  }
-
+  // If no store owner (edge case), show placeholder
+  // Layout will handle showing appropriate content
   if (!storeOwner) {
-    redirect('/login')
+    return (
+      <div className="text-center py-12">
+        <p style={{ color: 'var(--text-secondary)' }}>Loading store data...</p>
+      </div>
+    )
   }
 
   const supabase = await createServerClient()

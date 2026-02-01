@@ -10,14 +10,14 @@ export const metadata = {
 }
 
 export default async function InventoryPage() {
-  const { storeOwner, error } = await getStoreOwner()
+  // Layout already verifies store owner is approved
+  // Just get the store owner data without redirects
+  const { storeOwner } = await getStoreOwner()
 
-  if (error) {
-    redirect('/store-portal/apply')
-  }
-
+  // If no store owner (edge case), redirect to main store portal
+  // Layout will handle showing appropriate content
   if (!storeOwner) {
-    redirect('/login')
+    redirect('/store-portal')
   }
 
   const supabase = await createServerClient()
