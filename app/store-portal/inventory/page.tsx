@@ -82,6 +82,13 @@ export default function InventoryPage() {
         </div>
         <div className="flex space-x-3">
           <Link
+            href="/store-portal/inventory/bulk-import"
+            className="px-4 py-2 font-medium rounded-md transition"
+            style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
+          >
+            Bulk Import
+          </Link>
+          <Link
             href="/store-portal/inventory/import"
             className="px-4 py-2 font-medium rounded-md transition"
             style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
@@ -92,7 +99,7 @@ export default function InventoryPage() {
             href="/store-portal/inventory/add"
             className="px-4 py-2 bg-green-500 text-black font-medium rounded-md hover:bg-green-400 transition"
           >
-            Add Products
+            Add Product
           </Link>
         </div>
       </div>
@@ -149,14 +156,21 @@ export default function InventoryPage() {
             </svg>
             <h3 className="text-lg font-medium mb-2" style={{ color: 'var(--text-primary)' }}>No products yet</h3>
             <p className="mb-6" style={{ color: 'var(--text-secondary)' }}>
-              Start by adding products manually or importing from a receipt
+              Start by adding products manually, importing from Excel/CSV, or scanning a receipt
             </p>
-            <div className="flex justify-center space-x-3">
+            <div className="flex justify-center flex-wrap gap-3">
               <Link
                 href="/store-portal/inventory/add"
                 className="px-4 py-2 bg-green-500 text-black font-medium rounded-md hover:bg-green-400"
               >
-                Add Products
+                Add Product
+              </Link>
+              <Link
+                href="/store-portal/inventory/bulk-import"
+                className="px-4 py-2 font-medium rounded-md"
+                style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
+              >
+                Bulk Import (CSV/Excel)
               </Link>
               <Link
                 href="/store-portal/inventory/import"

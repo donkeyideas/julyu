@@ -149,49 +149,53 @@ export default function ImportInventoryPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Import from Receipt</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Import from Receipt</h1>
+          <p className="mt-1" style={{ color: 'var(--text-secondary)' }}>
             Upload a supplier receipt to automatically extract product information
           </p>
         </div>
         <Link
           href="/store-portal/inventory"
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+          className="px-4 py-2 text-sm font-medium rounded-md"
+          style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
         >
           Back to Inventory
         </Link>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <p className="text-sm text-red-800">{error}</p>
+        <div className="rounded-md p-4 bg-red-500/10 border border-red-500/30">
+          <p className="text-sm text-red-500">{error}</p>
         </div>
       )}
 
       {success && (
-        <div className="bg-green-50 border border-green-200 rounded-md p-4">
-          <p className="text-sm text-green-800">{success}</p>
+        <div className="rounded-md p-4 bg-green-500/10 border border-green-500/30">
+          <p className="text-sm text-green-500">{success}</p>
         </div>
       )}
 
       {!showReview ? (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+        <div className="rounded-lg p-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <div className="max-w-xl mx-auto">
             <div className="text-center mb-6">
-              <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="mx-auto w-16 h-16 bg-green-500/15 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
                 Upload Supplier Receipt
               </h2>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                 We&apos;ll automatically extract product names, prices, and quantities from your receipt
               </p>
             </div>
 
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+            <div
+              className="border-2 border-dashed rounded-lg p-8 text-center"
+              style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}
+            >
               {uploadedImage ? (
                 <div className="space-y-4">
                   <img
@@ -201,21 +205,21 @@ export default function ImportInventoryPage() {
                   />
                   {loading && (
                     <div className="text-center">
-                      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                      <p className="text-sm text-gray-600 mt-2">Processing receipt...</p>
+                      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+                      <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>Processing receipt...</p>
                     </div>
                   )}
                 </div>
               ) : (
                 <>
-                  <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="mx-auto h-12 w-12 mb-4" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
                   <label htmlFor="receipt-upload" className="cursor-pointer">
-                    <span className="text-blue-600 hover:text-blue-700 font-medium">
+                    <span className="text-green-500 hover:text-green-400 font-medium">
                       Click to upload
                     </span>
-                    <span className="text-gray-600"> or drag and drop</span>
+                    <span style={{ color: 'var(--text-secondary)' }}> or drag and drop</span>
                     <input
                       id="receipt-upload"
                       type="file"
@@ -225,16 +229,16 @@ export default function ImportInventoryPage() {
                       disabled={loading}
                     />
                   </label>
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
                     PNG, JPG, or JPEG up to 10MB
                   </p>
                 </>
               )}
             </div>
 
-            <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-blue-900 mb-2">Tips for best results:</h3>
-              <ul className="text-xs text-blue-800 space-y-1">
+            <div className="mt-6 rounded-lg p-4 bg-green-500/10 border border-green-500/30">
+              <h3 className="text-sm font-semibold text-green-500 mb-2">Tips for best results:</h3>
+              <ul className="text-xs space-y-1" style={{ color: 'var(--text-secondary)' }}>
                 <li>• Make sure the receipt is well-lit and in focus</li>
                 <li>• Include the entire receipt in the photo</li>
                 <li>• Avoid shadows or glare on the receipt</li>
@@ -244,18 +248,18 @@ export default function ImportInventoryPage() {
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
+        <div className="rounded-lg" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="p-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Review Extracted Items</h2>
-                <p className="text-sm text-gray-600 mt-1">
+                <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Review Extracted Items</h2>
+                <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
                   Select items to import and adjust details as needed
                 </p>
               </div>
               <button
                 onClick={handleReset}
-                className="text-sm text-gray-600 hover:text-gray-700"
+                className="text-sm text-green-500 hover:text-green-400"
               >
                 Upload Different Receipt
               </button>
@@ -267,22 +271,22 @@ export default function ImportInventoryPage() {
               {extractedItems.map((item: any, index: number) => (
                 <div
                   key={index}
-                  className={`border rounded-lg p-4 transition ${
-                    item.selected
-                      ? 'border-blue-300 bg-blue-50'
-                      : 'border-gray-200 bg-gray-50'
-                  }`}
+                  className="rounded-lg p-4 transition"
+                  style={{
+                    backgroundColor: item.selected ? 'var(--bg-secondary)' : 'var(--bg-primary)',
+                    border: item.selected ? '1px solid var(--green-500, #22c55e)' : '1px solid var(--border-color)'
+                  }}
                 >
                   <div className="flex items-start gap-3">
                     <input
                       type="checkbox"
                       checked={item.selected}
                       onChange={() => handleToggleItem(index)}
-                      className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="mt-1 h-4 w-4 accent-green-500 rounded"
                     />
                     <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-3">
                       <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                        <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                           Product Name
                         </label>
                         <input
@@ -290,11 +294,16 @@ export default function ImportInventoryPage() {
                           value={item.name}
                           onChange={(e) => handleUpdateItem(index, 'name', e.target.value)}
                           disabled={!item.selected}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                          className="w-full px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
+                          style={{
+                            backgroundColor: 'var(--bg-primary)',
+                            color: 'var(--text-primary)',
+                            border: '1px solid var(--border-color)'
+                          }}
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                        <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                           Brand (Optional)
                         </label>
                         <input
@@ -302,11 +311,16 @@ export default function ImportInventoryPage() {
                           value={item.brand || ''}
                           onChange={(e) => handleUpdateItem(index, 'brand', e.target.value)}
                           disabled={!item.selected}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                          className="w-full px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
+                          style={{
+                            backgroundColor: 'var(--bg-primary)',
+                            color: 'var(--text-primary)',
+                            border: '1px solid var(--border-color)'
+                          }}
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                        <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                           Size (Optional)
                         </label>
                         <input
@@ -314,12 +328,17 @@ export default function ImportInventoryPage() {
                           value={item.size || ''}
                           onChange={(e) => handleUpdateItem(index, 'size', e.target.value)}
                           disabled={!item.selected}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                          className="w-full px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
+                          style={{
+                            backgroundColor: 'var(--bg-primary)',
+                            color: 'var(--text-primary)',
+                            border: '1px solid var(--border-color)'
+                          }}
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                          <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                             Price
                           </label>
                           <input
@@ -329,11 +348,16 @@ export default function ImportInventoryPage() {
                             value={item.price}
                             onChange={(e) => handleUpdateItem(index, 'price', parseFloat(e.target.value))}
                             disabled={!item.selected}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                            className="w-full px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
+                            style={{
+                              backgroundColor: 'var(--bg-primary)',
+                              color: 'var(--text-primary)',
+                              border: '1px solid var(--border-color)'
+                            }}
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                          <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                             Stock
                           </label>
                           <input
@@ -342,7 +366,12 @@ export default function ImportInventoryPage() {
                             value={item.quantity}
                             onChange={(e) => handleUpdateItem(index, 'quantity', parseInt(e.target.value))}
                             disabled={!item.selected}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                            className="w-full px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
+                            style={{
+                              backgroundColor: 'var(--bg-primary)',
+                              color: 'var(--text-primary)',
+                              border: '1px solid var(--border-color)'
+                            }}
                           />
                         </div>
                       </div>
@@ -353,21 +382,21 @@ export default function ImportInventoryPage() {
             </div>
 
             {extractedItems.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8" style={{ color: 'var(--text-muted)' }}>
                 No items extracted from receipt
               </div>
             )}
           </div>
 
-          <div className="p-6 border-t border-gray-200 bg-gray-50">
+          <div className="p-6" style={{ borderTop: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}>
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600">
+              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                 {extractedItems.filter((item: any) => item.selected).length} of {extractedItems.length} items selected
               </div>
               <button
                 onClick={handleImportSelected}
                 disabled={loading || extractedItems.filter(item => item.selected).length === 0}
-                className="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 bg-green-500 text-black font-medium rounded-md hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Importing...' : 'Import Selected Items'}
               </button>
