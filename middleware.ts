@@ -82,18 +82,17 @@ export async function middleware(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
     })
   } else {
-    // Clear user ID header
-    const requestHeaders = new Headers(request.headers)
-    requestHeaders.delete('x-user-id')
+    // No Supabase user - but preserve client-sent x-user-id header for Firebase/Google users
+    const clientUserId = request.headers.get('x-user-id')
 
-    supabaseResponse = NextResponse.next({
-      request: {
-        headers: requestHeaders,
-      },
-    })
-
-    // Clear cookie
-    supabaseResponse.cookies.delete('x-user-id')
+    if (clientUserId) {
+      // Firebase/Google user - preserve their client-sent header
+      // Don't modify headers at all, let them pass through
+      console.log('[Middleware] Preserving client-sent x-user-id for Firebase user:', clientUserId)
+    } else {
+      // No user at all - clear any stale cookie
+      supabaseResponse.cookies.delete('x-user-id')
+    }
   }
 
   return supabaseResponse
