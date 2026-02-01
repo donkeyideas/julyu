@@ -3,36 +3,84 @@ import { createServiceRoleClient } from '@/lib/supabase/server'
 import { getStoreOwnerAnyStatus, getStoreOwnerStores } from '@/lib/auth/store-portal-auth'
 
 /**
- * Geocode an address using Google Maps API
+ * Geocode an address using multiple services with fallbacks
+ * 1. Google Maps API (if API key configured)
+ * 2. OpenStreetMap Nominatim (free, no API key needed)
  */
 async function geocodeAddress(address: string, city: string, state: string, zip: string): Promise<{ lat: number; lng: number } | null> {
-  try {
-    const fullAddress = `${address}, ${city}, ${state} ${zip}`
-    const googleApiKey = process.env.GOOGLE_MAPS_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+  const fullAddress = `${address}, ${city}, ${state} ${zip}`
+  console.log('[settings/store] Geocoding address:', fullAddress)
 
-    if (!googleApiKey) {
-      console.log('[settings/store] No Google Maps API key configured')
-      return null
+  // Try Google Maps API first (if configured)
+  const googleApiKey = process.env.GOOGLE_MAPS_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+  if (googleApiKey) {
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=${googleApiKey}`
+      )
+      const data = await response.json()
+
+      if (data.status === 'OK' && data.results[0]) {
+        console.log('[settings/store] Google geocoding successful')
+        return {
+          lat: data.results[0].geometry.location.lat,
+          lng: data.results[0].geometry.location.lng
+        }
+      }
+      console.log('[settings/store] Google geocoding failed:', data.status)
+    } catch (error) {
+      console.error('[settings/store] Google geocoding error:', error)
     }
+  } else {
+    console.log('[settings/store] No Google Maps API key, trying Nominatim...')
+  }
 
+  // Fallback: OpenStreetMap Nominatim (free, no API key)
+  try {
     const response = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=${googleApiKey}`
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}&countrycodes=us&limit=1`,
+      {
+        headers: {
+          'User-Agent': 'Julyu/1.0 (https://julyu.com)'  // Required by Nominatim
+        }
+      }
     )
     const data = await response.json()
 
-    if (data.status === 'OK' && data.results[0]) {
+    if (data && data.length > 0) {
+      console.log('[settings/store] Nominatim geocoding successful')
       return {
-        lat: data.results[0].geometry.location.lat,
-        lng: data.results[0].geometry.location.lng
+        lat: parseFloat(data[0].lat),
+        lng: parseFloat(data[0].lon)
       }
     }
-
-    console.log('[settings/store] Geocoding failed:', data.status)
-    return null
+    console.log('[settings/store] Nominatim geocoding failed: no results')
   } catch (error) {
-    console.error('[settings/store] Geocoding error:', error)
-    return null
+    console.error('[settings/store] Nominatim geocoding error:', error)
   }
+
+  // Final fallback: Try Positionstack if API key exists
+  if (process.env.POSITIONSTACK_API_KEY) {
+    try {
+      const response = await fetch(
+        `http://api.positionstack.com/v1/forward?access_key=${process.env.POSITIONSTACK_API_KEY}&query=${encodeURIComponent(fullAddress)}`
+      )
+      const data = await response.json()
+
+      if (data.data && data.data.length > 0) {
+        console.log('[settings/store] Positionstack geocoding successful')
+        return {
+          lat: data.data[0].latitude,
+          lng: data.data[0].longitude
+        }
+      }
+    } catch (error) {
+      console.error('[settings/store] Positionstack geocoding error:', error)
+    }
+  }
+
+  console.log('[settings/store] All geocoding attempts failed')
+  return null
 }
 
 export async function PUT(request: NextRequest) {
