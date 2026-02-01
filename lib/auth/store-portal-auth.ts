@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { createServerClient } from '@/lib/supabase/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
@@ -124,20 +124,23 @@ export async function getStoreOwner(request?: NextRequest): Promise<StoreOwnerAu
 /**
  * Get store owner with less strict checks (for application status page)
  * Returns store owner even if not approved
- * Uses x-user-id cookie set by middleware to avoid multiple getUser() calls
+ * Uses x-user-id header set by middleware to avoid multiple getUser() calls
  */
 export async function getStoreOwnerAnyStatus(): Promise<StoreOwnerAuthResult> {
   try {
-    const cookieStore = await cookies()
+    // First try to get user ID from the header set by middleware
+    // Headers ARE passed from middleware to server components via NextResponse.next({ request: { headers } })
+    const headersList = await headers()
+    const userIdFromHeader = headersList.get('x-user-id')
 
-    // First try to get user ID from the cookie set by middleware
-    // This avoids issues with multiple getUser() calls in the same request
+    // Also check cookie as fallback (for subsequent requests)
+    const cookieStore = await cookies()
     const userIdFromCookie = cookieStore.get('x-user-id')?.value
 
-    let userId: string | undefined = userIdFromCookie
-    let user: any = userIdFromCookie ? { id: userIdFromCookie } : null
+    let userId: string | undefined = userIdFromHeader || userIdFromCookie
+    let user: any = userId ? { id: userId } : null
 
-    // If no cookie, fall back to getUser() call
+    // If no header or cookie, fall back to getUser() call
     if (!userId) {
       const supabase = await createServerClient()
       const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()

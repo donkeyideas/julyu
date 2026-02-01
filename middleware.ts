@@ -48,14 +48,21 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Store user ID in a custom cookie for easy access in Server Components
-  // This avoids issues with multiple getUser() calls in the same request
+  // Store user ID in request headers for Server Components to read
+  // Headers set on request ARE passed to server components via NextResponse.next({ request })
+  // Unlike cookies, headers() in server components reads from the modified request
   if (user) {
-    // Set on REQUEST so pages can read it in the same request cycle
-    request.cookies.set('x-user-id', user.id)
-    // Re-create response with modified request
-    supabaseResponse = NextResponse.next({ request })
-    // Also set on RESPONSE for future requests
+    // Set user ID in request header - this IS accessible via headers() in server components
+    const requestHeaders = new Headers(request.headers)
+    requestHeaders.set('x-user-id', user.id)
+
+    supabaseResponse = NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    })
+
+    // Also set cookie for future requests (client-side)
     supabaseResponse.cookies.set('x-user-id', user.id, {
       path: '/',
       httpOnly: true,
@@ -64,9 +71,17 @@ export async function middleware(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
     })
   } else {
-    // Clear the cookie if no user
-    request.cookies.delete('x-user-id')
-    supabaseResponse = NextResponse.next({ request })
+    // Clear user ID header
+    const requestHeaders = new Headers(request.headers)
+    requestHeaders.delete('x-user-id')
+
+    supabaseResponse = NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    })
+
+    // Clear cookie
     supabaseResponse.cookies.delete('x-user-id')
   }
 
