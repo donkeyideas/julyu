@@ -1,6 +1,7 @@
 import { createServerClient as createSupabaseServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
+import { cache } from 'react'
 import { Database } from '@/types/database'
 import { getTestAuth } from '@/lib/auth/test-auth'
 
@@ -22,7 +23,8 @@ export const createServiceRoleClient = () => {
   })
 }
 
-export const createServerClient = async () => {
+// Cached per request - ensures layout and page components share the same client instance
+export const createServerClient = cache(async () => {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
@@ -70,7 +72,7 @@ export const createServerClient = async () => {
       },
     }
   )
-}
+})
 
 function createTestServerClient() {
   const testAuth = getTestAuth()
