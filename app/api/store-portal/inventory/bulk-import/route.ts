@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Prepare inventory records
+    // Prepare inventory records (only use columns that exist in bodega_inventory table)
     const inventoryRecords = validItems.map(item => ({
       bodega_store_id: primaryStore.id,
       product_id: null, // Custom products don't link to global products
@@ -67,8 +67,6 @@ export async function POST(request: NextRequest) {
       custom_name: item.name,
       custom_brand: item.brand || null,
       custom_size: item.size || null,
-      custom_category: item.category || null,
-      custom_description: item.description || null,
       update_method: 'bulk_import',
       last_updated_by: user?.id,
     }))
