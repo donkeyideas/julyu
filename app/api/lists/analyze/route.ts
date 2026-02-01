@@ -565,7 +565,7 @@ async function analyzeWithKroger(
     storeResults.push({
       storeId: bodegaStore.id,
       storeName: bodegaStore.name || bodegaStore.store_owner?.business_name || 'Local Store',
-      retailer: 'Local Bodega',
+      retailer: 'Local Store',
       distance: bodegaStore.distance?.toString() || null,
       address: bodegaStore.address ? `${bodegaStore.address}, ${bodegaStore.city}, ${bodegaStore.state} ${bodegaStore.zip}` : undefined,
       items: storeInventory,
@@ -602,9 +602,14 @@ async function analyzeWithKroger(
     return 0
   })[0]
 
+  // Build products array from the best option's items (whether Kroger or bodega)
+  const isBodegaBestOption = bestOptionStore?.retailer === 'Local Store'
+  const bestOptionItems = bestOptionStore?.items || []
+  const bestItemsFound = bestOptionItems.filter((i: any) => i.price !== null).length
+
   const result = {
     success: true,
-    dataSource: 'kroger_api',
+    dataSource: isBodegaBestOption ? 'local_store' : 'kroger_api',
     stores: storeResults,
     bestOption: bestOptionStore ? {
       store: {
@@ -629,19 +634,20 @@ async function analyzeWithKroger(
       total: store.total,
       items: store.items,
     })),
-    products: productResults.map(p => ({
-      userInput: p.userInput,
-      name: p.krogerProduct?.name || p.userInput,
-      brand: p.krogerProduct?.brand,
-      price: p.price,
-      imageUrl: p.krogerProduct?.imageUrl,
-      available: p.krogerProduct !== null,
+    // Use best option's items for products display
+    products: bestOptionItems.map((item: any) => ({
+      userInput: item.userInput,
+      name: item.product?.name || item.userInput,
+      brand: item.product?.brand || null,
+      price: item.price,
+      imageUrl: item.product?.imageUrl || null,
+      available: item.price !== null,
     })),
     summary: {
       totalItems: items.length,
-      itemsFound: itemsWithPrices.length,
-      itemsMissing: itemsWithoutPrices.length,
-      estimatedTotal: bestOptionStore?.total || total,
+      itemsFound: bestItemsFound,
+      itemsMissing: items.length - bestItemsFound,
+      estimatedTotal: bestOptionStore?.total || 0,
       storesSearched: storeResults.length,
     },
   }
