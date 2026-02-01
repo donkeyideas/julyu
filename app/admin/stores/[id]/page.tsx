@@ -2,6 +2,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import StoreDetailsForm from '@/components/admin/StoreDetailsForm'
+import StoreLocationCard from '@/components/admin/StoreLocationCard'
 
 export const metadata = {
   title: 'Store Details - Admin - Julyu',
@@ -127,44 +128,7 @@ export default async function StoreDetailsPage({ params }: Props) {
           </h2>
           <div className="space-y-4">
             {storeOwner.bodega_stores.map((location: any) => (
-              <div key={location.id} className="border border-gray-200 rounded-lg p-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-medium text-gray-900">{location.name}</h3>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {location.address}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {location.city}, {location.state} {location.zip}
-                    </p>
-                    {location.phone && (
-                      <p className="text-sm text-gray-600 mt-1">
-                        Phone: {location.phone}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    {location.is_active ? (
-                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                        Active
-                      </span>
-                    ) : (
-                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
-                        Inactive
-                      </span>
-                    )}
-                    {location.verified ? (
-                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-                        Verified
-                      </span>
-                    ) : (
-                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
-                        Unverified
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <StoreLocationCard key={location.id} location={location} />
             ))}
           </div>
         </div>
