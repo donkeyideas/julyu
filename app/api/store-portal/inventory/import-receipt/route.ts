@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getStoreOwner } from '@/lib/auth/store-portal-auth'
+import { getStoreOwnerAnyStatus } from '@/lib/auth/store-portal-auth'
 import { llmOrchestrator } from '@/lib/llm/orchestrator'
 
 export async function POST(request: NextRequest) {
   try {
-    const { storeOwner, error: authError } = await getStoreOwner()
+    const { storeOwner, error: authError } = await getStoreOwnerAnyStatus()
 
     if (authError || !storeOwner) {
       return NextResponse.json(

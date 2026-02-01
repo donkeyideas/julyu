@@ -1,5 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server'
-import { getStoreOwner, getStoreOwnerStores } from '@/lib/auth/store-portal-auth'
+import { getStoreOwnerAnyStatus, getStoreOwnerStores } from '@/lib/auth/store-portal-auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
@@ -10,17 +10,11 @@ export const metadata = {
 
 export default async function StorePortalDashboard() {
   // Layout already verifies store owner is approved
-  // Just get the store owner data without redirects
-  const { storeOwner } = await getStoreOwner()
+  const { storeOwner } = await getStoreOwnerAnyStatus()
 
-  // If no store owner (edge case), show placeholder
-  // Layout will handle showing appropriate content
+  // If no store owner, redirect (layout will handle)
   if (!storeOwner) {
-    return (
-      <div className="text-center py-12">
-        <p style={{ color: 'var(--text-secondary)' }}>Loading store data...</p>
-      </div>
-    )
+    redirect('/store-portal/apply')
   }
 
   const supabase = await createServerClient()

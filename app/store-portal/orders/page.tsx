@@ -1,5 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server'
-import { getStoreOwner } from '@/lib/auth/store-portal-auth'
+import { getStoreOwnerAnyStatus } from '@/lib/auth/store-portal-auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import OrderCard from '@/components/store-portal/OrderCard'
@@ -11,26 +11,12 @@ export const metadata = {
 
 export default async function OrdersPage() {
   // Layout already verifies store owner is approved
-  // Just get the store owner data without redirects
-  const { storeOwner, error } = await getStoreOwner()
+  // Use getStoreOwnerAnyStatus since layout handles approval check
+  const { storeOwner } = await getStoreOwnerAnyStatus()
 
-  // If no store owner (edge case), show error message instead of silent redirect
+  // If no store owner, redirect to store portal (layout will handle)
   if (!storeOwner) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Orders</h1>
-          <p className="mt-1" style={{ color: 'var(--text-secondary)' }}>
-            Manage and fulfill customer orders
-          </p>
-        </div>
-        <div className="rounded-lg p-8 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-          <p style={{ color: 'var(--text-secondary)' }}>
-            {error || 'Unable to load orders. Please try refreshing the page.'}
-          </p>
-        </div>
-      </div>
-    )
+    redirect('/store-portal')
   }
 
   const supabase = await createServerClient()

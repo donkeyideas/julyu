@@ -1,5 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server'
-import { getStoreOwner, getStoreOwnerStores } from '@/lib/auth/store-portal-auth'
+import { getStoreOwnerAnyStatus, getStoreOwnerStores } from '@/lib/auth/store-portal-auth'
 import { redirect } from 'next/navigation'
 
 export const metadata = {
@@ -8,7 +8,8 @@ export const metadata = {
 }
 
 export default async function AnalyticsPage() {
-  const { storeOwner } = await getStoreOwner()
+  // Layout already verifies store owner is approved
+  const { storeOwner } = await getStoreOwnerAnyStatus()
 
   if (!storeOwner) {
     redirect('/store-portal')

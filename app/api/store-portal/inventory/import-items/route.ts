@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
-import { getStoreOwner } from '@/lib/auth/store-portal-auth'
+import { getStoreOwnerAnyStatus } from '@/lib/auth/store-portal-auth'
 
 export async function POST(request: NextRequest) {
   try {
-    const { storeOwner, user, error: authError } = await getStoreOwner()
+    const { storeOwner, user, error: authError } = await getStoreOwnerAnyStatus()
 
     if (authError || !storeOwner || !user) {
       return NextResponse.json(

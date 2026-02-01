@@ -16,7 +16,7 @@ export default function StorePortalHeader({ businessName, userEmail, isApproved 
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-8">
             <div className="flex items-center space-x-3">
-              <Link href="/" className="text-2xl font-bold text-green-500">
+              <Link href="/store-portal" className="text-2xl font-bold text-green-500">
                 Julyu
               </Link>
               <span style={{ color: 'var(--text-secondary)' }}>|</span>

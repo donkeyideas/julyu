@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
-import { getStoreOwner } from '@/lib/auth/store-portal-auth'
+import { getStoreOwnerAnyStatus } from '@/lib/auth/store-portal-auth'
 
 // PUT - Update inventory item
 export async function PUT(
@@ -8,7 +8,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { storeOwner, user, error: authError } = await getStoreOwner()
+    const { storeOwner, user, error: authError } = await getStoreOwnerAnyStatus()
 
     if (authError || !storeOwner) {
       return NextResponse.json(
@@ -123,7 +123,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { storeOwner, error: authError } = await getStoreOwner()
+    const { storeOwner, error: authError } = await getStoreOwnerAnyStatus()
 
     if (authError || !storeOwner) {
       return NextResponse.json(
