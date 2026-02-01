@@ -29,6 +29,10 @@ interface Store {
   state?: string
   zip?: string
   phone?: string
+  verified?: boolean
+  is_active?: boolean
+  latitude?: number
+  longitude?: number
 }
 
 interface Props {
@@ -81,12 +85,21 @@ export default function SettingsForm({ initialStoreOwner, initialStore }: Props)
         body: JSON.stringify(storeForm),
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        const data = await response.json()
         throw new Error(data.error || 'Failed to update store')
       }
 
-      setSuccess('Store information updated successfully')
+      // Show detailed success message with verification status
+      let successMsg = 'Store information updated successfully!'
+      if (data.verified) {
+        successMsg += ' ✓ Store is now verified and visible to customers.'
+      }
+      if (data.hasCoordinates) {
+        successMsg += ' ✓ Location coordinates updated.'
+      }
+      setSuccess(successMsg)
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update store')
@@ -166,7 +179,50 @@ export default function SettingsForm({ initialStoreOwner, initialStore }: Props)
 
       {/* Store Information */}
       <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-        <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Store Information</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Store Information</h2>
+          {/* Verification Status Badge */}
+          <div className="flex items-center gap-3">
+            {initialStore?.verified ? (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-500/10 text-green-500 border border-green-500/30">
+                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Verified
+              </span>
+            ) : (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-500 border border-yellow-500/30">
+                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                Not Verified
+              </span>
+            )}
+            {initialStore?.latitude && initialStore?.longitude ? (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-500/10 text-blue-500 border border-blue-500/30">
+                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                </svg>
+                Location Set
+              </span>
+            ) : (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-500/10 text-gray-400 border border-gray-500/30">
+                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                </svg>
+                No Location
+              </span>
+            )}
+          </div>
+        </div>
+        {/* Help text for non-verified stores */}
+        {!initialStore?.verified && initialStoreOwner.application_status === 'approved' && (
+          <div className="mb-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
+            <p className="text-sm text-yellow-500">
+              <strong>Tip:</strong> Click &quot;Save Store Info&quot; to verify your store and make it visible to customers searching for products.
+            </p>
+          </div>
+        )}
         <form onSubmit={handleSaveStore} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
