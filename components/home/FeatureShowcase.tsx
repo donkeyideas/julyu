@@ -34,7 +34,7 @@ const defaultFeatures = [
   },
   {
     title: 'Price Comparison',
-    description: 'Compare prices across major retailers like Kroger and Walmart to find the best deals.',
+    description: 'Compare prices across local stores, supermarkets, and bodegas to find the best deals.',
     color: 'orange',
   },
   {

@@ -350,21 +350,21 @@ function ComparePageContent() {
         latitude = userLocation.latitude
         longitude = userLocation.longitude
       } else {
-        // Geocode address or zip code
+        // Geocode address or zip code using our server-side API (uses Census Bureau, no API key needed)
         const location = address || zipCode
         const geocodeResponse = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}`
+          `/api/geocode?address=${encodeURIComponent(location)}`
         )
         const geocodeData = await geocodeResponse.json()
 
-        if (geocodeData.status !== 'OK' || !geocodeData.results[0]) {
-          console.log('[Bodega] Failed to geocode location')
+        if (!geocodeData.success || !geocodeData.coordinates) {
+          console.log('[Bodega] Failed to geocode location:', geocodeData.error)
           setBodegaLoading(false)
           return
         }
 
-        latitude = geocodeData.results[0].geometry.location.lat
-        longitude = geocodeData.results[0].geometry.location.lng
+        latitude = geocodeData.coordinates.latitude
+        longitude = geocodeData.coordinates.longitude
         setUserLocation({ latitude, longitude })
       }
 

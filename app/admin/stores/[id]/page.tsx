@@ -10,12 +10,13 @@ export const metadata = {
 }
 
 interface Props {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function StoreDetailsPage({ params }: Props) {
+  const { id } = await params
   const supabase = await createServerClient()
 
   // Get store owner details
@@ -25,7 +26,7 @@ export default async function StoreDetailsPage({ params }: Props) {
       *,
       bodega_stores (*)
     `)
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (error || !storeOwner) {
@@ -36,7 +37,7 @@ export default async function StoreDetailsPage({ params }: Props) {
   const { data: recentOrders } = await supabase
     .from('bodega_orders')
     .select('*')
-    .eq('store_owner_id', params.id)
+    .eq('store_owner_id', id)
     .order('ordered_at', { ascending: false })
     .limit(10)
 

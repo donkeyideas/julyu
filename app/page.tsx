@@ -19,7 +19,7 @@ export default async function HomePage() {
   const hero = content.hero || {}
   const badge = hero.badge || 'Now in Early Access'
   const headline = hero.headline || 'Stop Overpaying for Groceries'
-  const subheadline = hero.subheadline || 'Compare prices across Kroger, Walmart, and more in seconds. Scan receipts, track spending, and discover savings with smart technology.'
+  const subheadline = hero.subheadline || 'Compare prices across local stores, supermarkets, and bodegas in seconds. Scan receipts, track spending, and discover savings with smart technology.'
   const primaryCta = hero.primary_cta || { text: 'Get Early Access', link: '/auth/signup' }
   const secondaryCta = hero.secondary_cta || { text: 'Try Demo', link: '#demo' }
   const stats = hero.stats || [

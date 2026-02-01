@@ -6,6 +6,134 @@ import { compareShoppingList, getAggregatedPrices } from '@/lib/services/price-a
 import { geocodeLocation } from '@/lib/services/geocoding'
 
 /**
+ * Search for nearby bodega stores with inventory
+ */
+async function searchBodegaStores(
+  supabase: any,
+  userLat: number,
+  userLon: number,
+  radiusMiles: number = 10
+): Promise<any[]> {
+  try {
+    // Find active, verified bodega stores
+    const { data: stores, error: storesError } = await supabase
+      .from('bodega_stores')
+      .select(`
+        *,
+        store_owner:store_owners(business_name)
+      `)
+      .eq('is_active', true)
+      .eq('verified', true)
+      .not('latitude', 'is', null)
+      .not('longitude', 'is', null)
+
+    if (storesError || !stores || stores.length === 0) {
+      console.log('[searchBodegaStores] No bodega stores found:', storesError?.message || 'empty result')
+      return []
+    }
+
+    // Calculate distances and filter by radius
+    const storesWithDistance = stores
+      .map((store: any) => {
+        if (!store.latitude || !store.longitude) return null
+
+        // Haversine formula
+        const R = 3959 // Earth's radius in miles
+        const dLat = (store.latitude - userLat) * Math.PI / 180
+        const dLon = (store.longitude - userLon) * Math.PI / 180
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(userLat * Math.PI / 180) * Math.cos(store.latitude * Math.PI / 180) *
+          Math.sin(dLon / 2) * Math.sin(dLon / 2)
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+        const distance = R * c
+
+        return {
+          ...store,
+          distance: parseFloat(distance.toFixed(2))
+        }
+      })
+      .filter((store: any) => store !== null && store.distance <= radiusMiles)
+      .sort((a: any, b: any) => a.distance - b.distance)
+
+    return storesWithDistance
+  } catch (error: any) {
+    console.error('[searchBodegaStores] Error:', error.message)
+    return []
+  }
+}
+
+/**
+ * Search bodega inventory for items
+ */
+async function searchBodegaInventory(
+  supabase: any,
+  storeIds: string[],
+  items: string[]
+): Promise<Map<string, any[]>> {
+  const inventoryByStore = new Map<string, any[]>()
+
+  if (storeIds.length === 0) return inventoryByStore
+
+  try {
+    // Get all inventory for these stores
+    const { data: inventory, error } = await supabase
+      .from('bodega_inventory')
+      .select(`
+        *,
+        product:products(name, brand, size, image_url)
+      `)
+      .in('bodega_store_id', storeIds)
+      .eq('in_stock', true)
+      .gt('stock_quantity', 0)
+
+    if (error || !inventory) {
+      console.error('[searchBodegaInventory] Error:', error?.message)
+      return inventoryByStore
+    }
+
+    // For each item, find matches in inventory
+    for (const storeId of storeIds) {
+      const storeInventory = inventory.filter((inv: any) => inv.bodega_store_id === storeId)
+      const itemMatches: any[] = []
+
+      for (const item of items) {
+        const searchTerms = item.toLowerCase().split(' ')
+
+        // Find best match for this item
+        const match = storeInventory.find((inv: any) => {
+          const itemName = (inv.custom_name || inv.product?.name || '').toLowerCase()
+          const itemBrand = (inv.custom_brand || inv.product?.brand || '').toLowerCase()
+          const searchText = `${itemName} ${itemBrand}`
+
+          return searchTerms.some((term: string) => searchText.includes(term))
+        })
+
+        itemMatches.push({
+          userInput: item,
+          product: match ? {
+            id: match.id,
+            name: match.custom_name || match.product?.name || 'Unknown',
+            brand: match.custom_brand || match.product?.brand || null,
+            size: match.custom_size || match.product?.size || null,
+            imageUrl: match.custom_image_url || match.product?.image_url || null,
+            price: { regular: parseFloat(match.sale_price) }
+          } : null,
+          price: match ? parseFloat(match.sale_price) : null
+        })
+      }
+
+      inventoryByStore.set(storeId, itemMatches)
+    }
+
+    return inventoryByStore
+  } catch (error: any) {
+    console.error('[searchBodegaInventory] Error:', error.message)
+    return inventoryByStore
+  }
+}
+
+/**
  * Save comparison to database and update user savings
  */
 async function saveComparison(
@@ -304,10 +432,17 @@ async function analyzeWithKroger(
     }, { status: 400 })
   }
 
-  if (stores.length === 0) {
+  // Also search bodega stores
+  let bodegaStores: any[] = []
+  if (coordinates) {
+    bodegaStores = await searchBodegaStores(supabase, coordinates.lat, coordinates.lng, 10)
+    console.log('[ListAnalyze] Found', bodegaStores.length, 'bodega stores')
+  }
+
+  if (stores.length === 0 && bodegaStores.length === 0) {
     return NextResponse.json({
       success: true,
-      message: 'No Kroger stores found near this zip code',
+      message: 'No stores found near this location. Try expanding your search area.',
       stores: [],
       bestOption: null,
       alternatives: [],
@@ -322,7 +457,7 @@ async function analyzeWithKroger(
     })
   }
 
-  // Step 2: Search for each item at the first store (prices are similar across stores)
+  // Step 2: Search for each item at Kroger stores (if available)
   const primaryStore = stores[0]
   const productResults: Array<{
     userInput: string
@@ -330,32 +465,44 @@ async function analyzeWithKroger(
     price: number | null
   }> = []
 
-  for (const item of items) {
-    try {
-      console.log(`[ListAnalyze] Searching Kroger for: ${item}`)
-      const products = await krogerClient.searchProducts(item, {
-        locationId: primaryStore.id,
-        limit: 1,
-      })
-
-      if (products.length > 0) {
-        const product = products[0]
-        productResults.push({
-          userInput: item,
-          krogerProduct: product,
-          price: product.price?.sale || product.price?.regular || null,
+  // Only search Kroger if we have Kroger stores
+  if (primaryStore) {
+    for (const item of items) {
+      try {
+        console.log(`[ListAnalyze] Searching Kroger for: ${item}`)
+        const products = await krogerClient.searchProducts(item, {
+          locationId: primaryStore.id,
+          limit: 1,
         })
-        console.log(`[ListAnalyze] Found: ${product.name} - $${product.price?.regular}`)
-      } else {
+
+        if (products.length > 0) {
+          const product = products[0]
+          productResults.push({
+            userInput: item,
+            krogerProduct: product,
+            price: product.price?.sale || product.price?.regular || null,
+          })
+          console.log(`[ListAnalyze] Found: ${product.name} - $${product.price?.regular}`)
+        } else {
+          productResults.push({
+            userInput: item,
+            krogerProduct: null,
+            price: null,
+          })
+          console.log(`[ListAnalyze] No results for: ${item}`)
+        }
+      } catch (searchError: any) {
+        console.error(`[ListAnalyze] Search failed for ${item}:`, searchError.message)
         productResults.push({
           userInput: item,
           krogerProduct: null,
           price: null,
         })
-        console.log(`[ListAnalyze] No results for: ${item}`)
       }
-    } catch (searchError: any) {
-      console.error(`[ListAnalyze] Search failed for ${item}:`, searchError.message)
+    }
+  } else {
+    // No Kroger stores - initialize empty results
+    for (const item of items) {
       productResults.push({
         userInput: item,
         krogerProduct: null,
@@ -364,16 +511,20 @@ async function analyzeWithKroger(
     }
   }
 
-  // Step 3: Calculate totals
+  // Step 3: Search bodega inventory
+  const bodegaStoreIds = bodegaStores.map((s: any) => s.id)
+  const bodegaInventory = await searchBodegaInventory(supabase, bodegaStoreIds, items)
+
+  // Step 4: Calculate totals for Kroger
   const itemsWithPrices = productResults.filter(p => p.price !== null)
   const itemsWithoutPrices = productResults.filter(p => p.price === null)
   const total = itemsWithPrices.reduce((sum, p) => sum + (p.price || 0), 0)
 
-  // Step 4: Calculate distances for each store
+  // Step 5: Calculate distances and build store results
   const userCoords = coordinates // Use the geocoded coordinates from above
   console.log('[ListAnalyze] User coordinates:', userCoords)
 
-  // Build store results with distances
+  // Build Kroger store results with distances
   const storeResults: StoreResult[] = stores.map((store, index) => {
     let distance: string | null = null
     if (userCoords && store.location?.lat && store.location?.lng) {
@@ -399,6 +550,30 @@ async function analyzeWithKroger(
       itemsMissing: itemsWithoutPrices.length,
     }
   })
+
+  // Add bodega store results
+  for (const bodegaStore of bodegaStores) {
+    const storeInventory = bodegaInventory.get(bodegaStore.id) || items.map(item => ({
+      userInput: item,
+      product: null,
+      price: null
+    }))
+
+    const bodegaItemsWithPrices = storeInventory.filter((i: any) => i.price !== null)
+    const bodegaTotal = bodegaItemsWithPrices.reduce((sum: number, i: any) => sum + (i.price || 0), 0)
+
+    storeResults.push({
+      storeId: bodegaStore.id,
+      storeName: bodegaStore.name || bodegaStore.store_owner?.business_name || 'Local Store',
+      retailer: 'Local Bodega',
+      distance: bodegaStore.distance?.toString() || null,
+      address: bodegaStore.address ? `${bodegaStore.address}, ${bodegaStore.city}, ${bodegaStore.state} ${bodegaStore.zip}` : undefined,
+      items: storeInventory,
+      total: bodegaTotal,
+      itemsFound: bodegaItemsWithPrices.length,
+      itemsMissing: items.length - bodegaItemsWithPrices.length,
+    })
+  }
 
   // Sort by distance (closest first) if distances are available
   storeResults.sort((a, b) => {
