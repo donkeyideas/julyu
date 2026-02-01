@@ -8,12 +8,16 @@ export const metadata = {
 }
 
 export default async function SettingsPage() {
-  // Use cached auth helper - same as layout for consistent auth state
+  // Get auth - layout handles redirects for unauthenticated users
   const { storeOwner, user, error } = await getStoreOwnerAnyStatus()
 
-  // Layout handles redirects, but if somehow we get here without auth, show nothing
+  // If no auth, show a refresh message (layout should have redirected, but just in case)
   if (!storeOwner || !user) {
-    return null
+    return (
+      <div className="p-12 text-center">
+        <p style={{ color: 'var(--text-muted)' }}>Session loading... If this persists, please refresh the page.</p>
+      </div>
+    )
   }
 
   // Get store owner's stores
