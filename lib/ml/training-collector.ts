@@ -20,6 +20,7 @@ export type TrainingSource =
   | 'chat_quality'
   | 'alert_effectiveness'
   | 'substitution'
+  | 'comparison_matching'
 
 interface TrainingPair {
   source: TrainingSource
@@ -291,6 +292,50 @@ async function collectSubstitutions(sinceDate: string): Promise<TrainingPair[]> 
   return pairs
 }
 
+/**
+ * Collect training pairs from comparison searches.
+ * These are logged automatically via comparison-training.ts during searches.
+ * This function retrieves already-logged pairs for reporting/export.
+ */
+async function collectComparisonMatches(sinceDate: string): Promise<TrainingPair[]> {
+  const supabase = createServiceRoleClient() as any
+  const pairs: TrainingPair[] = []
+
+  // Get comparison matching data that was already logged
+  const { data: comparisonData } = await supabase
+    .from('ai_training_data')
+    .select('input_text, output_text, accuracy_score, user_feedback, metadata, created_at')
+    .eq('use_case', 'comparison_matching')
+    .gte('created_at', sinceDate)
+
+  const rows = (comparisonData ?? []) as Array<{
+    input_text: string | null
+    output_text: string | null
+    accuracy_score: number | null
+    user_feedback: string | null
+    metadata: Record<string, unknown> | null
+    created_at: string
+  }>
+
+  for (const row of rows) {
+    if (row.input_text && row.output_text) {
+      pairs.push({
+        source: 'comparison_matching',
+        input: row.input_text,
+        output: row.output_text,
+        label: (row.user_feedback as 'positive' | 'negative' | 'neutral') || 'neutral',
+        confidence: row.accuracy_score ?? 0.8,
+        metadata: {
+          ...row.metadata,
+          created_at: row.created_at,
+        },
+      })
+    }
+  }
+
+  return pairs
+}
+
 // ============================================
 // Main Collection Orchestrator
 // ============================================
@@ -312,6 +357,7 @@ export async function collectTrainingData(
     'chat_quality',
     'alert_effectiveness',
     'substitution',
+    'comparison_matching',
   ]
 
   const results: CollectionResult[] = []
@@ -323,6 +369,7 @@ export async function collectTrainingData(
     chat_quality: () => collectChatQuality(sinceDate),
     alert_effectiveness: () => collectAlertEffectiveness(sinceDate),
     substitution: () => collectSubstitutions(sinceDate),
+    comparison_matching: () => collectComparisonMatches(sinceDate),
   }
 
   for (const source of sources) {

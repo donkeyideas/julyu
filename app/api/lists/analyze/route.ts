@@ -5,6 +5,20 @@ import { krogerClient, NormalizedKrogerProduct } from '@/lib/api/kroger'
 import { serpApiWalmartClient, NormalizedWalmartProduct } from '@/lib/api/serpapi-walmart'
 import { compareShoppingList, getAggregatedPrices } from '@/lib/services/price-aggregator'
 import { geocodeLocation } from '@/lib/services/geocoding'
+import {
+  generateListHash,
+  generateLocationContext,
+  getCachedComparison,
+  cacheComparison,
+} from '@/lib/services/comparison-cache'
+import {
+  findLocalProductMatches,
+  saveProductsToCatalog,
+} from '@/lib/services/product-matcher'
+import {
+  logComparisonTrainingBatch,
+  type ComparisonTrainingPair,
+} from '@/lib/ml/comparison-training'
 
 /**
  * Search for nearby bodega stores with inventory
@@ -327,13 +341,29 @@ export async function POST(request: NextRequest) {
 
     console.log('[ListAnalyze] Analyzing items:', items)
 
+    // PHASE 1: Check comparison cache for identical list searches
+    const listHash = generateListHash(items)
+    const locationContext = generateLocationContext(zipCode)
+    console.log(`[ListAnalyze] List hash: ${listHash.substring(0, 8)}..., location: ${locationContext || 'none'}`)
+
+    const cachedResult = await getCachedComparison(listHash, locationContext)
+    if (cachedResult) {
+      console.log('[ListAnalyze] CACHE HIT - returning cached comparison (0 API calls)')
+      return NextResponse.json({
+        ...cachedResult,
+        cached: true,
+        cacheHit: true,
+      })
+    }
+    console.log('[ListAnalyze] Cache miss - proceeding with API calls')
+
     // Check if Kroger API is available
     const krogerAvailable = await krogerClient.isConfiguredAsync()
     console.log('[ListAnalyze] Kroger API available:', krogerAvailable)
 
     if (krogerAvailable) {
       // Use Kroger API for real-time prices
-      return await analyzeWithKroger(items, zipCode, address, supabase, userId)
+      return await analyzeWithKroger(items, zipCode, address, supabase, userId, listHash, locationContext)
     }
 
     // Fallback to database-based analysis
@@ -355,7 +385,9 @@ async function analyzeWithKroger(
   zipCode: string | undefined,
   address: string | undefined,
   supabase: any,
-  userId: string
+  userId: string,
+  listHash?: string,
+  locationContext?: string | null
 ) {
   console.log('[ListAnalyze] Using Kroger API with zip:', zipCode, 'address:', address)
 
@@ -458,17 +490,49 @@ async function analyzeWithKroger(
     })
   }
 
+  // PHASE 2: Check local product catalog with fuzzy matching
+  // This reduces API calls by matching common items locally
+  const { matched: localMatches, unmatched: itemsNeedingApi, stats: matchStats } = await findLocalProductMatches(items)
+  console.log(`[ListAnalyze] Local catalog: ${matchStats.matchedCount} matched, ${matchStats.unmatchedCount} need API (avg confidence: ${matchStats.avgConfidence})`)
+
   // Step 2: Search for each item at Kroger stores (if available)
+  // Only search for items NOT found in local catalog
   const primaryStore = stores[0]
   const productResults: Array<{
     userInput: string
     krogerProduct: NormalizedKrogerProduct | null
     price: number | null
+    fromLocalCatalog?: boolean
   }> = []
 
-  // Only search Kroger if we have Kroger stores
-  if (primaryStore) {
-    for (const item of items) {
+  // Add locally matched items first (no API call needed!)
+  for (const match of localMatches) {
+    productResults.push({
+      userInput: match.userInput,
+      krogerProduct: {
+        id: match.product.id,
+        upc: match.product.upc || '',
+        name: match.product.name,
+        brand: match.product.brand || '',
+        description: '',
+        categories: [],
+        imageUrl: match.product.imageUrl || undefined,
+        price: match.price ? {
+          regular: match.price,
+          sale: match.salePrice || undefined,
+        } : undefined,
+        availability: { inStore: true, delivery: false, pickup: false },
+      },
+      price: match.salePrice || match.price,
+      fromLocalCatalog: true,
+    })
+    console.log(`[ListAnalyze] LOCAL MATCH: "${match.userInput}" → "${match.product.name}" ($${match.price || 'no price'})`)
+  }
+
+  // Only search Kroger if we have Kroger stores AND items needing API
+  if (primaryStore && itemsNeedingApi.length > 0) {
+    console.log(`[ListAnalyze] Searching Kroger for ${itemsNeedingApi.length} items (${localMatches.length} skipped via local catalog)`)
+    for (const item of itemsNeedingApi) {
       try {
         console.log(`[ListAnalyze] Searching Kroger for: ${item}`)
         const products = await krogerClient.searchProducts(item, {
@@ -501,15 +565,17 @@ async function analyzeWithKroger(
         })
       }
     }
-  } else {
-    // No Kroger stores - initialize empty results
-    for (const item of items) {
+  } else if (!primaryStore) {
+    // No Kroger stores - add empty results for unmatched items only
+    for (const item of itemsNeedingApi) {
       productResults.push({
         userInput: item,
         krogerProduct: null,
         price: null,
       })
     }
+  } else {
+    console.log('[ListAnalyze] All items matched from local catalog - no Kroger API calls needed!')
   }
 
   // Step 3: Search bodega inventory
@@ -517,16 +583,40 @@ async function analyzeWithKroger(
   const bodegaInventory = await searchBodegaInventory(supabase, bodegaStoreIds, items)
 
   // Step 3.5: Search Walmart via SerpApi (if configured)
+  // Only search for items NOT found in local catalog (same optimization as Kroger)
   const walmartResults: Array<{
     userInput: string
     walmartProduct: NormalizedWalmartProduct | null
     price: number | null
+    fromLocalCatalog?: boolean
   }> = []
 
+  // Add locally matched items first (no Walmart API call needed!)
+  for (const match of localMatches) {
+    walmartResults.push({
+      userInput: match.userInput,
+      walmartProduct: {
+        id: match.product.id,
+        upc: match.product.upc || undefined,
+        name: match.product.name,
+        brand: match.product.brand || undefined,
+        imageUrl: match.product.imageUrl || undefined,
+        price: match.price ? {
+          regular: match.price,
+          sale: match.salePrice || undefined,
+        } : undefined,
+        productUrl: '',
+        availability: { inStore: true, delivery: false, pickup: false },
+      },
+      price: match.salePrice || match.price,
+      fromLocalCatalog: true,
+    })
+  }
+
   const walmartConfigured = await serpApiWalmartClient.isConfiguredAsync()
-  if (walmartConfigured) {
-    console.log('[ListAnalyze] Searching Walmart via SerpApi...')
-    for (const item of items) {
+  if (walmartConfigured && itemsNeedingApi.length > 0) {
+    console.log(`[ListAnalyze] Searching Walmart for ${itemsNeedingApi.length} items (${localMatches.length} skipped via local catalog)`)
+    for (const item of itemsNeedingApi) {
       try {
         const walmartProducts = await serpApiWalmartClient.searchProducts(item, { limit: 1 })
         if (walmartProducts.length > 0) {
@@ -553,7 +643,9 @@ async function analyzeWithKroger(
         })
       }
     }
-    console.log(`[ListAnalyze] Walmart search complete: ${walmartResults.filter(r => r.price).length}/${items.length} items found`)
+    console.log(`[ListAnalyze] Walmart search complete: ${walmartResults.filter(r => r.price).length}/${items.length} items found (${localMatches.length} from local catalog)`)
+  } else if (walmartConfigured) {
+    console.log('[ListAnalyze] All items matched from local catalog - no Walmart API calls needed!')
   } else {
     console.log('[ListAnalyze] Walmart/SerpApi not configured, skipping')
   }
@@ -737,6 +829,105 @@ async function analyzeWithKroger(
   saveComparison(supabase, userId, items, result).catch(err => {
     console.error('[ListAnalyze] Failed to save comparison:', err)
   })
+
+  // PHASE 1: Cache the full comparison result for future identical searches
+  if (listHash) {
+    cacheComparison(listHash, locationContext || null, items, result).catch(err => {
+      console.error('[ListAnalyze] Failed to cache comparison:', err)
+    })
+  }
+
+  // PHASE 2: Save new products from API calls to local catalog for future fuzzy matching
+  // This builds up the catalog over time, reducing future API calls
+  const newProductsToSave: Array<{
+    name: string
+    brand?: string
+    upc?: string
+    imageUrl?: string
+    price?: number
+    source: 'kroger' | 'walmart' | 'serpapi'
+  }> = []
+
+  // Collect Kroger products that weren't from local catalog
+  for (const pr of productResults) {
+    if (!pr.fromLocalCatalog && pr.krogerProduct) {
+      newProductsToSave.push({
+        name: pr.krogerProduct.name,
+        brand: pr.krogerProduct.brand,
+        upc: pr.krogerProduct.upc,
+        imageUrl: pr.krogerProduct.imageUrl,
+        price: pr.price || undefined,
+        source: 'kroger',
+      })
+    }
+  }
+
+  // Collect Walmart products that weren't from local catalog
+  for (const wr of walmartResults) {
+    if (!wr.fromLocalCatalog && wr.walmartProduct) {
+      newProductsToSave.push({
+        name: wr.walmartProduct.name,
+        brand: wr.walmartProduct.brand,
+        upc: wr.walmartProduct.upc,
+        imageUrl: wr.walmartProduct.imageUrl,
+        price: wr.price || undefined,
+        source: 'serpapi',
+      })
+    }
+  }
+
+  // Save new products asynchronously
+  if (newProductsToSave.length > 0) {
+    saveProductsToCatalog(newProductsToSave).catch(err => {
+      console.error('[ListAnalyze] Failed to save products to catalog:', err)
+    })
+  }
+
+  // PHASE 3: Log comparison results as LLM training data
+  // This builds a rich dataset for improving product matching over time
+  const trainingPairs: ComparisonTrainingPair[] = []
+
+  // Collect Kroger matches as training pairs
+  for (const pr of productResults) {
+    if (pr.krogerProduct) {
+      trainingPairs.push({
+        userInput: pr.userInput,
+        matchedProduct: {
+          name: pr.krogerProduct.name,
+          brand: pr.krogerProduct.brand,
+          upc: pr.krogerProduct.upc,
+        },
+        source: pr.fromLocalCatalog ? 'local_catalog' : 'kroger',
+        confidence: pr.fromLocalCatalog ? 0.85 : 1.0, // API matches are gold standard
+        price: pr.price || undefined,
+        storeId: primaryStore?.id,
+      })
+    }
+  }
+
+  // Collect Walmart matches as training pairs
+  for (const wr of walmartResults) {
+    if (wr.walmartProduct) {
+      trainingPairs.push({
+        userInput: wr.userInput,
+        matchedProduct: {
+          name: wr.walmartProduct.name,
+          brand: wr.walmartProduct.brand,
+          upc: wr.walmartProduct.upc,
+        },
+        source: wr.fromLocalCatalog ? 'local_catalog' : 'walmart',
+        confidence: wr.fromLocalCatalog ? 0.85 : 1.0,
+        price: wr.price || undefined,
+      })
+    }
+  }
+
+  // Log training data asynchronously (don't slow down response)
+  if (trainingPairs.length > 0) {
+    logComparisonTrainingBatch(trainingPairs).catch(err => {
+      console.error('[ListAnalyze] Failed to log training data:', err)
+    })
+  }
 
   return NextResponse.json(result)
 }
