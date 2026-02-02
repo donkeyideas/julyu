@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
-import { clearAdminSession, getAdminSession } from '@/lib/auth/admin-auth'
+import { usePathname } from 'next/navigation'
+import { useAdminAuth } from './AdminAuthGuard'
+import { hasPagePermission, AdminPermissions } from '@/lib/auth/permissions'
 import ThemeToggle from '@/components/ThemeToggle'
 
 interface NavItem {
@@ -10,20 +11,15 @@ interface NavItem {
   label: string
   icon: string
   section: string
+  permission?: keyof AdminPermissions['pages'] // Optional permission required
 }
 
 export default function AdminSidebar() {
   const pathname = usePathname()
-  const router = useRouter()
-  const session = typeof window !== 'undefined' ? getAdminSession() : null
-
-  const handleLogout = () => {
-    clearAdminSession()
-    router.push('/admin-v2/login')
-  }
+  const { employee, logout } = useAdminAuth()
 
   const navItems: NavItem[] = [
-    { href: '/admin-v2', label: 'Dashboard', icon: '', section: 'Overview' },
+    { href: '/admin-v2', label: 'Dashboard', icon: '', section: 'Overview', permission: 'dashboard' },
     { href: '/admin-v2/content/home', label: 'Home Page', icon: '', section: 'Content' },
     { href: '/admin-v2/content/features', label: 'Features Page', icon: '', section: 'Content' },
     { href: '/admin-v2/content/for-stores', label: 'For Stores Page', icon: '', section: 'Content' },
@@ -31,36 +27,45 @@ export default function AdminSidebar() {
     { href: '/admin-v2/content/testimonials', label: 'Testimonials', icon: '', section: 'Content' },
     { href: '/admin-v2/content/store-ticker', label: 'Store Ticker', icon: '', section: 'Content' },
     { href: '/admin-v2/content/global', label: 'Global Settings', icon: '', section: 'Content' },
-    { href: '/admin-v2/ai-models', label: 'AI Models', icon: '', section: 'AI/LLM Systems' },
-    { href: '/admin-v2/rate-limits', label: 'Rate Limits', icon: '', section: 'AI/LLM Systems' },
-    { href: '/admin-v2/ai-performance', label: 'AI Performance', icon: '', section: 'AI/LLM Systems' },
-    { href: '/admin-v2/usage', label: 'Usage & Costs', icon: '', section: 'AI/LLM Systems' },
-    { href: '/admin-v2/ai-training', label: 'Training Data', icon: '', section: 'AI/LLM Systems' },
+    { href: '/admin-v2/ai-models', label: 'AI Models', icon: '', section: 'AI/LLM Systems', permission: 'ai_models' },
+    { href: '/admin-v2/rate-limits', label: 'Rate Limits', icon: '', section: 'AI/LLM Systems', permission: 'rate_limits' },
+    { href: '/admin-v2/ai-performance', label: 'AI Performance', icon: '', section: 'AI/LLM Systems', permission: 'ai_models' },
+    { href: '/admin-v2/usage', label: 'Usage & Costs', icon: '', section: 'AI/LLM Systems', permission: 'ai_models' },
+    { href: '/admin-v2/ai-training', label: 'Training Data', icon: '', section: 'AI/LLM Systems', permission: 'ai_models' },
     { href: '/admin-v2/features', label: 'Feature Flags', icon: '', section: 'AI/LLM Systems' },
-    { href: '/admin/stores/applications', label: 'Store Applications', icon: '', section: 'Bodega System' },
-    { href: '/admin/stores', label: 'All Stores', icon: '', section: 'Bodega System' },
-    { href: '/admin/orders', label: 'All Orders', icon: '', section: 'Bodega System' },
-    { href: '/admin/commission-tiers', label: 'Commission Tiers', icon: '', section: 'Bodega System' },
-    { href: '/admin/payouts', label: 'Payouts', icon: '', section: 'Bodega System' },
-    { href: '/admin/analytics/bodega', label: 'Analytics', icon: '', section: 'Bodega System' },
-    { href: '/admin-v2/delivery-partners', label: 'Delivery Partners', icon: '', section: 'Partnerships' },
-    { href: '/admin-v2/delivery-partners/analytics', label: 'Partner Analytics', icon: '', section: 'Partnerships' },
-    { href: '/admin-v2/partnerships-costs', label: 'Partnerships AI Costs', icon: '', section: 'Partnerships' },
-    { href: '/admin-v2/retailers', label: 'Retailer Partnerships', icon: '', section: 'Partnerships' },
-    { href: '/admin-v2/instacart', label: 'Instacart API', icon: '', section: 'Partnerships' },
-    { href: '/admin-v2/users', label: 'Users', icon: '', section: 'Operations' },
+    { href: '/admin/stores/applications', label: 'Store Applications', icon: '', section: 'Bodega System', permission: 'store_applications' },
+    { href: '/admin/stores', label: 'All Stores', icon: '', section: 'Bodega System', permission: 'stores' },
+    { href: '/admin/orders', label: 'All Orders', icon: '', section: 'Bodega System', permission: 'orders' },
+    { href: '/admin/commission-tiers', label: 'Commission Tiers', icon: '', section: 'Bodega System', permission: 'commission_tiers' },
+    { href: '/admin/payouts', label: 'Payouts', icon: '', section: 'Bodega System', permission: 'payouts' },
+    { href: '/admin/analytics/bodega', label: 'Analytics', icon: '', section: 'Bodega System', permission: 'analytics' },
+    { href: '/admin-v2/delivery-partners', label: 'Delivery Partners', icon: '', section: 'Partnerships', permission: 'delivery_partners' },
+    { href: '/admin-v2/delivery-partners/analytics', label: 'Partner Analytics', icon: '', section: 'Partnerships', permission: 'delivery_partners' },
+    { href: '/admin-v2/partnerships-costs', label: 'Partnerships AI Costs', icon: '', section: 'Partnerships', permission: 'delivery_partners' },
+    { href: '/admin-v2/retailers', label: 'Retailer Partnerships', icon: '', section: 'Partnerships', permission: 'delivery_partners' },
+    { href: '/admin-v2/instacart', label: 'Instacart API', icon: '', section: 'Partnerships', permission: 'delivery_partners' },
+    { href: '/admin-v2/employees', label: 'Employees', icon: '', section: 'Operations', permission: 'employees' },
+    { href: '/admin-v2/users', label: 'Users', icon: '', section: 'Operations', permission: 'users' },
     { href: '/admin-v2/prices', label: 'Price Database', icon: '', section: 'Operations' },
     { href: '/admin-v2/subscriptions', label: 'Subscriptions', icon: '', section: 'Operations' },
   ]
 
+  // Filter items based on permissions
+  const filteredItems = navItems.filter((item) => {
+    // If no permission required, show to everyone
+    if (!item.permission) return true
+    // Check if user has the required permission
+    return hasPagePermission(employee?.permissions, item.permission)
+  })
+
   const sections = [
-    { name: 'Overview', items: navItems.filter(item => item.section === 'Overview') },
-    { name: 'Content', items: navItems.filter(item => item.section === 'Content') },
-    { name: 'AI/LLM Systems', items: navItems.filter(item => item.section === 'AI/LLM Systems') },
-    { name: 'Bodega System', items: navItems.filter(item => item.section === 'Bodega System') },
-    { name: 'Partnerships', items: navItems.filter(item => item.section === 'Partnerships') },
-    { name: 'Operations', items: navItems.filter(item => item.section === 'Operations') },
-  ]
+    { name: 'Overview', items: filteredItems.filter(item => item.section === 'Overview') },
+    { name: 'Content', items: filteredItems.filter(item => item.section === 'Content') },
+    { name: 'AI/LLM Systems', items: filteredItems.filter(item => item.section === 'AI/LLM Systems') },
+    { name: 'Bodega System', items: filteredItems.filter(item => item.section === 'Bodega System') },
+    { name: 'Partnerships', items: filteredItems.filter(item => item.section === 'Partnerships') },
+    { name: 'Operations', items: filteredItems.filter(item => item.section === 'Operations') },
+  ].filter(section => section.items.length > 0) // Only show sections with items
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-[280px] p-8 overflow-y-auto" style={{ backgroundColor: 'var(--bg-secondary)', borderRight: '1px solid var(--border-color)' }}>
@@ -112,11 +117,16 @@ export default function AdminSidebar() {
           ← Back to Site
         </Link>
 
-        {session && (
+        {employee && (
           <div className="mt-4 px-4">
-            <p className="text-xs truncate mb-2" style={{ color: 'var(--text-secondary)' }}>{session.email}</p>
+            <p className="text-xs font-medium truncate mb-1" style={{ color: 'var(--text-primary)' }}>
+              {employee.name}
+            </p>
+            <p className="text-xs truncate mb-2" style={{ color: 'var(--text-secondary)' }}>
+              {employee.email}
+            </p>
             <button
-              onClick={handleLogout}
+              onClick={logout}
               className="w-full px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-500 rounded-lg transition text-left"
             >
               Sign Out
@@ -127,4 +137,3 @@ export default function AdminSidebar() {
     </aside>
   )
 }
-
