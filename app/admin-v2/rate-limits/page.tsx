@@ -14,6 +14,17 @@ interface UsageStats {
   limit_reached: boolean
 }
 
+interface CacheStats {
+  cachedQueries: number
+  totalCacheHits: number
+  apiCallsSaved: number
+  estimatedSavings: string
+  byApi?: {
+    walmart: { cachedQueries: number; cacheHits: number }
+    kroger: { cachedQueries: number; cacheHits: number }
+  }
+}
+
 interface ApiConfig {
   name: string
   displayName: string
@@ -57,10 +68,44 @@ export default function RateLimitsPage() {
   const [editValues, setEditValues] = useState<{ daily: number; monthly: number }>({ daily: 0, monthly: 0 })
   const [saving, setSaving] = useState(false)
   const [resetting, setResetting] = useState<string | null>(null)
+  const [cacheStats, setCacheStats] = useState<CacheStats | null>(null)
+  const [clearingCache, setClearingCache] = useState(false)
 
   useEffect(() => {
     fetchStats()
+    fetchCacheStats()
   }, [])
+
+  async function fetchCacheStats() {
+    try {
+      const response = await fetch('/api/admin/rate-limits/cache-stats')
+      if (response.ok) {
+        const data = await response.json()
+        setCacheStats(data.stats)
+      }
+    } catch (err) {
+      console.error('Error fetching cache stats:', err)
+    }
+  }
+
+  async function handleClearCache() {
+    if (!confirm('Clear all cached Walmart search results? This will cause fresh API calls for the next searches.')) {
+      return
+    }
+
+    try {
+      setClearingCache(true)
+      const response = await fetch('/api/admin/rate-limits/cache-stats', { method: 'DELETE' })
+      if (response.ok) {
+        await fetchCacheStats()
+      }
+    } catch (err: any) {
+      console.error('Error clearing cache:', err)
+      setError(err.message)
+    } finally {
+      setClearingCache(false)
+    }
+  }
 
   async function fetchStats() {
     try {
@@ -357,6 +402,65 @@ export default function RateLimitsPage() {
         </div>
       )}
 
+      {/* Cache Stats Section */}
+      {cacheStats && (
+        <div className="rounded-2xl p-8 mt-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Search Cache</h2>
+              <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+                Caches search results for 24 hours to reduce API calls
+              </p>
+            </div>
+            <button
+              onClick={handleClearCache}
+              disabled={clearingCache}
+              className="px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+              style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'rgb(239, 68, 68)', border: '1px solid rgba(239, 68, 68, 0.3)' }}
+            >
+              {clearingCache ? 'Clearing...' : 'Clear All Cache'}
+            </button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+              <div className="text-3xl font-bold" style={{ color: 'var(--accent-primary)' }}>{cacheStats.cachedQueries}</div>
+              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Total Cached</div>
+            </div>
+            <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+              <div className="text-3xl font-bold" style={{ color: 'rgb(34, 197, 94)' }}>{cacheStats.totalCacheHits}</div>
+              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Cache Hits</div>
+            </div>
+            <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+              <div className="text-3xl font-bold" style={{ color: 'rgb(34, 197, 94)' }}>{cacheStats.apiCallsSaved}</div>
+              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>API Calls Saved</div>
+            </div>
+            <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+              <div className="text-3xl font-bold" style={{ color: 'rgb(249, 115, 22)' }}>{cacheStats.estimatedSavings}</div>
+              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Est. Savings</div>
+            </div>
+          </div>
+          {cacheStats.byApi && (
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+                <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Walmart (SerpApi)</div>
+                <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                  {cacheStats.byApi.walmart.cachedQueries} cached · {cacheStats.byApi.walmart.cacheHits} hits
+                </div>
+              </div>
+              <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+                <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Kroger</div>
+                <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                  {cacheStats.byApi.kroger.cachedQueries} cached · {cacheStats.byApi.kroger.cacheHits} hits
+                </div>
+              </div>
+            </div>
+          )}
+          <p className="text-xs mt-4" style={{ color: 'var(--text-muted)' }}>
+            When 1000 users search for "milk 2%", only 1 API call is made. The other 999 use cached results.
+          </p>
+        </div>
+      )}
+
       {/* Info Section */}
       <div className="rounded-2xl p-8 mt-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>How Rate Limiting Works</h2>
@@ -388,7 +492,7 @@ export default function RateLimitsPage() {
       {/* Refresh Button */}
       <div className="mt-6 text-center">
         <button
-          onClick={() => fetchStats()}
+          onClick={() => { fetchStats(); fetchCacheStats(); }}
           className="px-6 py-2 rounded-lg font-medium transition-colors"
           style={{
             backgroundColor: 'var(--accent-primary)',

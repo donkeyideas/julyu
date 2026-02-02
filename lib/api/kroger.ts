@@ -14,10 +14,16 @@ import { getKrogerCredentials } from './config'
  * API keys can be configured via:
  * 1. Admin panel (stored encrypted in database)
  * 2. Environment variables (KROGER_CLIENT_ID, KROGER_CLIENT_SECRET)
+ *
+ * CACHING: Results are cached for 24 hours per location to reduce API calls
+ * E.g., 1000 users searching "milk" at store 123 = 1 API call per day
  */
 
 const KROGER_API_BASE = 'https://api.kroger.com/v1'
 const KROGER_AUTH_URL = 'https://api.kroger.com/v1/connect/oauth2/token'
+
+// Cache TTL: 24 hours (in milliseconds)
+const SEARCH_CACHE_TTL = 24 * 60 * 60 * 1000
 
 // Token cache
 let tokenCache: {
@@ -239,6 +245,97 @@ export class KrogerClient {
   }
 
   /**
+   * Normalize search query for cache key
+   */
+  private normalizeQuery(query: string): string {
+    return query.toLowerCase().trim().replace(/\s+/g, ' ')
+  }
+
+  /**
+   * Check cache for existing search results
+   */
+  private async getCachedResults(query: string, locationId?: string): Promise<NormalizedKrogerProduct[] | null> {
+    try {
+      const { createServiceRoleClient } = await import('@/lib/supabase/server')
+      const supabase = createServiceRoleClient() as any
+      const normalizedQuery = this.normalizeQuery(query)
+
+      let queryBuilder = supabase
+        .from('api_search_cache')
+        .select('results, id, hit_count')
+        .eq('api_name', 'kroger')
+        .eq('search_query_normalized', normalizedQuery)
+        .gt('expires_at', new Date().toISOString())
+
+      // Handle location-specific caching
+      if (locationId) {
+        queryBuilder = queryBuilder.eq('location_id', locationId)
+      } else {
+        queryBuilder = queryBuilder.is('location_id', null)
+      }
+
+      const { data, error } = await queryBuilder.single()
+
+      if (error || !data) {
+        return null
+      }
+
+      // Update hit count asynchronously
+      supabase
+        .from('api_search_cache')
+        .update({
+          hit_count: (data.hit_count || 0) + 1,
+          last_hit_at: new Date().toISOString(),
+        })
+        .eq('id', data.id)
+        .then(() => {})
+        .catch(() => {})
+
+      console.log(`[Kroger] Cache HIT for "${query}"${locationId ? ` at location ${locationId}` : ''}`)
+      return data.results as NormalizedKrogerProduct[]
+    } catch (error) {
+      console.error('[Kroger] Cache lookup error:', error)
+      return null
+    }
+  }
+
+  /**
+   * Save search results to cache
+   */
+  private async cacheResults(query: string, results: NormalizedKrogerProduct[], locationId?: string): Promise<void> {
+    try {
+      const { createServiceRoleClient } = await import('@/lib/supabase/server')
+      const supabase = createServiceRoleClient() as any
+      const normalizedQuery = this.normalizeQuery(query)
+      const expiresAt = new Date(Date.now() + SEARCH_CACHE_TTL).toISOString()
+
+      const { error } = await supabase
+        .from('api_search_cache')
+        .upsert({
+          api_name: 'kroger',
+          search_query: query,
+          search_query_normalized: normalizedQuery,
+          location_id: locationId || null,
+          results,
+          result_count: results.length,
+          expires_at: expiresAt,
+          hit_count: 0,
+          created_at: new Date().toISOString(),
+        }, {
+          onConflict: 'api_name,search_query_normalized,location_id',
+        })
+
+      if (error) {
+        console.error('[Kroger] Cache save error:', error)
+      } else {
+        console.log(`[Kroger] Cached results for "${query}"${locationId ? ` at location ${locationId}` : ''}`)
+      }
+    } catch (error) {
+      console.error('[Kroger] Cache save error:', error)
+    }
+  }
+
+  /**
    * Get OAuth access token (cached)
    */
   private async getAccessToken(): Promise<string> {
@@ -362,11 +459,25 @@ export class KrogerClient {
       locationId?: string
       limit?: number
       start?: number
+      skipCache?: boolean // Force fresh API call
     }
   ): Promise<NormalizedKrogerProduct[]> {
+    const limit = options?.limit || 20
+
+    // Check cache first (unless explicitly skipped or using pagination)
+    const useCache = !options?.skipCache && !options?.start
+
+    if (useCache) {
+      const cachedResults = await this.getCachedResults(query, options?.locationId)
+      if (cachedResults && cachedResults.length > 0) {
+        // Return cached results (no API call needed!)
+        return cachedResults.slice(0, limit)
+      }
+    }
+
     const params: Record<string, any> = {
       'filter.term': query,
-      'filter.limit': options?.limit || 20,
+      'filter.limit': limit,
       'filter.start': options?.start || 1,
     }
 
@@ -374,9 +485,17 @@ export class KrogerClient {
       params['filter.locationId'] = options.locationId
     }
 
-    const response = await this.request<{ data: KrogerProduct[] }>('GET', '/products', params)
+    console.log(`[Kroger] API CALL for: "${query}"${options?.locationId ? ` at location ${options.locationId}` : ''}`)
 
-    return response.data.map(product => this.normalizeProduct(product))
+    const response = await this.request<{ data: KrogerProduct[] }>('GET', '/products', params)
+    const normalizedResults = response.data.map(product => this.normalizeProduct(product))
+
+    // Cache the results for future searches
+    if (useCache && normalizedResults.length > 0) {
+      await this.cacheResults(query, normalizedResults, options?.locationId)
+    }
+
+    return normalizedResults
   }
 
   /**

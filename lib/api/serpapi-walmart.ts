@@ -11,9 +11,15 @@ import { canMakeApiCall, trackApiCall } from '@/lib/services/rate-limiter'
  *
  * Free tier: 100 searches/month
  * Developer: $75/month for 5,000 searches
+ *
+ * CACHING: Results are cached for 24 hours to dramatically reduce API calls
+ * E.g., 1000 users searching "milk 2%" = 1 API call per day instead of 1000
  */
 
 const SERPAPI_BASE = 'https://serpapi.com/search'
+
+// Cache TTL: 24 hours (in milliseconds)
+const SEARCH_CACHE_TTL = 24 * 60 * 60 * 1000
 
 // API key cache
 let apiKeyCache: {
@@ -160,6 +166,88 @@ export class SerpApiWalmartClient {
   }
 
   /**
+   * Normalize search query for cache key
+   */
+  private normalizeQuery(query: string): string {
+    return query.toLowerCase().trim().replace(/\s+/g, ' ')
+  }
+
+  /**
+   * Check cache for existing search results
+   */
+  private async getCachedResults(query: string): Promise<NormalizedWalmartProduct[] | null> {
+    try {
+      const { createServiceRoleClient } = await import('@/lib/supabase/server')
+      const supabase = createServiceRoleClient() as any
+      const normalizedQuery = this.normalizeQuery(query)
+
+      const { data, error } = await supabase
+        .from('api_search_cache')
+        .select('results, id')
+        .eq('api_name', 'serpapi-walmart')
+        .eq('search_query_normalized', normalizedQuery)
+        .gt('expires_at', new Date().toISOString())
+        .single()
+
+      if (error || !data) {
+        return null
+      }
+
+      // Update hit count asynchronously
+      supabase
+        .from('api_search_cache')
+        .update({
+          hit_count: (data.hit_count || 0) + 1,
+          last_hit_at: new Date().toISOString(),
+        })
+        .eq('id', data.id)
+        .then(() => {})
+        .catch(() => {})
+
+      console.log(`[SerpApi] Cache HIT for "${query}" (normalized: "${normalizedQuery}")`)
+      return data.results as NormalizedWalmartProduct[]
+    } catch (error) {
+      console.error('[SerpApi] Cache lookup error:', error)
+      return null
+    }
+  }
+
+  /**
+   * Save search results to cache
+   */
+  private async cacheResults(query: string, results: NormalizedWalmartProduct[]): Promise<void> {
+    try {
+      const { createServiceRoleClient } = await import('@/lib/supabase/server')
+      const supabase = createServiceRoleClient() as any
+      const normalizedQuery = this.normalizeQuery(query)
+      const expiresAt = new Date(Date.now() + SEARCH_CACHE_TTL).toISOString()
+
+      const { error } = await supabase
+        .from('api_search_cache')
+        .upsert({
+          api_name: 'serpapi-walmart',
+          search_query: query,
+          search_query_normalized: normalizedQuery,
+          results,
+          result_count: results.length,
+          expires_at: expiresAt,
+          hit_count: 0,
+          created_at: new Date().toISOString(),
+        }, {
+          onConflict: 'api_name,search_query_normalized',
+        })
+
+      if (error) {
+        console.error('[SerpApi] Cache save error:', error)
+      } else {
+        console.log(`[SerpApi] Cached results for "${query}" (expires: ${expiresAt})`)
+      }
+    } catch (error) {
+      console.error('[SerpApi] Cache save error:', error)
+    }
+  }
+
+  /**
    * Search for Walmart products
    */
   async searchProducts(
@@ -171,9 +259,24 @@ export class SerpApiWalmartClient {
       minPrice?: number
       maxPrice?: number
       storeId?: string
+      skipCache?: boolean // Force fresh API call
     }
   ): Promise<NormalizedWalmartProduct[]> {
-    // Check rate limit before making call
+    const limit = options?.limit || 10
+
+    // Check cache first (unless explicitly skipped or using advanced options)
+    const useCache = !options?.skipCache && !options?.page && !options?.sort &&
+                     !options?.minPrice && !options?.maxPrice && !options?.storeId
+
+    if (useCache) {
+      const cachedResults = await this.getCachedResults(query)
+      if (cachedResults && cachedResults.length > 0) {
+        // Return cached results (no API call needed!)
+        return cachedResults.slice(0, limit)
+      }
+    }
+
+    // Check rate limit before making API call
     const { allowed, reason } = await canMakeApiCall('serpapi')
     if (!allowed) {
       console.warn('[SerpApi] Rate limited:', reason)
@@ -209,7 +312,7 @@ export class SerpApiWalmartClient {
         params.store_id = options.storeId
       }
 
-      console.log('[SerpApi] Searching Walmart for:', query)
+      console.log('[SerpApi] API CALL for:', query)
 
       const response = await axios.get<SerpApiWalmartSearchResponse>(SERPAPI_BASE, {
         params,
@@ -225,11 +328,16 @@ export class SerpApiWalmartClient {
       }
 
       const results = response.data.organic_results || []
-      const limit = options?.limit || 10
-
       console.log(`[SerpApi] Found ${results.length} Walmart products`)
 
-      return results.slice(0, limit).map(product => this.normalizeSearchResult(product))
+      const normalizedResults = results.map(product => this.normalizeSearchResult(product))
+
+      // Cache the results for future searches (cache more than we return)
+      if (useCache && normalizedResults.length > 0) {
+        await this.cacheResults(query, normalizedResults)
+      }
+
+      return normalizedResults.slice(0, limit)
     } catch (error: any) {
       // Track failed call
       await trackApiCall('serpapi', false)
