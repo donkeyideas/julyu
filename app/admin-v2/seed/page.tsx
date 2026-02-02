@@ -103,11 +103,11 @@ export default function SeedAdminPage() {
             <p className={`font-medium ${result.success ? 'text-green-400' : 'text-red-400'}`}>
               {result.message}
             </p>
-            {result.success && result.data && (
+            {result.success && result.data ? (
               <div className="mt-3 text-sm text-gray-300">
-                <p className="font-mono bg-gray-900 p-2 rounded mt-1 break-all">
+                <pre className="font-mono bg-gray-900 p-2 rounded mt-1 break-all whitespace-pre-wrap text-xs">
                   {JSON.stringify(result.data, null, 2)}
-                </p>
+                </pre>
                 <p className="mt-3 text-yellow-400 font-medium">
                   Save your temporary password! You will need to change it on first login.
                 </p>
@@ -118,7 +118,7 @@ export default function SeedAdminPage() {
                   Go to Login Page →
                 </a>
               </div>
-            )}
+            ) : null}
           </div>
         )}
 
