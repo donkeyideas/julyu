@@ -1,7 +1,16 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+
+// Format number with commas
+const formatNumber = (num: number): string => {
+  return num.toLocaleString()
+}
+
+// Format currency with commas
+const formatCurrency = (num: number): string => {
+  return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
 
 export default function BodegaAnalyticsPage() {
   const [loading, setLoading] = useState(true)
@@ -38,31 +47,20 @@ export default function BodegaAnalyticsPage() {
 
   const loadAnalytics = async () => {
     try {
-      const supabase = createClient()
+      // Fetch stores from API (same as All Stores page)
+      const storesResponse = await fetch('/api/admin/stores/manage')
+      const storesData = storesResponse.ok ? await storesResponse.json() : { stores: [] }
+      const allStores = storesData.stores || []
 
+      // Fetch orders from API
+      const ordersResponse = await fetch('/api/admin/bodega-orders')
+      const ordersData = ordersResponse.ok ? await ordersResponse.json() : { orders: [] }
+      const allOrders = ordersData.orders || []
 
-      // Get all stores
-      const { data: stores } = await supabase
-        .from('store_owners')
-        .select(`
-          *,
-          bodega_stores (*)
-        `)
-
-      const allStores = stores || []
-
-      // Get all orders
-      const { data: orders } = await supabase
-        .from('bodega_orders')
-        .select('*')
-        .order('ordered_at', { ascending: false })
-
-      const allOrders = orders || []
-
-      // Get inventory count
-      const { count: totalInventoryItems } = await supabase
-        .from('bodega_inventory')
-        .select('*', { count: 'exact', head: true })
+      // Fetch inventory count from API
+      const inventoryResponse = await fetch('/api/admin/inventory/count')
+      const inventoryData = inventoryResponse.ok ? await inventoryResponse.json() : { count: 0 }
+      const totalInventoryItems = inventoryData.count || 0
 
       // Calculate metrics
       const totalStores = allStores.filter((s: any) => s.application_status === 'approved').length
@@ -72,20 +70,20 @@ export default function BodegaAnalyticsPage() {
 
       const totalRevenue = allOrders
         .filter((o: any) => o.status === 'delivered')
-        .reduce((sum: number, o: any) => sum + parseFloat(o.total_amount), 0)
+        .reduce((sum: number, o: any) => sum + parseFloat(o.total_amount || '0'), 0)
 
       const totalCommission = allOrders
         .filter((o: any) => o.status === 'delivered')
         .reduce((sum: number, o: any) => {
-          const orderTotal = parseFloat(o.total_amount)
-          const storePayout = parseFloat(o.store_payout)
-          const deliveryFee = parseFloat(o.delivery_fee)
+          const orderTotal = parseFloat(o.total_amount || '0')
+          const storePayout = parseFloat(o.store_payout || '0')
+          const deliveryFee = parseFloat(o.delivery_fee || '0')
           return sum + (orderTotal - storePayout - deliveryFee)
         }, 0)
 
       const totalStorePayout = allOrders
         .filter((o: any) => o.status === 'delivered')
-        .reduce((sum: number, o: any) => sum + parseFloat(o.store_payout), 0)
+        .reduce((sum: number, o: any) => sum + parseFloat(o.store_payout || '0'), 0)
 
       const averageOrderValue = completedOrders > 0 ? totalRevenue / completedOrders : 0
       const averageCommissionRate = totalRevenue > 0 ? (totalCommission / totalRevenue) * 100 : 0
@@ -95,7 +93,7 @@ export default function BodegaAnalyticsPage() {
         .filter((s: any) => s.application_status === 'approved')
         .map((store: any) => {
           const storeOrders = allOrders.filter((o: any) => o.store_owner_id === store.id && o.status === 'delivered')
-          const revenue = storeOrders.reduce((sum: number, o: any) => sum + parseFloat(o.total_amount), 0)
+          const revenue = storeOrders.reduce((sum: number, o: any) => sum + parseFloat(o.total_amount || '0'), 0)
           return {
             id: store.id,
             name: store.business_name,
@@ -128,7 +126,7 @@ export default function BodegaAnalyticsPage() {
       const recentOrders = allOrders.filter((o: any) => new Date(o.ordered_at) >= sevenDaysAgo)
       const recentRevenue = recentOrders
         .filter((o: any) => o.status === 'delivered')
-        .reduce((sum: number, o: any) => sum + parseFloat(o.total_amount), 0)
+        .reduce((sum: number, o: any) => sum + parseFloat(o.total_amount || '0'), 0)
 
       setStats({
         totalStores,
@@ -140,7 +138,7 @@ export default function BodegaAnalyticsPage() {
         totalStorePayout,
         averageOrderValue,
         averageCommissionRate,
-        totalInventoryItems: totalInventoryItems || 0,
+        totalInventoryItems,
         ordersByStatus,
         deliveryOrders,
         pickupOrders,
@@ -180,37 +178,37 @@ export default function BodegaAnalyticsPage() {
         <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Active Stores</div>
           <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>
-            {stats.totalStores}
+            {formatNumber(stats.totalStores)}
           </div>
           <div className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
-            {stats.totalLocations} total locations
+            {formatNumber(stats.totalLocations)} total locations
           </div>
         </div>
 
         <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Total Orders</div>
           <div className="text-4xl font-black text-blue-500">
-            {stats.totalOrders}
+            {formatNumber(stats.totalOrders)}
           </div>
           <div className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
-            {stats.completedOrders} completed
+            {formatNumber(stats.completedOrders)} completed
           </div>
         </div>
 
         <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Total Revenue</div>
           <div className="text-4xl font-black text-green-500">
-            ${stats.totalRevenue.toFixed(2)}
+            ${formatCurrency(stats.totalRevenue)}
           </div>
           <div className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
-            ${stats.averageOrderValue.toFixed(2)} avg order
+            ${formatCurrency(stats.averageOrderValue)} avg order
           </div>
         </div>
 
         <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Total Commission</div>
           <div className="text-4xl font-black text-purple-500">
-            ${stats.totalCommission.toFixed(2)}
+            ${formatCurrency(stats.totalCommission)}
           </div>
           <div className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
             {stats.averageCommissionRate.toFixed(1)}% avg rate
@@ -224,15 +222,15 @@ export default function BodegaAnalyticsPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Total Revenue</span>
-            <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>${stats.totalRevenue.toFixed(2)}</span>
+            <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>${formatCurrency(stats.totalRevenue)}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Commission Earned (Julyu)</span>
-            <span className="text-sm text-green-500">${stats.totalCommission.toFixed(2)}</span>
+            <span className="text-sm text-green-500">${formatCurrency(stats.totalCommission)}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Store Payouts</span>
-            <span className="text-sm text-blue-500">${stats.totalStorePayout.toFixed(2)}</span>
+            <span className="text-sm text-blue-500">${formatCurrency(stats.totalStorePayout)}</span>
           </div>
           <div className="flex items-center justify-between pt-2" style={{ borderTop: '1px solid var(--border-color)' }}>
             <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Commission Rate</span>
@@ -246,17 +244,17 @@ export default function BodegaAnalyticsPage() {
         <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Last 7 Days</div>
           <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>
-            {stats.recentOrders} orders
+            {formatNumber(stats.recentOrders)} orders
           </div>
           <div className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
-            ${stats.recentRevenue.toFixed(2)} revenue
+            ${formatCurrency(stats.recentRevenue)} revenue
           </div>
         </div>
 
         <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Inventory Items</div>
           <div className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>
-            {stats.totalInventoryItems}
+            {formatNumber(stats.totalInventoryItems)}
           </div>
           <div className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
             Across all stores
@@ -279,27 +277,27 @@ export default function BodegaAnalyticsPage() {
         <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>Order Status Distribution</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center">
-            <div className="text-4xl font-black text-yellow-500">{stats.ordersByStatus.pending}</div>
+            <div className="text-4xl font-black text-yellow-500">{formatNumber(stats.ordersByStatus.pending)}</div>
             <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Pending</div>
           </div>
           <div className="text-center">
             <div className="text-4xl font-black text-blue-500">
-              {stats.ordersByStatus.accepted + stats.ordersByStatus.preparing + stats.ordersByStatus.ready}
+              {formatNumber(stats.ordersByStatus.accepted + stats.ordersByStatus.preparing + stats.ordersByStatus.ready)}
             </div>
             <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>In Progress</div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-black text-cyan-500">{stats.ordersByStatus.out_for_delivery}</div>
+            <div className="text-4xl font-black text-cyan-500">{formatNumber(stats.ordersByStatus.out_for_delivery)}</div>
             <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Out for Delivery</div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-black text-green-500">{stats.ordersByStatus.delivered}</div>
+            <div className="text-4xl font-black text-green-500">{formatNumber(stats.ordersByStatus.delivered)}</div>
             <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Delivered</div>
           </div>
         </div>
         {stats.ordersByStatus.cancelled > 0 && (
           <div className="mt-4 pt-4 text-center" style={{ borderTop: '1px solid var(--border-color)' }}>
-            <div className="text-4xl font-black text-red-500">{stats.ordersByStatus.cancelled}</div>
+            <div className="text-4xl font-black text-red-500">{formatNumber(stats.ordersByStatus.cancelled)}</div>
             <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Cancelled</div>
           </div>
         )}
@@ -310,14 +308,14 @@ export default function BodegaAnalyticsPage() {
         <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>Delivery Method Breakdown</h2>
         <div className="grid grid-cols-2 gap-4">
           <div className="text-center">
-            <div className="text-4xl font-black text-blue-500">{stats.deliveryOrders}</div>
+            <div className="text-4xl font-black text-blue-500">{formatNumber(stats.deliveryOrders)}</div>
             <div className="text-sm mt-2" style={{ color: 'var(--text-primary)' }}>Delivery Orders</div>
             <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
               {stats.totalOrders > 0 ? ((stats.deliveryOrders / stats.totalOrders) * 100).toFixed(1) : 0}%
             </div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-black text-green-500">{stats.pickupOrders}</div>
+            <div className="text-4xl font-black text-green-500">{formatNumber(stats.pickupOrders)}</div>
             <div className="text-sm mt-2" style={{ color: 'var(--text-primary)' }}>Pickup Orders</div>
             <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
               {stats.totalOrders > 0 ? ((stats.pickupOrders / stats.totalOrders) * 100).toFixed(1) : 0}%
@@ -360,10 +358,10 @@ export default function BodegaAnalyticsPage() {
                     {store.name}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm" style={{ color: 'var(--text-muted)' }}>
-                    {store.orderCount}
+                    {formatNumber(store.orderCount)}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-green-500">
-                    ${store.revenue.toFixed(2)}
+                    ${formatCurrency(store.revenue)}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm" style={{ color: 'var(--text-muted)' }}>
                     {store.commission}%
