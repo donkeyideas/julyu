@@ -456,7 +456,7 @@ export default function RateLimitsPage() {
             </div>
           )}
           <p className="text-xs mt-4" style={{ color: 'var(--text-muted)' }}>
-            When 1000 users search for "milk 2%", only 1 API call is made. The other 999 use cached results.
+            When 1000 users search for &quot;milk 2%&quot;, only 1 API call is made. The other 999 use cached results.
           </p>
         </div>
       )}
