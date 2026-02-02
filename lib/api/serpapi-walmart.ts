@@ -183,9 +183,10 @@ export class SerpApiWalmartClient {
 
       const { data, error } = await supabase
         .from('api_search_cache')
-        .select('results, id')
+        .select('results, id, hit_count')
         .eq('api_name', 'serpapi-walmart')
         .eq('search_query_normalized', normalizedQuery)
+        .is('location_id', null)
         .gt('expires_at', new Date().toISOString())
         .single()
 
@@ -228,13 +229,14 @@ export class SerpApiWalmartClient {
           api_name: 'serpapi-walmart',
           search_query: query,
           search_query_normalized: normalizedQuery,
+          location_id: null,
           results,
           result_count: results.length,
           expires_at: expiresAt,
           hit_count: 0,
           created_at: new Date().toISOString(),
         }, {
-          onConflict: 'api_name,search_query_normalized',
+          onConflict: 'api_name,search_query_normalized,location_id',
         })
 
       if (error) {
