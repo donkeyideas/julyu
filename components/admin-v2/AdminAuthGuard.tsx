@@ -51,8 +51,8 @@ export default function AdminAuthGuard({ children }: { children: React.ReactNode
 
   useEffect(() => {
     const validateSession = async () => {
-      // Skip auth check for login and seed pages
-      if (pathname === '/admin-v2/login' || pathname === '/admin-v2/seed') {
+      // Skip auth check for login page only
+      if (pathname === '/admin-v2/login') {
         setIsAuthenticated(true)
         return
       }
