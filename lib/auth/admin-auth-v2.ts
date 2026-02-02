@@ -1,5 +1,5 @@
 // Admin Authentication v2 with TOTP 2FA and Server-Side Sessions
-import { authenticator } from 'otplib'
+import { TOTP, Secret } from 'otpauth'
 import * as QRCode from 'qrcode'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
@@ -122,20 +122,46 @@ export function validatePasswordStrength(password: string): { valid: boolean; er
 // ============ TOTP Management ============
 
 export function generateTotpSecret(): string {
-  return authenticator.generateSecret()
+  const secret = new Secret({ size: 20 })
+  return secret.base32
 }
 
 export async function generateTotpQrCode(email: string, secret: string): Promise<string> {
-  const otpauthUrl = authenticator.keyuri(email, TOTP_ISSUER, secret)
-  return QRCode.toDataURL(otpauthUrl)
+  const totp = new TOTP({
+    issuer: TOTP_ISSUER,
+    label: email,
+    algorithm: 'SHA1',
+    digits: 6,
+    period: 30,
+    secret: Secret.fromBase32(secret)
+  })
+  return QRCode.toDataURL(totp.toString())
 }
 
 export function getTotpUrl(email: string, secret: string): string {
-  return authenticator.keyuri(email, TOTP_ISSUER, secret)
+  const totp = new TOTP({
+    issuer: TOTP_ISSUER,
+    label: email,
+    algorithm: 'SHA1',
+    digits: 6,
+    period: 30,
+    secret: Secret.fromBase32(secret)
+  })
+  return totp.toString()
 }
 
 export function verifyTotpCode(secret: string, code: string): boolean {
-  return authenticator.verify({ token: code, secret })
+  const totp = new TOTP({
+    issuer: TOTP_ISSUER,
+    label: 'user',
+    algorithm: 'SHA1',
+    digits: 6,
+    period: 30,
+    secret: Secret.fromBase32(secret)
+  })
+  // validate returns null if invalid, or a delta value if valid (within window)
+  const delta = totp.validate({ token: code, window: 1 })
+  return delta !== null
 }
 
 // ============ Recovery Codes ============
