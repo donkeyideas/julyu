@@ -1,5 +1,5 @@
 // Admin Authentication v2 with TOTP 2FA and Server-Side Sessions
-import { generateSecret, generateURI, verifySync } from 'otplib'
+import { authenticator } from 'otplib'
 import * as QRCode from 'qrcode'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
@@ -122,29 +122,20 @@ export function validatePasswordStrength(password: string): { valid: boolean; er
 // ============ TOTP Management ============
 
 export function generateTotpSecret(): string {
-  return generateSecret()
+  return authenticator.generateSecret()
 }
 
 export async function generateTotpQrCode(email: string, secret: string): Promise<string> {
-  const otpauthUrl = generateURI({
-    secret,
-    label: email,
-    issuer: TOTP_ISSUER,
-  })
+  const otpauthUrl = authenticator.keyuri(email, TOTP_ISSUER, secret)
   return QRCode.toDataURL(otpauthUrl)
 }
 
 export function getTotpUrl(email: string, secret: string): string {
-  return generateURI({
-    secret,
-    label: email,
-    issuer: TOTP_ISSUER,
-  })
+  return authenticator.keyuri(email, TOTP_ISSUER, secret)
 }
 
 export function verifyTotpCode(secret: string, code: string): boolean {
-  const result = verifySync({ token: code, secret })
-  return result.valid
+  return authenticator.verify({ token: code, secret })
 }
 
 // ============ Recovery Codes ============
