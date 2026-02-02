@@ -394,10 +394,10 @@ export default function EmployeesPage() {
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowAddModal(false)} />
-          <div className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden">
-            <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
-              <h2 className="text-xl font-bold">Add New Employee</h2>
-              <button onClick={() => setShowAddModal(false)} className="text-gray-500 hover:text-gray-700">
+          <div className="relative rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden" style={{ backgroundColor: 'var(--bg-card)' }}>
+            <div className="sticky top-0 px-6 py-4 flex justify-between items-center" style={{ backgroundColor: 'var(--bg-card)', borderBottom: '1px solid var(--border-color)' }}>
+              <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Add New Employee</h2>
+              <button onClick={() => setShowAddModal(false)} className="hover:text-green-500 transition" style={{ color: 'var(--text-secondary)' }}>
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -406,38 +406,40 @@ export default function EmployeesPage() {
 
             <form onSubmit={handleAddEmployee} className="p-6 space-y-6 max-h-[calc(90vh-140px)] overflow-y-auto">
               {formError && (
-                <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-4 text-sm">
+                <div className="bg-red-500/10 border border-red-500 text-red-500 rounded-lg p-4 text-sm">
                   {formError}
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>Name</label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>Email</label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
                   Temporary Password
-                  <span className="text-gray-500 font-normal"> (min 12 chars, mixed case, number, special)</span>
+                  <span style={{ color: 'var(--text-secondary)' }} className="font-normal"> (min 12 chars, mixed case, number, special)</span>
                 </label>
                 <input
                   type="password"
@@ -445,12 +447,13 @@ export default function EmployeesPage() {
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   required
                   minLength={12}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Permissions</h3>
+                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Permissions</h3>
                 <PermissionsEditor
                   permissions={formData.permissions}
                   onChange={(permissions) => setFormData({ ...formData, permissions })}
@@ -458,11 +461,12 @@ export default function EmployeesPage() {
               </div>
             </form>
 
-            <div className="sticky bottom-0 bg-white border-t px-6 py-4 flex justify-end gap-3">
+            <div className="sticky bottom-0 px-6 py-4 flex justify-end gap-3" style={{ backgroundColor: 'var(--bg-card)', borderTop: '1px solid var(--border-color)' }}>
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-50 transition"
+                className="px-4 py-2 rounded-lg hover:bg-gray-700 transition"
+                style={{ border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
               >
                 Cancel
               </button>
@@ -482,10 +486,10 @@ export default function EmployeesPage() {
       {showEditModal && selectedEmployee && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowEditModal(false)} />
-          <div className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden">
-            <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
-              <h2 className="text-xl font-bold">Edit Employee</h2>
-              <button onClick={() => setShowEditModal(false)} className="text-gray-500 hover:text-gray-700">
+          <div className="relative rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden" style={{ backgroundColor: 'var(--bg-card)' }}>
+            <div className="sticky top-0 px-6 py-4 flex justify-between items-center" style={{ backgroundColor: 'var(--bg-card)', borderBottom: '1px solid var(--border-color)' }}>
+              <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Edit Employee</h2>
+              <button onClick={() => setShowEditModal(false)} className="hover:text-green-500 transition" style={{ color: 'var(--text-secondary)' }}>
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -494,49 +498,52 @@ export default function EmployeesPage() {
 
             <form onSubmit={handleEditEmployee} className="p-6 space-y-6 max-h-[calc(90vh-140px)] overflow-y-auto">
               {formError && (
-                <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-4 text-sm">
+                <div className="bg-red-500/10 border border-red-500 text-red-500 rounded-lg p-4 text-sm">
                   {formError}
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>Name</label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>Email</label>
                   <input
                     type="email"
                     value={formData.email}
                     disabled
-                    className="w-full px-4 py-2 border rounded-lg bg-gray-100 text-gray-500"
+                    className="w-full px-4 py-2 rounded-lg opacity-50"
+                    style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
                   New Password
-                  <span className="text-gray-500 font-normal"> (leave blank to keep current)</span>
+                  <span style={{ color: 'var(--text-secondary)' }} className="font-normal"> (leave blank to keep current)</span>
                 </label>
                 <input
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   minLength={12}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Permissions</h3>
+                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Permissions</h3>
                 <PermissionsEditor
                   permissions={formData.permissions}
                   onChange={(permissions) => setFormData({ ...formData, permissions })}
@@ -544,11 +551,12 @@ export default function EmployeesPage() {
               </div>
             </form>
 
-            <div className="sticky bottom-0 bg-white border-t px-6 py-4 flex justify-end gap-3">
+            <div className="sticky bottom-0 px-6 py-4 flex justify-end gap-3" style={{ backgroundColor: 'var(--bg-card)', borderTop: '1px solid var(--border-color)' }}>
               <button
                 type="button"
                 onClick={() => setShowEditModal(false)}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-50 transition"
+                className="px-4 py-2 rounded-lg hover:bg-gray-700 transition"
+                style={{ border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
               >
                 Cancel
               </button>
@@ -568,11 +576,11 @@ export default function EmployeesPage() {
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowConfirmModal(null)} />
-          <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6">
-            <h3 className="text-lg font-bold mb-2">
+          <div className="relative rounded-xl shadow-2xl max-w-md w-full mx-4 p-6" style={{ backgroundColor: 'var(--bg-card)' }}>
+            <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
               {showConfirmModal.type === 'deactivate' ? 'Deactivate Employee' : 'Reset 2FA'}
             </h3>
-            <p className="text-gray-600 mb-4">
+            <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>
               {showConfirmModal.type === 'deactivate'
                 ? `Are you sure you want to deactivate ${showConfirmModal.employee.name}? They will no longer be able to access the admin dashboard.`
                 : `Are you sure you want to reset 2FA for ${showConfirmModal.employee.name}? They will need to set up 2FA again on their next login.`}
@@ -580,7 +588,8 @@ export default function EmployeesPage() {
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowConfirmModal(null)}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-50 transition"
+                className="px-4 py-2 rounded-lg hover:bg-gray-700 transition"
+                style={{ border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
               >
                 Cancel
               </button>

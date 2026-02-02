@@ -74,106 +74,114 @@ export default function PermissionsEditor({
       {/* Page Permissions */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h4 className="text-sm font-semibold text-gray-700">Page Access</h4>
+          <h4 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Page Access</h4>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={selectAllPages}
               disabled={disabled}
-              className="text-xs text-green-600 hover:text-green-700 disabled:opacity-50"
+              className="text-xs text-green-500 hover:text-green-400 disabled:opacity-50"
             >
               Select All
             </button>
-            <span className="text-gray-300">|</span>
+            <span style={{ color: 'var(--border-color)' }}>|</span>
             <button
               type="button"
               onClick={clearAllPages}
               disabled={disabled}
-              className="text-xs text-gray-500 hover:text-gray-700 disabled:opacity-50"
+              className="text-xs hover:text-green-500 disabled:opacity-50"
+              style={{ color: 'var(--text-secondary)' }}
             >
               Clear All
             </button>
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {Object.entries(PAGE_PERMISSIONS).map(([key, { label, description }]) => (
-            <label
-              key={key}
-              className={`
-                flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors
-                ${permissions.pages[key as keyof AdminPermissions['pages']]
-                  ? 'border-green-500 bg-green-50'
-                  : 'border-gray-200 bg-white hover:bg-gray-50'
-                }
-                ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
-              `}
-            >
-              <input
-                type="checkbox"
-                checked={permissions.pages[key as keyof AdminPermissions['pages']] || false}
-                onChange={(e) => handlePageChange(key as keyof AdminPermissions['pages'], e.target.checked)}
-                disabled={disabled}
-                className="mt-0.5 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-              />
-              <div className="min-w-0">
-                <div className="text-sm font-medium text-gray-900">{label}</div>
-                <div className="text-xs text-gray-500 truncate">{description}</div>
-              </div>
-            </label>
-          ))}
+          {Object.entries(PAGE_PERMISSIONS).map(([key, { label, description }]) => {
+            const isChecked = permissions.pages[key as keyof AdminPermissions['pages']] || false
+            return (
+              <label
+                key={key}
+                className={`
+                  flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors
+                  ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+                `}
+                style={{
+                  backgroundColor: isChecked ? 'rgba(34, 197, 94, 0.1)' : 'var(--bg-secondary)',
+                  borderColor: isChecked ? 'rgb(34, 197, 94)' : 'var(--border-color)',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={(e) => handlePageChange(key as keyof AdminPermissions['pages'], e.target.checked)}
+                  disabled={disabled}
+                  className="mt-0.5 w-4 h-4 text-green-600 border-gray-600 rounded focus:ring-green-500 bg-gray-700"
+                />
+                <div className="min-w-0">
+                  <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{label}</div>
+                  <div className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>{description}</div>
+                </div>
+              </label>
+            )
+          })}
         </div>
       </div>
 
       {/* Action Permissions */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h4 className="text-sm font-semibold text-gray-700">Action Permissions</h4>
+          <h4 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Action Permissions</h4>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={selectAllActions}
               disabled={disabled}
-              className="text-xs text-green-600 hover:text-green-700 disabled:opacity-50"
+              className="text-xs text-green-500 hover:text-green-400 disabled:opacity-50"
             >
               Select All
             </button>
-            <span className="text-gray-300">|</span>
+            <span style={{ color: 'var(--border-color)' }}>|</span>
             <button
               type="button"
               onClick={clearAllActions}
               disabled={disabled}
-              className="text-xs text-gray-500 hover:text-gray-700 disabled:opacity-50"
+              className="text-xs hover:text-green-500 disabled:opacity-50"
+              style={{ color: 'var(--text-secondary)' }}
             >
               Clear All
             </button>
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {Object.entries(ACTION_PERMISSIONS).map(([key, { label, description }]) => (
-            <label
-              key={key}
-              className={`
-                flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors
-                ${permissions.actions[key as keyof AdminPermissions['actions']]
-                  ? 'border-green-500 bg-green-50'
-                  : 'border-gray-200 bg-white hover:bg-gray-50'
-                }
-                ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
-              `}
-            >
-              <input
-                type="checkbox"
-                checked={permissions.actions[key as keyof AdminPermissions['actions']] || false}
-                onChange={(e) => handleActionChange(key as keyof AdminPermissions['actions'], e.target.checked)}
-                disabled={disabled}
-                className="mt-0.5 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-              />
-              <div className="min-w-0">
-                <div className="text-sm font-medium text-gray-900">{label}</div>
-                <div className="text-xs text-gray-500 truncate">{description}</div>
-              </div>
-            </label>
-          ))}
+          {Object.entries(ACTION_PERMISSIONS).map(([key, { label, description }]) => {
+            const isChecked = permissions.actions[key as keyof AdminPermissions['actions']] || false
+            return (
+              <label
+                key={key}
+                className={`
+                  flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors
+                  ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+                `}
+                style={{
+                  backgroundColor: isChecked ? 'rgba(34, 197, 94, 0.1)' : 'var(--bg-secondary)',
+                  borderColor: isChecked ? 'rgb(34, 197, 94)' : 'var(--border-color)',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={(e) => handleActionChange(key as keyof AdminPermissions['actions'], e.target.checked)}
+                  disabled={disabled}
+                  className="mt-0.5 w-4 h-4 text-green-600 border-gray-600 rounded focus:ring-green-500 bg-gray-700"
+                />
+                <div className="min-w-0">
+                  <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{label}</div>
+                  <div className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>{description}</div>
+                </div>
+              </label>
+            )
+          })}
         </div>
       </div>
     </div>
