@@ -4,11 +4,10 @@
     "slug": "julyu",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "scheme": "julyu",
     "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
@@ -26,7 +25,6 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#000000"
       },
       "package": "com.julyu.app",
@@ -39,21 +37,21 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/favicon.png"
+      "output": "static"
     },
     "plugins": [
       "expo-router",
-      "expo-camera",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Julyu to access your camera to scan receipts"
+        }
+      ],
       "expo-image-picker",
       "expo-location",
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/notification-icon.png",
-          "color": "#22c55e"
-        }
-      ]
+      "expo-font",
+      "expo-secure-store",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true

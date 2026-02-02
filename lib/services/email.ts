@@ -492,3 +492,575 @@ export async function sendStoreAccountCreatedEmail({
     return { success: false, error }
   }
 }
+
+// ============================================
+// Order Notification Emails
+// ============================================
+
+interface OrderItem {
+  name: string
+  quantity: number
+  price: number
+}
+
+interface OrderConfirmationEmailProps {
+  customerEmail: string
+  customerName: string
+  orderNumber: string
+  items: OrderItem[]
+  subtotal: number
+  tax: number
+  total: number
+  storeName: string
+  storeAddress?: string
+  orderType: 'pickup' | 'delivery'
+  estimatedTime?: string
+}
+
+export async function sendOrderConfirmationEmail({
+  customerEmail,
+  customerName,
+  orderNumber,
+  items,
+  subtotal,
+  tax,
+  total,
+  storeName,
+  storeAddress,
+  orderType,
+  estimatedTime,
+}: OrderConfirmationEmailProps) {
+  console.log('[Email Service] Sending order confirmation email to:', customerEmail)
+
+  try {
+    const client = getResendClient()
+    if (!client) {
+      console.warn('[Email Service] Resend API key not configured - skipping email send')
+      return { success: false, error: 'Email service not configured' }
+    }
+
+    const appUrl = getAppUrl()
+    const orderTrackingUrl = `${appUrl}/orders/${orderNumber}`
+
+    const itemsHtml = items.map(item => `
+      <tr>
+        <td style="padding: 12px 0; border-bottom: 1px solid #222222; color: #d1d5db; font-size: 15px;">${item.name}</td>
+        <td style="padding: 12px 0; border-bottom: 1px solid #222222; color: #9ca3af; font-size: 15px; text-align: center;">${item.quantity}</td>
+        <td style="padding: 12px 0; border-bottom: 1px solid #222222; color: #ffffff; font-size: 15px; text-align: right;">$${item.price.toFixed(2)}</td>
+      </tr>
+    `).join('')
+
+    const { data, error } = await client.emails.send({
+      from: 'Julyu <noreply@julyu.com>',
+      to: customerEmail,
+      subject: `Order #${orderNumber} Confirmed - ${storeName}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="margin: 0; padding: 0; background-color: #000000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #000000; padding: 40px 20px;">
+              <tr>
+                <td align="center">
+                  <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #111111; border-radius: 16px; overflow: hidden;">
+                    <!-- Header -->
+                    <tr>
+                      <td style="padding: 40px 40px 30px 40px; text-align: center;">
+                        <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background-color: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 50px; margin-bottom: 24px;">
+                          <span style="width: 8px; height: 8px; background-color: #22c55e; border-radius: 50%; display: inline-block;"></span>
+                          <span style="color: #4ade80; font-size: 14px;">Order Confirmed</span>
+                        </div>
+                        <h1 style="margin: 0; font-size: 32px; font-weight: 800; color: #ffffff; line-height: 1.2;">
+                          Thank you, ${customerName}!
+                        </h1>
+                        <p style="margin: 16px 0 0 0; color: #9ca3af; font-size: 18px;">Your order has been received</p>
+                      </td>
+                    </tr>
+
+                    <!-- Order Details -->
+                    <tr>
+                      <td style="padding: 0 40px 40px 40px;">
+                        <!-- Order Number Box -->
+                        <div style="background-color: #1a1a1a; border: 2px solid #22c55e; padding: 20px; border-radius: 12px; margin-bottom: 24px; text-align: center;">
+                          <p style="color: #9ca3af; font-size: 14px; margin: 0 0 8px 0;">Order Number</p>
+                          <p style="color: #22c55e; font-size: 24px; font-weight: 800; margin: 0; font-family: 'Courier New', monospace;">#${orderNumber}</p>
+                        </div>
+
+                        <!-- Store & Order Type Info -->
+                        <div style="background-color: #1a1a1a; border-left: 4px solid #3b82f6; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                          <p style="color: #60a5fa; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">${storeName}</p>
+                          <p style="color: #d1d5db; font-size: 15px; margin: 0 0 8px 0;">
+                            <strong style="color: #9ca3af;">${orderType === 'pickup' ? 'Pickup' : 'Delivery'}:</strong>
+                            ${estimatedTime || 'We\'ll notify you when ready'}
+                          </p>
+                          ${storeAddress && orderType === 'pickup' ? `<p style="color: #9ca3af; font-size: 14px; margin: 0;">${storeAddress}</p>` : ''}
+                        </div>
+
+                        <!-- Items Table -->
+                        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+                          <thead>
+                            <tr>
+                              <th style="padding: 12px 0; border-bottom: 2px solid #333333; color: #9ca3af; font-size: 13px; text-align: left; font-weight: 600;">ITEM</th>
+                              <th style="padding: 12px 0; border-bottom: 2px solid #333333; color: #9ca3af; font-size: 13px; text-align: center; font-weight: 600;">QTY</th>
+                              <th style="padding: 12px 0; border-bottom: 2px solid #333333; color: #9ca3af; font-size: 13px; text-align: right; font-weight: 600;">PRICE</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            ${itemsHtml}
+                          </tbody>
+                        </table>
+
+                        <!-- Totals -->
+                        <div style="background-color: #1a1a1a; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="color: #9ca3af; font-size: 15px;">Subtotal</span>
+                            <span style="color: #d1d5db; font-size: 15px;">$${subtotal.toFixed(2)}</span>
+                          </div>
+                          <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                            <span style="color: #9ca3af; font-size: 15px;">Tax</span>
+                            <span style="color: #d1d5db; font-size: 15px;">$${tax.toFixed(2)}</span>
+                          </div>
+                          <div style="display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid #333333;">
+                            <span style="color: #ffffff; font-size: 18px; font-weight: 700;">Total</span>
+                            <span style="color: #22c55e; font-size: 18px; font-weight: 700;">$${total.toFixed(2)}</span>
+                          </div>
+                        </div>
+
+                        <!-- CTA Button -->
+                        <div style="text-align: center; margin: 32px 0;">
+                          <a href="${orderTrackingUrl}" style="display: inline-block; background-color: #22c55e; color: #000000; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                            Track Your Order →
+                          </a>
+                        </div>
+
+                        <p style="color: #9ca3af; font-size: 14px; text-align: center; margin: 0;">
+                          You'll receive updates as your order progresses.
+                        </p>
+                      </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                      <td style="padding: 24px 40px; border-top: 1px solid #222222; text-align: center;">
+                        <p style="color: #6b7280; font-size: 13px; margin: 0;">
+                          This email was sent by Julyu. If you have questions, please contact support.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </body>
+        </html>
+      `,
+    })
+
+    if (error) {
+      console.error('Resend email error:', error)
+      return { success: false, error }
+    }
+
+    console.log('Order confirmation email sent:', data)
+    return { success: true, data }
+  } catch (error) {
+    console.error('Error sending order confirmation email:', error)
+    return { success: false, error }
+  }
+}
+
+interface NewOrderAlertEmailProps {
+  storeOwnerEmail: string
+  storeOwnerName: string
+  orderNumber: string
+  customerName: string
+  customerPhone?: string
+  items: OrderItem[]
+  total: number
+  orderType: 'pickup' | 'delivery'
+  deliveryAddress?: string
+}
+
+export async function sendNewOrderAlertEmail({
+  storeOwnerEmail,
+  storeOwnerName,
+  orderNumber,
+  customerName,
+  customerPhone,
+  items,
+  total,
+  orderType,
+  deliveryAddress,
+}: NewOrderAlertEmailProps) {
+  console.log('[Email Service] Sending new order alert email to:', storeOwnerEmail)
+
+  try {
+    const client = getResendClient()
+    if (!client) {
+      console.warn('[Email Service] Resend API key not configured - skipping email send')
+      return { success: false, error: 'Email service not configured' }
+    }
+
+    const appUrl = getAppUrl()
+    const storePortalUrl = `${appUrl}/store-portal/orders`
+
+    const itemsList = items.map(item =>
+      `<li style="color: #d1d5db; font-size: 15px; margin-bottom: 8px;">${item.quantity}x ${item.name} - $${item.price.toFixed(2)}</li>`
+    ).join('')
+
+    const { data, error } = await client.emails.send({
+      from: 'Julyu <noreply@julyu.com>',
+      to: storeOwnerEmail,
+      subject: `🔔 New Order #${orderNumber} - $${total.toFixed(2)}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="margin: 0; padding: 0; background-color: #000000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #000000; padding: 40px 20px;">
+              <tr>
+                <td align="center">
+                  <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #111111; border-radius: 16px; overflow: hidden;">
+                    <!-- Header -->
+                    <tr>
+                      <td style="padding: 40px 40px 30px 40px; text-align: center;">
+                        <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background-color: rgba(249, 115, 22, 0.1); border: 1px solid rgba(249, 115, 22, 0.3); border-radius: 50px; margin-bottom: 24px;">
+                          <span style="width: 8px; height: 8px; background-color: #f97316; border-radius: 50%; display: inline-block;"></span>
+                          <span style="color: #fb923c; font-size: 14px;">New Order</span>
+                        </div>
+                        <h1 style="margin: 0; font-size: 32px; font-weight: 800; color: #ffffff; line-height: 1.2;">
+                          New Order Received!
+                        </h1>
+                        <p style="margin: 16px 0 0 0; color: #9ca3af; font-size: 18px;">Order #${orderNumber}</p>
+                      </td>
+                    </tr>
+
+                    <!-- Order Details -->
+                    <tr>
+                      <td style="padding: 0 40px 40px 40px;">
+                        <!-- Order Summary Box -->
+                        <div style="background-color: #1a1a1a; border: 2px solid #f97316; padding: 24px; border-radius: 12px; margin-bottom: 24px;">
+                          <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+                            <span style="color: #9ca3af; font-size: 14px;">Order Total</span>
+                            <span style="color: #22c55e; font-size: 24px; font-weight: 800;">$${total.toFixed(2)}</span>
+                          </div>
+                          <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #9ca3af; font-size: 14px;">Order Type</span>
+                            <span style="color: #ffffff; font-size: 16px; font-weight: 600; text-transform: capitalize;">${orderType}</span>
+                          </div>
+                        </div>
+
+                        <!-- Customer Info -->
+                        <div style="background-color: #1a1a1a; border-left: 4px solid #3b82f6; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                          <h3 style="margin: 0 0 12px 0; color: #60a5fa; font-size: 16px; font-weight: 600;">Customer Info</h3>
+                          <p style="color: #ffffff; font-size: 16px; margin: 0 0 8px 0;">${customerName}</p>
+                          ${customerPhone ? `<p style="color: #9ca3af; font-size: 15px; margin: 0;">Phone: ${customerPhone}</p>` : ''}
+                          ${deliveryAddress && orderType === 'delivery' ? `<p style="color: #9ca3af; font-size: 15px; margin: 8px 0 0 0;">Delivery: ${deliveryAddress}</p>` : ''}
+                        </div>
+
+                        <!-- Items List -->
+                        <div style="background-color: #1a1a1a; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                          <h3 style="margin: 0 0 16px 0; color: #ffffff; font-size: 16px; font-weight: 600;">Order Items</h3>
+                          <ul style="margin: 0; padding-left: 20px; list-style-type: disc;">
+                            ${itemsList}
+                          </ul>
+                        </div>
+
+                        <!-- CTA Button -->
+                        <div style="text-align: center; margin: 32px 0;">
+                          <a href="${storePortalUrl}" style="display: inline-block; background-color: #f97316; color: #000000; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                            View Order Details →
+                          </a>
+                        </div>
+
+                        <p style="color: #9ca3af; font-size: 14px; text-align: center; margin: 0;">
+                          Please accept or prepare this order as soon as possible.
+                        </p>
+                      </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                      <td style="padding: 24px 40px; border-top: 1px solid #222222; text-align: center;">
+                        <p style="color: #6b7280; font-size: 13px; margin: 0;">
+                          This email was sent by Julyu. If you have questions, please contact support.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </body>
+        </html>
+      `,
+    })
+
+    if (error) {
+      console.error('Resend email error:', error)
+      return { success: false, error }
+    }
+
+    console.log('New order alert email sent:', data)
+    return { success: true, data }
+  } catch (error) {
+    console.error('Error sending new order alert email:', error)
+    return { success: false, error }
+  }
+}
+
+type OrderStatus = 'pending' | 'accepted' | 'preparing' | 'ready' | 'out_for_delivery' | 'delivered' | 'cancelled'
+
+const ORDER_STATUS_MESSAGES: Record<OrderStatus, { label: string; message: string; color: string }> = {
+  pending: { label: 'Order Pending', message: 'Your order is waiting to be accepted by the store.', color: '#9ca3af' },
+  accepted: { label: 'Order Accepted', message: 'Great news! The store has accepted your order and will begin preparing it soon.', color: '#3b82f6' },
+  preparing: { label: 'Being Prepared', message: 'Your order is being prepared right now!', color: '#f59e0b' },
+  ready: { label: 'Ready for Pickup', message: 'Your order is ready! Head to the store to pick it up.', color: '#22c55e' },
+  out_for_delivery: { label: 'Out for Delivery', message: 'Your order is on its way to you!', color: '#8b5cf6' },
+  delivered: { label: 'Delivered', message: 'Your order has been delivered. Enjoy!', color: '#22c55e' },
+  cancelled: { label: 'Order Cancelled', message: 'Your order has been cancelled.', color: '#ef4444' },
+}
+
+interface OrderStatusUpdateEmailProps {
+  customerEmail: string
+  customerName: string
+  orderNumber: string
+  newStatus: OrderStatus
+  storeName: string
+  estimatedTime?: string
+}
+
+export async function sendOrderStatusUpdateEmail({
+  customerEmail,
+  customerName,
+  orderNumber,
+  newStatus,
+  storeName,
+  estimatedTime,
+}: OrderStatusUpdateEmailProps) {
+  console.log('[Email Service] Sending order status update email to:', customerEmail)
+
+  try {
+    const client = getResendClient()
+    if (!client) {
+      console.warn('[Email Service] Resend API key not configured - skipping email send')
+      return { success: false, error: 'Email service not configured' }
+    }
+
+    const appUrl = getAppUrl()
+    const orderTrackingUrl = `${appUrl}/orders/${orderNumber}`
+    const statusInfo = ORDER_STATUS_MESSAGES[newStatus]
+
+    const { data, error } = await client.emails.send({
+      from: 'Julyu <noreply@julyu.com>',
+      to: customerEmail,
+      subject: `Order #${orderNumber} - ${statusInfo.label}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="margin: 0; padding: 0; background-color: #000000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #000000; padding: 40px 20px;">
+              <tr>
+                <td align="center">
+                  <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #111111; border-radius: 16px; overflow: hidden;">
+                    <!-- Header -->
+                    <tr>
+                      <td style="padding: 40px 40px 30px 40px; text-align: center;">
+                        <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background-color: rgba(${statusInfo.color === '#22c55e' ? '34, 197, 94' : statusInfo.color === '#3b82f6' ? '59, 130, 246' : statusInfo.color === '#f59e0b' ? '245, 158, 11' : statusInfo.color === '#8b5cf6' ? '139, 92, 246' : statusInfo.color === '#ef4444' ? '239, 68, 68' : '156, 163, 175'}, 0.1); border: 1px solid rgba(${statusInfo.color === '#22c55e' ? '34, 197, 94' : statusInfo.color === '#3b82f6' ? '59, 130, 246' : statusInfo.color === '#f59e0b' ? '245, 158, 11' : statusInfo.color === '#8b5cf6' ? '139, 92, 246' : statusInfo.color === '#ef4444' ? '239, 68, 68' : '156, 163, 175'}, 0.3); border-radius: 50px; margin-bottom: 24px;">
+                          <span style="width: 8px; height: 8px; background-color: ${statusInfo.color}; border-radius: 50%; display: inline-block;"></span>
+                          <span style="color: ${statusInfo.color}; font-size: 14px;">${statusInfo.label}</span>
+                        </div>
+                        <h1 style="margin: 0; font-size: 32px; font-weight: 800; color: #ffffff; line-height: 1.2;">
+                          Order Update
+                        </h1>
+                        <p style="margin: 16px 0 0 0; color: #9ca3af; font-size: 18px;">Order #${orderNumber}</p>
+                      </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                      <td style="padding: 0 40px 40px 40px;">
+                        <p style="color: #d1d5db; font-size: 16px; line-height: 1.7; margin: 0 0 16px 0;">
+                          Hi ${customerName},
+                        </p>
+
+                        <p style="color: #d1d5db; font-size: 16px; line-height: 1.7; margin: 0 0 24px 0;">
+                          ${statusInfo.message}
+                        </p>
+
+                        <!-- Status Box -->
+                        <div style="background-color: #1a1a1a; border-left: 4px solid ${statusInfo.color}; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                          <p style="color: ${statusInfo.color}; font-size: 18px; font-weight: 600; margin: 0 0 8px 0;">${statusInfo.label}</p>
+                          <p style="color: #9ca3af; font-size: 15px; margin: 0;">From ${storeName}</p>
+                          ${estimatedTime ? `<p style="color: #ffffff; font-size: 15px; margin: 12px 0 0 0;"><strong>Estimated time:</strong> ${estimatedTime}</p>` : ''}
+                        </div>
+
+                        <!-- CTA Button -->
+                        <div style="text-align: center; margin: 32px 0;">
+                          <a href="${orderTrackingUrl}" style="display: inline-block; background-color: ${statusInfo.color}; color: #000000; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                            View Order Details →
+                          </a>
+                        </div>
+
+                        <p style="color: #9ca3af; font-size: 14px; text-align: center; margin: 0;">
+                          Thank you for shopping with Julyu!
+                        </p>
+                      </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                      <td style="padding: 24px 40px; border-top: 1px solid #222222; text-align: center;">
+                        <p style="color: #6b7280; font-size: 13px; margin: 0;">
+                          This email was sent by Julyu. If you have questions, please contact support.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </body>
+        </html>
+      `,
+    })
+
+    if (error) {
+      console.error('Resend email error:', error)
+      return { success: false, error }
+    }
+
+    console.log('Order status update email sent:', data)
+    return { success: true, data }
+  } catch (error) {
+    console.error('Error sending order status update email:', error)
+    return { success: false, error }
+  }
+}
+
+interface StoreSuspensionEmailProps {
+  storeOwnerEmail: string
+  storeOwnerName: string
+  storeName: string
+  reason: string
+}
+
+export async function sendStoreSuspensionEmail({
+  storeOwnerEmail,
+  storeOwnerName,
+  storeName,
+  reason,
+}: StoreSuspensionEmailProps) {
+  console.log('[Email Service] Sending store suspension email to:', storeOwnerEmail)
+
+  try {
+    const client = getResendClient()
+    if (!client) {
+      console.warn('[Email Service] Resend API key not configured - skipping email send')
+      return { success: false, error: 'Email service not configured' }
+    }
+
+    const { data, error } = await client.emails.send({
+      from: 'Julyu <noreply@julyu.com>',
+      to: storeOwnerEmail,
+      subject: `Important: ${storeName} Has Been Suspended`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="margin: 0; padding: 0; background-color: #000000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #000000; padding: 40px 20px;">
+              <tr>
+                <td align="center">
+                  <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #111111; border-radius: 16px; overflow: hidden;">
+                    <!-- Header -->
+                    <tr>
+                      <td style="padding: 40px 40px 30px 40px; text-align: center;">
+                        <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 50px; margin-bottom: 24px;">
+                          <span style="width: 8px; height: 8px; background-color: #ef4444; border-radius: 50%; display: inline-block;"></span>
+                          <span style="color: #f87171; font-size: 14px;">Store Suspended</span>
+                        </div>
+                        <h1 style="margin: 0; font-size: 28px; font-weight: 800; color: #ffffff; line-height: 1.2;">
+                          Store Suspension Notice
+                        </h1>
+                      </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                      <td style="padding: 0 40px 40px 40px;">
+                        <p style="color: #d1d5db; font-size: 16px; line-height: 1.7; margin: 0 0 16px 0;">
+                          Dear ${storeOwnerName},
+                        </p>
+
+                        <p style="color: #d1d5db; font-size: 16px; line-height: 1.7; margin: 0 0 24px 0;">
+                          We regret to inform you that your store <strong style="color: #ffffff;">${storeName}</strong> has been suspended from the Julyu platform.
+                        </p>
+
+                        <!-- Reason Box -->
+                        <div style="background-color: #1a1a1a; border-left: 4px solid #ef4444; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                          <h3 style="margin: 0 0 12px 0; color: #f87171; font-size: 16px; font-weight: 600;">Reason for Suspension:</h3>
+                          <p style="color: #d1d5db; font-size: 15px; margin: 0;">${reason}</p>
+                        </div>
+
+                        <!-- What This Means Box -->
+                        <div style="background-color: #1a1a1a; border-left: 4px solid #9ca3af; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                          <h3 style="margin: 0 0 12px 0; color: #d1d5db; font-size: 16px; font-weight: 600;">What This Means:</h3>
+                          <ul style="margin: 0; padding-left: 20px; color: #9ca3af; font-size: 15px; line-height: 1.8;">
+                            <li>Your store is no longer visible to customers</li>
+                            <li>You cannot receive new orders</li>
+                            <li>Any pending orders should be fulfilled or cancelled</li>
+                          </ul>
+                        </div>
+
+                        <p style="color: #d1d5db; font-size: 16px; line-height: 1.7; margin: 0 0 24px 0;">
+                          If you believe this suspension was made in error or would like to appeal this decision, please contact our support team as soon as possible.
+                        </p>
+
+                        <p style="color: #9ca3af; font-size: 15px; margin: 0 0 4px 0;">Regards,</p>
+                        <p style="color: #ffffff; font-size: 15px; font-weight: 600; margin: 0;">The Julyu Team</p>
+                      </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                      <td style="padding: 24px 40px; border-top: 1px solid #222222; text-align: center;">
+                        <p style="color: #6b7280; font-size: 13px; margin: 0;">
+                          This email was sent by Julyu. If you have questions, please contact support.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </body>
+        </html>
+      `,
+    })
+
+    if (error) {
+      console.error('Resend email error:', error)
+      return { success: false, error }
+    }
+
+    console.log('Store suspension email sent:', data)
+    return { success: true, data }
+  } catch (error) {
+    console.error('Error sending store suspension email:', error)
+    return { success: false, error }
+  }
+}

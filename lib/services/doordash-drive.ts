@@ -185,4 +185,136 @@ export class DoorDashDriveService {
   }
 }
 
+// ============================================
+// Order-Based Delivery Helper
+// ============================================
+
+interface OrderDeliveryParams {
+  orderId: string
+  orderNumber: string
+  items: Array<{ name: string; quantity: number }>
+  totalAmount: number
+  pickupAddress: string
+  pickupBusinessName: string
+  pickupPhone: string
+  dropoffAddress: string
+  customerName: string
+  customerPhone: string
+  dropoffInstructions?: string
+}
+
+/**
+ * Create a DoorDash delivery from an order
+ * Returns the delivery response with tracking URL
+ */
+export async function createOrderDelivery(
+  params: OrderDeliveryParams
+): Promise<{ success: boolean; delivery?: DeliveryResponse; error?: string }> {
+  const apiKey = process.env.DOORDASH_API_KEY
+
+  if (!apiKey) {
+    console.warn('[DoorDash] API key not configured - skipping delivery creation')
+    return { success: false, error: 'DoorDash API not configured' }
+  }
+
+  try {
+    const service = new DoorDashDriveService({
+      apiKey,
+      environment: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
+    })
+
+    const deliveryRequest: DeliveryRequest = {
+      external_delivery_id: params.orderNumber,
+      pickup_address: params.pickupAddress,
+      pickup_business_name: params.pickupBusinessName,
+      pickup_phone_number: params.pickupPhone,
+      pickup_instructions: 'Order will be ready at the front counter',
+      dropoff_address: params.dropoffAddress,
+      dropoff_business_name: params.customerName,
+      dropoff_phone_number: params.customerPhone,
+      dropoff_instructions: params.dropoffInstructions,
+      order_value: Math.round(params.totalAmount * 100), // Convert to cents
+      items: params.items.map(item => ({
+        name: item.name,
+        quantity: item.quantity,
+      })),
+      contactless_dropoff: true,
+      action_if_undeliverable: 'return_to_pickup',
+    }
+
+    const delivery = await service.createDelivery(deliveryRequest)
+
+    console.log(`[DoorDash] Delivery created for order ${params.orderNumber}:`, delivery.delivery_id)
+
+    return { success: true, delivery }
+  } catch (error) {
+    console.error('[DoorDash] Failed to create delivery:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to create delivery',
+    }
+  }
+}
+
+/**
+ * Cancel a DoorDash delivery
+ */
+export async function cancelOrderDelivery(
+  deliveryId: string
+): Promise<{ success: boolean; error?: string }> {
+  const apiKey = process.env.DOORDASH_API_KEY
+
+  if (!apiKey) {
+    return { success: false, error: 'DoorDash API not configured' }
+  }
+
+  try {
+    const service = new DoorDashDriveService({
+      apiKey,
+      environment: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
+    })
+
+    await service.cancelDelivery(deliveryId)
+    console.log(`[DoorDash] Delivery cancelled: ${deliveryId}`)
+
+    return { success: true }
+  } catch (error) {
+    console.error('[DoorDash] Failed to cancel delivery:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to cancel delivery',
+    }
+  }
+}
+
+/**
+ * Get DoorDash delivery status
+ */
+export async function getOrderDeliveryStatus(
+  deliveryId: string
+): Promise<{ success: boolean; delivery?: DeliveryResponse; error?: string }> {
+  const apiKey = process.env.DOORDASH_API_KEY
+
+  if (!apiKey) {
+    return { success: false, error: 'DoorDash API not configured' }
+  }
+
+  try {
+    const service = new DoorDashDriveService({
+      apiKey,
+      environment: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
+    })
+
+    const delivery = await service.getDeliveryStatus(deliveryId)
+
+    return { success: true, delivery }
+  } catch (error) {
+    console.error('[DoorDash] Failed to get delivery status:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get status',
+    }
+  }
+}
+
 export default DoorDashDriveService
