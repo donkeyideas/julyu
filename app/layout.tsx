@@ -175,7 +175,7 @@ export default function RootLayout({
       <body className="antialiased">
         {/* Google Analytics */}
         <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-RBCXZ4EWD5"
+          src="https://www.googletagmanager.com/gtag/js?id=G-PLZGQ33YCE"
           strategy="afterInteractive"
         />
         <Script id="google-analytics" strategy="afterInteractive">
@@ -183,7 +183,7 @@ export default function RootLayout({
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-RBCXZ4EWD5');
+            gtag('config', 'G-PLZGQ33YCE');
           `}
         </Script>
         <ThemeProvider>{children}</ThemeProvider>
