@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Header from '@/components/shared/Header'
 import Footer from '@/components/shared/Footer'
+import RequestDemoModal from '@/components/shared/RequestDemoModal'
 
 export const metadata = {
   title: 'For Store Owners - Julyu',
@@ -37,12 +38,11 @@ export default function ForStoresPage() {
             >
               Apply to Join
             </Link>
-            <Link
-              href="/demo/enter"
-              className="px-8 py-4 border border-gray-700 text-white font-semibold rounded-lg hover:border-blue-500 transition text-lg text-center"
-            >
-              Try Store Demo
-            </Link>
+            <RequestDemoModal
+              buttonText="Try Store Demo"
+              defaultInterest="store_demo"
+              buttonClassName="px-8 py-4 border border-gray-700 text-white font-semibold rounded-lg hover:border-blue-500 transition text-lg text-center"
+            />
           </div>
 
           <div className="flex flex-wrap justify-center gap-8 text-center">

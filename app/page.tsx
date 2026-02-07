@@ -8,7 +8,7 @@ import FeatureShowcase from '@/components/home/FeatureShowcase'
 import WhyJulyu from '@/components/home/WhyJulyu'
 import Testimonials from '@/components/home/Testimonials'
 import StoreOwnerCTA from '@/components/home/StoreOwnerCTA'
-import RequestDemoForm from '@/components/home/RequestDemoForm'
+import RequestDemoModal from '@/components/shared/RequestDemoModal'
 import CTASection from '@/components/home/CTASection'
 import { getPageWithSections } from '@/lib/content/getPageContent'
 
@@ -22,7 +22,7 @@ export default async function HomePage() {
   const headline = hero.headline || 'Stop Overpaying for Groceries'
   const subheadline = hero.subheadline || 'Compare prices across local stores, supermarkets, and bodegas in seconds. Scan receipts, track spending, and discover savings with smart technology.'
   const primaryCta = hero.primary_cta || { text: 'Get Early Access', link: '/auth/signup' }
-  const secondaryCta = hero.secondary_cta || { text: 'Request Demo', link: '#request-demo' }
+  const secondaryCtaText = hero.secondary_cta?.text || 'Request Demo'
   const stats = hero.stats || [
     { value: 'Real-Time', label: 'Price Data' },
     { value: 'Smart', label: 'Technology' },
@@ -57,12 +57,10 @@ export default async function HomePage() {
               >
                 {primaryCta.text}
               </Link>
-              <Link
-                href={secondaryCta.link}
-                className="px-8 py-4 border border-gray-700 text-white font-semibold rounded-lg hover:border-green-500 transition text-lg text-center"
-              >
-                {secondaryCta.text}
-              </Link>
+              <RequestDemoModal
+                buttonText={secondaryCtaText}
+                buttonClassName="px-8 py-4 border border-gray-700 text-white font-semibold rounded-lg hover:border-green-500 transition text-lg text-center"
+              />
             </div>
             <div className="flex justify-center md:justify-start gap-8 md:gap-12">
               {stats.map((stat: { value: string; label: string }, index: number) => (
@@ -98,9 +96,6 @@ export default async function HomePage() {
 
       {/* Store Owner CTA */}
       <StoreOwnerCTA content={content.store_cta} />
-
-      {/* Request Demo Form */}
-      <RequestDemoForm />
 
       {/* CTA Section */}
       <CTASection content={content.final_cta} />
