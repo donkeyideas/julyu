@@ -66,6 +66,13 @@ export const ZIP_TO_REGION: Record<string, string[]> = {
   '9': ['west'],
 }
 
+// Lookup a chain by name (case-insensitive, partial match)
+export function getChainByName(name: string): GroceryChain | undefined {
+  const lower = name.toLowerCase().trim()
+  return GROCERY_CHAINS.find(c => c.name.toLowerCase() === lower) ||
+    GROCERY_CHAINS.find(c => c.name.toLowerCase().includes(lower) || lower.includes(c.name.toLowerCase()))
+}
+
 export function getChainsForZip(zipCode: string): GroceryChain[] {
   if (!zipCode || zipCode.length < 1) return GROCERY_CHAINS
   const firstDigit = zipCode[0]

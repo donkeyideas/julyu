@@ -8,6 +8,7 @@ import {
   DEMO_RECENT_COMPARISONS,
   type RecentComparison,
 } from '@/lib/demo/data/user-dashboard'
+import { getChainByName } from '@/lib/demo/data/grocery-chains'
 
 // Interfaces matching the real dashboard exactly
 interface SavingsData {
@@ -75,6 +76,39 @@ interface Comparison {
     products?: ProductItem[]
     matches?: Array<{ userInput: string }>
   } | null
+}
+
+// ─── StoreLogo component ─────────────────────────────────────────────────────
+
+function StoreLogo({ name, size = 32 }: { name: string; size?: number }) {
+  const [failed, setFailed] = useState(false)
+  const chain = getChainByName(name)
+  const domain = chain?.domain
+  const color = chain?.color || '#22c55e'
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+
+  if (failed || !domain) {
+    return (
+      <div
+        className="rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+        style={{ backgroundColor: color, width: size, height: size }}
+      >
+        {initials}
+      </div>
+    )
+  }
+
+  return (
+    <img
+      src={`https://www.google.com/s2/favicons?domain=${domain}&sz=128`}
+      alt={name}
+      width={size}
+      height={size}
+      className="rounded-lg object-contain flex-shrink-0"
+      style={{ backgroundColor: '#fff', width: size, height: size }}
+      onError={() => setFailed(true)}
+    />
+  )
 }
 
 // ─── Build mock data from demo data file ────────────────────────────────────
@@ -728,9 +762,7 @@ export default function DemoDashboardPage() {
               {storeStats.map((store, idx) => (
                 <div key={idx} className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-green-500/15 text-green-500 rounded-full flex items-center justify-center font-bold">
-                      {idx + 1}
-                    </div>
+                    <StoreLogo name={store.store_name} size={32} />
                     <div>
                       <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{store.store_name}</div>
                       <div className="text-sm" style={{ color: 'var(--text-muted)' }}>

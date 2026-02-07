@@ -95,15 +95,15 @@ function fakeAddress(chainName: string, zip: string): string {
 
 // ─── StoreLogo Component ───
 
-function StoreLogo({ domain, name, color }: { domain: string; name: string; color: string }) {
+function StoreLogo({ domain, name, color, size = 32 }: { domain: string; name: string; color: string; size?: number }) {
   const [failed, setFailed] = useState(false)
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
 
   if (failed) {
     return (
       <div
-        className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-        style={{ backgroundColor: color }}
+        className="rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+        style={{ backgroundColor: color, width: size, height: size }}
       >
         {initials}
       </div>
@@ -112,12 +112,12 @@ function StoreLogo({ domain, name, color }: { domain: string; name: string; colo
 
   return (
     <img
-      src={`https://img.logo.dev/${domain}?token=pk_anonymous&size=64`}
+      src={`https://www.google.com/s2/favicons?domain=${domain}&sz=128`}
       alt={name}
-      width={32}
-      height={32}
-      className="w-8 h-8 rounded-lg object-contain flex-shrink-0"
-      style={{ backgroundColor: '#fff' }}
+      width={size}
+      height={size}
+      className="rounded-lg object-contain flex-shrink-0"
+      style={{ backgroundColor: '#fff', width: size, height: size }}
       onError={() => setFailed(true)}
     />
   )
