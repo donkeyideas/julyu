@@ -10,7 +10,10 @@ interface DemoRequest {
   business_name: string
   business_type: string
   interest: string
+  message: string | null
   status: string
+  reviewed_at: string | null
+  rejection_reason: string | null
 }
 
 interface DemoCode {
@@ -42,6 +45,9 @@ export default function DemoCodesPage() {
   const [codes, setCodes] = useState<DemoCode[]>([])
   const [stats, setStats] = useState<Stats>({ pending: 0, approved: 0, activeCodes: 0, totalUses: 0 })
   const [actionLoading, setActionLoading] = useState(false)
+
+  // View modal
+  const [viewModal, setViewModal] = useState<{ open: boolean; request: DemoRequest | null }>({ open: false, request: null })
 
   // Approve modal
   const [approveModal, setApproveModal] = useState<{ open: boolean; request: DemoRequest | null }>({ open: false, request: null })
@@ -260,6 +266,20 @@ export default function DemoCodesPage() {
       user: 'User Demo',
       store: 'Store Demo',
       both: 'Both',
+      user_demo: 'User Dashboard Demo',
+      store_demo: 'Store Portal Demo',
+    }
+    return labels[type] || type
+  }
+
+  const businessTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      consumer: 'Consumer / Shopper',
+      grocery_chain: 'Grocery Chain',
+      independent_store: 'Independent Grocery Store',
+      bodega: 'Bodega / Corner Store',
+      market: 'Specialty Market',
+      other: 'Other',
     }
     return labels[type] || type
   }
@@ -348,7 +368,14 @@ export default function DemoCodesPage() {
               </thead>
               <tbody>
                 {requests.map((req) => (
-                  <tr key={req.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <tr
+                    key={req.id}
+                    className="cursor-pointer transition-colors"
+                    style={{ borderBottom: '1px solid var(--border-color)' }}
+                    onClick={() => setViewModal({ open: true, request: req })}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-primary)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                  >
                     <td className="px-6 py-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
                       {formatDate(req.created_at)}
                     </td>
@@ -365,12 +392,12 @@ export default function DemoCodesPage() {
                       {req.business_type || '-'}
                     </td>
                     <td className="px-6 py-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                      {req.interest || '-'}
+                      {demoTypeLabel(req.interest) || '-'}
                     </td>
                     <td className="px-6 py-4">
                       {statusBadge(req.status)}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-2">
                         {req.status === 'pending' && (
                           <>
@@ -599,6 +626,140 @@ export default function DemoCodesPage() {
           </div>
         </div>
       )}
+
+      {/* View Request Modal */}
+      {viewModal.open && viewModal.request && (() => {
+        const req = viewModal.request
+        return (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.75)' }}
+            onClick={() => setViewModal({ open: false, request: null })}
+          >
+            <div
+              className="rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-8"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <h3 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Demo Request</h3>
+                  <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Submitted {formatDate(req.created_at)}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {statusBadge(req.status)}
+                  <button
+                    onClick={() => setViewModal({ open: false, request: null })}
+                    className="p-1 rounded-lg transition hover:opacity-70"
+                    style={{ color: 'var(--text-muted)' }}
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* Details Grid */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-xs font-semibold uppercase mb-1" style={{ color: 'var(--text-muted)' }}>Full Name</div>
+                    <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{req.name || '-'}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold uppercase mb-1" style={{ color: 'var(--text-muted)' }}>Email</div>
+                    <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{req.email}</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-xs font-semibold uppercase mb-1" style={{ color: 'var(--text-muted)' }}>Business Name</div>
+                    <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{req.business_name || '-'}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold uppercase mb-1" style={{ color: 'var(--text-muted)' }}>Business Type</div>
+                    <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{businessTypeLabel(req.business_type) || '-'}</div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-xs font-semibold uppercase mb-1" style={{ color: 'var(--text-muted)' }}>Interest</div>
+                  <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{demoTypeLabel(req.interest) || '-'}</div>
+                </div>
+
+                {req.message && (
+                  <div>
+                    <div className="text-xs font-semibold uppercase mb-1" style={{ color: 'var(--text-muted)' }}>Message</div>
+                    <div
+                      className="text-sm rounded-lg p-3"
+                      style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
+                    >
+                      {req.message}
+                    </div>
+                  </div>
+                )}
+
+                {req.status === 'rejected' && req.rejection_reason && (
+                  <div>
+                    <div className="text-xs font-semibold uppercase mb-1 text-red-400">Rejection Reason</div>
+                    <div
+                      className="text-sm rounded-lg p-3"
+                      style={{ backgroundColor: 'rgba(239, 68, 68, 0.08)', color: 'var(--text-primary)', border: '1px solid rgba(239, 68, 68, 0.2)' }}
+                    >
+                      {req.rejection_reason}
+                    </div>
+                  </div>
+                )}
+
+                {req.reviewed_at && (
+                  <div>
+                    <div className="text-xs font-semibold uppercase mb-1" style={{ color: 'var(--text-muted)' }}>Reviewed</div>
+                    <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>{formatDate(req.reviewed_at)}</div>
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 mt-8 pt-6" style={{ borderTop: '1px solid var(--border-color)' }}>
+                {req.status === 'pending' && (
+                  <>
+                    <button
+                      onClick={() => {
+                        setViewModal({ open: false, request: null })
+                        setApproveModal({ open: true, request: req })
+                        setApproveDemoType('both')
+                      }}
+                      className="flex-1 px-4 py-3 rounded-lg font-bold text-black bg-green-500 hover:bg-green-600 transition"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => {
+                        setViewModal({ open: false, request: null })
+                        setRejectModal({ open: true, request: req })
+                        setRejectReason('')
+                      }}
+                      className="flex-1 px-4 py-3 rounded-lg font-bold text-white bg-red-500 hover:bg-red-600 transition"
+                    >
+                      Reject
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={() => setViewModal({ open: false, request: null })}
+                  className="flex-1 px-4 py-3 rounded-lg font-semibold transition"
+                  style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Approve Modal */}
       {approveModal.open && approveModal.request && (
