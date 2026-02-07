@@ -13,17 +13,18 @@ export default function DemoEnterPage() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    // Check if already has a valid session
+    // If a code is provided in the URL, always use it (don't reuse old session)
+    const urlCode = searchParams.get('code')
+    if (urlCode) {
+      setCode(urlCode)
+      return
+    }
+
+    // No code in URL — check if already has a valid session
     const existing = getDemoSession()
     if (existing) {
       redirectToDemo(existing.demoType)
       return
-    }
-
-    // Auto-fill code from URL params
-    const urlCode = searchParams.get('code')
-    if (urlCode) {
-      setCode(urlCode)
     }
   }, [searchParams])
 
