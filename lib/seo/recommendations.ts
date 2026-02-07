@@ -80,7 +80,16 @@ function addSiteRecommendations(validation: SiteValidation, recs: SeoRecommendat
   }
 }
 
+// Detect if a page is likely client-rendered (very low word count but 200 status)
+// Next.js client components return an HTML shell before JS hydration, so the crawler
+// sees almost no content. Skip content-dependent checks for these pages.
+function isLikelyClientRendered(page: PageAnalysis): boolean {
+  return page.statusCode === 200 && page.wordCount < 50 && page.h1Count === 0
+}
+
 function addPageRecommendations(page: PageAnalysis, recs: SeoRecommendation[]): void {
+  const clientRendered = isLikelyClientRendered(page)
+
   // Non-200 status
   if (page.statusCode !== 200 && page.statusCode !== 0) {
     recs.push({
@@ -200,8 +209,8 @@ function addPageRecommendations(page: PageAnalysis, recs: SeoRecommendation[]): 
     })
   }
 
-  // H1 issues
-  if (page.h1Count === 0) {
+  // H1 issues (skip for client-rendered pages where H1 is added by JS)
+  if (page.h1Count === 0 && !clientRendered) {
     recs.push({
       pagePath: page.path,
       severity: 'high',
@@ -229,8 +238,8 @@ function addPageRecommendations(page: PageAnalysis, recs: SeoRecommendation[]): 
     })
   }
 
-  // Low word count
-  if (page.wordCount < THRESHOLDS.minWordCount && page.statusCode === 200) {
+  // Low word count (skip for client-rendered pages where content is loaded by JS)
+  if (page.wordCount < THRESHOLDS.minWordCount && page.statusCode === 200 && !clientRendered) {
     recs.push({
       pagePath: page.path,
       severity: 'medium',
@@ -294,8 +303,8 @@ function addPageRecommendations(page: PageAnalysis, recs: SeoRecommendation[]): 
     })
   }
 
-  // GEO recommendations
-  if (page.contentClarityScore < 50) {
+  // GEO recommendations (skip for client-rendered pages)
+  if (page.contentClarityScore < 50 && !clientRendered) {
     recs.push({
       pagePath: page.path,
       severity: 'low',
@@ -310,7 +319,7 @@ function addPageRecommendations(page: PageAnalysis, recs: SeoRecommendation[]): 
     })
   }
 
-  if (page.answerabilityScore < 30 && page.path !== '/privacy' && page.path !== '/terms') {
+  if (page.answerabilityScore < 30 && page.path !== '/privacy' && page.path !== '/terms' && !clientRendered) {
     recs.push({
       pagePath: page.path,
       severity: 'low',

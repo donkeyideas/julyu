@@ -60,23 +60,33 @@ function calculateTechnicalScore(pages: PageAnalysis[], validation: SiteValidati
   return Math.min(100, score)
 }
 
+// Detect client-rendered pages (low word count + no H1 = JS-rendered content)
+function isClientRendered(page: PageAnalysis): boolean {
+  return page.statusCode === 200 && page.wordCount < 50 && page.h1Count === 0
+}
+
 function calculateContentScore(pages: PageAnalysis[]): number {
   const total = pages.length
   if (total === 0) return 0
 
+  // For H1/heading/word-count checks, exclude client-rendered pages from denominator
+  // since they will always fail (content is rendered by JS after fetch)
+  const serverPages = pages.filter(p => !isClientRendered(p))
+  const serverTotal = serverPages.length || 1 // Avoid division by zero
+
   let score = 0
 
-  // All pages have title (15 points)
+  // All pages have title (15 points) - title IS in server HTML
   const pagesWithTitle = pages.filter(p => p.title).length
   score += Math.round((pagesWithTitle / total) * 15)
 
-  // Title length 30-60 chars (10 points)
+  // Title length 30-60 chars (10 points) - title IS in server HTML
   const goodTitles = pages.filter(p =>
     p.titleLength >= THRESHOLDS.titleMinLength && p.titleLength <= THRESHOLDS.titleMaxLength
   ).length
   score += Math.round((goodTitles / total) * 10)
 
-  // All pages have meta description (15 points)
+  // All pages have meta description (15 points) - description IS in server HTML
   const pagesWithDesc = pages.filter(p => p.description).length
   score += Math.round((pagesWithDesc / total) * 15)
 
@@ -86,23 +96,24 @@ function calculateContentScore(pages: PageAnalysis[]): number {
   ).length
   score += Math.round((goodDescs / total) * 10)
 
-  // Proper H1 - exactly 1 per page (15 points)
-  const pagesWithSingleH1 = pages.filter(p => p.h1Count === 1).length
-  score += Math.round((pagesWithSingleH1 / total) * 15)
+  // Proper H1 (15 points) - client-rendered pages get a pass
+  const pagesWithSingleH1 = serverPages.filter(p => p.h1Count === 1).length
+  const clientRenderedCount = pages.length - serverPages.length
+  score += Math.round(((pagesWithSingleH1 + clientRenderedCount) / total) * 15)
 
-  // Valid heading hierarchy (10 points)
-  const pagesValidHierarchy = pages.filter(p => p.h1Count >= 1 && p.h2Count >= 1).length
-  score += Math.round((pagesValidHierarchy / total) * 10)
+  // Valid heading hierarchy (10 points) - client-rendered pages get a pass
+  const pagesValidHierarchy = serverPages.filter(p => p.h1Count >= 1 && p.h2Count >= 1).length
+  score += Math.round(((pagesValidHierarchy + clientRenderedCount) / total) * 10)
 
-  // Content length >= 300 words (10 points)
-  const pagesWithContent = pages.filter(p => p.wordCount >= THRESHOLDS.minWordCount).length
-  score += Math.round((pagesWithContent / total) * 10)
+  // Content length >= 300 words (10 points) - client-rendered pages get a pass
+  const pagesWithContent = serverPages.filter(p => p.wordCount >= THRESHOLDS.minWordCount).length
+  score += Math.round(((pagesWithContent + clientRenderedCount) / total) * 10)
 
   // All images have alt text (15 points)
   const totalImages = pages.reduce((sum, p) => sum + p.imgCount, 0)
   const imagesWithAlt = pages.reduce((sum, p) => sum + p.imgWithAlt, 0)
   if (totalImages === 0) {
-    score += 15 // No images = no alt text issue
+    score += 15
   } else {
     score += Math.round((imagesWithAlt / totalImages) * 15)
   }
@@ -171,22 +182,26 @@ function calculateGeoScore(pages: PageAnalysis[]): number {
   const total = pages.length
   if (total === 0) return 0
 
+  // For GEO content-based metrics, only score server-rendered pages
+  const serverPages = pages.filter(p => !isClientRendered(p))
+  const serverTotal = serverPages.length || 1
+
   let score = 0
 
-  // Structured data coverage (20 points)
+  // Structured data coverage (20 points) - JSON-LD IS in server HTML
   const pagesWithSchema = pages.filter(p => p.hasJsonLd).length
   score += Math.round((pagesWithSchema / total) * 20)
 
-  // Average content clarity (20 points)
-  const avgClarity = pages.reduce((sum, p) => sum + p.contentClarityScore, 0) / total
+  // Average content clarity (20 points) - use only server-rendered pages
+  const avgClarity = serverPages.reduce((sum, p) => sum + p.contentClarityScore, 0) / serverTotal
   score += Math.round((avgClarity / 100) * 20)
 
-  // Average answerability (20 points)
-  const avgAnswerability = pages.reduce((sum, p) => sum + p.answerabilityScore, 0) / total
+  // Average answerability (20 points) - use only server-rendered pages
+  const avgAnswerability = serverPages.reduce((sum, p) => sum + p.answerabilityScore, 0) / serverTotal
   score += Math.round((avgAnswerability / 100) * 20)
 
-  // Average citation worthiness (20 points)
-  const avgCitation = pages.reduce((sum, p) => sum + p.citationWorthinessScore, 0) / total
+  // Average citation worthiness (20 points) - use only server-rendered pages
+  const avgCitation = serverPages.reduce((sum, p) => sum + p.citationWorthinessScore, 0) / serverTotal
   score += Math.round((avgCitation / 100) * 20)
 
   // Schema completeness (20 points)

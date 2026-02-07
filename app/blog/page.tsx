@@ -88,11 +88,11 @@ export default async function BlogPage() {
                   className="group bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden transition hover:border-green-500 hover:shadow-lg"
                 >
                   {post.featured_image_url && (
-                    <div className="overflow-hidden">
+                    <div className="overflow-hidden bg-black/30">
                       <img
                         src={post.featured_image_url}
                         alt={post.title}
-                        className="w-full h-52 object-cover group-hover:scale-105 transition duration-300"
+                        className="w-full h-auto group-hover:scale-105 transition duration-300"
                       />
                     </div>
                   )}

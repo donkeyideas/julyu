@@ -6,7 +6,7 @@ import { getPageContent } from '@/lib/content/getPageContent'
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://julyu.com'
 
 export const metadata: Metadata = {
-  title: 'Terms of Service',
+  title: 'Terms of Service - Julyu Usage Agreement',
   description:
     'Julyu\'s Terms of Service govern your use of our grocery price comparison platform, including account creation, acceptable use, subscriptions, and intellectual property.',
   openGraph: {

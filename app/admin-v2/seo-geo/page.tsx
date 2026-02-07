@@ -97,6 +97,13 @@ export default function SeoGeoPage() {
   const [severityFilter, setSeverityFilter] = useState<string>('all')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
 
+  // Toast notification
+  const [toast, setToast] = useState<string | null>(null)
+  const showToast = (message: string) => {
+    setToast(message)
+    setTimeout(() => setToast(null), 3000)
+  }
+
   // Search Console
   const [scConfigured, setScConfigured] = useState(false)
   const [scData, setScData] = useState<SearchConsoleData | null>(null)
@@ -226,6 +233,23 @@ export default function SeoGeoPage() {
 
   return (
     <div>
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed top-6 right-6 z-50 animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-3 px-5 py-3 rounded-xl shadow-2xl" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <svg className="w-5 h-5 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{toast}</span>
+            <button onClick={() => setToast(null)} className="ml-2 opacity-50 hover:opacity-100 transition" style={{ color: 'var(--text-muted)' }}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex justify-between items-start mb-8">
         <div>
@@ -972,7 +996,7 @@ export default function SeoGeoPage() {
                     onClick={() => {
                       const report = generateExportReport(audit, filteredRecs)
                       navigator.clipboard.writeText(report)
-                        .then(() => alert('Report copied to clipboard!'))
+                        .then(() => showToast('Report copied to clipboard!'))
                         .catch(() => {
                           const w = window.open('', '_blank')
                           if (w) { w.document.write(`<pre>${report}</pre>`); w.document.close() }

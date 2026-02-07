@@ -6,7 +6,7 @@ import { getPageContent } from '@/lib/content/getPageContent'
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://julyu.com'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy',
+  title: 'Privacy Policy - How Julyu Protects Your Data',
   description:
     'Julyu\'s Privacy Policy explains how we collect, use, and protect your personal information when you use our grocery price comparison platform.',
   openGraph: {
