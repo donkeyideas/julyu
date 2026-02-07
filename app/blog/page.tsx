@@ -59,23 +59,23 @@ export default async function BlogPage() {
   const blogPosts: BlogPost[] = posts || []
 
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-b from-black via-green-900/30 to-black text-white flex flex-col">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(blogJsonLd) }} />
       <Header />
-      <main className="min-h-screen pt-24 pb-16" style={{ backgroundColor: 'var(--bg-primary)' }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl sm:text-5xl font-black mb-4" style={{ color: 'var(--text-primary)' }}>
-              Julyu Blog
+      <main className="flex-1 pt-32 pb-16 px-[5%]">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h1 className="text-5xl md:text-6xl font-black mb-4">
+              Julyu <span className="bg-gradient-to-r from-green-500 to-green-300 bg-clip-text text-transparent">Blog</span>
             </h1>
-            <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-xl text-gray-500 max-w-2xl mx-auto">
               Tips, insights, and strategies to save money on groceries with AI-powered price comparison.
             </p>
           </div>
 
           {blogPosts.length === 0 ? (
             <div className="text-center py-20">
-              <p className="text-lg" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-lg text-gray-500">
                 No blog posts yet. Check back soon!
               </p>
             </div>
@@ -85,15 +85,14 @@ export default async function BlogPage() {
                 <Link
                   key={post.id}
                   href={`/blog/${post.slug}`}
-                  className="group rounded-2xl overflow-hidden transition hover:shadow-lg"
-                  style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
+                  className="group bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden transition hover:border-green-500 hover:shadow-lg"
                 >
                   {post.featured_image_url && (
-                    <div className="aspect-video overflow-hidden">
+                    <div className="overflow-hidden">
                       <img
                         src={post.featured_image_url}
                         alt={post.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                        className="w-full h-52 object-cover group-hover:scale-105 transition duration-300"
                       />
                     </div>
                   )}
@@ -103,18 +102,15 @@ export default async function BlogPage() {
                         {post.category}
                       </span>
                     )}
-                    <h2
-                      className="text-xl font-bold mb-2 group-hover:text-green-500 transition"
-                      style={{ color: 'var(--text-primary)' }}
-                    >
+                    <h2 className="text-xl font-bold mb-2 text-white group-hover:text-green-500 transition">
                       {post.title}
                     </h2>
                     {post.excerpt && (
-                      <p className="text-sm mb-4 line-clamp-3" style={{ color: 'var(--text-muted)' }}>
+                      <p className="text-sm mb-4 line-clamp-3 text-gray-500">
                         {post.excerpt}
                       </p>
                     )}
-                    <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--text-muted)' }}>
+                    <div className="flex items-center gap-3 text-xs text-gray-500">
                       <span>
                         {new Date(post.published_at).toLocaleDateString('en-US', {
                           month: 'short',
@@ -133,6 +129,6 @@ export default async function BlogPage() {
         </div>
       </main>
       <Footer />
-    </>
+    </div>
   )
 }

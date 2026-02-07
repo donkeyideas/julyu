@@ -73,6 +73,27 @@ export async function generateMetadata({
   }
 }
 
+// Convert plain text content to proper HTML paragraphs
+function formatContent(content: string): string {
+  // If content already has block-level HTML tags, return as-is
+  if (/<(p|div|h[1-6]|ul|ol|blockquote|pre|table|section|article)\b/i.test(content)) {
+    return content
+  }
+
+  // Split on double newlines to create paragraphs
+  return content
+    .split(/\n\s*\n/)
+    .map(block => {
+      const trimmed = block.trim()
+      if (!trimmed) return ''
+      // Preserve single newlines within a block as <br>
+      const withBreaks = trimmed.replace(/\n/g, '<br />')
+      return `<p>${withBreaks}</p>`
+    })
+    .filter(Boolean)
+    .join('\n')
+}
+
 export default async function BlogPostPage({
   params,
 }: {
@@ -93,6 +114,7 @@ export default async function BlogPostPage({
   }
 
   const blogPost = post as BlogPost
+  const formattedContent = formatContent(blogPost.content)
 
   const articleJsonLd = {
     '@context': 'https://schema.org',
@@ -117,15 +139,15 @@ export default async function BlogPostPage({
   }
 
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-b from-black via-green-900/30 to-black text-white flex flex-col">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
       <Header />
-      <main className="min-h-screen pt-24 pb-16" style={{ backgroundColor: 'var(--bg-primary)' }}>
-        <article className="max-w-3xl mx-auto px-4 sm:px-6">
-          <div className="mb-8">
+      <main className="flex-1 pt-32 pb-16 px-[5%]">
+        <article className="max-w-3xl mx-auto">
+          <div className="mb-10">
             <Link
               href="/blog"
-              className="text-sm text-green-500 hover:text-green-400 transition mb-4 inline-block"
+              className="text-sm text-green-500 hover:text-green-400 transition mb-6 inline-block"
             >
               &larr; Back to Blog
             </Link>
@@ -136,11 +158,11 @@ export default async function BlogPostPage({
               </span>
             )}
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 leading-tight" style={{ color: 'var(--text-primary)' }}>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 leading-tight text-white">
               {blogPost.title}
             </h1>
 
-            <div className="flex items-center gap-3 text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
+            <div className="flex items-center gap-3 text-sm mb-6 text-gray-500">
               <span>
                 {new Date(blogPost.published_at).toLocaleDateString('en-US', {
                   month: 'long',
@@ -156,29 +178,27 @@ export default async function BlogPostPage({
           </div>
 
           {blogPost.featured_image_url && (
-            <div className="rounded-2xl overflow-hidden mb-8">
+            <div className="rounded-2xl overflow-hidden mb-10">
               <img
                 src={blogPost.featured_image_url}
                 alt={blogPost.title}
-                className="w-full h-auto"
+                className="w-full h-auto max-h-[500px] object-contain"
               />
             </div>
           )}
 
           <div
-            className="prose prose-lg max-w-none"
-            style={{ color: 'var(--text-primary)' }}
-            dangerouslySetInnerHTML={{ __html: blogPost.content }}
+            className="blog-content"
+            dangerouslySetInnerHTML={{ __html: formattedContent }}
           />
 
           {blogPost.tags && blogPost.tags.length > 0 && (
-            <div className="mt-12 pt-6" style={{ borderTop: '1px solid var(--border-color)' }}>
+            <div className="mt-12 pt-6 border-t border-gray-800">
               <div className="flex flex-wrap gap-2">
                 {blogPost.tags.map((tag: string) => (
                   <span
                     key={tag}
-                    className="px-3 py-1 text-sm rounded-full"
-                    style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)' }}
+                    className="px-3 py-1 text-sm rounded-full bg-gray-900 text-gray-500 border border-gray-800"
                   >
                     {tag}
                   </span>
@@ -189,6 +209,6 @@ export default async function BlogPostPage({
         </article>
       </main>
       <Footer />
-    </>
+    </div>
   )
 }
