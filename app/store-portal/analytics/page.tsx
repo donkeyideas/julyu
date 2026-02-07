@@ -32,7 +32,7 @@ export default async function AnalyticsPage() {
   // Get all orders for this store owner
   const { data: orders } = await supabase
     .from('bodega_orders')
-    .select('id, status, total_amount, ordered_at, delivery_method')
+    .select('id, status, total_amount, ordered_at, delivery_method, customer_name, customer_email')
     .eq('store_owner_id', storeOwner.id)
     .order('ordered_at', { ascending: false })
 
@@ -108,7 +108,7 @@ export default async function AnalyticsPage() {
 
   const topProducts = Object.entries(productSales as Record<string, { quantity: number, revenue: number }>)
     .sort((a, b) => b[1].revenue - a[1].revenue)
-    .slice(0, 5)
+    .slice(0, 10)
 
   // Calculate commission
   const commissionRate = storeOwner.commission_rate || 15
@@ -142,6 +142,42 @@ export default async function AnalyticsPage() {
   })
 
   const maxDailyRevenue = Math.max(...dailyRevenue.map(d => d.revenue), 1)
+
+  // Customer metrics
+  const customerEmails = new Set<string>()
+  const thisMonthCustomerEmails = new Set<string>()
+  const customerOrderCounts: Record<string, number> = {}
+  allOrders.forEach((o: any) => {
+    const key = o.customer_email || o.customer_name || 'unknown'
+    customerEmails.add(key)
+    customerOrderCounts[key] = (customerOrderCounts[key] || 0) + 1
+    if (new Date(o.ordered_at) >= thisMonthStart) {
+      thisMonthCustomerEmails.add(key)
+    }
+  })
+  const totalCustomers = customerEmails.size
+  const returningCustomers = Object.values(customerOrderCounts).filter(c => c > 1).length
+  const retentionRate = totalCustomers > 0 ? (returningCustomers / totalCustomers * 100) : 0
+  // New customers this month = customers whose first order is this month
+  const customerFirstOrder: Record<string, Date> = {}
+  ;[...allOrders].reverse().forEach((o: any) => {
+    const key = o.customer_email || o.customer_name || 'unknown'
+    if (!customerFirstOrder[key]) {
+      customerFirstOrder[key] = new Date(o.ordered_at)
+    }
+  })
+  const newCustomersThisMonth = Object.values(customerFirstOrder).filter(d => d >= thisMonthStart).length
+
+  // Hourly order traffic (average orders per hour across all days)
+  const hourlyTotals = new Array(24).fill(0)
+  allOrders.forEach((o: any) => {
+    const hour = new Date(o.ordered_at).getHours()
+    hourlyTotals[hour]++
+  })
+  // Calculate number of unique days in the dataset
+  const uniqueDays = new Set(allOrders.map((o: any) => new Date(o.ordered_at).toDateString())).size || 1
+  const hourlyAvg = hourlyTotals.map(t => Math.round((t / uniqueDays) * 10) / 10)
+  const maxHourly = Math.max(...hourlyAvg, 1)
 
   return (
     <div className="space-y-6">
@@ -370,6 +406,92 @@ export default async function AnalyticsPage() {
             </p>
           )}
         </div>
+      </div>
+
+      {/* Customer Metrics */}
+      <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Customer Metrics</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Total Customers</p>
+            <p className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{totalCustomers}</p>
+          </div>
+          <div>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Returning Customers</p>
+            <p className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
+              {returningCustomers} {totalCustomers > 0 && <span className="text-sm font-normal text-green-500">({retentionRate.toFixed(1)}%)</span>}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>New This Month</p>
+            <p className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{newCustomersThisMonth}</p>
+          </div>
+          <div>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Avg Order Value</p>
+            <p className="text-xl font-bold text-green-500">${avgOrderValue.toFixed(2)}</p>
+          </div>
+        </div>
+        {totalCustomers > 0 && (
+          <div className="pt-5 mt-5" style={{ borderTop: '1px solid var(--border-color)' }}>
+            <div className="flex justify-between text-xs mb-1">
+              <span style={{ color: 'var(--text-muted)' }}>Retention Rate</span>
+              <span className="font-medium text-green-500">{retentionRate.toFixed(1)}%</span>
+            </div>
+            <div className="w-full h-2 rounded-full" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+              <div className="h-2 rounded-full" style={{ width: `${retentionRate}%`, backgroundColor: '#22c55e' }} />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Hourly Order Traffic */}
+      <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <h2 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Hourly Order Traffic</h2>
+        <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>Average orders per hour across {uniqueDays} day{uniqueDays !== 1 ? 's' : ''}</p>
+        {allOrders.length > 0 ? (
+          <>
+            <div className="flex items-end gap-1" style={{ height: '120px' }}>
+              {hourlyAvg.map((val, i) => {
+                const heightPct = maxHourly > 0 ? (val / maxHourly) * 100 : 0
+                const isPeak = val >= maxHourly * 0.8
+                return (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                    <div className="w-full flex justify-center" style={{ height: '100px' }}>
+                      <div
+                        className="w-full rounded-t-sm transition-all duration-300"
+                        style={{
+                          height: `${Math.max(heightPct, 2)}%`,
+                          backgroundColor: isPeak ? '#22c55e' : 'rgba(34, 197, 94, 0.3)',
+                          alignSelf: 'flex-end',
+                        }}
+                      />
+                    </div>
+                    {i % 3 === 0 && (
+                      <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                        {i === 0 ? '12a' : i < 12 ? `${i}a` : i === 12 ? '12p' : `${i - 12}p`}
+                      </span>
+                    )}
+                    {i % 3 !== 0 && <span className="text-[10px]">&nbsp;</span>}
+                  </div>
+                )
+              })}
+            </div>
+            <div className="flex items-center gap-4 mt-4 text-xs" style={{ color: 'var(--text-muted)' }}>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: '#22c55e' }} />
+                <span>Peak hours</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: 'rgba(34, 197, 94, 0.3)' }} />
+                <span>Regular hours</span>
+              </div>
+            </div>
+          </>
+        ) : (
+          <p className="text-center py-8" style={{ color: 'var(--text-muted)' }}>
+            No order data yet to show hourly traffic
+          </p>
+        )}
       </div>
 
       {/* Commission Info */}
