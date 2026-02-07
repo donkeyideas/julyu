@@ -28,6 +28,22 @@ const defaultContent = {
   about_text: 'Julyu is an AI-powered grocery price comparison platform designed to help you save money and shop smarter. We believe everyone deserves access to transparent pricing information.',
 }
 
+const aboutJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'AboutPage',
+  name: 'About Julyu',
+  description: 'Julyu is an AI-powered grocery price comparison platform helping shoppers save an average of $287/month.',
+  url: `${baseUrl}/about`,
+  mainEntity: {
+    '@type': 'Organization',
+    name: 'Julyu',
+    description: 'AI-powered grocery price comparison platform',
+    url: baseUrl,
+    foundingDate: '2024',
+    knowsAbout: ['Grocery prices', 'AI price comparison', 'Consumer savings', 'Retail technology'],
+  },
+}
+
 export default async function AboutPage() {
   // Try to fetch dynamic content from database
   const pageContent = await getPageContent('about')
@@ -39,6 +55,7 @@ export default async function AboutPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-green-900/30 to-black text-white flex flex-col">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutJsonLd) }} />
       <Header />
 
       <div className="flex-1 pt-32 pb-16 px-[5%]">

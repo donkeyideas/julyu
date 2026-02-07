@@ -107,8 +107,9 @@ async function validateRobotsTxt(baseUrl: string): Promise<boolean> {
     })
     if (!response.ok) return false
     const text = await response.text()
-    // Check for basic valid structure
-    return text.includes('User-agent') && text.includes('Sitemap')
+    const lower = text.toLowerCase()
+    // Check for basic valid structure (case-insensitive)
+    return lower.includes('user-agent') && lower.includes('sitemap')
   } catch {
     return false
   }

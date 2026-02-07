@@ -18,9 +18,23 @@ export const metadata: Metadata = {
   },
 }
 
+const careersJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'Careers at Julyu',
+  description: 'Join the Julyu team and help build the future of grocery shopping.',
+  url: `${baseUrl}/careers`,
+  mainEntity: {
+    '@type': 'Organization',
+    name: 'Julyu',
+    url: baseUrl,
+  },
+}
+
 export default function CareersPage() {
   return (
     <div className="min-h-screen bg-black text-white">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(careersJsonLd) }} />
       <nav className="fixed top-0 left-0 right-0 bg-black/95 backdrop-blur-lg border-b border-gray-800 px-5% py-6 z-50">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <Link href="/" className="text-3xl font-black text-green-500">Julyu</Link>

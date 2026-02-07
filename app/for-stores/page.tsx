@@ -1,16 +1,47 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import Header from '@/components/shared/Header'
 import Footer from '@/components/shared/Footer'
 import RequestDemoModal from '@/components/shared/RequestDemoModal'
 
-export const metadata = {
-  title: 'For Store Owners - Julyu',
-  description: 'Bring your local store online with Julyu',
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://julyu.com'
+
+export const metadata: Metadata = {
+  title: 'For Store Owners - Grow Your Local Business with Julyu',
+  description:
+    'Join Julyu\'s marketplace and reach thousands of local shoppers. Easy inventory management, real-time analytics, and zero setup fees for your grocery or bodega.',
+  openGraph: {
+    title: 'For Store Owners - Grow Your Local Business with Julyu',
+    description:
+      'Reach thousands of local shoppers with Julyu. Easy inventory management, real-time analytics, and zero setup fees.',
+    url: `${baseUrl}/for-stores`,
+  },
+  alternates: {
+    canonical: `${baseUrl}/for-stores`,
+  },
+}
+
+const forStoresJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'Julyu for Store Owners',
+  description: 'Grow your local grocery or bodega business with Julyu\'s marketplace platform.',
+  url: `${baseUrl}/for-stores`,
+  mainEntity: {
+    '@type': 'Offer',
+    name: 'Julyu Store Partnership',
+    description: 'Join Julyu\'s marketplace and reach thousands of local shoppers with easy inventory management and real-time analytics.',
+    price: '0',
+    priceCurrency: 'USD',
+    availability: 'https://schema.org/InStock',
+    offeredBy: { '@type': 'Organization', name: 'Julyu', url: baseUrl },
+  },
 }
 
 export default function ForStoresPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-blue-950 text-white">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(forStoresJsonLd) }} />
       <Header transparent />
 
       {/* Hero Section */}

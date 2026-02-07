@@ -60,6 +60,25 @@ const supportIcons: Record<string, JSX.Element> = {
   ),
 }
 
+const contactJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ContactPage',
+  name: 'Contact Julyu',
+  description: 'Get in touch with the Julyu team for support, questions, or feedback.',
+  url: `${baseUrl}/contact`,
+  mainEntity: {
+    '@type': 'Organization',
+    name: 'Julyu',
+    url: baseUrl,
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer support',
+      email: 'support@julyu.com',
+      availableLanguage: 'English',
+    },
+  },
+}
+
 export default async function ContactPage() {
   // Try to fetch dynamic content from database
   const { content: pageContent } = await getPageWithSections('contact')
@@ -71,6 +90,7 @@ export default async function ContactPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-green-900/30 to-black text-white flex flex-col">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(contactJsonLd) }} />
       <Header />
 
       <div className="flex-1 pt-32 pb-16 px-[5%]">

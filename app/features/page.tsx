@@ -20,9 +20,24 @@ export const metadata: Metadata = {
   },
 }
 
+const featuresJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Julyu Features',
+  description: 'AI-powered grocery price comparison tools including product matching, route optimization, and receipt scanning.',
+  url: `${baseUrl}/features`,
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'AI Product Matching', description: 'Match products across 50+ retailers with 98% accuracy using AI.' },
+    { '@type': 'ListItem', position: 2, name: 'Route Optimization', description: 'Find the most efficient shopping routes to save time and gas.' },
+    { '@type': 'ListItem', position: 3, name: 'Receipt Scanning', description: 'Scan receipts instantly to compare prices and track spending.' },
+    { '@type': 'ListItem', position: 4, name: 'Real-Time Price Alerts', description: 'Get notified when prices drop on items you buy regularly.' },
+  ],
+}
+
 export default function FeaturesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-green-900/30 to-black text-white flex flex-col">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(featuresJsonLd) }} />
       <Header />
 
       <div className="flex-1 pt-32 pb-16 px-[5%]">

@@ -17,10 +17,33 @@ export const metadata: Metadata = {
   },
 }
 
+const pricingJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'Julyu Pricing',
+  description: 'Choose the Julyu plan that fits your needs. Free tier available forever.',
+  url: `${baseUrl}/pricing`,
+  mainEntity: {
+    '@type': 'Product',
+    name: 'Julyu Grocery Price Comparison',
+    description: 'AI-powered grocery price comparison across 50+ retailers.',
+    brand: { '@type': 'Brand', name: 'Julyu' },
+    offers: [
+      { '@type': 'Offer', name: 'Free', price: '0', priceCurrency: 'USD', description: 'Free tier with basic features' },
+      { '@type': 'Offer', name: 'Premium', price: '9.99', priceCurrency: 'USD', billingIncrement: 'P1M', description: 'Premium with unlimited features' },
+    ],
+  },
+}
+
 export default function PricingLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  return <>{children}</>
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingJsonLd) }} />
+      {children}
+    </>
+  )
 }
