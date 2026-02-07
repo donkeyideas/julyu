@@ -9,13 +9,26 @@ interface HeaderProps {
 
 export default function Header({ transparent = false }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [signInEnabled, setSignInEnabled] = useState(true)
+  const [signInEnabled, setSignInEnabled] = useState<boolean | null>(null)
 
   useEffect(() => {
+    // Read cached value immediately for instant UI (no flash)
+    const cached = localStorage.getItem('julyu_sign_in_enabled')
+    if (cached !== null) {
+      setSignInEnabled(cached === 'true')
+    }
+
+    // Fetch fresh value from API
     fetch('/api/settings/public?key=user_sign_in_enabled')
       .then(res => res.json())
-      .then(data => setSignInEnabled(data.enabled !== false))
-      .catch(() => setSignInEnabled(true))
+      .then(data => {
+        const enabled = data.enabled !== false
+        setSignInEnabled(enabled)
+        localStorage.setItem('julyu_sign_in_enabled', String(enabled))
+      })
+      .catch(() => {
+        if (cached === null) setSignInEnabled(true)
+      })
   }, [])
 
   return (
@@ -54,23 +67,21 @@ export default function Header({ transparent = false }: HeaderProps) {
           </li>
         </ul>
 
-        {/* Desktop Auth Buttons */}
-        {signInEnabled && (
-          <div className="hidden md:flex gap-4">
-            <Link
-              href="/auth/login"
-              className="px-6 py-3 rounded-lg border border-gray-700 text-white hover:border-green-500 transition"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/auth/signup"
-              className="px-6 py-3 rounded-lg bg-green-500 text-black font-semibold hover:bg-green-600 transition"
-            >
-              Get Started
-            </Link>
-          </div>
-        )}
+        {/* Desktop Auth Buttons - always in layout to prevent nav shift */}
+        <div className={`hidden md:flex gap-4 ${signInEnabled === true ? '' : 'invisible'}`}>
+          <Link
+            href="/auth/login"
+            className="px-6 py-3 rounded-lg border border-gray-700 text-white hover:border-green-500 transition"
+          >
+            Sign In
+          </Link>
+          <Link
+            href="/auth/signup"
+            className="px-6 py-3 rounded-lg bg-green-500 text-black font-semibold hover:bg-green-600 transition"
+          >
+            Get Started
+          </Link>
+        </div>
 
         {/* Mobile Menu Button */}
         <button
@@ -120,7 +131,7 @@ export default function Header({ transparent = false }: HeaderProps) {
               </Link>
             </li>
           </ul>
-          {signInEnabled && (
+          {signInEnabled === true && (
             <div className="flex flex-col gap-3">
               <Link
                 href="/auth/login"
