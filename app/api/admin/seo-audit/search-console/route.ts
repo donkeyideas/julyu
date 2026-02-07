@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
         success: true,
         configured: false,
         data: null,
-        message: 'Google Search Console is not configured. Set GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_SERVICE_ACCOUNT_KEY, and GOOGLE_SEARCH_CONSOLE_SITE_URL environment variables.',
+        message: 'Google Search Console is not configured. Set GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, GOOGLE_OAUTH_REFRESH_TOKEN, and GOOGLE_SEARCH_CONSOLE_SITE_URL environment variables.',
       })
     }
 

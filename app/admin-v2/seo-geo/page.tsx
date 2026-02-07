@@ -798,14 +798,15 @@ export default function SeoGeoPage() {
                   <div className="rounded-xl p-4 max-w-lg mx-auto text-left text-sm" style={{ backgroundColor: 'var(--bg-secondary)' }}>
                     <p className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Setup Instructions:</p>
                     <ol className="list-decimal list-inside space-y-1" style={{ color: 'var(--text-muted)' }}>
-                      <li>Create a service account in Google Cloud Console</li>
+                      <li>Create an OAuth 2.0 Client ID in Google Cloud Console</li>
                       <li>Enable the Search Console API</li>
-                      <li>Add the service account email to Search Console (Settings &gt; Users)</li>
+                      <li>Use OAuth Playground to get a refresh token</li>
                       <li>Set these environment variables:</li>
                     </ol>
                     <div className="mt-2 p-2 rounded font-mono text-xs" style={{ backgroundColor: 'var(--bg-primary)' }}>
-                      <div style={{ color: 'var(--text-muted)' }}>GOOGLE_SERVICE_ACCOUNT_EMAIL=...</div>
-                      <div style={{ color: 'var(--text-muted)' }}>GOOGLE_SERVICE_ACCOUNT_KEY=...</div>
+                      <div style={{ color: 'var(--text-muted)' }}>GOOGLE_OAUTH_CLIENT_ID=...</div>
+                      <div style={{ color: 'var(--text-muted)' }}>GOOGLE_OAUTH_CLIENT_SECRET=...</div>
+                      <div style={{ color: 'var(--text-muted)' }}>GOOGLE_OAUTH_REFRESH_TOKEN=...</div>
                       <div style={{ color: 'var(--text-muted)' }}>GOOGLE_SEARCH_CONSOLE_SITE_URL=...</div>
                     </div>
                   </div>
