@@ -22,7 +22,7 @@ export default async function HomePage() {
   const headline = hero.headline || 'Stop Overpaying for Groceries'
   const subheadline = hero.subheadline || 'Compare prices across local stores, supermarkets, and bodegas in seconds. Scan receipts, track spending, and discover savings with smart technology.'
   const primaryCta = hero.primary_cta || { text: 'Get Early Access', link: '/auth/signup' }
-  const secondaryCta = hero.secondary_cta || { text: 'Try Demo', link: '#demo' }
+  const secondaryCta = hero.secondary_cta || { text: 'Request Demo', link: '#request-demo' }
   const stats = hero.stats || [
     { value: 'Real-Time', label: 'Price Data' },
     { value: 'Smart', label: 'Technology' },

@@ -37,12 +37,12 @@ export default function ForStoresPage() {
             >
               Apply to Join
             </Link>
-            <a
-              href="#how-it-works"
+            <Link
+              href="/demo/enter"
               className="px-8 py-4 border border-gray-700 text-white font-semibold rounded-lg hover:border-blue-500 transition text-lg text-center"
             >
-              Learn How It Works
-            </a>
+              Try Store Demo
+            </Link>
           </div>
 
           <div className="flex flex-wrap justify-center gap-8 text-center">
