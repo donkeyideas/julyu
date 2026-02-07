@@ -49,6 +49,7 @@ export default function AdminSidebar() {
     { href: '/admin-v2/prices', label: 'Price Database', icon: '', section: 'Operations' },
     { href: '/admin-v2/subscriptions', label: 'Subscriptions', icon: '', section: 'Operations' },
     { href: '/admin-v2/demo-codes', label: 'Demo Codes', icon: '', section: 'Marketing', permission: 'demo_codes' },
+    { href: '/admin-v2/seo-geo', label: 'SEO & GEO', icon: '', section: 'Marketing', permission: 'seo_geo' },
   ]
 
   // Filter items based on permissions

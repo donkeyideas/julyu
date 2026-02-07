@@ -48,7 +48,7 @@ export const metadata: Metadata = {
       'AI-powered grocery price comparison across 50+ retailers. Save $287/month with professional-grade tools.',
     images: [
       {
-        url: '/og-image.png',
+        url: `${baseUrl}/opengraph-image`,
         width: 1200,
         height: 630,
         alt: 'Julyu - AI-Powered Grocery Price Comparison',
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     title: 'Julyu - Save $287/Month on Groceries',
     description:
       'AI-powered grocery price comparison across 50+ retailers. Join 127,000+ smart shoppers.',
-    images: ['/og-image.png'],
+    images: [`${baseUrl}/opengraph-image`],
     creator: '@julyu',
   },
   robots: {

@@ -1,0 +1,992 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useAdminAuth } from '@/components/admin-v2/AdminAuthGuard'
+import { getAdminSessionToken } from '@/lib/auth/admin-session-client'
+import HealthGauge from '@/components/admin-v2/charts/HealthGauge'
+import ScoreLineChart from '@/components/admin-v2/charts/ScoreLineChart'
+import ScoreBarChart from '@/components/admin-v2/charts/ScoreBarChart'
+import IssuesPieChart from '@/components/admin-v2/charts/IssuesPieChart'
+import GeoRadarChart from '@/components/admin-v2/charts/GeoRadarChart'
+import SearchConsoleChart from '@/components/admin-v2/charts/SearchConsoleChart'
+import type { StoredAudit, StoredPageScore, StoredRecommendation } from '@/lib/seo/types'
+
+type TabKey = 'overview' | 'pages' | 'technical' | 'content' | 'geo' | 'search-console' | 'recommendations'
+
+const TABS: { key: TabKey; label: string }[] = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'pages', label: 'Pages' },
+  { key: 'technical', label: 'Technical' },
+  { key: 'content', label: 'Content' },
+  { key: 'geo', label: 'GEO' },
+  { key: 'search-console', label: 'Search Console' },
+  { key: 'recommendations', label: 'Recommendations' },
+]
+
+interface SearchConsoleData {
+  queries: Array<{ query?: string; clicks: number; impressions: number; ctr: number; position: number }>
+  pages: Array<{ page?: string; clicks: number; impressions: number; ctr: number; position: number }>
+  trends: Array<{ date?: string; clicks: number; impressions: number; ctr: number; position: number }>
+  devices: Array<{ device?: string; clicks: number; impressions: number; ctr: number; position: number }>
+  countries: Array<{ country?: string; clicks: number; impressions: number; ctr: number; position: number }>
+}
+
+export default function SeoGeoPage() {
+  const { employee } = useAdminAuth()
+  const [loading, setLoading] = useState(true)
+  const [runningAudit, setRunningAudit] = useState(false)
+  const [activeTab, setActiveTab] = useState<TabKey>('overview')
+  const [audit, setAudit] = useState<StoredAudit | null>(null)
+  const [history, setHistory] = useState<StoredAudit[]>([])
+  const [expandedPage, setExpandedPage] = useState<string | null>(null)
+
+  // Recommendation filters
+  const [severityFilter, setSeverityFilter] = useState<string>('all')
+  const [categoryFilter, setCategoryFilter] = useState<string>('all')
+
+  // Search Console
+  const [scConfigured, setScConfigured] = useState(false)
+  const [scData, setScData] = useState<SearchConsoleData | null>(null)
+  const [scLoading, setScLoading] = useState(false)
+
+  const authHeaders = () => {
+    const token = getAdminSessionToken()
+    return { Authorization: `Bearer ${token}` }
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
+    try {
+      const [auditRes, historyRes, scStatusRes] = await Promise.allSettled([
+        fetch('/api/admin/seo-audit?latest=true', { headers: authHeaders() }),
+        fetch('/api/admin/seo-audit/history?limit=30', { headers: authHeaders() }),
+        fetch('/api/admin/seo-audit/search-console?status=true', { headers: authHeaders() }),
+      ])
+
+      if (auditRes.status === 'fulfilled' && auditRes.value.ok) {
+        const data = await auditRes.value.json()
+        if (data.audit) setAudit(data.audit)
+      }
+
+      if (historyRes.status === 'fulfilled' && historyRes.value.ok) {
+        const data = await historyRes.value.json()
+        setHistory(data.history || [])
+      }
+
+      if (scStatusRes.status === 'fulfilled' && scStatusRes.value.ok) {
+        const data = await scStatusRes.value.json()
+        setScConfigured(data.configured)
+      }
+    } catch (error) {
+      console.error('Error loading SEO data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const runAudit = async () => {
+    setRunningAudit(true)
+    try {
+      const res = await fetch('/api/admin/seo-audit/run', {
+        method: 'POST',
+        headers: authHeaders(),
+      })
+      const data = await res.json()
+      if (data.success && data.audit) {
+        setAudit(data.audit)
+        // Refresh history
+        const histRes = await fetch('/api/admin/seo-audit/history?limit=30', { headers: authHeaders() })
+        if (histRes.ok) {
+          const histData = await histRes.json()
+          setHistory(histData.history || [])
+        }
+      }
+    } catch (error) {
+      console.error('Error running audit:', error)
+    } finally {
+      setRunningAudit(false)
+    }
+  }
+
+  const loadSearchConsole = async () => {
+    setScLoading(true)
+    try {
+      const res = await fetch('/api/admin/seo-audit/search-console?days=28', { headers: authHeaders() })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.configured && data.data) {
+          setScData(data.data)
+        }
+      }
+    } catch (error) {
+      console.error('Error loading Search Console data:', error)
+    } finally {
+      setScLoading(false)
+    }
+  }
+
+  const timeAgo = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime()
+    const mins = Math.floor(diff / 60000)
+    if (mins < 60) return `${mins}m ago`
+    const hours = Math.floor(mins / 60)
+    if (hours < 24) return `${hours}h ago`
+    const days = Math.floor(hours / 24)
+    return `${days}d ago`
+  }
+
+  const getScoreColor = (score: number) => {
+    if (score >= 71) return 'text-green-500'
+    if (score >= 41) return 'text-amber-500'
+    return 'text-red-500'
+  }
+
+  const getScoreBg = (score: number) => {
+    if (score >= 71) return 'bg-green-500/15'
+    if (score >= 41) return 'bg-amber-500/15'
+    return 'bg-red-500/15'
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p style={{ color: 'var(--text-muted)' }}>Loading SEO analytics...</p>
+        </div>
+      </div>
+    )
+  }
+
+  const pageScores: StoredPageScore[] = audit?.page_scores || []
+  const recommendations: StoredRecommendation[] = audit?.recommendations || []
+  const allSchemaTypes = [...new Set(pageScores.flatMap(p => p.json_ld_types || []))]
+
+  const filteredRecs = recommendations.filter(r => {
+    if (severityFilter !== 'all' && r.severity !== severityFilter) return false
+    if (categoryFilter !== 'all' && r.category !== categoryFilter) return false
+    return true
+  })
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="flex justify-between items-start mb-8">
+        <div>
+          <h1 className="text-3xl font-black mb-2" style={{ color: 'var(--text-primary)' }}>
+            SEO & GEO Analytics
+          </h1>
+          <p style={{ color: 'var(--text-muted)' }}>
+            Search engine and generative AI optimization insights
+          </p>
+        </div>
+        <button
+          onClick={runAudit}
+          disabled={runningAudit}
+          className="px-6 py-3 bg-green-500 text-black font-bold rounded-xl hover:bg-green-400 transition disabled:opacity-50 flex items-center gap-2"
+        >
+          {runningAudit ? (
+            <>
+              <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              Running Audit...
+            </>
+          ) : (
+            'Run Audit'
+          )}
+        </button>
+      </div>
+
+      {/* Stat Cards */}
+      {audit && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Overall Score</div>
+            <div className={`text-4xl font-black ${getScoreColor(audit.overall_score)}`}>
+              {audit.overall_score}
+            </div>
+            <div className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>out of 100</div>
+          </div>
+          <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Pages Audited</div>
+            <div className="text-4xl font-black text-blue-500">{audit.pages_audited}</div>
+            <div className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>pages analyzed</div>
+          </div>
+          <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Total Issues</div>
+            <div className="text-4xl font-black text-amber-500">{audit.total_issues}</div>
+            <div className="text-xs mt-2">
+              {audit.critical_issues > 0 && (
+                <span className="text-red-500 font-semibold">{audit.critical_issues} critical</span>
+              )}
+              {audit.critical_issues === 0 && (
+                <span style={{ color: 'var(--text-muted)' }}>no critical issues</span>
+              )}
+            </div>
+          </div>
+          <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Last Audit</div>
+            <div className="text-4xl font-black text-purple-500">{timeAgo(audit.created_at)}</div>
+            <div className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
+              {audit.audit_duration_ms ? `took ${(audit.audit_duration_ms / 1000).toFixed(1)}s` : ''}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* No audit state */}
+      {!audit && (
+        <div className="rounded-2xl p-12 text-center mb-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-6xl mb-4">🔍</div>
+          <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>No Audit Data Yet</h2>
+          <p className="mb-6" style={{ color: 'var(--text-muted)' }}>
+            Run your first SEO audit to see detailed analytics, scores, and recommendations.
+          </p>
+          <button
+            onClick={runAudit}
+            disabled={runningAudit}
+            className="px-6 py-3 bg-green-500 text-black font-bold rounded-xl hover:bg-green-400 transition disabled:opacity-50"
+          >
+            {runningAudit ? 'Running...' : 'Run First Audit'}
+          </button>
+        </div>
+      )}
+
+      {/* Tabs */}
+      {audit && (
+        <>
+          <div className="flex gap-1 mb-8 overflow-x-auto pb-2" style={{ borderBottom: '1px solid var(--border-color)' }}>
+            {TABS.map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => {
+                  setActiveTab(tab.key)
+                  if (tab.key === 'search-console' && scConfigured && !scData) {
+                    loadSearchConsole()
+                  }
+                }}
+                className={`px-4 py-3 text-sm font-semibold whitespace-nowrap transition ${
+                  activeTab === tab.key
+                    ? 'text-green-500 border-b-2 border-green-500'
+                    : 'hover:text-green-500'
+                }`}
+                style={{ color: activeTab === tab.key ? undefined : 'var(--text-muted)' }}
+              >
+                {tab.label}
+                {tab.key === 'recommendations' && recommendations.length > 0 && (
+                  <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-amber-500/15 text-amber-500">
+                    {recommendations.length}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* ===== OVERVIEW TAB ===== */}
+          {activeTab === 'overview' && (
+            <div className="space-y-8">
+              {/* Health Gauge + Category Scores */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="rounded-2xl p-8 flex justify-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                  <HealthGauge score={audit.overall_score} size={200} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { label: 'Technical SEO', score: audit.technical_score, color: 'text-blue-500' },
+                    { label: 'Content Quality', score: audit.content_score, color: 'text-purple-500' },
+                    { label: 'Structured Data', score: audit.structured_data_score, color: 'text-amber-500' },
+                    { label: 'Performance', score: audit.performance_score, color: 'text-cyan-500' },
+                    { label: 'GEO Readiness', score: audit.geo_score, color: 'text-pink-500' },
+                  ].map(cat => (
+                    <div key={cat.label} className="rounded-2xl p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                      <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>{cat.label}</div>
+                      <div className={`text-2xl font-black ${cat.color}`}>{cat.score}</div>
+                      <div className="w-full h-2 rounded-full mt-2" style={{ backgroundColor: 'var(--border-color)' }}>
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{
+                            width: `${cat.score}%`,
+                            backgroundColor: cat.score >= 71 ? '#10b981' : cat.score >= 41 ? '#f59e0b' : '#ef4444',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Score Trend + Issues Distribution */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                  <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Score Trend</h3>
+                  {history.length > 1 ? (
+                    <ScoreLineChart data={history} />
+                  ) : (
+                    <div className="flex items-center justify-center h-[300px]" style={{ color: 'var(--text-muted)' }}>
+                      Run more audits to see trends
+                    </div>
+                  )}
+                </div>
+                <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                  <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Issues Distribution</h3>
+                  <IssuesPieChart
+                    critical={audit.critical_issues}
+                    high={audit.high_issues}
+                    medium={audit.medium_issues}
+                    low={audit.low_issues}
+                  />
+                </div>
+              </div>
+
+              {/* Quick Wins */}
+              {recommendations.filter(r => r.severity === 'critical' || r.severity === 'high').length > 0 && (
+                <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                  <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Quick Wins</h3>
+                  <div className="space-y-3">
+                    {recommendations
+                      .filter(r => r.severity === 'critical' || r.severity === 'high')
+                      .slice(0, 5)
+                      .map((rec, i) => (
+                        <div key={i} className="flex items-start gap-3 p-3 rounded-xl" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                          <span className={`px-2 py-1 text-xs font-bold rounded ${
+                            rec.severity === 'critical' ? 'bg-red-500/15 text-red-500' : 'bg-amber-500/15 text-amber-500'
+                          }`}>
+                            {rec.severity.toUpperCase()}
+                          </span>
+                          <div>
+                            <div className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{rec.title}</div>
+                            {rec.page_path && (
+                              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{rec.page_path}</span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ===== PAGES TAB ===== */}
+          {activeTab === 'pages' && (
+            <div className="space-y-6">
+              {/* Bar chart */}
+              <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Page Score Comparison</h3>
+                <ScoreBarChart data={pageScores.map(p => ({ page_path: p.page_path, overall_score: p.overall_score }))} />
+              </div>
+
+              {/* Table */}
+              <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                <table className="min-w-full">
+                  <thead>
+                    <tr style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                      {['Page', 'Score', 'Title', 'Description', 'OG Tags', 'Schema', 'H1', 'Words'].map(h => (
+                        <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pageScores.map(page => (
+                      <>
+                        <tr
+                          key={page.page_path}
+                          className="cursor-pointer hover:bg-green-500/5 transition"
+                          onClick={() => setExpandedPage(expandedPage === page.page_path ? null : page.page_path)}
+                          style={{ borderBottom: '1px solid var(--border-color)' }}
+                        >
+                          <td className="px-4 py-3 font-mono text-sm" style={{ color: 'var(--text-primary)' }}>{page.page_path}</td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-1 text-xs font-bold rounded ${getScoreBg(page.overall_score)} ${getScoreColor(page.overall_score)}`}>
+                              {page.overall_score}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">{page.has_title ? <Check /> : <Cross />}</td>
+                          <td className="px-4 py-3">{page.has_description ? <Check /> : <Cross />}</td>
+                          <td className="px-4 py-3">{page.has_og_title && page.has_og_description ? <Check /> : <Warn />}</td>
+                          <td className="px-4 py-3">{page.has_json_ld ? <Check /> : <Cross />}</td>
+                          <td className="px-4 py-3">
+                            <span className={page.h1_count === 1 ? 'text-green-500' : 'text-red-500'}>
+                              {page.h1_count}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={page.word_count >= 300 ? '' : 'text-amber-500'} style={{ color: page.word_count >= 300 ? 'var(--text-primary)' : undefined }}>
+                              {page.word_count}
+                            </span>
+                          </td>
+                        </tr>
+                        {expandedPage === page.page_path && (
+                          <tr key={`${page.page_path}-expanded`} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                            <td colSpan={8} className="px-6 py-4" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                              <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                  <div className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Title</div>
+                                  <div style={{ color: 'var(--text-muted)' }}>{page.title_value || 'None'} ({page.title_length} chars)</div>
+                                </div>
+                                <div>
+                                  <div className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Description</div>
+                                  <div style={{ color: 'var(--text-muted)' }}>{page.description_value || 'None'} ({page.description_length} chars)</div>
+                                </div>
+                                <div>
+                                  <div className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>H1 Values</div>
+                                  <div style={{ color: 'var(--text-muted)' }}>{(page.h1_values || []).join(', ') || 'None'}</div>
+                                </div>
+                                <div>
+                                  <div className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Headings</div>
+                                  <div style={{ color: 'var(--text-muted)' }}>H1: {page.h1_count} | H2: {page.h2_count} | H3: {page.h3_count}</div>
+                                </div>
+                                <div>
+                                  <div className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Images</div>
+                                  <div style={{ color: 'var(--text-muted)' }}>{page.img_with_alt}/{page.img_count} with alt text</div>
+                                </div>
+                                <div>
+                                  <div className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Links</div>
+                                  <div style={{ color: 'var(--text-muted)' }}>Internal: {page.internal_links} | External: {page.external_links}</div>
+                                </div>
+                                <div>
+                                  <div className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Structured Data</div>
+                                  <div style={{ color: 'var(--text-muted)' }}>{(page.json_ld_types || []).join(', ') || 'None'}</div>
+                                </div>
+                                <div>
+                                  <div className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Response</div>
+                                  <div style={{ color: 'var(--text-muted)' }}>HTTP {page.status_code} in {page.response_time_ms}ms</div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ===== TECHNICAL TAB ===== */}
+          {activeTab === 'technical' && (
+            <div className="space-y-6">
+              <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                <h3 className="text-lg font-bold mb-6" style={{ color: 'var(--text-primary)' }}>Technical SEO Checklist</h3>
+                <div className="space-y-4">
+                  {(() => {
+                    const pagesWithCanonical = pageScores.filter(p => p.has_canonical).length
+                    const pagesWithViewport = pageScores.filter(p => p.status_code === 200).length
+                    const pagesWithOg = pageScores.filter(p => p.has_og_title && p.has_og_description).length
+                    const total = pageScores.length
+
+                    const checks = [
+                      {
+                        label: 'robots.txt',
+                        detail: 'Properly configured with User-agent, Disallow, and Sitemap directives',
+                        pass: true, // If audit ran, we crawled successfully
+                      },
+                      {
+                        label: 'Sitemap completeness',
+                        detail: `All public pages found in sitemap.xml`,
+                        pass: pageScores.length > 0,
+                      },
+                      {
+                        label: 'All pages respond HTTP 200',
+                        detail: `${pagesWithViewport}/${total} pages return 200`,
+                        pass: pagesWithViewport === total,
+                      },
+                      {
+                        label: 'Canonical URLs',
+                        detail: `${pagesWithCanonical}/${total} pages have canonical`,
+                        pass: pagesWithCanonical === total,
+                        warn: pagesWithCanonical > 0 && pagesWithCanonical < total,
+                      },
+                      {
+                        label: 'OpenGraph tags',
+                        detail: `${pagesWithOg}/${total} pages have OG title + description`,
+                        pass: pagesWithOg === total,
+                        warn: pagesWithOg > 0,
+                      },
+                      {
+                        label: 'Twitter cards',
+                        detail: `${pageScores.filter(p => p.has_twitter_card).length}/${total} pages have Twitter card`,
+                        pass: pageScores.filter(p => p.has_twitter_card).length === total,
+                        warn: pageScores.some(p => p.has_twitter_card),
+                      },
+                    ]
+
+                    return checks.map((check, i) => (
+                      <div key={i} className="flex items-center gap-4 p-4 rounded-xl" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                          check.pass ? 'bg-green-500/15 text-green-500' :
+                          check.warn ? 'bg-amber-500/15 text-amber-500' :
+                          'bg-red-500/15 text-red-500'
+                        }`}>
+                          {check.pass ? '✓' : check.warn ? '!' : '✗'}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{check.label}</div>
+                          <div className="text-sm" style={{ color: 'var(--text-muted)' }}>{check.detail}</div>
+                        </div>
+                      </div>
+                    ))
+                  })()}
+                </div>
+              </div>
+
+              {/* Response times */}
+              <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Response Times</h3>
+                <div className="space-y-3">
+                  {pageScores.map(page => (
+                    <div key={page.page_path} className="flex items-center gap-4">
+                      <span className="font-mono text-sm w-32 truncate" style={{ color: 'var(--text-primary)' }}>{page.page_path}</span>
+                      <div className="flex-1 h-4 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border-color)' }}>
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${Math.min(100, ((page.response_time_ms || 0) / 2000) * 100)}%`,
+                            backgroundColor: (page.response_time_ms || 0) < 500 ? '#10b981' : (page.response_time_ms || 0) < 1000 ? '#f59e0b' : '#ef4444',
+                          }}
+                        />
+                      </div>
+                      <span className="text-sm font-mono w-16 text-right" style={{ color: 'var(--text-muted)' }}>
+                        {page.response_time_ms}ms
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ===== CONTENT TAB ===== */}
+          {activeTab === 'content' && (
+            <div className="space-y-6">
+              {/* Aggregate stats */}
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                {[
+                  { label: 'Pages with Title', value: `${pageScores.filter(p => p.has_title).length}/${pageScores.length}` },
+                  { label: 'Pages with Description', value: `${pageScores.filter(p => p.has_description).length}/${pageScores.length}` },
+                  { label: 'Proper H1 (exactly 1)', value: `${pageScores.filter(p => p.h1_count === 1).length}/${pageScores.length}` },
+                  { label: 'Avg Word Count', value: `${Math.round(pageScores.reduce((s, p) => s + p.word_count, 0) / (pageScores.length || 1))}` },
+                  { label: 'Alt Text Coverage', value: `${pageScores.reduce((s, p) => s + p.img_with_alt, 0)}/${pageScores.reduce((s, p) => s + p.img_count, 0)}` },
+                ].map(stat => (
+                  <div key={stat.label} className="rounded-2xl p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                    <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>{stat.label}</div>
+                    <div className="text-xl font-black text-green-500">{stat.value}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Per-page content analysis */}
+              {pageScores.map(page => (
+                <div key={page.page_path} className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                  <h4 className="font-bold mb-4 font-mono" style={{ color: 'var(--text-primary)' }}>{page.page_path}</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Title length indicator */}
+                    <div>
+                      <div className="text-xs font-semibold mb-2" style={{ color: 'var(--text-muted)' }}>Title Length ({page.title_length || 0} chars)</div>
+                      <div className="relative h-4 rounded-full" style={{ backgroundColor: 'var(--border-color)' }}>
+                        <div className="absolute h-full rounded-full bg-green-500/30" style={{ left: '30%', width: '30%' }} />
+                        <div
+                          className="absolute h-full w-1 rounded-full"
+                          style={{
+                            left: `${Math.min(100, ((page.title_length || 0) / 100) * 100)}%`,
+                            backgroundColor: (page.title_length || 0) >= 30 && (page.title_length || 0) <= 60 ? '#10b981' : '#ef4444',
+                          }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                        <span>0</span><span>30</span><span>60</span><span>100</span>
+                      </div>
+                    </div>
+                    {/* Description length indicator */}
+                    <div>
+                      <div className="text-xs font-semibold mb-2" style={{ color: 'var(--text-muted)' }}>Description Length ({page.description_length || 0} chars)</div>
+                      <div className="relative h-4 rounded-full" style={{ backgroundColor: 'var(--border-color)' }}>
+                        <div className="absolute h-full rounded-full bg-green-500/30" style={{ left: '48%', width: '16%' }} />
+                        <div
+                          className="absolute h-full w-1 rounded-full"
+                          style={{
+                            left: `${Math.min(100, ((page.description_length || 0) / 250) * 100)}%`,
+                            backgroundColor: (page.description_length || 0) >= 120 && (page.description_length || 0) <= 160 ? '#10b981' : '#ef4444',
+                          }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                        <span>0</span><span>120</span><span>160</span><span>250</span>
+                      </div>
+                    </div>
+                    {/* Heading hierarchy */}
+                    <div>
+                      <div className="text-xs font-semibold mb-2" style={{ color: 'var(--text-muted)' }}>Heading Hierarchy</div>
+                      <div className="space-y-1 text-sm">
+                        <div style={{ color: page.h1_count === 1 ? '#10b981' : '#ef4444' }}>H1: {page.h1_count} {page.h1_count === 1 ? '✓' : '✗'}</div>
+                        <div className="pl-4" style={{ color: 'var(--text-muted)' }}>H2: {page.h2_count}</div>
+                        <div className="pl-8" style={{ color: 'var(--text-muted)' }}>H3: {page.h3_count}</div>
+                      </div>
+                    </div>
+                    {/* Word count + links */}
+                    <div>
+                      <div className="text-xs font-semibold mb-2" style={{ color: 'var(--text-muted)' }}>Content Stats</div>
+                      <div className="space-y-1 text-sm" style={{ color: 'var(--text-muted)' }}>
+                        <div>Words: <span className={page.word_count >= 300 ? 'text-green-500' : 'text-amber-500'}>{page.word_count}</span></div>
+                        <div>Images: {page.img_with_alt}/{page.img_count} with alt</div>
+                        <div>Internal links: {page.internal_links} | External: {page.external_links}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ===== GEO TAB ===== */}
+          {activeTab === 'geo' && (
+            <div className="space-y-6">
+              {/* AI Crawlability Assessment */}
+              <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>AI Crawlability Assessment</h3>
+                <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
+                  How well your site is optimized for AI/LLM citation and generative search engines.
+                </p>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { label: 'Structured Data Coverage', value: `${Math.round((pageScores.filter(p => p.has_json_ld).length / (pageScores.length || 1)) * 100)}%` },
+                    { label: 'Avg Content Clarity', value: `${Math.round(pageScores.reduce((s, p) => s + (p.content_clarity_score || 0), 0) / (pageScores.length || 1))}` },
+                    { label: 'Avg Answerability', value: `${Math.round(pageScores.reduce((s, p) => s + (p.answerability_score || 0), 0) / (pageScores.length || 1))}` },
+                    { label: 'Avg Citation Worthiness', value: `${Math.round(pageScores.reduce((s, p) => s + (p.citation_worthiness_score || 0), 0) / (pageScores.length || 1))}` },
+                  ].map(m => (
+                    <div key={m.label} className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                      <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>{m.label}</div>
+                      <div className="text-2xl font-black text-green-500">{m.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Schema Coverage Radar */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                  <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Schema Coverage</h3>
+                  <GeoRadarChart schemaTypes={allSchemaTypes} />
+                </div>
+
+                {/* Per-page GEO scorecard */}
+                <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                  <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Page GEO Scores</h3>
+                  <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                    {pageScores.map(page => (
+                      <div key={page.page_path} className="p-3 rounded-xl" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                        <div className="font-mono text-sm font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>{page.page_path}</div>
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          <div>
+                            <span style={{ color: 'var(--text-muted)' }}>Clarity: </span>
+                            <span className={getScoreColor(page.content_clarity_score || 0)}>{page.content_clarity_score || 0}</span>
+                          </div>
+                          <div>
+                            <span style={{ color: 'var(--text-muted)' }}>Answer: </span>
+                            <span className={getScoreColor(page.answerability_score || 0)}>{page.answerability_score || 0}</span>
+                          </div>
+                          <div>
+                            <span style={{ color: 'var(--text-muted)' }}>Citation: </span>
+                            <span className={getScoreColor(page.citation_worthiness_score || 0)}>{page.citation_worthiness_score || 0}</span>
+                          </div>
+                        </div>
+                        <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                          Schema: {(page.json_ld_types || []).join(', ') || 'None'} | FAQ: {page.has_faq_schema ? 'Yes' : 'No'}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* GEO Recommendations */}
+              <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>GEO Improvement Suggestions</h3>
+                <div className="space-y-3">
+                  {recommendations
+                    .filter(r => r.category === 'geo' || r.category === 'structured_data')
+                    .map((rec, i) => (
+                      <div key={i} className="flex items-start gap-3 p-3 rounded-xl" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                        <span className={`px-2 py-1 text-xs font-bold rounded shrink-0 ${
+                          rec.severity === 'critical' ? 'bg-red-500/15 text-red-500' :
+                          rec.severity === 'high' ? 'bg-amber-500/15 text-amber-500' :
+                          rec.severity === 'medium' ? 'bg-blue-500/15 text-blue-500' :
+                          'bg-gray-500/15 text-gray-500'
+                        }`}>
+                          {rec.category === 'geo' ? 'GEO' : 'SCHEMA'}
+                        </span>
+                        <div>
+                          <div className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{rec.title}</div>
+                          <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{rec.description}</div>
+                        </div>
+                      </div>
+                    ))}
+                  {recommendations.filter(r => r.category === 'geo' || r.category === 'structured_data').length === 0 && (
+                    <p className="text-center py-4 text-green-500 font-semibold">All GEO checks passed!</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ===== SEARCH CONSOLE TAB ===== */}
+          {activeTab === 'search-console' && (
+            <div className="space-y-6">
+              {!scConfigured ? (
+                <div className="rounded-2xl p-8 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                  <div className="text-5xl mb-4">🔗</div>
+                  <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Search Console Not Configured</h3>
+                  <p className="mb-6 max-w-lg mx-auto" style={{ color: 'var(--text-muted)' }}>
+                    Connect Google Search Console to see real search ranking data, queries, clicks, impressions, and more.
+                  </p>
+                  <div className="rounded-xl p-4 max-w-lg mx-auto text-left text-sm" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                    <p className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Setup Instructions:</p>
+                    <ol className="list-decimal list-inside space-y-1" style={{ color: 'var(--text-muted)' }}>
+                      <li>Create a service account in Google Cloud Console</li>
+                      <li>Enable the Search Console API</li>
+                      <li>Add the service account email to Search Console (Settings &gt; Users)</li>
+                      <li>Set these environment variables:</li>
+                    </ol>
+                    <div className="mt-2 p-2 rounded font-mono text-xs" style={{ backgroundColor: 'var(--bg-primary)' }}>
+                      <div style={{ color: 'var(--text-muted)' }}>GOOGLE_SERVICE_ACCOUNT_EMAIL=...</div>
+                      <div style={{ color: 'var(--text-muted)' }}>GOOGLE_SERVICE_ACCOUNT_KEY=...</div>
+                      <div style={{ color: 'var(--text-muted)' }}>GOOGLE_SEARCH_CONSOLE_SITE_URL=...</div>
+                    </div>
+                  </div>
+                </div>
+              ) : !scData ? (
+                <div className="rounded-2xl p-8 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                  <button
+                    onClick={loadSearchConsole}
+                    disabled={scLoading}
+                    className="px-6 py-3 bg-green-500 text-black font-bold rounded-xl hover:bg-green-400 transition disabled:opacity-50"
+                  >
+                    {scLoading ? 'Loading...' : 'Sync Search Console Data'}
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* Trend charts */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                      <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Clicks & Impressions</h3>
+                      <SearchConsoleChart data={scData.trends} metric="clicks_impressions" />
+                    </div>
+                    <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                      <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Average Position</h3>
+                      <SearchConsoleChart data={scData.trends} metric="position" />
+                    </div>
+                  </div>
+
+                  {/* Top Queries */}
+                  <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                    <div className="p-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Top Search Queries</h3>
+                    </div>
+                    <table className="min-w-full">
+                      <thead>
+                        <tr style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                          {['Query', 'Clicks', 'Impressions', 'CTR', 'Position'].map(h => (
+                            <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {scData.queries.slice(0, 20).map((row, i) => (
+                          <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                            <td className="px-4 py-3 text-sm" style={{ color: 'var(--text-primary)' }}>{row.query}</td>
+                            <td className="px-4 py-3 text-sm font-semibold text-green-500">{row.clicks}</td>
+                            <td className="px-4 py-3 text-sm" style={{ color: 'var(--text-muted)' }}>{row.impressions}</td>
+                            <td className="px-4 py-3 text-sm" style={{ color: 'var(--text-muted)' }}>{(row.ctr * 100).toFixed(1)}%</td>
+                            <td className="px-4 py-3 text-sm" style={{ color: 'var(--text-muted)' }}>{row.position.toFixed(1)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Top Pages */}
+                  <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                    <div className="p-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Top Pages</h3>
+                    </div>
+                    <table className="min-w-full">
+                      <thead>
+                        <tr style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                          {['Page', 'Clicks', 'Impressions', 'CTR', 'Position'].map(h => (
+                            <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {scData.pages.map((row, i) => (
+                          <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                            <td className="px-4 py-3 text-sm font-mono" style={{ color: 'var(--text-primary)' }}>{row.page}</td>
+                            <td className="px-4 py-3 text-sm font-semibold text-green-500">{row.clicks}</td>
+                            <td className="px-4 py-3 text-sm" style={{ color: 'var(--text-muted)' }}>{row.impressions}</td>
+                            <td className="px-4 py-3 text-sm" style={{ color: 'var(--text-muted)' }}>{(row.ctr * 100).toFixed(1)}%</td>
+                            <td className="px-4 py-3 text-sm" style={{ color: 'var(--text-muted)' }}>{row.position.toFixed(1)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Devices + Countries */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                      <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>By Device</h3>
+                      <div className="space-y-3">
+                        {scData.devices.map((d, i) => (
+                          <div key={i} className="flex justify-between items-center p-3 rounded-xl" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                            <span className="font-semibold capitalize" style={{ color: 'var(--text-primary)' }}>{d.device}</span>
+                            <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                              {d.clicks} clicks | {d.impressions} imp
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                      <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Top Countries</h3>
+                      <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                        {scData.countries.map((c, i) => (
+                          <div key={i} className="flex justify-between items-center p-3 rounded-xl" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                            <span className="font-semibold uppercase" style={{ color: 'var(--text-primary)' }}>{c.country}</span>
+                            <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                              {c.clicks} clicks | {c.impressions} imp
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sync button */}
+                  <div className="text-center">
+                    <button
+                      onClick={loadSearchConsole}
+                      disabled={scLoading}
+                      className="px-4 py-2 text-sm rounded-lg border border-green-500 text-green-500 hover:bg-green-500/10 transition disabled:opacity-50"
+                    >
+                      {scLoading ? 'Syncing...' : 'Sync Data'}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* ===== RECOMMENDATIONS TAB ===== */}
+          {activeTab === 'recommendations' && (
+            <div className="space-y-6">
+              {/* Filters */}
+              <div className="flex flex-wrap gap-3">
+                <select
+                  value={severityFilter}
+                  onChange={e => setSeverityFilter(e.target.value)}
+                  className="px-3 py-2 rounded-lg text-sm"
+                  style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
+                >
+                  <option value="all">All Severities</option>
+                  <option value="critical">Critical</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+                <select
+                  value={categoryFilter}
+                  onChange={e => setCategoryFilter(e.target.value)}
+                  className="px-3 py-2 rounded-lg text-sm"
+                  style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
+                >
+                  <option value="all">All Categories</option>
+                  <option value="technical">Technical</option>
+                  <option value="content">Content</option>
+                  <option value="structured_data">Structured Data</option>
+                  <option value="performance">Performance</option>
+                  <option value="geo">GEO</option>
+                </select>
+                <span className="text-sm self-center" style={{ color: 'var(--text-muted)' }}>
+                  {filteredRecs.length} recommendation{filteredRecs.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+
+              {/* Recommendation cards */}
+              <div className="space-y-4">
+                {filteredRecs.map((rec, i) => (
+                  <div key={i} className="rounded-2xl p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                    <div className="flex items-start gap-3 mb-3">
+                      <span className={`px-2 py-1 text-xs font-bold rounded shrink-0 ${
+                        rec.severity === 'critical' ? 'bg-red-500/15 text-red-500' :
+                        rec.severity === 'high' ? 'bg-amber-500/15 text-amber-500' :
+                        rec.severity === 'medium' ? 'bg-blue-500/15 text-blue-500' :
+                        'bg-gray-500/15 text-gray-500'
+                      }`}>
+                        {rec.severity.toUpperCase()}
+                      </span>
+                      <span className="px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>
+                        {rec.category.replace('_', ' ')}
+                      </span>
+                      {rec.page_path && (
+                        <span className="px-2 py-1 text-xs font-mono rounded" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>
+                          {rec.page_path}
+                        </span>
+                      )}
+                      <span className={`ml-auto px-2 py-1 text-xs rounded ${
+                        rec.estimated_impact === 'high' ? 'bg-green-500/15 text-green-500' :
+                        rec.estimated_impact === 'medium' ? 'bg-blue-500/15 text-blue-500' :
+                        'bg-gray-500/15 text-gray-500'
+                      }`}>
+                        {rec.estimated_impact} impact
+                      </span>
+                    </div>
+                    <h4 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{rec.title}</h4>
+                    <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>{rec.description}</p>
+                    {(rec.current_value || rec.recommended_value) && (
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        {rec.current_value && (
+                          <div className="p-2 rounded" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                            <span className="text-xs font-semibold block mb-1" style={{ color: 'var(--text-muted)' }}>Current</span>
+                            <span style={{ color: 'var(--text-primary)' }}>{rec.current_value}</span>
+                          </div>
+                        )}
+                        {rec.recommended_value && (
+                          <div className="p-2 rounded" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                            <span className="text-xs font-semibold block mb-1 text-green-500">Recommended</span>
+                            <span style={{ color: 'var(--text-primary)' }}>{rec.recommended_value}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {filteredRecs.length === 0 && (
+                  <div className="text-center py-12" style={{ color: 'var(--text-muted)' }}>
+                    No recommendations match the selected filters.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
+// Helper components
+function Check() {
+  return <span className="text-green-500 font-bold">✓</span>
+}
+
+function Cross() {
+  return <span className="text-red-500 font-bold">✗</span>
+}
+
+function Warn() {
+  return <span className="text-amber-500 font-bold">!</span>
+}

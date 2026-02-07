@@ -1,6 +1,24 @@
+import type { Metadata } from 'next'
 import Header from '@/components/shared/Header'
 import Footer from '@/components/shared/Footer'
 import { getPageWithSections } from '@/lib/content/getPageContent'
+
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://julyu.com'
+
+export const metadata: Metadata = {
+  title: 'Contact Julyu - Get Help & Support',
+  description:
+    'Get in touch with the Julyu team for support, questions, or feedback. We typically respond within 24 hours. Email us at support@julyu.com.',
+  openGraph: {
+    title: 'Contact Julyu - Get Help & Support',
+    description:
+      'Reach out to the Julyu team. We\'re here to help with any questions about our grocery price comparison platform.',
+    url: `${baseUrl}/contact`,
+  },
+  alternates: {
+    canonical: `${baseUrl}/contact`,
+  },
+}
 
 // Default content - used if no database content exists
 const defaultContent = {

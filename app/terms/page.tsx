@@ -1,6 +1,24 @@
+import type { Metadata } from 'next'
 import Header from '@/components/shared/Header'
 import Footer from '@/components/shared/Footer'
 import { getPageContent } from '@/lib/content/getPageContent'
+
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://julyu.com'
+
+export const metadata: Metadata = {
+  title: 'Terms of Service',
+  description:
+    'Julyu\'s Terms of Service govern your use of our grocery price comparison platform, including account creation, acceptable use, subscriptions, and intellectual property.',
+  openGraph: {
+    title: 'Terms of Service | Julyu',
+    description:
+      'Read the terms and conditions for using the Julyu grocery price comparison platform.',
+    url: `${baseUrl}/terms`,
+  },
+  alternates: {
+    canonical: `${baseUrl}/terms`,
+  },
+}
 
 // Force dynamic rendering to ensure fresh content
 export const dynamic = 'force-dynamic'

@@ -1,6 +1,24 @@
+import type { Metadata } from 'next'
 import Header from '@/components/shared/Header'
 import Footer from '@/components/shared/Footer'
 import { getPageContent } from '@/lib/content/getPageContent'
+
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://julyu.com'
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy',
+  description:
+    'Julyu\'s Privacy Policy explains how we collect, use, and protect your personal information when you use our grocery price comparison platform.',
+  openGraph: {
+    title: 'Privacy Policy | Julyu',
+    description:
+      'Learn how Julyu protects your privacy and handles your data.',
+    url: `${baseUrl}/privacy`,
+  },
+  alternates: {
+    canonical: `${baseUrl}/privacy`,
+  },
+}
 
 // Force dynamic rendering to ensure fresh content
 export const dynamic = 'force-dynamic'

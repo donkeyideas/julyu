@@ -1,7 +1,25 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import Header from '@/components/shared/Header'
 import Footer from '@/components/shared/Footer'
 import { getPageContent } from '@/lib/content/getPageContent'
+
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://julyu.com'
+
+export const metadata: Metadata = {
+  title: 'About Julyu - Our Mission to Save You Money on Groceries',
+  description:
+    'Julyu is an AI-powered grocery price comparison platform helping 127,000+ shoppers save an average of $287/month. Learn about our mission to make grocery shopping smarter.',
+  openGraph: {
+    title: 'About Julyu - Our Mission to Save You Money',
+    description:
+      'Learn how Julyu uses AI to compare grocery prices across 50+ retailers and help families save thousands each year.',
+    url: `${baseUrl}/about`,
+  },
+  alternates: {
+    canonical: `${baseUrl}/about`,
+  },
+}
 
 // Default content - used if no database content exists
 const defaultContent = {

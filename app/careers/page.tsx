@@ -1,4 +1,22 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
+
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://julyu.com'
+
+export const metadata: Metadata = {
+  title: 'Careers at Julyu - Join Our Team',
+  description:
+    'Join the Julyu team and help build the future of grocery shopping. We\'re looking for talented people passionate about AI, consumer savings, and making an impact.',
+  openGraph: {
+    title: 'Careers at Julyu - Join Our Team',
+    description:
+      'Build the future of AI-powered grocery shopping. Explore opportunities at Julyu.',
+    url: `${baseUrl}/careers`,
+  },
+  alternates: {
+    canonical: `${baseUrl}/careers`,
+  },
+}
 
 export default function CareersPage() {
   return (

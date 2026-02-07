@@ -1,6 +1,24 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import Header from '@/components/shared/Header'
 import Footer from '@/components/shared/Footer'
+
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://julyu.com'
+
+export const metadata: Metadata = {
+  title: 'Features - AI Grocery Price Comparison Tools',
+  description:
+    'Explore Julyu\'s AI-powered features: product matching with 98% accuracy, route optimization to save time, and receipt scanning for instant price comparison across 50+ retailers.',
+  openGraph: {
+    title: 'Features - AI Grocery Price Comparison Tools | Julyu',
+    description:
+      'AI product matching, route optimization, and receipt scanning. Discover how Julyu helps you save $287/month on groceries.',
+    url: `${baseUrl}/features`,
+  },
+  alternates: {
+    canonical: `${baseUrl}/features`,
+  },
+}
 
 export default function FeaturesPage() {
   return (
