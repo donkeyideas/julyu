@@ -1265,7 +1265,7 @@ export async function sendDemoApprovalEmail({
 
                         <!-- Expiration Notice -->
                         <div style="background-color: #1a1a1a; border-left: 4px solid #f59e0b; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
-                          <p style="color: #fbbf24; font-size: 15px; margin: 0;"><strong>Expires:</strong> <span style="color: #d1d5db;">${expiresAt}</span></p>
+                          <p style="color: #fbbf24; font-size: 15px; margin: 0;"><strong>Expires:</strong> <span style="color: #d1d5db;">${new Date(expiresAt).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span></p>
                           <p style="color: #9ca3af; font-size: 14px; margin: 8px 0 0 0;">Please make sure to access your demo before the expiration date.</p>
                         </div>
 
