@@ -8,6 +8,7 @@ import FeatureShowcase from '@/components/home/FeatureShowcase'
 import WhyJulyu from '@/components/home/WhyJulyu'
 import Testimonials from '@/components/home/Testimonials'
 import StoreOwnerCTA from '@/components/home/StoreOwnerCTA'
+import RequestDemoForm from '@/components/home/RequestDemoForm'
 import CTASection from '@/components/home/CTASection'
 import { getPageWithSections } from '@/lib/content/getPageContent'
 
@@ -97,6 +98,9 @@ export default async function HomePage() {
 
       {/* Store Owner CTA */}
       <StoreOwnerCTA content={content.store_cta} />
+
+      {/* Request Demo Form */}
+      <RequestDemoForm />
 
       {/* CTA Section */}
       <CTASection content={content.final_cta} />

@@ -2,6 +2,24 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  // Skip Supabase auth entirely for demo routes
+  const isDemoPage = request.nextUrl.pathname.startsWith('/demo/dashboard') ||
+                     request.nextUrl.pathname.startsWith('/demo/store-portal')
+  const isDemoEntry = request.nextUrl.pathname.startsWith('/demo/enter')
+  const isDemoApi = request.nextUrl.pathname.startsWith('/api/demo/')
+
+  if (isDemoEntry || isDemoApi) {
+    return NextResponse.next()
+  }
+
+  if (isDemoPage) {
+    const demoSession = request.cookies.get('julyu_demo_session')
+    if (!demoSession?.value) {
+      return NextResponse.redirect(new URL('/demo/enter', request.url))
+    }
+    return NextResponse.next()
+  }
+
   // Skip middleware if Supabase not configured
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY

@@ -1,0 +1,51 @@
+// Mock store settings for demo store portal
+
+export const DEMO_STORE_SETTINGS = {
+  business: {
+    business_name: 'Martinez Corner Market',
+    business_type: 'Corner Store / Bodega',
+    owner_name: 'Carlos Martinez',
+    email: 'carlos@martinezmarket.com',
+    phone: '(718) 555-0142',
+    tax_id: 'XX-XXXXXXX',
+    business_license: 'NYC-BL-2024-XXXX',
+  },
+  store: {
+    name: 'Martinez Corner Market',
+    street_address: '1247 Atlantic Ave',
+    city: 'Brooklyn',
+    state: 'NY',
+    zip_code: '11216',
+    latitude: 40.6808,
+    longitude: -73.9633,
+    phone: '(718) 555-0142',
+    is_active: true,
+    accepts_delivery: true,
+    accepts_pickup: true,
+    delivery_radius_miles: 3,
+    opening_hours: {
+      monday: { open: '6:00 AM', close: '11:00 PM' },
+      tuesday: { open: '6:00 AM', close: '11:00 PM' },
+      wednesday: { open: '6:00 AM', close: '11:00 PM' },
+      thursday: { open: '6:00 AM', close: '11:00 PM' },
+      friday: { open: '6:00 AM', close: '11:00 PM' },
+      saturday: { open: '6:00 AM', close: '11:00 PM' },
+      sunday: { open: '7:00 AM', close: '10:00 PM' },
+    },
+  },
+  payment: {
+    stripe_connected: true,
+    stripe_account_status: 'active',
+    commission_rate: 12,
+    payout_schedule: 'Weekly',
+    bank_last_four: '4523',
+  },
+  preferences: {
+    auto_accept_orders: true,
+    min_delivery_order: 15.0,
+    estimated_prep_time: '15-20 minutes',
+    notifications_enabled: true,
+    email_notifications: true,
+    sms_notifications: false,
+  },
+}

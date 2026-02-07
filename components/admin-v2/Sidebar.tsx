@@ -48,6 +48,7 @@ export default function AdminSidebar() {
     { href: '/admin-v2/users', label: 'Users', icon: '', section: 'Operations', permission: 'users' },
     { href: '/admin-v2/prices', label: 'Price Database', icon: '', section: 'Operations' },
     { href: '/admin-v2/subscriptions', label: 'Subscriptions', icon: '', section: 'Operations' },
+    { href: '/admin-v2/demo-codes', label: 'Demo Codes', icon: '', section: 'Marketing', permission: 'demo_codes' },
   ]
 
   // Filter items based on permissions
@@ -65,6 +66,7 @@ export default function AdminSidebar() {
     { name: 'Bodega System', items: filteredItems.filter(item => item.section === 'Bodega System') },
     { name: 'Partnerships', items: filteredItems.filter(item => item.section === 'Partnerships') },
     { name: 'Operations', items: filteredItems.filter(item => item.section === 'Operations') },
+    { name: 'Marketing', items: filteredItems.filter(item => item.section === 'Marketing') },
   ].filter(section => section.items.length > 0) // Only show sections with items
 
   return (

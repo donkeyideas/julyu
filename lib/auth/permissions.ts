@@ -15,6 +15,7 @@ export interface AdminPermissions {
     users: boolean
     ai_models: boolean
     delivery_partners: boolean
+    demo_codes: boolean
   }
   actions: {
     approve_stores: boolean
@@ -42,6 +43,7 @@ export const PAGE_PERMISSIONS = {
   users: { label: 'Users', description: 'View and manage app users' },
   ai_models: { label: 'AI Models', description: 'View AI/LLM settings' },
   delivery_partners: { label: 'Delivery Partners', description: 'Manage delivery partner integrations' },
+  demo_codes: { label: 'Demo Codes', description: 'Manage demo access codes and requests' },
 } as const
 
 // Action permission definitions with display info
@@ -71,6 +73,7 @@ export const DEFAULT_PERMISSIONS: AdminPermissions = {
     users: false,
     ai_models: false,
     delivery_partners: false,
+    demo_codes: false,
   },
   actions: {
     approve_stores: false,
@@ -99,6 +102,7 @@ export const FULL_ADMIN_PERMISSIONS: AdminPermissions = {
     users: true,
     ai_models: true,
     delivery_partners: true,
+    demo_codes: true,
   },
   actions: {
     approve_stores: true,
@@ -127,6 +131,7 @@ export const ROUTE_TO_PAGE_PERMISSION: Record<string, keyof AdminPermissions['pa
   '/admin-v2/users': 'users',
   '/admin-v2/ai-models': 'ai_models',
   '/admin-v2/delivery-partners': 'delivery_partners',
+  '/admin-v2/demo-codes': 'demo_codes',
 }
 
 // Helper functions
