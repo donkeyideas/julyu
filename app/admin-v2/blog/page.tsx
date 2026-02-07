@@ -434,6 +434,36 @@ export default function BlogPage() {
     return '#ef4444'
   }
 
+  // Calculate SEO score from a saved post
+  const getPostSeoScore = (post: BlogPost) => {
+    let score = 0
+    const t = post.title || ''
+    const md = post.meta_description || ''
+    const fk = post.focus_keywords || ''
+    const c = post.content || ''
+    const s = post.slug || ''
+    const wc = post.word_count || 0
+
+    if (t.length >= 30 && t.length <= 60) score += 15
+    if (md.length > 0) score += 10
+    if (md.length >= 120 && md.length <= 160) score += 15
+    if (fk.trim().length > 0) score += 10
+    if (fk.trim().length > 0 && t.length > 0) {
+      const kws = fk.split(',').map(k => k.trim().toLowerCase()).filter(Boolean)
+      if (kws.some(kw => t.toLowerCase().includes(kw))) score += 10
+    }
+    if (fk.trim().length > 0 && c.length > 0) {
+      const kws = fk.split(',').map(k => k.trim().toLowerCase()).filter(Boolean)
+      if (kws.some(kw => c.toLowerCase().includes(kw))) score += 10
+    }
+    if (c.includes('<strong>') || c.includes('<h2') || c.includes('<h3') || c.includes('##')) score += 10
+    if (wc > 300) score += 10
+    if ((post.featured_image_url || '').trim().length > 0) score += 5
+    if (s.length > 0 && s.length <= 75 && !s.includes('--') && /^[a-z0-9-]+$/.test(s)) score += 5
+
+    return score
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -494,6 +524,7 @@ export default function BlogPage() {
                 <th className="px-6 py-4 text-left text-xs font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Title</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Status</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Category</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>SEO Score</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Word Count</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Date</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Actions</th>
@@ -522,6 +553,21 @@ export default function BlogPage() {
                   </td>
                   <td className="px-6 py-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
                     {post.category || '-'}
+                  </td>
+                  <td className="px-6 py-4">
+                    {(() => {
+                      const score = getPostSeoScore(post)
+                      return (
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
+                            style={{ border: `2px solid ${getScoreColor(score)}`, color: getScoreColor(score) }}
+                          >
+                            {score}
+                          </div>
+                        </div>
+                      )
+                    })()}
                   </td>
                   <td className="px-6 py-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
                     {(post.word_count || 0).toLocaleString()}
