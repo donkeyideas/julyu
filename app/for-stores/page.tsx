@@ -7,7 +7,7 @@ import RequestDemoModal from '@/components/shared/RequestDemoModal'
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://julyu.com'
 
 export const metadata: Metadata = {
-  title: 'For Store Owners - Grow Your Local Business with Julyu',
+  title: 'For Store Owners - Grow Your Business with Julyu',
   description:
     'Join Julyu\'s marketplace and reach thousands of local shoppers. Easy inventory management, real-time analytics, and zero setup fees for your grocery or bodega.',
   openGraph: {

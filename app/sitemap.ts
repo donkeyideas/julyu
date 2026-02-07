@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://julyu.com'
 
   // Static pages
@@ -65,16 +66,35 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     },
+    {
+      url: `${baseUrl}/blog`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    },
   ]
 
-  // TODO: Add dynamic pages (blog posts, location pages) when implemented
-  // const blogPosts = await getBlogPosts()
-  // const blogUrls = blogPosts.map(post => ({
-  //   url: `${baseUrl}/blog/${post.slug}`,
-  //   lastModified: post.updatedAt,
-  //   changeFrequency: 'weekly' as const,
-  //   priority: 0.6,
-  // }))
+  // Dynamic blog post pages
+  let blogUrls: MetadataRoute.Sitemap = []
+  try {
+    const supabase = await createServiceRoleClient() as any
+    const { data: posts } = await supabase
+      .from('blog_posts')
+      .select('slug, updated_at, published_at')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
 
-  return [...staticPages]
+    if (posts) {
+      blogUrls = posts.map((post: { slug: string; updated_at: string; published_at: string }) => ({
+        url: `${baseUrl}/blog/${post.slug}`,
+        lastModified: new Date(post.updated_at || post.published_at),
+        changeFrequency: 'weekly' as const,
+        priority: 0.6,
+      }))
+    }
+  } catch {
+    // Blog table may not exist yet
+  }
+
+  return [...staticPages, ...blogUrls]
 }

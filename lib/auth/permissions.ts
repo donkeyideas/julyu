@@ -17,6 +17,7 @@ export interface AdminPermissions {
     delivery_partners: boolean
     demo_codes: boolean
     seo_geo: boolean
+    blog: boolean
   }
   actions: {
     approve_stores: boolean
@@ -28,6 +29,7 @@ export interface AdminPermissions {
     manage_users: boolean
     manage_ai_models: boolean
     manage_seo: boolean
+    manage_blog: boolean
   }
 }
 
@@ -47,6 +49,7 @@ export const PAGE_PERMISSIONS = {
   delivery_partners: { label: 'Delivery Partners', description: 'Manage delivery partner integrations' },
   demo_codes: { label: 'Demo Codes', description: 'Manage demo access codes and requests' },
   seo_geo: { label: 'SEO & GEO', description: 'View SEO and GEO analytics and audit results' },
+  blog: { label: 'Blog', description: 'Manage blog posts' },
 } as const
 
 // Action permission definitions with display info
@@ -60,6 +63,7 @@ export const ACTION_PERMISSIONS = {
   manage_users: { label: 'Manage Users', description: 'Edit and manage app users' },
   manage_ai_models: { label: 'Manage AI Models', description: 'Configure AI/LLM settings' },
   manage_seo: { label: 'Manage SEO', description: 'Run SEO audits and manage recommendations' },
+  manage_blog: { label: 'Manage Blog', description: 'Create, edit, and delete blog posts' },
 } as const
 
 // Default permissions for new employees (minimal access)
@@ -79,6 +83,7 @@ export const DEFAULT_PERMISSIONS: AdminPermissions = {
     delivery_partners: false,
     demo_codes: false,
     seo_geo: false,
+    blog: false,
   },
   actions: {
     approve_stores: false,
@@ -90,6 +95,7 @@ export const DEFAULT_PERMISSIONS: AdminPermissions = {
     manage_users: false,
     manage_ai_models: false,
     manage_seo: false,
+    manage_blog: false,
   },
 }
 
@@ -110,6 +116,7 @@ export const FULL_ADMIN_PERMISSIONS: AdminPermissions = {
     delivery_partners: true,
     demo_codes: true,
     seo_geo: true,
+    blog: true,
   },
   actions: {
     approve_stores: true,
@@ -121,6 +128,7 @@ export const FULL_ADMIN_PERMISSIONS: AdminPermissions = {
     manage_users: true,
     manage_ai_models: true,
     manage_seo: true,
+    manage_blog: true,
   },
 }
 
@@ -141,6 +149,7 @@ export const ROUTE_TO_PAGE_PERMISSION: Record<string, keyof AdminPermissions['pa
   '/admin-v2/delivery-partners': 'delivery_partners',
   '/admin-v2/demo-codes': 'demo_codes',
   '/admin-v2/seo-geo': 'seo_geo',
+  '/admin-v2/blog': 'blog',
 }
 
 // Helper functions

@@ -7,7 +7,7 @@ import { getPageContent } from '@/lib/content/getPageContent'
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://julyu.com'
 
 export const metadata: Metadata = {
-  title: 'About Julyu - Our Mission to Save You Money on Groceries',
+  title: 'About Julyu - Our Mission to Save You Money',
   description:
     'Julyu is an AI-powered grocery price comparison platform helping 127,000+ shoppers save an average of $287/month. Learn about our mission to make grocery shopping smarter.',
   openGraph: {

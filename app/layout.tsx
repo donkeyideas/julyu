@@ -8,7 +8,7 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://julyu.com'
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: 'Julyu - Save $287/Month on Groceries with AI Price Comparison',
+    default: 'Julyu - AI Grocery Price Comparison & Savings',
     template: '%s | Julyu',
   },
   description:
