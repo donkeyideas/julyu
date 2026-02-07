@@ -3,9 +3,12 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import ThemeToggle from '@/components/ThemeToggle'
+import { useDemo } from '@/lib/demo/providers/DemoProvider'
 
 export default function DemoSidebar() {
   const pathname = usePathname()
+  const { session } = useDemo()
+  const showStorePortal = session?.demoType === 'both' || session?.demoType === 'store'
 
   const navItems = [
     { href: '/demo/dashboard', label: 'Dashboard', icon: '' },
@@ -47,19 +50,21 @@ export default function DemoSidebar() {
         </div>
       </div>
 
-      {/* Store Portal Demo Link */}
-      <div className="mb-6 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
-        <Link
-          href="/demo/store-portal"
-          className="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold transition hover:bg-green-500/15"
-          style={{ color: 'var(--accent-primary)', border: '1px solid var(--accent-primary)' }}
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-          </svg>
-          <span>Store Portal Demo</span>
-        </Link>
-      </div>
+      {/* Store Portal Demo Link - only show if demo type includes store */}
+      {showStorePortal && (
+        <div className="mb-6 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
+          <Link
+            href="/demo/store-portal"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold transition hover:bg-green-500/15"
+            style={{ color: 'var(--accent-primary)', border: '1px solid var(--accent-primary)' }}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+            </svg>
+            <span>Store Portal Demo</span>
+          </Link>
+        </div>
+      )}
 
       <nav className="space-y-2">
         {navItems.map((item) => {

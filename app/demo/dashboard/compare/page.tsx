@@ -15,9 +15,38 @@ interface StoreResult {
   chainId: string
   chainName: string
   chainColor: string
+  chainDomain: string
   total: number
   itemPrices: { item: string; price: number }[]
   itemsFound: number
+}
+
+function StoreLogo({ domain, name, color }: { domain: string; name: string; color: string }) {
+  const [failed, setFailed] = useState(false)
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+
+  if (failed) {
+    return (
+      <div
+        className="w-7 h-7 rounded flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+        style={{ backgroundColor: color }}
+      >
+        {initials}
+      </div>
+    )
+  }
+
+  return (
+    <img
+      src={`https://logo.clearbit.com/${domain}`}
+      alt={name}
+      width={28}
+      height={28}
+      className="w-7 h-7 rounded object-contain flex-shrink-0"
+      style={{ backgroundColor: '#fff' }}
+      onError={() => setFailed(true)}
+    />
+  )
 }
 
 export default function DemoComparePage() {
@@ -58,6 +87,7 @@ export default function DemoComparePage() {
         chainId: chain.id,
         chainName: chain.name,
         chainColor: chain.color,
+        chainDomain: chain.domain,
         total: Math.round(total * 100) / 100,
         itemPrices,
         itemsFound: items.length,
@@ -245,10 +275,7 @@ export default function DemoComparePage() {
                           </td>
                           <td className="py-4 px-2">
                             <div className="flex items-center gap-3">
-                              <div
-                                className="w-3 h-3 rounded-full"
-                                style={{ backgroundColor: store.chainColor }}
-                              />
+                              <StoreLogo domain={store.chainDomain} name={store.chainName} color={store.chainColor} />
                               <span
                                 className="font-semibold text-sm"
                                 style={{ color: idx === 0 ? '#22c55e' : 'var(--text-primary)' }}
