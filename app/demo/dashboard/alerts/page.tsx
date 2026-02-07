@@ -1,5 +1,37 @@
 'use client'
 
+import { useState } from 'react'
+import { getChainByName } from '@/lib/demo/data/grocery-chains'
+
+function StoreLogo({ name, size = 32 }: { name: string; size?: number }) {
+  const [failed, setFailed] = useState(false)
+  const chain = getChainByName(name)
+  const domain = chain?.domain
+  const color = chain?.color || '#22c55e'
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+
+  if (failed || !domain) {
+    return (
+      <div className="rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+        style={{ backgroundColor: color, width: size, height: size }}>
+        {initials}
+      </div>
+    )
+  }
+
+  return (
+    <img
+      src={`https://www.google.com/s2/favicons?domain=${domain}&sz=128`}
+      alt={name}
+      width={size}
+      height={size}
+      className="rounded-lg object-contain flex-shrink-0"
+      style={{ backgroundColor: '#fff', width: size, height: size }}
+      onError={() => setFailed(true)}
+    />
+  )
+}
+
 // Inline mock data for price alerts
 function hoursAgoStr(hours: number): string {
   if (hours < 1) return 'Just now'
@@ -115,12 +147,15 @@ export default function DemoAlertsPage() {
                 style={{ backgroundColor: 'rgba(34,197,94,0.08)', border: '2px solid #22c55e' }}
               >
                 <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="font-bold" style={{ color: 'var(--text-primary)' }}>{alert.product}</h3>
-                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>at {alert.store}</p>
+                  <div className="flex items-center gap-3">
+                    <StoreLogo name={alert.store} size={36} />
+                    <div>
+                      <h3 className="font-bold" style={{ color: 'var(--text-primary)' }}>{alert.product}</h3>
+                      <p className="text-sm" style={{ color: 'var(--text-muted)' }}>at {alert.store}</p>
+                    </div>
                   </div>
                   <span
-                    className="px-2 py-1 rounded text-xs font-bold uppercase"
+                    className="px-2 py-1 rounded text-xs font-bold uppercase flex-shrink-0"
                     style={{ backgroundColor: 'rgba(34,197,94,0.2)', color: '#22c55e' }}
                   >
                     Triggered
@@ -164,12 +199,15 @@ export default function DemoAlertsPage() {
                 style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
               >
                 <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="font-bold" style={{ color: 'var(--text-primary)' }}>{alert.product}</h3>
-                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>at {alert.store}</p>
+                  <div className="flex items-center gap-3">
+                    <StoreLogo name={alert.store} size={36} />
+                    <div>
+                      <h3 className="font-bold" style={{ color: 'var(--text-primary)' }}>{alert.product}</h3>
+                      <p className="text-sm" style={{ color: 'var(--text-muted)' }}>at {alert.store}</p>
+                    </div>
                   </div>
                   <span
-                    className="px-2 py-1 rounded text-xs font-bold uppercase"
+                    className="px-2 py-1 rounded text-xs font-bold uppercase flex-shrink-0"
                     style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-muted)' }}
                   >
                     Watching
