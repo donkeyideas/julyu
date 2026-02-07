@@ -897,9 +897,12 @@ export default function DemoDashboardPage() {
                     <td className="p-4" style={{ color: 'var(--text-secondary)' }}>{new Date(comp.created_at).toLocaleDateString()}</td>
                     <td className="p-4 font-medium" style={{ color: 'var(--text-primary)' }}>{itemCount}</td>
                     <td className="p-4">
-                      <span className="px-3 py-1 bg-green-500/15 text-green-500 rounded-full text-sm font-semibold">
-                        {bestStore}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <StoreLogo name={bestStore} size={24} />
+                        <span className="text-green-500 text-sm font-semibold">
+                          {bestStore}
+                        </span>
+                      </div>
                     </td>
                     <td className="p-4 font-bold" style={{ color: 'var(--text-primary)' }}>
                       ${total.toFixed(2)}
