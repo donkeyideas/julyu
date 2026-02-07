@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient, createServiceRoleClient } from '@/lib/supabase/server'
 
 export async function GET(request: NextRequest) {
   try {
@@ -48,7 +48,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Key is required' }, { status: 400 })
     }
 
-    const supabase = await createServerClient()
+    const supabase = createServiceRoleClient() as any
 
     // Upsert the setting
     const { error } = await supabase
@@ -83,7 +83,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Key is required' }, { status: 400 })
     }
 
-    const supabase = await createServerClient()
+    const supabase = createServiceRoleClient() as any
 
     const { error } = await supabase
       .from('site_settings')
