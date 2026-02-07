@@ -1,6 +1,36 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { getChainByName } from '@/lib/demo/data/grocery-chains'
+
+function StoreLogo({ name, size = 32 }: { name: string; size?: number }) {
+  const [failed, setFailed] = useState(false)
+  const chain = getChainByName(name)
+  const domain = chain?.domain
+  const color = chain?.color || '#22c55e'
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+
+  if (failed || !domain) {
+    return (
+      <div className="rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+        style={{ backgroundColor: color, width: size, height: size }}>
+        {initials}
+      </div>
+    )
+  }
+
+  return (
+    <img
+      src={`https://www.google.com/s2/favicons?domain=${domain}&sz=128`}
+      alt={name}
+      width={size}
+      height={size}
+      className="rounded-lg object-contain flex-shrink-0"
+      style={{ backgroundColor: '#fff', width: size, height: size }}
+      onError={() => setFailed(true)}
+    />
+  )
+}
 
 // Helper to get auth headers for API calls (supports Firebase/Google users)
 function getAuthHeaders(): HeadersInit {
@@ -194,20 +224,7 @@ export default function SavingsPage() {
               {trips.map((trip) => (
                 <div key={trip.id} className="flex items-center justify-between p-4 rounded-xl" style={{ backgroundColor: 'var(--bg-secondary)' }}>
                   <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${
-                      trip.shopping_method === 'delivery' ? 'bg-blue-500/15 text-blue-500' : 'bg-green-500/15 text-green-500'
-                    }`}>
-                      {trip.shopping_method === 'delivery' ? (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
-                        </svg>
-                      ) : (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                      )}
-                    </div>
+                    <StoreLogo name={trip.store_name} size={40} />
                     <div>
                       <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{trip.store_name}</div>
                       <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -243,9 +260,7 @@ export default function SavingsPage() {
               {topStores.map(([name, data], idx) => (
                 <div key={name} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-green-500/15 text-green-500 flex items-center justify-center text-sm font-bold">
-                      {idx + 1}
-                    </div>
+                    <StoreLogo name={name} size={32} />
                     <div>
                       <div className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>{name}</div>
                       <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{data.count} visit{data.count !== 1 ? 's' : ''}</div>

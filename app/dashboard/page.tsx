@@ -3,6 +3,36 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { getChainByName } from '@/lib/demo/data/grocery-chains'
+
+function StoreLogo({ name, size = 32 }: { name: string; size?: number }) {
+  const [failed, setFailed] = useState(false)
+  const chain = getChainByName(name)
+  const domain = chain?.domain
+  const color = chain?.color || '#22c55e'
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+
+  if (failed || !domain) {
+    return (
+      <div className="rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+        style={{ backgroundColor: color, width: size, height: size }}>
+        {initials}
+      </div>
+    )
+  }
+
+  return (
+    <img
+      src={`https://www.google.com/s2/favicons?domain=${domain}&sz=128`}
+      alt={name}
+      width={size}
+      height={size}
+      className="rounded-lg object-contain flex-shrink-0"
+      style={{ backgroundColor: '#fff', width: size, height: size }}
+      onError={() => setFailed(true)}
+    />
+  )
+}
 
 interface SavingsData {
   total_saved: number
@@ -678,9 +708,7 @@ export default function DashboardPage() {
               {storeStats.map((store, idx) => (
                 <div key={idx} className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-green-500/15 text-green-500 rounded-full flex items-center justify-center font-bold">
-                      {idx + 1}
-                    </div>
+                    <StoreLogo name={store.store_name} size={32} />
                     <div>
                       <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{store.store_name}</div>
                       <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
@@ -815,9 +843,10 @@ export default function DashboardPage() {
                     <td className="p-4" style={{ color: 'var(--text-secondary)' }}>{new Date(comp.created_at).toLocaleDateString()}</td>
                     <td className="p-4 font-medium" style={{ color: 'var(--text-primary)' }}>{itemCount}</td>
                     <td className="p-4">
-                      <span className="px-3 py-1 bg-green-500/15 text-green-500 rounded-full text-sm font-semibold">
-                        {bestStore}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <StoreLogo name={bestStore} size={24} />
+                        <span className="text-green-500 text-sm font-semibold">{bestStore}</span>
+                      </div>
                     </td>
                     <td className="p-4 font-bold" style={{ color: 'var(--text-primary)' }}>
                       ${total.toFixed(2)}

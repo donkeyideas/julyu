@@ -4,6 +4,36 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import BodegaCard from '@/components/dashboard/BodegaCard'
 import OrderPlacementModal from '@/components/dashboard/OrderPlacementModal'
+import { getChainByName } from '@/lib/demo/data/grocery-chains'
+
+function StoreLogo({ name, size = 32 }: { name: string; size?: number }) {
+  const [failed, setFailed] = useState(false)
+  const chain = getChainByName(name)
+  const domain = chain?.domain
+  const color = chain?.color || '#22c55e'
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+
+  if (failed || !domain) {
+    return (
+      <div className="rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+        style={{ backgroundColor: color, width: size, height: size }}>
+        {initials}
+      </div>
+    )
+  }
+
+  return (
+    <img
+      src={`https://www.google.com/s2/favicons?domain=${domain}&sz=128`}
+      alt={name}
+      width={size}
+      height={size}
+      className="rounded-lg object-contain flex-shrink-0"
+      style={{ backgroundColor: '#fff', width: size, height: size }}
+      onError={() => setFailed(true)}
+    />
+  )
+}
 
 // Helper to get auth headers for API calls (supports Firebase/Google users)
 function getAuthHeaders(): HeadersInit {
@@ -858,11 +888,16 @@ function ComparePageContent() {
                 {results.bestOption && (
                   <tr className="hover:opacity-80 bg-green-500/5" style={{ borderTop: '1px solid var(--border-color)' }}>
                     <td className="p-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs bg-green-500 text-black px-2 py-0.5 rounded font-bold">BEST</span>
-                        <strong style={{ color: 'var(--accent-primary)' }}>{results.bestOption.store.name}</strong>
+                      <div className="flex items-center gap-3">
+                        <StoreLogo name={results.bestOption.store.retailer || results.bestOption.store.name} size={32} />
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs bg-green-500 text-black px-2 py-0.5 rounded font-bold">BEST</span>
+                            <strong style={{ color: 'var(--accent-primary)' }}>{results.bestOption.store.name}</strong>
+                          </div>
+                          <div className="text-sm" style={{ color: 'var(--text-muted)' }}>{results.bestOption.store.retailer}</div>
+                        </div>
                       </div>
-                      <div className="text-sm" style={{ color: 'var(--text-muted)' }}>{results.bestOption.store.retailer}</div>
                     </td>
                     <td className="p-4" style={{ color: 'var(--text-secondary)' }}>
                       {results.bestOption.store.distance ? `${results.bestOption.store.distance} mi` : 'N/A'}
@@ -898,8 +933,13 @@ function ComparePageContent() {
                 {results.alternatives?.map((alt, idx) => (
                   <tr key={idx} className="hover:opacity-80" style={{ borderTop: '1px solid var(--border-color)' }}>
                     <td className="p-4">
-                      <strong style={{ color: 'var(--text-primary)' }}>{alt.store.name}</strong>
-                      <div className="text-sm" style={{ color: 'var(--text-muted)' }}>{alt.store.retailer}</div>
+                      <div className="flex items-center gap-3">
+                        <StoreLogo name={alt.store.retailer || alt.store.name} size={32} />
+                        <div>
+                          <strong style={{ color: 'var(--text-primary)' }}>{alt.store.name}</strong>
+                          <div className="text-sm" style={{ color: 'var(--text-muted)' }}>{alt.store.retailer}</div>
+                        </div>
+                      </div>
                     </td>
                     <td className="p-4" style={{ color: 'var(--text-secondary)' }}>
                       {alt.store.distance ? `${alt.store.distance} mi` : 'N/A'}
@@ -1044,9 +1084,12 @@ function ComparePageContent() {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="p-6 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border-color)' }}>
-              <div>
-                <h3 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{storeDetails.store.store.name}</h3>
-                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{storeDetails.store.store.retailer}</p>
+              <div className="flex items-center gap-3">
+                <StoreLogo name={storeDetails.store.store.retailer || storeDetails.store.store.name} size={40} />
+                <div>
+                  <h3 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{storeDetails.store.store.name}</h3>
+                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{storeDetails.store.store.retailer}</p>
+                </div>
               </div>
               <button
                 onClick={() => setStoreDetails({ isOpen: false, store: null, products: [] })}
@@ -1111,9 +1154,12 @@ function ComparePageContent() {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="rounded-2xl max-w-md w-full" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="p-6 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border-color)' }}>
-              <div>
-                <h3 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Shop at {shopOptions.store.store.name}</h3>
-                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{shopOptions.store.store.retailer}</p>
+              <div className="flex items-center gap-3">
+                <StoreLogo name={shopOptions.store.store.retailer || shopOptions.store.store.name} size={40} />
+                <div>
+                  <h3 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Shop at {shopOptions.store.store.name}</h3>
+                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{shopOptions.store.store.retailer}</p>
+                </div>
               </div>
               <button
                 onClick={() => setShopOptions({ isOpen: false, store: null })}
