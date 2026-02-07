@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
+import Link from 'next/link'
 
 interface Product {
   id: number
@@ -21,7 +22,7 @@ const initialProducts: Product[] = [
   { id: 6, name: 'Tropical Fantasy Soda', sku: 'SKU-006', category: 'Beverages', price: 1.00, stock: 3, status: 'low-stock' },
   { id: 7, name: 'Chopped Cheese Sandwich', sku: 'SKU-007', category: 'Deli', price: 7.49, stock: 8, status: 'in-stock' },
   { id: 8, name: 'Hostess Honey Bun', sku: 'SKU-008', category: 'Snacks', price: 1.79, stock: 0, status: 'out-of-stock' },
-  { id: 9, name: 'Café Bustelo Espresso Ground', sku: 'SKU-009', category: 'Beverages', price: 5.49, stock: 15, status: 'in-stock' },
+  { id: 9, name: 'Cafe Bustelo Espresso Ground', sku: 'SKU-009', category: 'Beverages', price: 5.49, stock: 15, status: 'in-stock' },
   { id: 10, name: 'Goya Adobo Seasoning', sku: 'SKU-010', category: 'Canned Goods', price: 2.99, stock: 22, status: 'in-stock' },
   { id: 11, name: 'Dutch Farms Whole Milk 1gal', sku: 'SKU-011', category: 'Dairy', price: 4.99, stock: 5, status: 'low-stock' },
   { id: 12, name: 'Organic Bananas (bunch)', sku: 'SKU-012', category: 'Produce', price: 1.49, stock: 18, status: 'in-stock' },
@@ -61,17 +62,45 @@ function getStatus(stock: number): 'in-stock' | 'low-stock' | 'out-of-stock' {
 
 export default function DemoInventoryPage() {
   const [products, setProducts] = useState<Product[]>(initialProducts)
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchInput, setSearchInput] = useState('')
+  const [search, setSearch] = useState('')
+  const [stockFilter, setStockFilter] = useState('')
   const [activeCategory, setActiveCategory] = useState('All')
   const [showAddModal, setShowAddModal] = useState(false)
   const [newProduct, setNewProduct] = useState({ name: '', category: 'Beverages', price: '', stock: '', sku: '' })
 
-  const filteredProducts = products.filter((p) => {
-    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.sku.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = activeCategory === 'All' || p.category === activeCategory
-    return matchesSearch && matchesCategory
-  })
+  const stats = useMemo(() => {
+    return {
+      total: products.length,
+      inStock: products.filter((p) => p.status === 'in-stock').length,
+      lowStock: products.filter((p) => p.status === 'low-stock').length,
+      outOfStock: products.filter((p) => p.status === 'out-of-stock').length,
+    }
+  }, [products])
+
+  const filteredProducts = useMemo(() => {
+    return products.filter((p) => {
+      const matchesSearch = search === '' ||
+        p.name.toLowerCase().includes(search.toLowerCase()) ||
+        p.sku.toLowerCase().includes(search.toLowerCase())
+      const matchesCategory = activeCategory === 'All' || p.category === activeCategory
+      const matchesStockFilter =
+        stockFilter === '' ||
+        (stockFilter === 'in_stock' && p.status === 'in-stock') ||
+        (stockFilter === 'low_stock' && p.status === 'low-stock') ||
+        (stockFilter === 'out_of_stock' && p.status === 'out-of-stock')
+      return matchesSearch && matchesCategory && matchesStockFilter
+    })
+  }, [products, search, activeCategory, stockFilter])
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault()
+    setSearch(searchInput)
+  }
+
+  function handleFilterChange(filter: string) {
+    setStockFilter(filter)
+  }
 
   function handleAddProduct(e: React.FormEvent) {
     e.preventDefault()
@@ -100,28 +129,120 @@ export default function DemoInventoryPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Inventory</h1>
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1 sm:flex-initial">
-            <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search products or SKU..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full sm:w-72 pl-10 pr-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
-            />
-          </div>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Inventory</h1>
+          <p className="mt-1" style={{ color: 'var(--text-secondary)' }}>
+            Manage your store&apos;s products and stock levels
+          </p>
+        </div>
+        <div className="flex space-x-3">
+          <Link
+            href="/demo/store-portal/inventory"
+            className="px-4 py-2 font-medium rounded-md transition"
+            style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
+          >
+            Bulk Import
+          </Link>
+          <Link
+            href="/demo/store-portal/inventory"
+            className="px-4 py-2 font-medium rounded-md transition"
+            style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
+          >
+            Import Receipt
+          </Link>
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-600 transition text-sm whitespace-nowrap"
+            className="px-4 py-2 bg-green-500 text-black font-medium rounded-md hover:bg-green-400 transition"
           >
-            + Add Product
+            Add Product
           </button>
+        </div>
+      </div>
+
+      {/* Stats - Clickable filters */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <button
+          onClick={() => handleFilterChange('')}
+          className={`rounded-lg p-4 text-left transition ${stockFilter === '' ? 'ring-2 ring-green-500' : ''}`}
+          style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
+        >
+          <div className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Total Products</div>
+          <div className="text-2xl font-bold mt-1" style={{ color: 'var(--text-primary)' }}>{stats.total}</div>
+        </button>
+        <button
+          onClick={() => handleFilterChange('in_stock')}
+          className={`rounded-lg p-4 text-left transition ${stockFilter === 'in_stock' ? 'ring-2 ring-green-500' : ''}`}
+          style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
+        >
+          <div className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>In Stock</div>
+          <div className="text-2xl font-bold text-green-500 mt-1">{stats.inStock}</div>
+        </button>
+        <button
+          onClick={() => handleFilterChange('low_stock')}
+          className={`rounded-lg p-4 text-left transition ${stockFilter === 'low_stock' ? 'ring-2 ring-yellow-500' : ''}`}
+          style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
+        >
+          <div className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Low Stock</div>
+          <div className="text-2xl font-bold text-yellow-500 mt-1">{stats.lowStock}</div>
+        </button>
+        <button
+          onClick={() => handleFilterChange('out_of_stock')}
+          className={`rounded-lg p-4 text-left transition ${stockFilter === 'out_of_stock' ? 'ring-2 ring-red-500' : ''}`}
+          style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
+        >
+          <div className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Out of Stock</div>
+          <div className="text-2xl font-bold text-red-500 mt-1">{stats.outOfStock}</div>
+        </button>
+      </div>
+
+      {/* Search */}
+      <form onSubmit={handleSearch} className="flex gap-2">
+        <input
+          type="text"
+          placeholder="Search products by name, brand, or SKU..."
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          className="flex-1 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+          style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+        />
+        <button
+          type="submit"
+          className="px-4 py-2 bg-green-500 text-black font-medium rounded-md hover:bg-green-400 transition"
+        >
+          Search
+        </button>
+        {(search || stockFilter) && (
+          <button
+            type="button"
+            onClick={() => {
+              setSearchInput('')
+              setSearch('')
+              setStockFilter('')
+            }}
+            className="px-4 py-2 font-medium rounded-md transition"
+            style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
+          >
+            Clear
+          </button>
+        )}
+      </form>
+
+      {/* POS Sync Notice */}
+      <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <div className="flex items-start">
+          <svg className="h-5 w-5 text-green-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div className="ml-3">
+            <h3 className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Connect your POS system</h3>
+            <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+              Automatically sync inventory from Square or Clover POS systems.
+            </p>
+            <span className="text-sm text-green-500 hover:text-green-400 mt-2 inline-block cursor-pointer">
+              Set up POS integration &rarr;
+            </span>
+          </div>
         </div>
       </div>
 

@@ -183,7 +183,40 @@ export default function DemoOrdersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Orders</h1>
+      <div>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Orders</h1>
+        <p className="mt-1" style={{ color: 'var(--text-secondary)' }}>
+          Manage and fulfill customer orders
+        </p>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Pending</div>
+          <div className="text-2xl font-bold text-yellow-500 mt-1">
+            {counts.pending}
+          </div>
+        </div>
+        <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Active</div>
+          <div className="text-2xl font-bold text-blue-500 mt-1">
+            {counts.accepted + counts.preparing + counts.ready}
+          </div>
+        </div>
+        <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Completed</div>
+          <div className="text-2xl font-bold text-green-500 mt-1">
+            {counts.delivered}
+          </div>
+        </div>
+        <div className="rounded-lg p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Total Orders</div>
+          <div className="text-2xl font-bold mt-1" style={{ color: 'var(--text-primary)' }}>
+            {counts.all}
+          </div>
+        </div>
+      </div>
 
       {/* Status Tabs */}
       <div className="flex flex-wrap gap-2">
