@@ -66,10 +66,48 @@ export default function UsersPage() {
   const [deleting, setDeleting] = useState<string | null>(null)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [userToDelete, setUserToDelete] = useState<User | null>(null)
+  const [signInEnabled, setSignInEnabled] = useState(true)
+  const [signInToggleLoading, setSignInToggleLoading] = useState(false)
 
   useEffect(() => {
     loadUsers()
+    loadSignInSetting()
   }, [])
+
+  const loadSignInSetting = async () => {
+    try {
+      const res = await fetch('/api/admin/content/settings?key=user_sign_in_enabled')
+      const data = await res.json()
+      if (data.setting?.value) {
+        setSignInEnabled(data.setting.value.enabled !== false)
+      }
+    } catch {
+      // Default to enabled
+    }
+  }
+
+  const toggleSignIn = async () => {
+    setSignInToggleLoading(true)
+    try {
+      const newValue = !signInEnabled
+      const res = await fetch('/api/admin/content/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          key: 'user_sign_in_enabled',
+          value: { enabled: newValue },
+          description: 'Controls whether user sign-in and registration is enabled',
+        }),
+      })
+      if (res.ok) {
+        setSignInEnabled(newValue)
+      }
+    } catch (error) {
+      console.error('Error toggling sign-in:', error)
+    } finally {
+      setSignInToggleLoading(false)
+    }
+  }
 
   const loadUsers = async () => {
     setLoading(true)
@@ -240,6 +278,34 @@ export default function UsersPage() {
       <div className="mb-10 pb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
         <h1 className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>User Management</h1>
         <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>View and manage all registered users</p>
+      </div>
+
+      {/* Sign-In Toggle */}
+      <div className="mb-8 rounded-xl p-5 flex items-center justify-between" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <div>
+          <h3 className="font-semibold text-lg" style={{ color: 'var(--text-primary)' }}>User Registration</h3>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+            {signInEnabled
+              ? 'Sign-in and registration are enabled. Users can create accounts and log in.'
+              : 'Sign-in and registration are disabled. The Sign In button and auth pages are hidden.'}
+          </p>
+        </div>
+        <button
+          onClick={toggleSignIn}
+          disabled={signInToggleLoading}
+          className={`relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out disabled:opacity-50 ${
+            signInEnabled ? 'bg-green-500' : 'bg-gray-600'
+          }`}
+          role="switch"
+          aria-checked={signInEnabled}
+        >
+          <span
+            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+              signInEnabled ? 'translate-x-6' : 'translate-x-1'
+            }`}
+            style={{ marginTop: '4px' }}
+          />
+        </button>
       </div>
 
       {/* Stats Cards */}

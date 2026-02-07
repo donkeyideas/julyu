@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -13,6 +13,19 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [error, setError] = useState('')
+  const [signInDisabled, setSignInDisabled] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/settings/public?key=user_sign_in_enabled')
+      .then(res => res.json())
+      .then(data => {
+        if (data.enabled === false) {
+          setSignInDisabled(true)
+          setTimeout(() => router.push('/'), 2000)
+        }
+      })
+      .catch(() => {})
+  }, [router])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -163,6 +176,23 @@ export default function LoginPage() {
     } finally {
       setGoogleLoading(false)
     }
+  }
+
+  if (signInDisabled) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
+        <div className="w-full max-w-md text-center">
+          <Link href="/" className="text-3xl font-black text-green-500 mb-8 block">
+            Julyu
+          </Link>
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8">
+            <h1 className="text-2xl font-bold mb-4">Sign-In Unavailable</h1>
+            <p className="text-gray-400 mb-6">Sign-in is currently disabled. Redirecting to home page...</p>
+            <Link href="/" className="text-green-500 hover:underline">Go to Home</Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface HeaderProps {
   transparent?: boolean
@@ -9,6 +9,14 @@ interface HeaderProps {
 
 export default function Header({ transparent = false }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [signInEnabled, setSignInEnabled] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/settings/public?key=user_sign_in_enabled')
+      .then(res => res.json())
+      .then(data => setSignInEnabled(data.enabled !== false))
+      .catch(() => setSignInEnabled(true))
+  }, [])
 
   return (
     <nav className={`fixed top-0 left-0 right-0 ${transparent ? 'bg-black/80' : 'bg-black/95'} backdrop-blur-lg border-b border-gray-800 px-[5%] py-6 z-50`}>
@@ -47,20 +55,22 @@ export default function Header({ transparent = false }: HeaderProps) {
         </ul>
 
         {/* Desktop Auth Buttons */}
-        <div className="hidden md:flex gap-4">
-          <Link
-            href="/auth/login"
-            className="px-6 py-3 rounded-lg border border-gray-700 text-white hover:border-green-500 transition"
-          >
-            Sign In
-          </Link>
-          <Link
-            href="/auth/signup"
-            className="px-6 py-3 rounded-lg bg-green-500 text-black font-semibold hover:bg-green-600 transition"
-          >
-            Get Started
-          </Link>
-        </div>
+        {signInEnabled && (
+          <div className="hidden md:flex gap-4">
+            <Link
+              href="/auth/login"
+              className="px-6 py-3 rounded-lg border border-gray-700 text-white hover:border-green-500 transition"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/auth/signup"
+              className="px-6 py-3 rounded-lg bg-green-500 text-black font-semibold hover:bg-green-600 transition"
+            >
+              Get Started
+            </Link>
+          </div>
+        )}
 
         {/* Mobile Menu Button */}
         <button
@@ -110,20 +120,22 @@ export default function Header({ transparent = false }: HeaderProps) {
               </Link>
             </li>
           </ul>
-          <div className="flex flex-col gap-3">
-            <Link
-              href="/auth/login"
-              className="px-6 py-3 rounded-lg border border-gray-700 text-white hover:border-green-500 transition text-center"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/auth/signup"
-              className="px-6 py-3 rounded-lg bg-green-500 text-black font-semibold hover:bg-green-600 transition text-center"
-            >
-              Get Started
-            </Link>
-          </div>
+          {signInEnabled && (
+            <div className="flex flex-col gap-3">
+              <Link
+                href="/auth/login"
+                className="px-6 py-3 rounded-lg border border-gray-700 text-white hover:border-green-500 transition text-center"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/auth/signup"
+                className="px-6 py-3 rounded-lg bg-green-500 text-black font-semibold hover:bg-green-600 transition text-center"
+              >
+                Get Started
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </nav>

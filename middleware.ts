@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
@@ -18,6 +19,31 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/demo/enter', request.url))
     }
     return NextResponse.next()
+  }
+
+  // Block /auth/login and /auth/signup if sign-in is disabled
+  const isAuthRoute = request.nextUrl.pathname.startsWith('/auth/login') ||
+                      request.nextUrl.pathname.startsWith('/auth/signup')
+  if (isAuthRoute) {
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+      if (supabaseUrl && serviceKey) {
+        const adminClient = createClient(supabaseUrl, serviceKey, {
+          auth: { autoRefreshToken: false, persistSession: false }
+        })
+        const { data } = await adminClient
+          .from('site_settings')
+          .select('value')
+          .eq('key', 'user_sign_in_enabled')
+          .single()
+        if (data?.value?.enabled === false) {
+          return NextResponse.redirect(new URL('/', request.url))
+        }
+      }
+    } catch {
+      // If check fails, allow through (fail open)
+    }
   }
 
   // Skip middleware if Supabase not configured
