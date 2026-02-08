@@ -6,6 +6,8 @@
 import { NextResponse } from 'next/server'
 import { runDataQualityChecks } from '@/lib/ai/agents/data-quality'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const report = await runDataQualityChecks()

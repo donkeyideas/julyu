@@ -6,6 +6,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { collectTrainingData, getTrainingDataStats } from '@/lib/ml/training-collector'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const stats = await getTrainingDataStats()

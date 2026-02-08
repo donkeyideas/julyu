@@ -8,6 +8,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPromoCodes, createPromoCode, updatePromoCode, deletePromoCode } from '@/lib/subscriptions/promo-codes'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const codes = await getPromoCodes()

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { spoonacularClient } from '@/lib/api/spoonacular'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * Test Spoonacular API connection
  * GET /api/spoonacular/test

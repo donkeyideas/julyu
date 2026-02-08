@@ -6,6 +6,8 @@
 import { NextResponse } from 'next/server'
 import { analyzePricingStrategy } from '@/lib/ai/agents/pricing-strategist'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const analysis = await analyzePricingStrategy()

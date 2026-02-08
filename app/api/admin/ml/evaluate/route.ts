@@ -6,6 +6,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { runEvaluationSuite, evaluateTask, getEvaluationHistory } from '@/lib/ml/evaluation'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const history = await getEvaluationHistory()

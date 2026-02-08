@@ -6,6 +6,8 @@
 import { NextResponse } from 'next/server'
 import { enforceRetentionPolicies, getRetentionStatus } from '@/lib/privacy/data-retention'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const status = await getRetentionStatus()
