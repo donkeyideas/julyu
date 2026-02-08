@@ -45,16 +45,37 @@ interface BlogPost {
   read_time_minutes: number
 }
 
+const POSTS_PER_PAGE = 9
+
 export const revalidate = 60
 
-export default async function BlogPage() {
+export default async function BlogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>
+}) {
+  const { page: pageParam } = await searchParams
+  const currentPage = Math.max(1, parseInt(pageParam || '1', 10) || 1)
+
   const supabase = await createServiceRoleClient() as any
+
+  // Get total count for pagination
+  const { count } = await supabase
+    .from('blog_posts')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'published')
+
+  const totalPosts = count || 0
+  const totalPages = Math.max(1, Math.ceil(totalPosts / POSTS_PER_PAGE))
+  const safePage = Math.min(currentPage, totalPages)
+  const offset = (safePage - 1) * POSTS_PER_PAGE
 
   const { data: posts } = await supabase
     .from('blog_posts')
     .select('id, title, slug, excerpt, category, featured_image_url, published_at, read_time_minutes')
     .eq('status', 'published')
     .order('published_at', { ascending: false })
+    .range(offset, offset + POSTS_PER_PAGE - 1)
 
   const blogPosts: BlogPost[] = posts || []
 
@@ -80,51 +101,90 @@ export default async function BlogPage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {blogPosts.map((post) => (
-                <Link
-                  key={post.id}
-                  href={`/blog/${post.slug}`}
-                  className="group bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden transition hover:border-green-500 hover:shadow-lg"
-                >
-                  {post.featured_image_url && (
-                    <div className="overflow-hidden bg-black/30">
-                      <img
-                        src={post.featured_image_url}
-                        alt={post.title}
-                        className="w-full h-auto group-hover:scale-105 transition duration-300"
-                      />
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {blogPosts.map((post) => (
+                  <Link
+                    key={post.id}
+                    href={`/blog/${post.slug}`}
+                    className="group bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden transition hover:border-green-500 hover:shadow-lg"
+                  >
+                    {post.featured_image_url && (
+                      <div className="overflow-hidden bg-black/30">
+                        <img
+                          src={post.featured_image_url}
+                          alt={post.title}
+                          className="w-full h-auto group-hover:scale-105 transition duration-300"
+                        />
+                      </div>
+                    )}
+                    <div className="p-6">
+                      {post.category && (
+                        <span className="text-xs font-semibold uppercase text-green-500 mb-2 block">
+                          {post.category}
+                        </span>
+                      )}
+                      <h2 className="text-xl font-bold mb-2 text-white group-hover:text-green-500 transition">
+                        {post.title}
+                      </h2>
+                      {post.excerpt && (
+                        <p className="text-sm mb-4 line-clamp-3 text-gray-500">
+                          {post.excerpt}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-3 text-xs text-gray-500">
+                        <span>
+                          {new Date(post.published_at).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
+                        </span>
+                        <span>&middot;</span>
+                        <span>{post.read_time_minutes} min read</span>
+                      </div>
                     </div>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-16">
+                  {safePage > 1 && (
+                    <Link
+                      href={safePage === 2 ? '/blog' : `/blog?page=${safePage - 1}`}
+                      className="px-4 py-2 rounded-lg text-sm font-semibold transition border border-gray-800 text-gray-400 hover:border-green-500 hover:text-green-500"
+                    >
+                      Previous
+                    </Link>
                   )}
-                  <div className="p-6">
-                    {post.category && (
-                      <span className="text-xs font-semibold uppercase text-green-500 mb-2 block">
-                        {post.category}
-                      </span>
-                    )}
-                    <h2 className="text-xl font-bold mb-2 text-white group-hover:text-green-500 transition">
-                      {post.title}
-                    </h2>
-                    {post.excerpt && (
-                      <p className="text-sm mb-4 line-clamp-3 text-gray-500">
-                        {post.excerpt}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-3 text-xs text-gray-500">
-                      <span>
-                        {new Date(post.published_at).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })}
-                      </span>
-                      <span>&middot;</span>
-                      <span>{post.read_time_minutes} min read</span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <Link
+                      key={page}
+                      href={page === 1 ? '/blog' : `/blog?page=${page}`}
+                      className={`w-10 h-10 flex items-center justify-center rounded-lg text-sm font-bold transition ${
+                        page === safePage
+                          ? 'bg-green-500 text-black'
+                          : 'border border-gray-800 text-gray-400 hover:border-green-500 hover:text-green-500'
+                      }`}
+                    >
+                      {page}
+                    </Link>
+                  ))}
+
+                  {safePage < totalPages && (
+                    <Link
+                      href={`/blog?page=${safePage + 1}`}
+                      className="px-4 py-2 rounded-lg text-sm font-semibold transition border border-gray-800 text-gray-400 hover:border-green-500 hover:text-green-500"
+                    >
+                      Next
+                    </Link>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
       </main>
