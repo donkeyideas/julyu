@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { cache } from 'react'
 import Header from '@/components/shared/Header'
 import Footer from '@/components/shared/Footer'
 import { createServiceRoleClient } from '@/lib/supabase/server'
@@ -27,20 +28,39 @@ interface BlogPost {
 
 export const revalidate = 60
 
+// Deduplicate the Supabase query between generateMetadata and the page component
+const getPost = cache(async (slug: string): Promise<BlogPost | null> => {
+  const supabase = await createServiceRoleClient() as any
+  const { data } = await supabase
+    .from('blog_posts')
+    .select('id, title, slug, excerpt, content, category, tags, featured_image_url, seo_title, meta_description, canonical_url, meta_robots, published_at, read_time_minutes, word_count')
+    .eq('slug', slug)
+    .eq('status', 'published')
+    .single()
+  return data as BlogPost | null
+})
+
+// Pre-render existing posts at build time
+export async function generateStaticParams() {
+  const supabase = await createServiceRoleClient() as any
+  const { data: posts } = await supabase
+    .from('blog_posts')
+    .select('slug')
+    .eq('status', 'published')
+    .limit(50)
+
+  return (posts || []).map((post: { slug: string }) => ({
+    slug: post.slug,
+  }))
+}
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const supabase = await createServiceRoleClient() as any
-
-  const { data: post } = await supabase
-    .from('blog_posts')
-    .select('title, seo_title, meta_description, excerpt, featured_image_url, canonical_url, meta_robots, slug')
-    .eq('slug', slug)
-    .eq('status', 'published')
-    .single()
+  const post = await getPost(slug)
 
   if (!post) {
     return { title: 'Post Not Found' }
@@ -100,20 +120,12 @@ export default async function BlogPostPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const supabase = await createServiceRoleClient() as any
+  const blogPost = await getPost(slug)
 
-  const { data: post } = await supabase
-    .from('blog_posts')
-    .select('*')
-    .eq('slug', slug)
-    .eq('status', 'published')
-    .single()
-
-  if (!post) {
+  if (!blogPost) {
     notFound()
   }
 
-  const blogPost = post as BlogPost
   const formattedContent = formatContent(blogPost.content)
 
   const articleJsonLd = {
@@ -182,6 +194,7 @@ export default async function BlogPostPage({
               <img
                 src={blogPost.featured_image_url}
                 alt={blogPost.title}
+                loading="eager"
                 className="w-full h-auto max-h-[500px] object-contain"
               />
             </div>

@@ -59,25 +59,27 @@ export default async function BlogPage({
 
   const supabase = await createServiceRoleClient() as any
 
-  // Get total count for pagination
-  const { count } = await supabase
-    .from('blog_posts')
-    .select('id', { count: 'exact', head: true })
-    .eq('status', 'published')
+  // Run count and posts queries in parallel
+  const [countResult, postsResult] = await Promise.all([
+    supabase
+      .from('blog_posts')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'published'),
+    supabase
+      .from('blog_posts')
+      .select('id, title, slug, excerpt, category, featured_image_url, published_at, read_time_minutes')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .range(
+        (Math.max(1, currentPage) - 1) * POSTS_PER_PAGE,
+        Math.max(1, currentPage) * POSTS_PER_PAGE - 1
+      ),
+  ])
 
-  const totalPosts = count || 0
+  const totalPosts = countResult.count || 0
   const totalPages = Math.max(1, Math.ceil(totalPosts / POSTS_PER_PAGE))
   const safePage = Math.min(currentPage, totalPages)
-  const offset = (safePage - 1) * POSTS_PER_PAGE
-
-  const { data: posts } = await supabase
-    .from('blog_posts')
-    .select('id, title, slug, excerpt, category, featured_image_url, published_at, read_time_minutes')
-    .eq('status', 'published')
-    .order('published_at', { ascending: false })
-    .range(offset, offset + POSTS_PER_PAGE - 1)
-
-  const blogPosts: BlogPost[] = posts || []
+  const blogPosts: BlogPost[] = postsResult.data || []
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-green-900/30 to-black text-white flex flex-col">
@@ -103,7 +105,7 @@ export default async function BlogPage({
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {blogPosts.map((post) => (
+                {blogPosts.map((post, index) => (
                   <Link
                     key={post.id}
                     href={`/blog/${post.slug}`}
@@ -114,6 +116,7 @@ export default async function BlogPage({
                         <img
                           src={post.featured_image_url}
                           alt={post.title}
+                          loading={index < 3 ? 'eager' : 'lazy'}
                           className="w-full h-auto group-hover:scale-105 transition duration-300"
                         />
                       </div>
