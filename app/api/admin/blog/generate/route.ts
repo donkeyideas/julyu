@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { validateSession } from '@/lib/auth/admin-auth-v2'
 import { getApiKey } from '@/lib/api/config'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 
 const DEEPSEEK_BASE_URL = process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com'
 
@@ -29,24 +30,62 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'DeepSeek API key not configured' }, { status: 500 })
     }
 
-    const systemPrompt = `You are an expert SEO blog writer for Julyu, an AI-powered grocery price comparison platform that helps shoppers save money by comparing prices across stores.
+    // Fetch existing blog posts for internal linking
+    const supabase = await createServiceRoleClient() as any
+    const { data: existingPosts } = await supabase
+      .from('blog_posts')
+      .select('title, slug')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .limit(20)
+
+    const internalLinks = (existingPosts || [])
+      .map((p: { title: string; slug: string }) => `- "${p.title}" → https://www.julyu.com/blog/${p.slug}`)
+      .join('\n')
+
+    const systemPrompt = `You are an expert SEO blog writer for Julyu, an AI-powered grocery price comparison platform that helps shoppers save money by comparing prices across stores. Website: https://www.julyu.com
 
 Write blog posts that are:
 - Informative, engaging, and easy to read
 - SEO-optimized with focus keywords naturally woven into the content
-- Written in clean HTML (use <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em> tags)
+- Written in clean HTML (use <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <a> tags)
 - NEVER use markdown syntax (no **, ##, -, etc.) — only valid HTML tags
 - Between 800-1500 words for comprehensive coverage
 - Include actionable tips, statistics, or examples where relevant
 - Written in a friendly, authoritative tone
+- MUST include backlinks (internal and external) throughout the content
 
 Always respond with valid JSON only. No text before or after the JSON.`
 
     const userPrompt = `Generate a complete, SEO-optimized blog post for the title: "${title.trim()}"
 
+BACKLINKS — This is critical for SEO. You MUST include links in the content:
+
+1. INTERNAL LINKS (link to other pages on Julyu — include 2-4 of these):
+   Key Julyu pages:
+   - Homepage: https://www.julyu.com
+   - Features: https://www.julyu.com/features
+   - Pricing: https://www.julyu.com/pricing
+   - For Stores: https://www.julyu.com/for-stores
+   - Blog: https://www.julyu.com/blog
+
+   Existing blog posts (link to 1-3 that are relevant to this topic):
+${internalLinks || '   (No existing posts yet)'}
+
+2. EXTERNAL LINKS (include 2-3 credible sources):
+   - Link to authoritative sources like USDA, Bureau of Labor Statistics, Consumer Reports, university studies, or industry reports
+   - Use descriptive anchor text (not "click here")
+   - External links should open in a new tab: <a href="URL" target="_blank" rel="noopener noreferrer">anchor text</a>
+   - Internal links should NOT have target="_blank": <a href="URL">anchor text</a>
+
+Weave links naturally into the content. For example:
+- "Using a <a href="https://www.julyu.com/features">price comparison tool like Julyu</a> can help you..."
+- "According to the <a href="https://www.bls.gov/cpi/" target="_blank" rel="noopener noreferrer">Bureau of Labor Statistics</a>, food prices..."
+- "For more tips, check out our guide on <a href="https://www.julyu.com/blog/some-slug">smart grocery shopping</a>"
+
 Return a JSON object with these exact fields:
 {
-  "content": "Full blog post in clean HTML. Use <h2> for main sections, <h3> for subsections, <p> for paragraphs, <ul>/<ol>/<li> for lists, <strong> for emphasis. NO markdown. Start with an engaging intro paragraph (no heading for intro). Include 4-6 sections with h2 headings. End with a conclusion section.",
+  "content": "Full blog post in clean HTML. Use <h2> for main sections, <h3> for subsections, <p> for paragraphs, <ul>/<ol>/<li> for lists, <strong> for emphasis, <a> for links. NO markdown. Start with an engaging intro paragraph (no heading for intro). Include 4-6 sections with h2 headings. End with a conclusion section. MUST include 4-7 total backlinks spread throughout the content.",
   "excerpt": "A compelling 1-2 sentence summary for blog listing cards (under 200 characters)",
   "seo_title": "SEO-optimized title between 30-60 characters that includes the primary keyword",
   "meta_description": "Compelling meta description between 120-160 characters with a call to action",
@@ -57,6 +96,7 @@ Return a JSON object with these exact fields:
 
 Important:
 - The content MUST be clean HTML only. No markdown ** or ## characters.
+- The content MUST include 4-7 backlinks (mix of internal Julyu links and external authority links).
 - Focus keywords must appear naturally in the title, content, and meta description.
 - The seo_title should include the primary keyword and be 30-60 characters.
 - The meta_description should be 120-160 characters with a clear value proposition.
