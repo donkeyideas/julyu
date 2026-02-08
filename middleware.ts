@@ -21,6 +21,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Skip Supabase auth for public blog routes — they don't need authentication
+  const isBlogRoute = request.nextUrl.pathname === '/blog' ||
+                      request.nextUrl.pathname.startsWith('/blog/')
+  if (isBlogRoute) {
+    return NextResponse.next()
+  }
+
   // Block /auth/login and /auth/signup if sign-in is disabled
   const isAuthRoute = request.nextUrl.pathname.startsWith('/auth/login') ||
                       request.nextUrl.pathname.startsWith('/auth/signup')

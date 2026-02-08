@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { cache } from 'react'
 import Header from '@/components/shared/Header'
@@ -26,7 +27,7 @@ interface BlogPost {
   word_count: number
 }
 
-export const revalidate = 60
+export const revalidate = 300
 
 // Deduplicate the Supabase query between generateMetadata and the page component
 const getPost = cache(async (slug: string): Promise<BlogPost | null> => {
@@ -190,12 +191,14 @@ export default async function BlogPostPage({
           </div>
 
           {blogPost.featured_image_url && (
-            <div className="rounded-2xl overflow-hidden mb-10">
-              <img
+            <div className="rounded-2xl overflow-hidden mb-10 relative aspect-[2/1]" style={{ maxHeight: '500px' }}>
+              <Image
                 src={blogPost.featured_image_url}
                 alt={blogPost.title}
-                loading="eager"
-                className="w-full h-auto max-h-[500px] object-contain"
+                fill
+                sizes="(max-width: 768px) 100vw, 768px"
+                priority
+                className="object-contain"
               />
             </div>
           )}

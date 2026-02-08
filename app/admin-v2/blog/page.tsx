@@ -52,6 +52,11 @@ export default function BlogPage() {
   const [metaRobots, setMetaRobots] = useState('index, follow')
   const [status, setStatus] = useState<'draft' | 'published'>('draft')
 
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalPostCount, setTotalPostCount] = useState(0)
+  const ADMIN_POSTS_PER_PAGE = 20
+
   const [generating, setGenerating] = useState(false)
   const [generateError, setGenerateError] = useState<string | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -183,15 +188,20 @@ export default function BlogPage() {
   }, [title, metaDescription, focusKeywords, content, wordCount, featuredImageUrl, slug])
 
   // Fetch posts
-  const fetchPosts = async () => {
+  const fetchPosts = async (page = 1) => {
     try {
       const token = getAdminSessionToken()
-      const response = await fetch('/api/admin/blog', {
+      const response = await fetch(`/api/admin/blog?page=${page}&limit=${ADMIN_POSTS_PER_PAGE}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await response.json()
       if (response.ok) {
         setPosts(data.posts || [])
+        if (data.pagination) {
+          setCurrentPage(data.pagination.page)
+          setTotalPages(data.pagination.totalPages)
+          setTotalPostCount(data.pagination.total)
+        }
       }
     } catch (error) {
       console.error('Failed to load blog posts:', error)
@@ -201,7 +211,7 @@ export default function BlogPage() {
   }
 
   useEffect(() => {
-    fetchPosts()
+    fetchPosts(1)
   }, [])
 
   // Reset form
@@ -312,7 +322,7 @@ export default function BlogPage() {
       if (response.ok) {
         setShowModal(false)
         resetForm()
-        await fetchPosts()
+        await fetchPosts(currentPage)
       } else {
         const data = await response.json().catch(() => ({}))
         setSaveError(data.error || `Save failed with status ${response.status}`)
@@ -492,7 +502,7 @@ export default function BlogPage() {
   }
 
   // Stats
-  const totalPosts = posts.length
+  const totalPosts = totalPostCount
   const publishedCount = posts.filter(p => p.status === 'published').length
   const draftCount = posts.filter(p => p.status === 'draft').length
   const totalWordCount = posts.reduce((sum, p) => sum + (p.word_count || 0), 0)
@@ -687,6 +697,33 @@ export default function BlogPage() {
           </div>
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-6 px-2">
+          <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Page {currentPage} of {totalPages} ({totalPostCount} posts)
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => fetchPosts(currentPage - 1)}
+              disabled={currentPage <= 1}
+              className="px-4 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-30"
+              style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => fetchPosts(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+              className="px-4 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-30"
+              style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Create/Edit Modal */}
       {showModal && (

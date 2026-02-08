@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import Header from '@/components/shared/Header'
 import Footer from '@/components/shared/Footer'
 import { createServiceRoleClient } from '@/lib/supabase/server'
@@ -47,7 +48,7 @@ interface BlogPost {
 
 const POSTS_PER_PAGE = 9
 
-export const revalidate = 60
+export const revalidate = 300
 
 export default async function BlogPage({
   searchParams,
@@ -112,12 +113,14 @@ export default async function BlogPage({
                     className="group bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden transition hover:border-green-500 hover:shadow-lg"
                   >
                     {post.featured_image_url && (
-                      <div className="overflow-hidden bg-black/30">
-                        <img
+                      <div className="overflow-hidden bg-black/30 relative aspect-[16/9]">
+                        <Image
                           src={post.featured_image_url}
                           alt={post.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           loading={index < 3 ? 'eager' : 'lazy'}
-                          className="w-full h-auto group-hover:scale-105 transition duration-300"
+                          className="object-cover group-hover:scale-105 transition duration-300"
                         />
                       </div>
                     )}

@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     if (id) {
       const { data: post, error } = await supabase
         .from('blog_posts')
-        .select('*')
+        .select('id, content')
         .eq('id', id)
         .single()
 
@@ -54,17 +54,30 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, post })
     }
 
-    const { data: posts, error } = await supabase
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '20')
+
+    const { data: posts, error, count } = await supabase
       .from('blog_posts')
-      .select('id, title, slug, excerpt, status, category, tags, featured_image_url, seo_title, meta_description, focus_keywords, canonical_url, meta_robots, word_count, read_time_minutes, published_at, created_at, updated_at, author_id')
+      .select('id, title, slug, excerpt, status, category, tags, featured_image_url, seo_title, meta_description, focus_keywords, canonical_url, meta_robots, word_count, read_time_minutes, published_at, created_at, updated_at, author_id', { count: 'exact' })
       .order('created_at', { ascending: false })
+      .range((page - 1) * limit, page * limit - 1)
 
     if (error) {
       console.error('[Admin Blog] List posts error:', error)
       return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true, posts: posts || [] })
+    return NextResponse.json({
+      success: true,
+      posts: posts || [],
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limit),
+      },
+    })
   } catch (error) {
     console.error('[Admin Blog] GET error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
