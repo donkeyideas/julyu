@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({
     success: true,
-    message: `Password reset for ${data.email}`,
+    message: `Password reset for ${(data as any).email}`,
     hashPrefix: hash.substring(0, 10),
   })
 }
