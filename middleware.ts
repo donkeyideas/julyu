@@ -2,6 +2,14 @@ import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// Helper: race a promise against a timeout (returns undefined on timeout)
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | undefined> {
+  return Promise.race([
+    promise,
+    new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), ms)),
+  ])
+}
+
 export async function middleware(request: NextRequest) {
   // Skip Supabase auth entirely for demo routes
   const isDemoPage = request.nextUrl.pathname.startsWith('/demo/dashboard') ||
@@ -21,16 +29,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Skip Supabase auth for public blog routes — they don't need authentication
-  const isBlogRoute = request.nextUrl.pathname === '/blog' ||
-                      request.nextUrl.pathname.startsWith('/blog/')
-  if (isBlogRoute) {
+  // Skip Supabase auth for public routes that don't need authentication
+  const pathname = request.nextUrl.pathname
+  const isPublicRoute = pathname === '/' ||
+                        pathname === '/blog' || pathname.startsWith('/blog/') ||
+                        pathname === '/about' || pathname === '/contact' ||
+                        pathname === '/pricing' ||
+                        pathname.startsWith('/api/')
+  if (isPublicRoute) {
     return NextResponse.next()
   }
 
-  // Block /auth/login and /auth/signup if sign-in is disabled
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/auth/login') ||
-                      request.nextUrl.pathname.startsWith('/auth/signup')
+  // Block /auth/login and /auth/signup if sign-in is disabled (with 5s timeout)
+  const isAuthRoute = pathname.startsWith('/auth/login') ||
+                      pathname.startsWith('/auth/signup')
   if (isAuthRoute) {
     try {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -39,12 +51,15 @@ export async function middleware(request: NextRequest) {
         const adminClient = createClient(supabaseUrl, serviceKey, {
           auth: { autoRefreshToken: false, persistSession: false }
         })
-        const { data } = await adminClient
-          .from('site_settings')
-          .select('value')
-          .eq('key', 'user_sign_in_enabled')
-          .single()
-        if (data?.value?.enabled === false) {
+        const result = await withTimeout(
+          adminClient
+            .from('site_settings')
+            .select('value')
+            .eq('key', 'user_sign_in_enabled')
+            .single(),
+          5000
+        )
+        if (result?.data?.value?.enabled === false) {
           return NextResponse.redirect(new URL('/', request.url))
         }
       }
@@ -95,9 +110,9 @@ export async function middleware(request: NextRequest) {
 
   // IMPORTANT: Refresh session if expired - required for Server Components
   // https://supabase.com/docs/guides/auth/server-side/nextjs
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Use 5s timeout to prevent middleware from hanging when Supabase is unreachable
+  const userResult = await withTimeout(supabase.auth.getUser(), 5000)
+  const user = userResult?.data?.user ?? null
 
   // Log for store-portal routes
   const isStorePortal = request.nextUrl.pathname.startsWith('/store-portal')

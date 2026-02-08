@@ -1,5 +1,15 @@
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
+// Helper: race a promise against a timeout (rejects on timeout)
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error('Query timed out')), ms)),
+  ])
+}
+
+const QUERY_TIMEOUT = 5000 // 5 seconds
+
 export interface PageContent {
   slug: string
   title: string
@@ -41,11 +51,14 @@ export async function getPageContent(slug: string): Promise<PageContent | null> 
   try {
     const supabase = createServiceRoleClient() as any
 
-    const { data, error } = await supabase
-      .from('site_settings')
-      .select('*')
-      .eq('key', `page_content_${slug}`)
-      .single()
+    const { data, error } = await withTimeout(
+      supabase
+        .from('site_settings')
+        .select('*')
+        .eq('key', `page_content_${slug}`)
+        .single(),
+      QUERY_TIMEOUT
+    )
 
     if (error || !data) {
       return null
@@ -63,12 +76,15 @@ export async function getPageWithSections(slug: string): Promise<PageWithSection
   try {
     const supabase = createServiceRoleClient() as any
 
-    // Fetch the page
-    const { data: page, error: pageError } = await supabase
-      .from('page_content')
-      .select('*')
-      .eq('page_slug', slug)
-      .single()
+    // Fetch the page (with timeout to prevent hanging when Supabase is unreachable)
+    const { data: page, error: pageError } = await withTimeout(
+      supabase
+        .from('page_content')
+        .select('*')
+        .eq('page_slug', slug)
+        .single(),
+      QUERY_TIMEOUT
+    )
 
     if (pageError) {
       console.error(`Error fetching page ${slug}:`, pageError)
@@ -76,12 +92,15 @@ export async function getPageWithSections(slug: string): Promise<PageWithSection
     }
 
     // Fetch all sections for this page
-    const { data: sections, error: sectionsError } = await supabase
-      .from('page_sections')
-      .select('id, section_key, section_title, content, display_order, is_visible')
-      .eq('page_id', page.id)
-      .eq('is_visible', true)
-      .order('display_order', { ascending: true })
+    const { data: sections, error: sectionsError } = await withTimeout(
+      supabase
+        .from('page_sections')
+        .select('id, section_key, section_title, content, display_order, is_visible')
+        .eq('page_id', page.id)
+        .eq('is_visible', true)
+        .order('display_order', { ascending: true }),
+      QUERY_TIMEOUT
+    )
 
     if (sectionsError) {
       console.error(`Error fetching sections for page ${slug}:`, sectionsError)
@@ -111,24 +130,30 @@ export async function getPageSection(slug: string, sectionKey: string): Promise<
     const supabase = createServiceRoleClient() as any
 
     // First get the page ID
-    const { data: page, error: pageError } = await supabase
-      .from('page_content')
-      .select('id')
-      .eq('page_slug', slug)
-      .single()
+    const { data: page, error: pageError } = await withTimeout(
+      supabase
+        .from('page_content')
+        .select('id')
+        .eq('page_slug', slug)
+        .single(),
+      QUERY_TIMEOUT
+    )
 
     if (pageError || !page) {
       return null
     }
 
     // Then get the specific section
-    const { data: section, error: sectionError } = await supabase
-      .from('page_sections')
-      .select('content')
-      .eq('page_id', page.id)
-      .eq('section_key', sectionKey)
-      .eq('is_visible', true)
-      .single()
+    const { data: section, error: sectionError } = await withTimeout(
+      supabase
+        .from('page_sections')
+        .select('content')
+        .eq('page_id', page.id)
+        .eq('section_key', sectionKey)
+        .eq('is_visible', true)
+        .single(),
+      QUERY_TIMEOUT
+    )
 
     if (sectionError || !section) {
       return null
