@@ -48,7 +48,7 @@ interface BlogPost {
 
 const POSTS_PER_PAGE = 9
 
-export const revalidate = 300
+export const dynamic = 'force-dynamic'
 
 export default async function BlogPage({
   searchParams,

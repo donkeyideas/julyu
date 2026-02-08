@@ -27,7 +27,7 @@ interface BlogPost {
   word_count: number
 }
 
-export const revalidate = 300
+export const dynamic = 'force-dynamic'
 
 // Deduplicate the Supabase query between generateMetadata and the page component
 const getPost = cache(async (slug: string): Promise<BlogPost | null> => {
@@ -40,25 +40,6 @@ const getPost = cache(async (slug: string): Promise<BlogPost | null> => {
     .single()
   return data as BlogPost | null
 })
-
-// Pre-render existing posts at build time
-export async function generateStaticParams() {
-  try {
-    const supabase = await createServiceRoleClient() as any
-    const { data: posts } = await supabase
-      .from('blog_posts')
-      .select('slug')
-      .eq('status', 'published')
-      .limit(50)
-
-    return (posts || []).map((post: { slug: string }) => ({
-      slug: post.slug,
-    }))
-  } catch {
-    // If Supabase is unreachable during build, skip pre-rendering — ISR handles it at request time
-    return []
-  }
-}
 
 export async function generateMetadata({
   params,
