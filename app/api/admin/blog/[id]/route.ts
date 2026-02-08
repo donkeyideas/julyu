@@ -99,13 +99,16 @@ export async function PUT(
 
     if (error) {
       console.error('[Admin Blog] Update post error:', error)
-      return NextResponse.json({ error: 'Failed to update post' }, { status: 500 })
+      if (error.code === '23505') {
+        return NextResponse.json({ error: 'A post with this slug already exists.' }, { status: 409 })
+      }
+      return NextResponse.json({ error: `Failed to update post: ${error.message}` }, { status: 500 })
     }
 
     return NextResponse.json({ success: true, post })
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Admin Blog] PUT error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ error: `Internal server error: ${error.message || 'Unknown'}` }, { status: 500 })
   }
 }
 

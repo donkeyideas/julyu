@@ -146,13 +146,16 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('[Admin Blog] Create post error:', error)
-      return NextResponse.json({ error: 'Failed to create post' }, { status: 500 })
+      if (error.code === '23505') {
+        return NextResponse.json({ error: 'A post with this slug already exists. Please use a different slug.' }, { status: 409 })
+      }
+      return NextResponse.json({ error: `Failed to create post: ${error.message}` }, { status: 500 })
     }
 
     return NextResponse.json({ success: true, post })
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Admin Blog] POST error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ error: `Internal server error: ${error.message || 'Unknown'}` }, { status: 500 })
   }
 }
 

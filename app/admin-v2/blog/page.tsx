@@ -54,6 +54,7 @@ export default function BlogPage() {
 
   const [generating, setGenerating] = useState(false)
   const [generateError, setGenerateError] = useState<string | null>(null)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   const contentRef = useRef<HTMLTextAreaElement>(null)
 
@@ -222,6 +223,7 @@ export default function BlogPage() {
     setSlugManuallyEdited(false)
     setModalTab('content')
     setGenerateError(null)
+    setSaveError(null)
   }
 
   // Open create modal
@@ -257,6 +259,7 @@ export default function BlogPage() {
   const handleSave = async () => {
     if (!title.trim() || !content.trim()) return
     setSaving(true)
+    setSaveError(null)
 
     const postData = {
       title: title.trim(),
@@ -294,9 +297,13 @@ export default function BlogPage() {
         setShowModal(false)
         resetForm()
         await fetchPosts()
+      } else {
+        const data = await response.json().catch(() => ({}))
+        setSaveError(data.error || `Save failed with status ${response.status}`)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save blog post:', error)
+      setSaveError(error.message || 'Network error - please try again')
     } finally {
       setSaving(false)
     }
@@ -1155,7 +1162,13 @@ export default function BlogPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex items-center justify-between px-8 py-4 shrink-0" style={{ borderTop: '1px solid var(--border-color)' }}>
+            <div className="px-8 py-4 shrink-0" style={{ borderTop: '1px solid var(--border-color)' }}>
+              {saveError && (
+                <div className="mb-3 px-4 py-2 rounded-lg text-sm bg-red-500/15 text-red-400 border border-red-500/30">
+                  {saveError}
+                </div>
+              )}
+              <div className="flex items-center justify-between">
               <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
                 {editingPost ? `Last updated: ${formatDate(editingPost.updated_at)}` : 'Fill in required fields (*) to save'}
               </div>
@@ -1174,6 +1187,7 @@ export default function BlogPage() {
                 >
                   {saving ? 'Saving...' : (editingPost ? 'Update Post' : 'Create Post')}
                 </button>
+              </div>
               </div>
             </div>
           </div>
