@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       password_hash: hash,
       failed_login_attempts: 0,
       locked_until: null,
-    })
+    } as never)
     .eq('email', email.toLowerCase())
     .select('id, email')
     .single()
