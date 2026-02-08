@@ -43,16 +43,21 @@ const getPost = cache(async (slug: string): Promise<BlogPost | null> => {
 
 // Pre-render existing posts at build time
 export async function generateStaticParams() {
-  const supabase = await createServiceRoleClient() as any
-  const { data: posts } = await supabase
-    .from('blog_posts')
-    .select('slug')
-    .eq('status', 'published')
-    .limit(50)
+  try {
+    const supabase = await createServiceRoleClient() as any
+    const { data: posts } = await supabase
+      .from('blog_posts')
+      .select('slug')
+      .eq('status', 'published')
+      .limit(50)
 
-  return (posts || []).map((post: { slug: string }) => ({
-    slug: post.slug,
-  }))
+    return (posts || []).map((post: { slug: string }) => ({
+      slug: post.slug,
+    }))
+  } catch {
+    // If Supabase is unreachable during build, skip pre-rendering — ISR handles it at request time
+    return []
+  }
 }
 
 export async function generateMetadata({
