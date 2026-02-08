@@ -320,6 +320,7 @@ export async function invalidateAllEmployeeSessions(employeeId: string): Promise
 }
 
 export async function markSessionAs2FAVerified(token: string): Promise<boolean> {
+  sessionCache.delete(token)
   const supabase = await createServiceRoleClient()
   const { error } = await supabase
     .from('admin_sessions')
@@ -333,6 +334,7 @@ export async function markSessionAs2FAVerified(token: string): Promise<boolean> 
 }
 
 export async function markSessionPasswordChanged(token: string): Promise<boolean> {
+  sessionCache.delete(token)
   const supabase = await createServiceRoleClient()
   const { error } = await supabase
     .from('admin_sessions')
