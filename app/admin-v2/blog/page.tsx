@@ -233,13 +233,13 @@ export default function BlogPage() {
     setShowModal(true)
   }
 
-  // Open edit modal
-  const openEditModal = (post: BlogPost) => {
+  // Open edit modal — fetch full post (with content) from API
+  const openEditModal = async (post: BlogPost) => {
     setEditingPost(post)
     setTitle(post.title)
     setSlug(post.slug)
     setExcerpt(post.excerpt || '')
-    setContent(post.content || '')
+    setContent('') // Will be loaded below
     setCategory(post.category || '')
     setTags(post.tags || [])
     setTagInput('')
@@ -253,6 +253,22 @@ export default function BlogPage() {
     setSlugManuallyEdited(true)
     setModalTab('content')
     setShowModal(true)
+
+    // Lazy-load content from API
+    try {
+      const token = getAdminSessionToken()
+      const res = await fetch(`/api/admin/blog?id=${post.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.post?.content) {
+          setContent(data.post.content)
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load post content:', err)
+    }
   }
 
   // Handle save
@@ -494,26 +510,28 @@ export default function BlogPage() {
     const t = post.title || ''
     const md = post.meta_description || ''
     const fk = post.focus_keywords || ''
-    const c = post.content || ''
     const s = post.slug || ''
     const wc = post.word_count || 0
 
+    // Title: 30-60 chars (15pts)
     if (t.length >= 30 && t.length <= 60) score += 15
+    // Meta desc exists (10pts)
     if (md.length > 0) score += 10
+    // Meta desc 120-160 chars (15pts)
     if (md.length >= 120 && md.length <= 160) score += 15
+    // Has focus keywords (10pts)
     if (fk.trim().length > 0) score += 10
+    // Focus keyword in title (15pts)
     if (fk.trim().length > 0 && t.length > 0) {
       const kws = fk.split(',').map(k => k.trim().toLowerCase()).filter(Boolean)
-      if (kws.some(kw => t.toLowerCase().includes(kw))) score += 10
+      if (kws.some(kw => t.toLowerCase().includes(kw))) score += 15
     }
-    if (fk.trim().length > 0 && c.length > 0) {
-      const kws = fk.split(',').map(k => k.trim().toLowerCase()).filter(Boolean)
-      if (kws.some(kw => c.toLowerCase().includes(kw))) score += 10
-    }
-    if (c.includes('<strong>') || c.includes('<h2') || c.includes('<h3') || c.includes('##')) score += 10
-    if (wc > 300) score += 10
-    if ((post.featured_image_url || '').trim().length > 0) score += 5
-    if (s.length > 0 && s.length <= 75 && !s.includes('--') && /^[a-z0-9-]+$/.test(s)) score += 5
+    // Word count > 300 (15pts)
+    if (wc > 300) score += 15
+    // Has featured image (10pts)
+    if ((post.featured_image_url || '').trim().length > 0) score += 10
+    // Clean slug (10pts)
+    if (s.length > 0 && s.length <= 75 && !s.includes('--') && /^[a-z0-9-]+$/.test(s)) score += 10
 
     return score
   }

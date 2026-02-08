@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
 
     const { data: posts, error } = await supabase
       .from('blog_posts')
-      .select('*')
+      .select('id, title, slug, excerpt, status, category, tags, featured_image_url, seo_title, meta_description, focus_keywords, canonical_url, meta_robots, word_count, read_time_minutes, published_at, created_at, updated_at, author_id')
       .order('created_at', { ascending: false })
 
     if (error) {
