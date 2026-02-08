@@ -231,9 +231,23 @@ export async function createSession(
   return data as unknown as AdminSession
 }
 
+// In-memory cache to avoid duplicate DB queries for the same token within a short window
+const sessionCache = new Map<string, { result: SessionValidationResult; timestamp: number }>()
+const SESSION_CACHE_TTL = 30_000 // 30 seconds
+
+// Throttle last_activity writes to once per 5 minutes per token
+const lastActivityUpdates = new Map<string, number>()
+const ACTIVITY_UPDATE_INTERVAL = 5 * 60_000 // 5 minutes
+
 export async function validateSession(token: string): Promise<SessionValidationResult> {
   if (!token) {
     return { valid: false, employee: null, requires2FA: false, requiresPasswordChange: false, error: 'No session token' }
+  }
+
+  // Check cache first
+  const cached = sessionCache.get(token)
+  if (cached && Date.now() - cached.timestamp < SESSION_CACHE_TTL) {
+    return cached.result
   }
 
   const supabase = await createServiceRoleClient()
@@ -246,7 +260,9 @@ export async function validateSession(token: string): Promise<SessionValidationR
     .single()
 
   if (sessionError || !session) {
-    return { valid: false, employee: null, requires2FA: false, requiresPasswordChange: false, error: 'Invalid session' }
+    const result: SessionValidationResult = { valid: false, employee: null, requires2FA: false, requiresPasswordChange: false, error: 'Invalid session' }
+    sessionCache.delete(token)
+    return result
   }
 
   const sessionRow = session as unknown as AdminSessionRow
@@ -265,21 +281,35 @@ export async function validateSession(token: string): Promise<SessionValidationR
     return { valid: false, employee: null, requires2FA: false, requiresPasswordChange: false, error: 'Account deactivated' }
   }
 
-  // Update last activity
-  await supabase
-    .from('admin_sessions')
-    .update({ last_activity: new Date().toISOString() } as never)
-    .eq('session_token', token)
+  // Throttle last_activity updates — only write once per 5 minutes
+  const lastUpdate = lastActivityUpdates.get(token) || 0
+  if (Date.now() - lastUpdate > ACTIVITY_UPDATE_INTERVAL) {
+    lastActivityUpdates.set(token, Date.now())
+    // Fire and forget — don't await
+    Promise.resolve(
+      supabase
+        .from('admin_sessions')
+        .update({ last_activity: new Date().toISOString() } as never)
+        .eq('session_token', token)
+    ).catch(() => {})
+  }
 
-  return {
+  const result: SessionValidationResult = {
     valid: true,
     employee: employee as unknown as AdminEmployee,
     requires2FA: sessionRow.requires_2fa,
     requiresPasswordChange: sessionRow.requires_password_change,
   }
+
+  // Cache the valid result
+  sessionCache.set(token, { result, timestamp: Date.now() })
+
+  return result
 }
 
 export async function invalidateSession(token: string): Promise<void> {
+  sessionCache.delete(token)
+  lastActivityUpdates.delete(token)
   const supabase = await createServiceRoleClient()
   await supabase.from('admin_sessions').delete().eq('session_token', token)
 }
