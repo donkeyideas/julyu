@@ -1,10 +1,11 @@
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
 // Helper: race a promise against a timeout (rejects on timeout)
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+// Uses `any` because Supabase client is cast as `any` throughout this file
+function withTimeout(promise: Promise<any>, ms: number): Promise<any> {
   return Promise.race([
     promise,
-    new Promise<T>((_, reject) => setTimeout(() => reject(new Error('Query timed out')), ms)),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('Query timed out')), ms)),
   ])
 }
 
