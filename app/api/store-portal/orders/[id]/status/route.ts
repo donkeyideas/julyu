@@ -5,6 +5,8 @@ import { sendOrderStatusUpdateEmail } from '@/lib/services/email'
 import { createOrderDelivery } from '@/lib/services/doordash-drive'
 import { sendPushToUser } from '@/lib/services/push-notifications'
 
+export const dynamic = 'force-dynamic'
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }

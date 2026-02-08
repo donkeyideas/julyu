@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 function log(action: string, message: string, data?: any) {
   const timestamp = new Date().toISOString()
   console.log(`[Store Detail ${action}] ${timestamp} - ${message}`, data ? JSON.stringify(data) : '')

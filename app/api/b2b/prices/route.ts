@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { authenticateB2B, logB2BCall } from '@/lib/b2b/auth'
 import { getAnonymizedPrices } from '@/lib/data/anonymizer'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   const startTime = Date.now()
 

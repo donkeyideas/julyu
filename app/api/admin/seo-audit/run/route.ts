@@ -5,6 +5,8 @@ import { crawlSite } from '@/lib/seo/crawler'
 import { calculateScores } from '@/lib/seo/scoring'
 import { generateRecommendations } from '@/lib/seo/recommendations'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization')

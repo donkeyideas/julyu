@@ -3,6 +3,8 @@ import { createServerClient } from '@/lib/supabase/server'
 import { sendOrderConfirmationEmail, sendNewOrderAlertEmail } from '@/lib/services/email'
 import { sendPushToUser, sendPushToStoreOwner } from '@/lib/services/push-notifications'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerClient()

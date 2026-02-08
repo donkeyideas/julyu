@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { getStoreOwnerAnyStatus, getStoreOwnerStores } from '@/lib/auth/store-portal-auth'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * Geocode an address using multiple services with fallbacks
  * 1. US Census Bureau Geocoder (free, no API key, reliable for US addresses)

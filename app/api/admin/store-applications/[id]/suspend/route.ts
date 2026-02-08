@@ -4,6 +4,8 @@ import { verifyAdminAccess } from '@/lib/auth/store-portal-auth'
 import { sendStoreSuspensionEmail, sendOrderStatusUpdateEmail } from '@/lib/services/email'
 import { cancelOrderDelivery } from '@/lib/services/doordash-drive'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

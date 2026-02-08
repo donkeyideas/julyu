@@ -5,6 +5,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateReport, type ReportConfig } from '@/lib/b2b/report-generator'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()

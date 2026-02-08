@@ -4,6 +4,8 @@ import { ensureUserExists } from '@/lib/auth/ensure-user'
 import { hasFeature } from '@/lib/subscriptions/feature-gate'
 import { spoonacularClient } from '@/lib/api/spoonacular'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     // Auth: try Supabase first, fall back to Firebase headers

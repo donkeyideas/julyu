@@ -12,6 +12,8 @@ import { optimizeShoppingList, saveOptimizedList } from '@/lib/ai/list-optimizer
 import { hasFeature } from '@/lib/subscriptions/feature-gate'
 import type { LLMMessage } from '@/types/llm'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerClient()

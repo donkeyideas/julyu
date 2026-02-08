@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 // Seed endpoint is permanently disabled for security
 // Admin accounts must be created through the Employees page by existing admins
 

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { validateSession, resetEmployeeTotp } from '@/lib/auth/admin-auth-v2'
 import { hasActionPermission } from '@/lib/auth/permissions'
 
+export const dynamic = 'force-dynamic'
+
 interface RouteParams {
   params: Promise<{ id: string }>
 }

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 // Public API - no authentication required
 // Fetches page content and sections for frontend rendering
 export async function GET(

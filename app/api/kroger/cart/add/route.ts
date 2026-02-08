@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { getUserToken } from '@/lib/api/kroger-oauth'
 
+export const dynamic = 'force-dynamic'
+
 interface CartItem {
   productId: string
   quantity: number

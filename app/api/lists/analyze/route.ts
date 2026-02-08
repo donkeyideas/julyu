@@ -20,6 +20,8 @@ import {
   type ComparisonTrainingPair,
 } from '@/lib/ml/comparison-training'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * Search for nearby bodega stores with inventory
  */

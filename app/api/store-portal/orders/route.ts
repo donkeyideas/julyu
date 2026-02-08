@@ -3,6 +3,8 @@ import { createServerClient } from '@/lib/supabase/server'
 import { getStoreOwnerAnyStatus } from '@/lib/auth/store-portal-auth'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 // GET - Get all orders for store owner
 export async function GET(request: NextRequest) {
   try {

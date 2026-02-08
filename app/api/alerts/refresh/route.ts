@@ -3,6 +3,8 @@ import { createServerClient, createServiceRoleClient } from '@/lib/supabase/serv
 import { ensureUserExists } from '@/lib/auth/ensure-user'
 import { spoonacularClient } from '@/lib/api/spoonacular'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerClient()

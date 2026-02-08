@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { sendStoreApprovalEmail, sendStoreRejectionEmail } from '@/lib/services/email'
 
+export const dynamic = 'force-dynamic'
+
 // Unified Store Management API
 // GET: List all stores
 // PUT: Update store (approve/reject)

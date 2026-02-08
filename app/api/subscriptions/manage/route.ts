@@ -13,6 +13,8 @@ import { invalidateFeatureCache } from '@/lib/subscriptions/feature-gate'
 import { getPlanBySlug } from '@/lib/subscriptions/plans'
 import type Stripe from 'stripe'
 
+export const dynamic = 'force-dynamic'
+
 function resolveUserId(request: NextRequest, user: { id: string } | null): string | null {
   if (user) return user.id
   return request.headers.get('x-user-id')

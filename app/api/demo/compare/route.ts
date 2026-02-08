@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 // Fixed demo data - realistic prices for common grocery items
 const DEMO_PRODUCTS: Record<string, { name: string; brand: string; prices: Record<string, number> }> = {
   'milk 2%': {

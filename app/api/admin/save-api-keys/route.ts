@@ -3,6 +3,8 @@ import { createServerClient } from '@/lib/supabase/server'
 import { resetStripeClient } from '@/lib/stripe/client'
 import crypto from 'crypto'
 
+export const dynamic = 'force-dynamic'
+
 // Simple encryption key (in production, use a proper key management system)
 // Must be exactly 32 bytes for AES-256
 const getEncryptionKey = (): string => {

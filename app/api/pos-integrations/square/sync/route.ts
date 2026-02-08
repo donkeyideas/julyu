@@ -3,6 +3,8 @@ import { createServerClient } from '@/lib/supabase/server'
 import { getStoreOwner } from '@/lib/auth/store-portal-auth'
 import SquarePOSService from '@/lib/services/square-pos'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const { storeOwner, user, error: authError } = await getStoreOwner()

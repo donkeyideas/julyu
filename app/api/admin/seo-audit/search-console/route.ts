@@ -3,6 +3,8 @@ import { createServiceRoleClient } from '@/lib/supabase/server'
 import { validateSession } from '@/lib/auth/admin-auth-v2'
 import { isSearchConsoleConfigured, fetchSearchAnalytics } from '@/lib/seo/search-console'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization')

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 // TODO: Uncomment when pos_connections table is created in Supabase
 // import { createServiceRoleClient } from '@/lib/supabase/server'
 

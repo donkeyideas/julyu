@@ -3,6 +3,8 @@ import Header from '@/components/shared/Header'
 import Footer from '@/components/shared/Footer'
 import { getPageWithSections } from '@/lib/content/getPageContent'
 
+export const dynamic = 'force-dynamic'
+
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://julyu.com'
 
 export const metadata: Metadata = {

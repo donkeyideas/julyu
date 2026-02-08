@@ -13,6 +13,8 @@ import {
 } from '@/lib/stripe/webhooks'
 import type Stripe from 'stripe'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const stripe = await getStripeClient()

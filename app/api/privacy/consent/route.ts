@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { getUserConsent, updateBulkConsent, type ConsentType } from '@/lib/privacy/consent-manager'
 
+export const dynamic = 'force-dynamic'
+
 const VALID_CONSENT_TYPES: ConsentType[] = ['data_aggregation', 'ai_training', 'marketing', 'analytics']
 
 export async function GET(request: NextRequest) {

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   console.log('[Admin Store Applications] ====== FETCHING APPLICATIONS ======')
   console.log('[Admin Store Applications] Timestamp:', new Date().toISOString())

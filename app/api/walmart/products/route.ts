@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { serpApiWalmartClient, searchAndImportWalmartProducts } from '@/lib/api/serpapi-walmart'
 import { createServerClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * Search Walmart products via SerpApi
  * GET /api/walmart/products?q=milk&limit=10

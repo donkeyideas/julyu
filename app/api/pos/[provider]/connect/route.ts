@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getStoreOwnerAnyStatus } from '@/lib/auth/store-portal-auth'
 
+export const dynamic = 'force-dynamic'
+
 // POS Provider configurations
 const POS_CONFIGS: Record<string, {
   name: string

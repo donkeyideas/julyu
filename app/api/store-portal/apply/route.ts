@@ -3,6 +3,8 @@ import { createServerClient, createServiceRoleClient } from '@/lib/supabase/serv
 import { hasStoreOwnerAccount } from '@/lib/auth/store-portal-auth'
 import { sendStoreApplicationSubmittedEmail, sendStoreAccountCreatedEmail } from '@/lib/services/email'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   console.log('[Store Apply] ====== NEW APPLICATION SUBMISSION ======')
   console.log('[Store Apply] Timestamp:', new Date().toISOString())

@@ -12,6 +12,8 @@ import {
 import { parseActionsFromResponse, executeAction } from '@/lib/ai/tools'
 import { ensureUserExists } from '@/lib/auth/ensure-user'
 
+export const dynamic = 'force-dynamic'
+
 interface Message {
   role: 'user' | 'assistant' | 'system'
   content: string

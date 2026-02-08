@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import axios from 'axios'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * Direct API key test - bypasses all encryption/decryption
  * This is for debugging purposes only

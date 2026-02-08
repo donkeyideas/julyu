@@ -8,6 +8,8 @@ import { createServerClient } from '@/lib/supabase/server'
 import { executeAction } from '@/lib/ai/tools'
 import type { ActionType } from '@/lib/ai/tools'
 
+export const dynamic = 'force-dynamic'
+
 const VALID_ACTIONS: ActionType[] = [
   'ADD_TO_LIST',
   'SET_ALERT',

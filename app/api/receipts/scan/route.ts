@@ -5,6 +5,8 @@ import { llmOrchestrator } from '@/lib/llm/orchestrator'
 import { uploadReceiptImage } from '@/lib/storage/receipts'
 import { extractPricesFromReceipt } from '@/lib/services/price-extractor'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     // Auth: try Supabase first, fall back to Firebase headers

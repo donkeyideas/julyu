@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 // Verify token and reset password
 export async function POST(request: NextRequest) {
   console.log('[Confirm Reset] Request received')

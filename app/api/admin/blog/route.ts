@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { validateSession } from '@/lib/auth/admin-auth-v2'
 
+export const dynamic = 'force-dynamic'
+
 function stripHtmlTags(html: string): string {
   return html.replace(/<[^>]*>/g, '')
 }

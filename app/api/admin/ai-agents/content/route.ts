@@ -6,6 +6,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateContent, type ContentRequest, type ContentType } from '@/lib/ai/agents/content-generator'
 
+export const dynamic = 'force-dynamic'
+
 const VALID_TYPES: ContentType[] = ['blog_post', 'email', 'social_media', 'product_description', 'newsletter']
 
 export async function POST(request: NextRequest) {

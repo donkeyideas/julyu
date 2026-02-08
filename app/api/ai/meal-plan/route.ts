@@ -11,6 +11,8 @@ import { createServerClient, createServiceRoleClient } from '@/lib/supabase/serv
 import { generateMealPlan, saveMealPlan, type GenerateMealPlanOptions } from '@/lib/ai/meal-planner'
 import { hasFeature } from '@/lib/subscriptions/feature-gate'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerClient()

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { getStoreOwnerAnyStatus } from '@/lib/auth/store-portal-auth'
 
+export const dynamic = 'force-dynamic'
+
 // PUT - Update inventory item
 export async function PUT(
   request: NextRequest,

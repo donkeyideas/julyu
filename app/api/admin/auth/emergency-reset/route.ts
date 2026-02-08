@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import bcrypt from 'bcryptjs'
 
+export const dynamic = 'force-dynamic'
+
 // TEMPORARY: Remove this file after resetting password
 export async function POST(request: NextRequest) {
   const body = await request.json()

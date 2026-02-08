@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 // Try to insert user with progressively fewer columns if some don't exist
 async function createUserWithFallback(
   supabase: any,

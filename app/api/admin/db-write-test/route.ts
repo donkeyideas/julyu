@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 // Simple endpoint to test if database writes work
 export async function GET(request: NextRequest) {
   console.log('[DB Write Test] ====== STARTING TEST ======')

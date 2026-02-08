@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
+export const dynamic = 'force-dynamic'
+
 // GET - Fetch specific page with all sections
 export async function GET(
   request: NextRequest,

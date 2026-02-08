@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { krogerClient } from '@/lib/api/kroger'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * Search Kroger stores
  * GET /api/kroger/stores?zipCode=90210&radiusMiles=10&limit=5

@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { deleteUserData, previewUserData } from '@/lib/privacy/data-deletion'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * POST — Preview what data will be deleted.
  */

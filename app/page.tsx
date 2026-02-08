@@ -12,6 +12,8 @@ import RequestDemoModal from '@/components/shared/RequestDemoModal'
 import CTASection from '@/components/home/CTASection'
 import { getPageWithSections } from '@/lib/content/getPageContent'
 
+export const dynamic = 'force-dynamic'
+
 export default async function HomePage() {
   // Fetch content from database
   const { content } = await getPageWithSections('home')

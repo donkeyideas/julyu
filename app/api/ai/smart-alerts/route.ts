@@ -8,6 +8,8 @@ import { createServerClient } from '@/lib/supabase/server'
 import { contextualizeTriggeredAlerts } from '@/lib/ai/alert-contextualizer'
 import { hasFeature } from '@/lib/subscriptions/feature-gate'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createServerClient()

@@ -6,6 +6,8 @@
 import { NextResponse } from 'next/server'
 import { trackBatchEvents } from '@/lib/events/server-tracker'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: Request) {
   try {
     const body = await request.json()

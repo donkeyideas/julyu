@@ -8,6 +8,8 @@ import {
 } from '@/lib/auth/admin-auth-v2'
 import { hasActionPermission, DEFAULT_PERMISSIONS, AdminPermissions } from '@/lib/auth/permissions'
 
+export const dynamic = 'force-dynamic'
+
 // GET: List all employees
 export async function GET(request: NextRequest) {
   try {

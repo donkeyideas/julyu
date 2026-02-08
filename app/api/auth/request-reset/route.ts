@@ -3,6 +3,8 @@ import { createServiceRoleClient } from '@/lib/supabase/server'
 import { Resend } from 'resend'
 import crypto from 'crypto'
 
+export const dynamic = 'force-dynamic'
+
 // Custom password reset using Resend (branded emails)
 export async function POST(request: NextRequest) {
   console.log('[Password Reset] Request received')

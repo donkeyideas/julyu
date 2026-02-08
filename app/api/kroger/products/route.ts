@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { krogerClient, searchAndImportKrogerProducts } from '@/lib/api/kroger'
 import { createServerClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * Search Kroger products
  * GET /api/kroger/products?q=milk&locationId=01400376&limit=10

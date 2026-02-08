@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * Geocode an address using US Census Bureau Geocoder (free, no API key required)
  */

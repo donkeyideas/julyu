@@ -3,6 +3,8 @@ import { validateSession } from '@/lib/auth/admin-auth-v2'
 import { getApiKey } from '@/lib/api/config'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 const DEEPSEEK_BASE_URL = process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com'
 
 export async function POST(request: NextRequest) {

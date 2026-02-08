@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { getStoreOwnerAnyStatus, getStoreOwnerStores } from '@/lib/auth/store-portal-auth'
 
+export const dynamic = 'force-dynamic'
+
 // GET - Get inventory for store owner with pagination
 export async function GET(request: NextRequest) {
   try {

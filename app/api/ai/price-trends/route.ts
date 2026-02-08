@@ -10,6 +10,8 @@ import { analyzePriceTrend, batchAnalyzePriceTrends } from '@/lib/ai/price-predi
 import { explainPriceTrend } from '@/lib/ai/price-explainer'
 import { hasFeature } from '@/lib/subscriptions/feature-gate'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createServerClient()

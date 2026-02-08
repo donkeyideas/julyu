@@ -7,6 +7,8 @@ import {
   logAuditEvent,
 } from '@/lib/auth/admin-auth-v2'
 
+export const dynamic = 'force-dynamic'
+
 // GET: Generate QR code and secret for 2FA setup
 export async function GET(request: NextRequest) {
   try {

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getStoreOwnerAnyStatus, getStoreOwnerStores } from '@/lib/auth/store-portal-auth'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 // GET - Get dashboard data for store owner
 export async function GET(request: NextRequest) {
   try {

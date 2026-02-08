@@ -8,6 +8,8 @@ import { createServerClient } from '@/lib/supabase/server'
 import { getAuthorizationUrl } from '@/lib/api/kroger-oauth'
 import crypto from 'crypto'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createServerClient()

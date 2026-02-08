@@ -9,6 +9,8 @@ import {
 } from '@/lib/auth/admin-auth-v2'
 import { hasActionPermission, AdminPermissions } from '@/lib/auth/permissions'
 
+export const dynamic = 'force-dynamic'
+
 interface RouteParams {
   params: Promise<{ id: string }>
 }

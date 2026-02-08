@@ -6,6 +6,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { getUserPlan, getUserPlanFeatures } from '@/lib/subscriptions/feature-gate'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     let userId: string | null = null

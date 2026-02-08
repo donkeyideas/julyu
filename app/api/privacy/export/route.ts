@@ -7,6 +7,8 @@ import { createServerClient } from '@/lib/supabase/server'
 import { exportUserData } from '@/lib/privacy/data-export'
 import * as XLSX from 'xlsx'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerClient()

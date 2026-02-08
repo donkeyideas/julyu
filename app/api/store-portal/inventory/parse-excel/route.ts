@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getStoreOwnerAnyStatus } from '@/lib/auth/store-portal-auth'
 import * as XLSX from 'xlsx'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     // Verify user is authenticated

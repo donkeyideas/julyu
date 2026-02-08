@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * Demo Data Seeder - Populates all dashboard tables with realistic sample data
  * POST /api/demo/seed - Seeds data for the authenticated user

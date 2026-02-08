@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getStoreOwnerAnyStatus } from '@/lib/auth/store-portal-auth'
 import { llmOrchestrator } from '@/lib/llm/orchestrator'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const { storeOwner, error: authError } = await getStoreOwnerAnyStatus()

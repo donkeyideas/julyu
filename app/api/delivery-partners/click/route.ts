@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { generateDeepLink } from '@/lib/services/deep-link-generator'
 
+export const dynamic = 'force-dynamic'
+
 interface ClickRequest {
   partnerId: string
   store: {
