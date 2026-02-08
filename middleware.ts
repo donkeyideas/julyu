@@ -52,11 +52,13 @@ export async function middleware(request: NextRequest) {
           auth: { autoRefreshToken: false, persistSession: false }
         })
         const result = await withTimeout(
-          adminClient
-            .from('site_settings')
-            .select('value')
-            .eq('key', 'user_sign_in_enabled')
-            .single(),
+          Promise.resolve(
+            adminClient
+              .from('site_settings')
+              .select('value')
+              .eq('key', 'user_sign_in_enabled')
+              .single()
+          ),
           5000
         )
         if (result?.data?.value?.enabled === false) {
