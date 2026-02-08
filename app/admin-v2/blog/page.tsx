@@ -52,6 +52,9 @@ export default function BlogPage() {
   const [metaRobots, setMetaRobots] = useState('index, follow')
   const [status, setStatus] = useState<'draft' | 'published'>('draft')
 
+  const [generating, setGenerating] = useState(false)
+  const [generateError, setGenerateError] = useState<string | null>(null)
+
   const contentRef = useRef<HTMLTextAreaElement>(null)
 
   // Generate slug from title
@@ -218,6 +221,7 @@ export default function BlogPage() {
     setStatus('draft')
     setSlugManuallyEdited(false)
     setModalTab('content')
+    setGenerateError(null)
   }
 
   // Open create modal
@@ -342,6 +346,49 @@ export default function BlogPage() {
         setFeaturedImageUrl(reader.result as string)
       }
       reader.readAsDataURL(file)
+    }
+  }
+
+  // Generate with AI
+  const handleGenerateWithAI = async () => {
+    if (!title.trim()) {
+      setGenerateError('Enter a title first, then generate with AI.')
+      return
+    }
+
+    setGenerating(true)
+    setGenerateError(null)
+
+    try {
+      const token = getAdminSessionToken()
+      const response = await fetch('/api/admin/blog/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ title: title.trim() }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate content')
+      }
+
+      // Populate all fields with AI-generated content
+      setContent(data.content || '')
+      setExcerpt(data.excerpt || '')
+      setSeoTitle(data.seo_title || '')
+      setMetaDescription(data.meta_description || '')
+      setFocusKeywords(data.focus_keywords || '')
+      if (data.category) setCategory(data.category)
+      if (Array.isArray(data.tags) && data.tags.length > 0) setTags(data.tags)
+    } catch (error: any) {
+      console.error('AI generation failed:', error)
+      setGenerateError(error.message || 'Failed to generate content. Please try again.')
+    } finally {
+      setGenerating(false)
     }
   }
 
@@ -831,19 +878,52 @@ export default function BlogPage() {
                   {/* Content Tab */}
                   {modalTab === 'content' && (
                     <div className="space-y-5">
-                      {/* Title */}
+                      {/* Title + Generate with AI */}
                       <div>
-                        <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
-                          Title <span className="text-red-500">*</span>
-                        </label>
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                            Title <span className="text-red-500">*</span>
+                          </label>
+                          <button
+                            type="button"
+                            onClick={handleGenerateWithAI}
+                            disabled={generating || !title.trim()}
+                            className="flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded-lg transition disabled:opacity-40"
+                            style={{
+                              background: generating ? 'var(--bg-primary)' : 'linear-gradient(135deg, #8b5cf6, #6366f1)',
+                              color: '#fff',
+                              border: generating ? '1px solid var(--border-color)' : 'none',
+                            }}
+                          >
+                            {generating ? (
+                              <>
+                                <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                </svg>
+                                Generating...
+                              </>
+                            ) : (
+                              <>
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                                Generate with AI
+                              </>
+                            )}
+                          </button>
+                        </div>
                         <input
                           type="text"
                           value={title}
                           onChange={(e) => setTitle(e.target.value)}
-                          placeholder="Enter post title..."
+                          placeholder="Enter post title, then click Generate with AI..."
                           className="w-full px-4 py-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                           style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
                         />
+                        {generateError && (
+                          <p className="text-xs mt-1.5 text-red-400">{generateError}</p>
+                        )}
                       </div>
 
                       {/* Slug */}
@@ -877,10 +957,21 @@ export default function BlogPage() {
                       </div>
 
                       {/* Content with Toolbar */}
-                      <div>
+                      <div className="relative">
                         <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
                           Content <span className="text-red-500">*</span>
                         </label>
+
+                        {/* AI Generating Overlay */}
+                        {generating && (
+                          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg" style={{ backgroundColor: 'rgba(0,0,0,0.6)', top: '28px' }}>
+                            <div className="text-center">
+                              <div className="inline-block w-10 h-10 border-4 rounded-full animate-spin mb-3" style={{ borderColor: 'rgba(139,92,246,0.3)', borderTopColor: '#8b5cf6' }}></div>
+                              <div className="text-sm font-semibold text-purple-400">AI is writing your blog post...</div>
+                              <div className="text-xs text-gray-400 mt-1">This may take 10-20 seconds</div>
+                            </div>
+                          </div>
+                        )}
 
                         {/* Toolbar */}
                         <div
