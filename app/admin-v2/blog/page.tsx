@@ -370,16 +370,38 @@ export default function BlogPage() {
     setTags(tags.filter(t => t !== tagToRemove))
   }
 
-  // Featured image file upload
+  // Featured image file upload — compresses before base64 to keep payload small
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setFeaturedImageUrl(reader.result as string)
+    if (!file) return
+
+    const img = new Image()
+    img.onload = () => {
+      const MAX_WIDTH = 1200
+      const MAX_HEIGHT = 800
+      let width = img.width
+      let height = img.height
+
+      if (width > MAX_WIDTH) {
+        height = (height * MAX_WIDTH) / width
+        width = MAX_WIDTH
       }
-      reader.readAsDataURL(file)
+      if (height > MAX_HEIGHT) {
+        width = (width * MAX_HEIGHT) / height
+        height = MAX_HEIGHT
+      }
+
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      ctx?.drawImage(img, 0, 0, width, height)
+
+      const compressed = canvas.toDataURL('image/jpeg', 0.85)
+      setFeaturedImageUrl(compressed)
+      URL.revokeObjectURL(img.src)
     }
+    img.src = URL.createObjectURL(file)
   }
 
   // Generate with AI
