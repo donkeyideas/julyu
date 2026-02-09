@@ -105,6 +105,7 @@ Important:
 - Content should have proper heading hierarchy (h2 > h3) and be well-structured.
 - Include at least one bulleted or numbered list in the content for readability.`
 
+    const startTime = Date.now()
     const response = await fetch(`${DEEPSEEK_BASE_URL}/v1/chat/completions`, {
       method: 'POST',
       headers: {
@@ -126,6 +127,20 @@ Important:
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       console.error('[Blog Generate] DeepSeek API error:', response.status, errorData)
+      // Track failed call
+      const responseTime = Date.now() - startTime
+      await supabase.from('ai_model_usage').insert({
+        model_name: 'deepseek-chat',
+        provider: 'DeepSeek',
+        use_case: 'blog_generation',
+        input_tokens: 0,
+        output_tokens: 0,
+        total_tokens: 0,
+        response_time_ms: responseTime,
+        cost: 0,
+        success: false,
+        error_message: errorData?.error?.message || response.statusText,
+      }).then(() => {}).catch(() => {})
       return NextResponse.json(
         { error: `AI generation failed: ${errorData?.error?.message || response.statusText}` },
         { status: 502 }
@@ -134,6 +149,29 @@ Important:
 
     const data = await response.json()
     const aiContent = data.choices?.[0]?.message?.content
+
+    // Track successful AI usage
+    const responseTime = Date.now() - startTime
+    const inputTokens = data.usage?.prompt_tokens || 0
+    const outputTokens = data.usage?.completion_tokens || 0
+    const totalTokens = data.usage?.total_tokens || (inputTokens + outputTokens)
+    // DeepSeek pricing: $0.14/1M input, $0.28/1M output
+    const cost = (inputTokens / 1_000_000) * 0.14 + (outputTokens / 1_000_000) * 0.28
+    await supabase.from('ai_model_usage').insert({
+      model_name: 'deepseek-chat',
+      provider: 'DeepSeek',
+      use_case: 'blog_generation',
+      input_tokens: inputTokens,
+      output_tokens: outputTokens,
+      total_tokens: totalTokens,
+      response_time_ms: responseTime,
+      cost,
+      success: true,
+    }).then(() => {
+      console.log(`[Blog Generate] Tracked: ${totalTokens} tokens, $${cost.toFixed(6)}`)
+    }).catch((err: any) => {
+      console.error('[Blog Generate] Failed to track usage:', err)
+    })
 
     if (!aiContent) {
       return NextResponse.json({ error: 'No content generated' }, { status: 502 })
