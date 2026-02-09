@@ -20,9 +20,8 @@ export const metadata: Metadata = {
   },
 }
 
-// Force dynamic rendering to ensure fresh content
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+// Revalidate every 24 hours - privacy page content rarely changes
+export const revalidate = 86400
 
 // Default content
 const defaultContent = {
