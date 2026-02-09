@@ -1472,6 +1472,42 @@ export interface Database {
           updated_at?: string
         }
       }
+      // Contact Messages (from /contact form)
+      contact_messages: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          subject: string
+          message: string
+          is_read: boolean
+          read_by: string | null
+          read_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          email: string
+          subject: string
+          message: string
+          is_read?: boolean
+          read_by?: string | null
+          read_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string
+          subject?: string
+          message?: string
+          is_read?: boolean
+          read_by?: string | null
+          read_at?: string | null
+          created_at?: string
+        }
+      }
       // Promo Code Redemptions
       promo_code_redemptions: {
         Row: {

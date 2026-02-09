@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAdminAuth } from './AdminAuthGuard'
@@ -17,6 +18,25 @@ interface NavItem {
 export default function AdminSidebar() {
   const pathname = usePathname()
   const { employee, logout } = useAdminAuth()
+  const [inboxUnread, setInboxUnread] = useState(0)
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      try {
+        const res = await fetch('/api/admin/inbox/unread-count')
+        if (res.ok) {
+          const data = await res.json()
+          setInboxUnread(data.count || 0)
+        }
+      } catch {
+        // Silently fail - badge just won't show
+      }
+    }
+
+    fetchUnread()
+    const interval = setInterval(fetchUnread, 60000) // Poll every 60s
+    return () => clearInterval(interval)
+  }, [])
 
   const navItems: NavItem[] = [
     { href: '/admin-v2', label: 'Dashboard', icon: '', section: 'Overview', permission: 'dashboard' },
@@ -51,6 +71,7 @@ export default function AdminSidebar() {
     { href: '/admin-v2/blog', label: 'Blog', icon: '', section: 'Content', permission: 'blog' },
     { href: '/admin-v2/demo-codes', label: 'Demo Codes', icon: '', section: 'Marketing', permission: 'demo_codes' },
     { href: '/admin-v2/seo-geo', label: 'SEO & GEO', icon: '', section: 'Marketing', permission: 'seo_geo' },
+    { href: '/admin-v2/inbox', label: 'Inbox', icon: '', section: 'Support', permission: 'inbox' },
   ]
 
   // Filter items based on permissions
@@ -69,6 +90,7 @@ export default function AdminSidebar() {
     { name: 'Partnerships', items: filteredItems.filter(item => item.section === 'Partnerships') },
     { name: 'Operations', items: filteredItems.filter(item => item.section === 'Operations') },
     { name: 'Marketing', items: filteredItems.filter(item => item.section === 'Marketing') },
+    { name: 'Support', items: filteredItems.filter(item => item.section === 'Support') },
   ].filter(section => section.items.length > 0) // Only show sections with items
 
   return (
@@ -98,7 +120,12 @@ export default function AdminSidebar() {
                     style={!isActive ? { color: 'var(--text-secondary)' } : undefined}
                   >
                     <span>{item.icon}</span>
-                    <span>{item.label}</span>
+                    <span className="flex-1">{item.label}</span>
+                    {item.href === '/admin-v2/inbox' && inboxUnread > 0 && (
+                      <span className="bg-green-500 text-black text-xs font-bold min-w-[20px] h-5 flex items-center justify-center rounded-full px-1.5">
+                        {inboxUnread > 99 ? '99+' : inboxUnread}
+                      </span>
+                    )}
                   </Link>
                 )
               })}

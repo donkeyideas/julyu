@@ -18,6 +18,7 @@ export interface AdminPermissions {
     demo_codes: boolean
     seo_geo: boolean
     blog: boolean
+    inbox: boolean
   }
   actions: {
     approve_stores: boolean
@@ -50,6 +51,7 @@ export const PAGE_PERMISSIONS = {
   demo_codes: { label: 'Demo Codes', description: 'Manage demo access codes and requests' },
   seo_geo: { label: 'SEO & GEO', description: 'View SEO and GEO analytics and audit results' },
   blog: { label: 'Blog', description: 'Manage blog posts' },
+  inbox: { label: 'Inbox', description: 'View and manage contact messages' },
 } as const
 
 // Action permission definitions with display info
@@ -84,6 +86,7 @@ export const DEFAULT_PERMISSIONS: AdminPermissions = {
     demo_codes: false,
     seo_geo: false,
     blog: false,
+    inbox: false,
   },
   actions: {
     approve_stores: false,
@@ -117,6 +120,7 @@ export const FULL_ADMIN_PERMISSIONS: AdminPermissions = {
     demo_codes: true,
     seo_geo: true,
     blog: true,
+    inbox: true,
   },
   actions: {
     approve_stores: true,
@@ -150,6 +154,7 @@ export const ROUTE_TO_PAGE_PERMISSION: Record<string, keyof AdminPermissions['pa
   '/admin-v2/demo-codes': 'demo_codes',
   '/admin-v2/seo-geo': 'seo_geo',
   '/admin-v2/blog': 'blog',
+  '/admin-v2/inbox': 'inbox',
 }
 
 // Helper functions
