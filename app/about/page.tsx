@@ -46,6 +46,45 @@ const aboutJsonLd = {
   },
 }
 
+const aboutFaqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'What is Julyu and how does it work?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Julyu is an AI-powered grocery price comparison platform that scans receipts, tracks prices across 50+ retailers, and uses machine learning to find the best deals near you. Simply scan your receipts or search for products, and Julyu compares prices in real-time to help you save money.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How much can I save using Julyu?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Julyu users save an average of $287 per month on groceries. Savings come from AI-powered price comparison across multiple stores, smart shopping list optimization, and real-time price drop alerts that help you buy at the lowest prices.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Which stores does Julyu compare prices from?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Julyu compares prices across 50+ major retailers including Walmart, Kroger, Target, Costco, Aldi, and regional grocery chains. We continuously add new stores to provide the most comprehensive price comparison available.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Is my data safe with Julyu?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes, Julyu takes data privacy seriously. Your receipt data and shopping history are encrypted and never shared with third parties. We use your data solely to provide personalized price comparisons and savings recommendations.',
+      },
+    },
+  ],
+}
+
 export default async function AboutPage() {
   // Try to fetch dynamic content from database
   const pageContent = await getPageContent('about')
@@ -58,6 +97,7 @@ export default async function AboutPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-green-900/30 to-black text-white flex flex-col">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutFaqJsonLd) }} />
       <Header />
 
       <div className="flex-1 pt-32 pb-16 px-[5%]">

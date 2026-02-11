@@ -38,10 +38,66 @@ const forStoresJsonLd = {
   },
 }
 
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'What types of stores can join Julyu?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'We work with bodegas, convenience stores, corner stores, small grocery stores, and local markets. If you sell groceries or household items, you\'re a good fit!',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Do I need a POS system?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'No! While we can integrate with Square and Clover POS systems, you can also manage inventory by uploading supplier receipts or entering products manually.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How do I receive orders?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'You\'ll receive real-time notifications via email and through your store portal dashboard. You can accept or decline orders based on product availability.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Who handles delivery?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'DoorDash handles all deliveries through their Drive API. You prepare the order, and a DoorDash driver picks it up and delivers it to the customer.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'When do I get paid?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Payouts are processed weekly via Stripe Connect. You\'ll need to set up a Stripe account (free) to receive your earnings.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Can I set my own prices?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes! You have full control over your pricing. Set prices that work for your business and customers.',
+      },
+    },
+  ],
+}
+
 export default function ForStoresPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-blue-950 text-white">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(forStoresJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <Header transparent />
 
       {/* Hero Section */}

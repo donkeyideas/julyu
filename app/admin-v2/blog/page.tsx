@@ -211,8 +211,8 @@ export default function BlogPage() {
   }
 
   useEffect(() => {
-    fetchPosts(1)
-  }, [])
+    if (employee) fetchPosts(1)
+  }, [employee])
 
   // Reset form
   const resetForm = () => {

@@ -34,10 +34,42 @@ const featuresJsonLd = {
   ],
 }
 
+const featuresFaqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'How does Julyu\'s AI product matching work?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Julyu uses DeepSeek-powered semantic understanding to match identical and similar products across 50+ retailers with 98% accuracy. It analyzes product names, sizes, brands, and descriptions to find the best price comparisons.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'What is receipt scanning and how does it save me money?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Receipt scanning uses OCR technology to automatically extract prices from your grocery receipts. It builds your personal price history, shows where you could have saved, and alerts you to better deals at nearby stores for items you regularly buy.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How does route optimization help with grocery shopping?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Route optimization analyzes prices across multiple stores and calculates the most efficient shopping route that factors in price savings, driving distance, and your time value. It tells you which items to buy at which stores to maximize savings.',
+      },
+    },
+  ],
+}
+
 export default function FeaturesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-green-900/30 to-black text-white flex flex-col">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(featuresJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(featuresFaqJsonLd) }} />
       <Header />
 
       <div className="flex-1 pt-32 pb-16 px-[5%]">

@@ -59,6 +59,8 @@ async function crawlPage(baseUrl: string, path: string): Promise<PageAnalysis> {
     const responseTimeMs = Date.now() - startTime
     const html = await response.text()
 
+    console.log(`[SEO Crawler] ${path}: status=${response.status}, html=${html.length} chars, time=${responseTimeMs}ms`)
+
     return analyzeHtml(html, path, url, response.status, responseTimeMs)
   } catch (error) {
     const responseTimeMs = Date.now() - startTime

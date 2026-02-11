@@ -27,15 +27,15 @@ export default function PricesPage() {
     try {
       const supabase = createClient()
 
-      const [productsResult, pricesResult, retailersResult] = await Promise.all([
+      const [productsResult, pricesResult] = await Promise.all([
         supabase.from('products').select('*', { count: 'exact', head: true }),
         supabase.from('prices').select('*', { count: 'exact', head: true }),
-        supabase.from('partner_retailers').select('*', { count: 'exact', head: true }),
       ])
 
       const totalProducts = productsResult.count || 0
       const totalPrices = pricesResult.count || 0
-      const retailers = retailersResult.count || 0
+      // partner_retailers table not yet created
+      const retailers = 0
 
       // Get last updated price
       const { data: lastPrice } = await supabase

@@ -52,9 +52,8 @@ export default function AdminV2Dashboard() {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
       // Load all stats
-      const [usersResult, retailersResult, usageResult, configResult, ordersResult, recentUsersResult, receiptsResult] = await Promise.all([
+      const [usersResult, usageResult, configResult, ordersResult, recentUsersResult, receiptsResult] = await Promise.all([
         supabase.from('users').select('*', { count: 'exact', head: true }),
-        supabase.from('partner_retailers').select('*', { count: 'exact', head: true }),
         supabase.from('ai_model_usage').select('*').order('created_at', { ascending: false }).limit(1000),
         supabase.from('ai_model_config').select('*').eq('is_active', true),
         supabase.from('bodega_orders').select('total_amount, commission_amount, ordered_at').gte('ordered_at', thirtyDaysAgo.toISOString()),
@@ -62,13 +61,15 @@ export default function AdminV2Dashboard() {
         supabase.from('receipts').select('created_at').gte('created_at', thirtyDaysAgo.toISOString()),
       ])
 
+      // partner_retailers table not yet created - skip query to avoid 404 console errors
+      const totalRetailers = 0
+
       interface UsageRecord {
         cost?: number | null
         response_time_ms?: number | null
       }
 
       const totalUsers = usersResult.count || 0
-      const totalRetailers = retailersResult.count || 0
       const usage = (usageResult.data || []) as UsageRecord[]
       const activeConfigs = configResult.data || []
 

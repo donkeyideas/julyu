@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useAdminAuth } from '@/components/admin-v2/AdminAuthGuard'
+import { getAdminSessionToken } from '@/lib/auth/admin-session-client'
 
 interface ApiCallRecord {
   id: string
@@ -46,6 +47,7 @@ type CombinedRecord = {
 }
 
 export default function UsagePage() {
+  const { employee } = useAdminAuth()
   const [records, setRecords] = useState<CombinedRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d' | 'all'>('30d')
@@ -66,51 +68,26 @@ export default function UsagePage() {
   })
 
   const loadData = useCallback(async () => {
+    if (!employee) return
     setLoading(true)
     try {
-      const supabase = createClient()
+      const token = getAdminSessionToken()
+      const res = await fetch(`/api/admin/usage?timeRange=${timeRange}&apiFilter=${apiFilter}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
 
-      const now = new Date()
-      let startDate: Date
-      switch (timeRange) {
-        case '24h':
-          startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000)
-          break
-        case '7d':
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-          break
-        case '30d':
-          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-          break
-        default:
-          startDate = new Date(0)
+      if (!res.ok) {
+        console.error('Failed to fetch usage data:', res.status)
+        setRecords([])
+        return
       }
 
-      // Fetch AI model usage
-      const { data: aiData } = await supabase
-        .from('ai_model_usage')
-        .select('*', { count: 'exact' })
-        .gte('created_at', startDate.toISOString())
-        .order('created_at', { ascending: false })
-
-      // Fetch general API call logs
-      let apiQuery = supabase
-        .from('api_call_logs')
-        .select('*', { count: 'exact' })
-        .gte('created_at', startDate.toISOString())
-        .order('created_at', { ascending: false })
-
-      if (apiFilter !== 'all' && apiFilter !== 'ai_models') {
-        apiQuery = apiQuery.eq('api_name', apiFilter)
+      const { aiData, apiData, apiNames, debug } = await res.json()
+      if (debug) {
+        if (debug.aiError) console.warn('[Usage] AI query error:', debug.aiError)
+        if (debug.apiError) console.warn('[Usage] API query error:', debug.apiError)
+        console.log(`[Usage] Loaded: ${debug.aiCount} AI records, ${debug.apiCount} API records`)
       }
-
-      const { data: apiData } = await apiQuery
-
-      // Get unique API names for filter dropdown
-      const { data: apiNames } = await supabase
-        .from('api_call_logs')
-        .select('api_name')
-        .gte('created_at', startDate.toISOString())
 
       const externalApis = Array.from(new Set<string>((apiNames || []).map((a: { api_name: string }) => a.api_name)))
       // Also add AI model names to the available APIs list
@@ -214,11 +191,11 @@ export default function UsagePage() {
     } finally {
       setLoading(false)
     }
-  }, [timeRange, apiFilter, page])
+  }, [timeRange, apiFilter, page, employee])
 
   useEffect(() => {
-    loadData()
-  }, [loadData])
+    if (employee) loadData()
+  }, [loadData, employee])
 
   useEffect(() => {
     setPage(1) // Reset page when filters change

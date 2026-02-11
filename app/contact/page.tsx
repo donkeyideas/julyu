@@ -10,7 +10,7 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://julyu.com'
 export const metadata: Metadata = {
   title: 'Contact Julyu - Get Help & Support',
   description:
-    'Get in touch with the Julyu team for support, questions, or feedback. We typically respond within 24 hours.',
+    'Get in touch with the Julyu team for support, questions, or feedback about our AI-powered grocery price comparison platform. We typically respond within 24 hours.',
   openGraph: {
     title: 'Contact Julyu - Get Help & Support',
     description:

@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useAdminAuth } from '@/components/admin-v2/AdminAuthGuard'
+import { getAdminSessionToken } from '@/lib/auth/admin-session-client'
 
 interface UsageRecord {
   id: string
@@ -43,6 +44,7 @@ interface DailyStats {
 }
 
 export default function AIPerformancePage() {
+  const { employee } = useAdminAuth()
   const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d' | 'all'>('30d')
 
@@ -79,41 +81,26 @@ export default function AIPerformancePage() {
   })
 
   const loadData = useCallback(async () => {
+    if (!employee) return
     setLoading(true)
     try {
-      const supabase = createClient()
+      const token = getAdminSessionToken()
+      const res = await fetch(`/api/admin/ai-performance?timeRange=${timeRange}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
 
-      const now = new Date()
-      let startDate: Date
-      switch (timeRange) {
-        case '24h':
-          startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000)
-          break
-        case '7d':
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-          break
-        case '30d':
-          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-          break
-        default:
-          startDate = new Date(0)
+      if (!res.ok) {
+        console.error('Failed to fetch AI performance data:', res.status)
+        return
       }
 
-      // Fetch AI model usage
-      const { data: usageData } = await supabase
-        .from('ai_model_usage')
-        .select('*')
-        .gte('created_at', startDate.toISOString())
-        .order('created_at', { ascending: false })
+      const { usageData: rawUsage, trainingData: rawTraining, debug } = await res.json()
+      if (debug?.usageError) {
+        console.warn('[AI Performance] Usage query error:', debug.usageError)
+      }
 
-      // Fetch training data
-      const { data: trainingData } = await supabase
-        .from('ai_training_data')
-        .select('id, use_case, accuracy_score, user_feedback, validated, created_at')
-        .gte('created_at', startDate.toISOString())
-
-      const records = (usageData || []) as UsageRecord[]
-      const training = (trainingData || []) as TrainingRecord[]
+      const records = (rawUsage || []) as UsageRecord[]
+      const training = (rawTraining || []) as TrainingRecord[]
 
       // Core metrics
       const total = records.length
@@ -211,11 +198,11 @@ export default function AIPerformancePage() {
     } finally {
       setLoading(false)
     }
-  }, [timeRange])
+  }, [timeRange, employee])
 
   useEffect(() => {
-    loadData()
-  }, [loadData])
+    if (employee) loadData()
+  }, [loadData, employee])
 
   const formatTime = (ms: number) => {
     if (ms < 1000) return `${Math.round(ms)}ms`

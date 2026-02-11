@@ -35,6 +35,45 @@ const pricingJsonLd = {
   },
 }
 
+const pricingFaqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'Is Julyu free to use?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes, Julyu offers a free tier that includes basic price comparison across nearby stores, a limited shopping list, and weekly price alerts. The free plan is available forever with no credit card required.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'What does the Premium plan include?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'The Premium plan at $9.99/month unlocks unlimited receipt scanning, AI-powered product matching across 50+ retailers, route optimization, real-time price alerts, spending analytics, and priority customer support.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Can I cancel my subscription at any time?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes, you can cancel your Julyu subscription at any time with no cancellation fees. Your premium features remain active until the end of your current billing period, and you can always continue using the free tier.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How much money can I save with Julyu?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Julyu users save an average of $287 per month on groceries by comparing prices across multiple stores. Savings vary based on shopping habits, location, and the number of stores in your area.',
+      },
+    },
+  ],
+}
+
 export default function PricingLayout({
   children,
 }: {
@@ -43,6 +82,7 @@ export default function PricingLayout({
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingFaqJsonLd) }} />
       {children}
     </>
   )

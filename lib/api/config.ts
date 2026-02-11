@@ -117,8 +117,8 @@ export async function getApiKey(modelName: string): Promise<string | null> {
           console.error('[Config] Decrypted value:', decrypted)
         }
       } else {
-        console.log('[Config] No encrypted key found in database for', modelName)
-        if (configError) {
+        // PGRST116 (0 rows) is expected when no DB config exists - don't log as error
+        if (configError && configError.code !== 'PGRST116') {
           console.error('[Config] Database error:', configError)
         }
       }

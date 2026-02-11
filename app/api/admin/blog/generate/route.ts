@@ -129,7 +129,7 @@ Important:
       console.error('[Blog Generate] DeepSeek API error:', response.status, errorData)
       // Track failed call
       const responseTime = Date.now() - startTime
-      await supabase.from('ai_model_usage').insert({
+      const failRecord: Record<string, any> = {
         model_name: 'deepseek-chat',
         provider: 'DeepSeek',
         use_case: 'blog_generation',
@@ -140,7 +140,13 @@ Important:
         cost: 0,
         success: false,
         error_message: errorData?.error?.message || response.statusText,
-      }).then(() => {}).catch(() => {})
+      }
+      const { error: failTrackError } = await supabase.from('ai_model_usage').insert(failRecord)
+      if (failTrackError) {
+        // Retry without provider
+        const { provider, ...withoutProvider } = failRecord
+        await supabase.from('ai_model_usage').insert(withoutProvider).catch(() => {})
+      }
       return NextResponse.json(
         { error: `AI generation failed: ${errorData?.error?.message || response.statusText}` },
         { status: 502 }
@@ -157,7 +163,9 @@ Important:
     const totalTokens = data.usage?.total_tokens || (inputTokens + outputTokens)
     // DeepSeek pricing: $0.14/1M input, $0.28/1M output
     const cost = (inputTokens / 1_000_000) * 0.14 + (outputTokens / 1_000_000) * 0.28
-    await supabase.from('ai_model_usage').insert({
+
+    // Insert tracking record - try with all columns, fallback without optional ones
+    const trackingRecord: Record<string, any> = {
       model_name: 'deepseek-chat',
       provider: 'DeepSeek',
       use_case: 'blog_generation',
@@ -167,11 +175,21 @@ Important:
       response_time_ms: responseTime,
       cost,
       success: true,
-    }).then(() => {
+    }
+    const { error: trackError } = await supabase.from('ai_model_usage').insert(trackingRecord)
+    if (trackError) {
+      console.error(`[Blog Generate] Track error: ${trackError.message} (code: ${trackError.code})`)
+      // Retry without provider column in case the DB schema doesn't have it
+      const { provider, ...recordWithoutProvider } = trackingRecord
+      const { error: retryError } = await supabase.from('ai_model_usage').insert(recordWithoutProvider)
+      if (retryError) {
+        console.error(`[Blog Generate] Track retry error: ${retryError.message} (code: ${retryError.code})`)
+      } else {
+        console.log(`[Blog Generate] Tracked (without provider): ${totalTokens} tokens, $${cost.toFixed(6)}`)
+      }
+    } else {
       console.log(`[Blog Generate] Tracked: ${totalTokens} tokens, $${cost.toFixed(6)}`)
-    }).catch((err: any) => {
-      console.error('[Blog Generate] Failed to track usage:', err)
-    })
+    }
 
     if (!aiContent) {
       return NextResponse.json({ error: 'No content generated' }, { status: 502 })

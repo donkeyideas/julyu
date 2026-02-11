@@ -14,24 +14,74 @@ export function analyzeHtml(html: string, path: string, url: string, statusCode:
   const canonical = $('link[rel="canonical"]').attr('href') || null
   const viewport = !!$('meta[name="viewport"]').length
 
-  // Headings
-  const h1Values: string[] = []
+  // Headings - try Cheerio first, fall back to regex
+  let h1Values: string[] = []
   $('h1').each((_, el) => {
     const text = $(el).text().trim()
     if (text) h1Values.push(text)
   })
-  const h1Count = h1Values.length
-  const h2Count = $('h2').length
-  const h3Count = $('h3').length
+  let h2Count = $('h2').length
+  let h3Count = $('h3').length
 
-  // Content - remove nav, footer, script, style, header elements for word count
-  const contentClone = $.root().clone()
-  contentClone.find('nav, footer, script, style, header, noscript, svg').remove()
-  const bodyText = contentClone.find('body').text() || contentClone.text()
+  // Regex fallback for headings if Cheerio finds none
+  if (h1Values.length === 0) {
+    const h1Regex = /<h1[^>]*>([\s\S]*?)<\/h1>/gi
+    let match
+    while ((match = h1Regex.exec(html)) !== null) {
+      const text = match[1].replace(/<[^>]*>/g, '').trim()
+      if (text) h1Values.push(text)
+    }
+  }
+  if (h2Count === 0) {
+    const h2Matches = html.match(/<h2[^>]*>/gi) || []
+    h2Count = h2Matches.length
+  }
+  if (h3Count === 0) {
+    const h3Matches = html.match(/<h3[^>]*>/gi) || []
+    h3Count = h3Matches.length
+  }
+  const h1Count = h1Values.length
+
+  // Content extraction - use body clone approach, with regex fallback
+  let bodyText = ''
+  const bodyHtml = $('body').html() || ''
+  if (bodyHtml) {
+    const $content = cheerio.load(bodyHtml)
+    $content('nav, footer, script, style, header, noscript, svg').remove()
+    bodyText = $content.text()
+  }
+
+  // If Cheerio extraction yielded very little, try regex-based extraction
+  const cheerioWords = bodyText.split(/\s+/).filter(w => w.length > 0)
+  if (cheerioWords.length < 50 && html.length > 1000) {
+    // Strip tags known to contain non-content
+    let stripped = html
+      .replace(/<head[\s\S]*?<\/head>/gi, '')
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<noscript[\s\S]*?<\/noscript>/gi, '')
+      .replace(/<nav[\s\S]*?<\/nav>/gi, '')
+      .replace(/<footer[\s\S]*?<\/footer>/gi, '')
+      .replace(/<svg[\s\S]*?<\/svg>/gi, '')
+    // Remove all remaining HTML tags
+    stripped = stripped.replace(/<[^>]*>/g, ' ')
+    // Clean up whitespace and HTML entities
+    stripped = stripped
+      .replace(/&[a-z]+;/gi, ' ')
+      .replace(/&#\d+;/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+
+    const regexWords = stripped.split(/\s+/).filter(w => w.length > 0)
+    if (regexWords.length > cheerioWords.length) {
+      bodyText = stripped
+    }
+  }
+
   const words = bodyText.split(/\s+/).filter(w => w.length > 0)
   const wordCount = words.length
 
-  // Images
+  // Images - Cheerio first, regex fallback
   let imgCount = 0
   let imgWithAlt = 0
   $('img').each((_, el) => {
@@ -39,8 +89,13 @@ export function analyzeHtml(html: string, path: string, url: string, statusCode:
     const alt = $(el).attr('alt')
     if (alt && alt.trim().length > 0) imgWithAlt++
   })
+  if (imgCount === 0) {
+    const imgMatches = html.match(/<img\s[^>]*>/gi) || []
+    imgCount = imgMatches.length
+    imgWithAlt = imgMatches.filter(tag => /alt\s*=\s*["'][^"']+["']/i.test(tag)).length
+  }
 
-  // Links
+  // Links - Cheerio first, regex fallback
   const baseUrl = new URL(url).origin
   let internalLinks = 0
   let externalLinks = 0
@@ -53,6 +108,18 @@ export function analyzeHtml(html: string, path: string, url: string, statusCode:
       externalLinks++
     }
   })
+  if (internalLinks === 0 && externalLinks === 0) {
+    const linkRegex = /<a\s[^>]*href\s*=\s*["']([^"']*)["'][^>]*>/gi
+    let linkMatch
+    while ((linkMatch = linkRegex.exec(html)) !== null) {
+      const href = linkMatch[1]
+      if (href.startsWith('/') || href.startsWith(baseUrl)) {
+        internalLinks++
+      } else if (href.startsWith('http')) {
+        externalLinks++
+      }
+    }
+  }
 
   // Structured data (JSON-LD)
   const jsonLdTypes: string[] = []
@@ -71,9 +138,9 @@ export function analyzeHtml(html: string, path: string, url: string, statusCode:
     }
   })
 
-  // GEO scoring
+  // GEO scoring - pass bodyText directly instead of re-extracting
   const contentClarityScore = calculateContentClarity(bodyText, h1Values, h2Count, h3Count)
-  const answerabilityScore = calculateAnswerability($, h1Values, hasFaqSchema)
+  const answerabilityScore = calculateAnswerability(html, bodyText, h1Values, hasFaqSchema)
   const citationWorthinessScore = calculateCitationWorthiness(bodyText)
 
   return {
@@ -158,26 +225,26 @@ function calculateContentClarity(text: string, h1Values: string[], h2Count: numb
   return Math.min(100, score)
 }
 
-function calculateAnswerability($: cheerio.CheerioAPI, h1Values: string[], hasFaqSchema: boolean): number {
+function calculateAnswerability(html: string, bodyText: string, h1Values: string[], hasFaqSchema: boolean): number {
   let score = 0
 
   // FAQ schema present (30 points)
   if (hasFaqSchema) score += 30
 
-  // Question-style headings (up to 30 points)
+  // Question-style headings (up to 30 points) - use regex on raw HTML for reliability
   let questionHeadings = 0
-  $('h1, h2, h3').each((_, el) => {
-    const text = $(el).text().trim()
-    if (text.endsWith('?') || text.toLowerCase().startsWith('how') ||
-        text.toLowerCase().startsWith('what') || text.toLowerCase().startsWith('why') ||
-        text.toLowerCase().startsWith('when') || text.toLowerCase().startsWith('where')) {
+  const headingRegex = /<h[1-3][^>]*>([\s\S]*?)<\/h[1-3]>/gi
+  let hMatch
+  while ((hMatch = headingRegex.exec(html)) !== null) {
+    const text = hMatch[1].replace(/<[^>]*>/g, '').trim().toLowerCase()
+    if (text.endsWith('?') || text.startsWith('how') || text.startsWith('what') ||
+        text.startsWith('why') || text.startsWith('when') || text.startsWith('where')) {
       questionHeadings++
     }
-  })
+  }
   score += Math.min(30, questionHeadings * 10)
 
   // Direct answer patterns - sentences starting with definitions (up to 20 points)
-  const bodyText = $('body').text()
   const definitionPatterns = [' is a ', ' is an ', ' are ', ' means ', ' refers to ', ' provides ']
   let definitionCount = 0
   definitionPatterns.forEach(pattern => {
@@ -186,9 +253,9 @@ function calculateAnswerability($: cheerio.CheerioAPI, h1Values: string[], hasFa
   score += Math.min(20, definitionCount * 5)
 
   // Numbered lists or step-by-step content (up to 20 points)
-  const olCount = $('ol').length
+  const hasOl = /<ol[\s>]/i.test(html)
   const hasSteps = bodyText.toLowerCase().includes('step 1') || bodyText.toLowerCase().includes('step one')
-  if (olCount > 0 || hasSteps) score += 20
+  if (hasOl || hasSteps) score += 20
 
   return Math.min(100, score)
 }
@@ -223,7 +290,7 @@ function calculateCitationWorthiness(text: string): number {
   else if (words >= 100) score += 5
 
   // Contains quotes or specific claims (up to 15 points)
-  const quoteCount = (text.match(/[""].*?[""]|[''].*?['']/g) || []).length
+  const quoteCount = (text.match(/[""\u201C].*?[""\u201D]|['\u2018'].*?['\u2019']/g) || []).length
   score += Math.min(15, quoteCount * 5)
 
   return Math.min(100, score)
