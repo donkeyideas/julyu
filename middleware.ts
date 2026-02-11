@@ -34,7 +34,9 @@ export async function middleware(request: NextRequest) {
   const isPublicRoute = pathname === '/' ||
                         pathname === '/blog' || pathname.startsWith('/blog/') ||
                         pathname === '/about' || pathname === '/contact' ||
-                        pathname === '/pricing' ||
+                        pathname === '/pricing' || pathname === '/features' ||
+                        pathname === '/for-stores' || pathname === '/careers' ||
+                        pathname === '/terms' || pathname === '/privacy' ||
                         pathname.startsWith('/api/')
   if (isPublicRoute) {
     return NextResponse.next()

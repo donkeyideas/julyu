@@ -4,18 +4,24 @@ import { validateSession } from '@/lib/auth/admin-auth-v2'
 
 export const dynamic = 'force-dynamic'
 
+function noCacheResponse(data: object, status = 200) {
+  const response = NextResponse.json(data, { status })
+  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
+  return response
+}
+
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization')
     const sessionToken = authHeader?.replace('Bearer ', '')
 
     if (!sessionToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return noCacheResponse({ error: 'Unauthorized' }, 401)
     }
 
     const sessionResult = await validateSession(sessionToken)
     if (!sessionResult.valid || !sessionResult.employee) {
-      return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
+      return noCacheResponse({ error: 'Invalid session' }, 401)
     }
 
     const supabase = await createServiceRoleClient() as any
@@ -35,10 +41,11 @@ export async function GET(request: NextRequest) {
         .single()
 
       if (error) {
-        return NextResponse.json({ error: 'Audit not found' }, { status: 404 })
+        console.error('[SEO Audit GET] Fetch by id error:', error.message)
+        return noCacheResponse({ error: 'Audit not found' }, 404)
       }
 
-      return NextResponse.json({ success: true, audit })
+      return noCacheResponse({ success: true, audit })
     }
 
     // Get latest audit
@@ -56,10 +63,12 @@ export async function GET(request: NextRequest) {
         .single()
 
       if (error) {
-        return NextResponse.json({ success: true, audit: null })
+        console.log('[SEO Audit GET] Latest audit query error:', error.message, error.code)
+        return noCacheResponse({ success: true, audit: null })
       }
 
-      return NextResponse.json({ success: true, audit })
+      console.log(`[SEO Audit GET] Latest audit: id=${audit.id}, created=${audit.created_at}, score=${audit.overall_score}, pages=${audit.page_scores?.length || 0}`)
+      return noCacheResponse({ success: true, audit })
     }
 
     // Default: list recent audits (summary only)
@@ -70,13 +79,13 @@ export async function GET(request: NextRequest) {
       .limit(20)
 
     if (error) {
-      console.error('[SEO Audit] List error:', error)
-      return NextResponse.json({ error: 'Failed to fetch audits' }, { status: 500 })
+      console.error('[SEO Audit GET] List error:', error)
+      return noCacheResponse({ error: 'Failed to fetch audits' }, 500)
     }
 
-    return NextResponse.json({ success: true, audits })
+    return noCacheResponse({ success: true, audits })
   } catch (error) {
-    console.error('[SEO Audit] GET error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('[SEO Audit GET] Error:', error)
+    return noCacheResponse({ error: 'Internal server error' }, 500)
   }
 }

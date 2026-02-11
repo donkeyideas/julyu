@@ -59,7 +59,14 @@ async function crawlPage(baseUrl: string, path: string): Promise<PageAnalysis> {
     const responseTimeMs = Date.now() - startTime
     const html = await response.text()
 
-    console.log(`[SEO Crawler] ${path}: status=${response.status}, html=${html.length} chars, time=${responseTimeMs}ms`)
+    // Debug: log HTML structure to diagnose content extraction issues
+    const hasBody = /<body[\s>]/i.test(html)
+    const hasH1 = /<h1[\s>]/i.test(html)
+    const h1Match = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)
+    console.log(`[SEO Crawler] ${path}: status=${response.status}, html=${html.length} chars, time=${responseTimeMs}ms, hasBody=${hasBody}, hasH1=${hasH1}`)
+    if (h1Match) {
+      console.log(`[SEO Crawler] ${path} h1: ${h1Match[1].replace(/<[^>]*>/g, '').substring(0, 100)}`)
+    }
 
     return analyzeHtml(html, path, url, response.status, responseTimeMs)
   } catch (error) {

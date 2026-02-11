@@ -2,6 +2,8 @@ import * as cheerio from 'cheerio'
 import type { PageAnalysis } from './types'
 
 export function analyzeHtml(html: string, path: string, url: string, statusCode: number, responseTimeMs: number): PageAnalysis {
+  console.log(`[SEO Analyzer] ${path}: starting analysis, html length=${html.length}`)
+
   const $ = cheerio.load(html)
 
   // Meta tags
@@ -14,7 +16,10 @@ export function analyzeHtml(html: string, path: string, url: string, statusCode:
   const canonical = $('link[rel="canonical"]').attr('href') || null
   const viewport = !!$('meta[name="viewport"]').length
 
-  // Headings - try Cheerio first, fall back to regex
+  console.log(`[SEO Analyzer] ${path}: title="${title}", desc length=${description?.length || 0}`)
+
+  // === HEADINGS ===
+  // Try Cheerio first
   let h1Values: string[] = []
   $('h1').each((_, el) => {
     const text = $(el).text().trim()
@@ -23,6 +28,8 @@ export function analyzeHtml(html: string, path: string, url: string, statusCode:
   let h2Count = $('h2').length
   let h3Count = $('h3').length
 
+  console.log(`[SEO Analyzer] ${path}: cheerio headings - h1=${h1Values.length}, h2=${h2Count}, h3=${h3Count}`)
+
   // Regex fallback for headings if Cheerio finds none
   if (h1Values.length === 0) {
     const h1Regex = /<h1[^>]*>([\s\S]*?)<\/h1>/gi
@@ -30,6 +37,9 @@ export function analyzeHtml(html: string, path: string, url: string, statusCode:
     while ((match = h1Regex.exec(html)) !== null) {
       const text = match[1].replace(/<[^>]*>/g, '').trim()
       if (text) h1Values.push(text)
+    }
+    if (h1Values.length > 0) {
+      console.log(`[SEO Analyzer] ${path}: regex found ${h1Values.length} h1(s): ${h1Values[0].substring(0, 50)}`)
     }
   }
   if (h2Count === 0) {
@@ -42,19 +52,32 @@ export function analyzeHtml(html: string, path: string, url: string, statusCode:
   }
   const h1Count = h1Values.length
 
-  // Content extraction - use body clone approach, with regex fallback
+  // === CONTENT EXTRACTION ===
+  // Strategy 1: Cheerio body extraction
   let bodyText = ''
   const bodyHtml = $('body').html() || ''
-  if (bodyHtml) {
+  console.log(`[SEO Analyzer] ${path}: $('body').html() length=${bodyHtml.length}`)
+
+  if (bodyHtml.length > 0) {
     const $content = cheerio.load(bodyHtml)
-    $content('nav, footer, script, style, header, noscript, svg').remove()
+    $content('nav, footer, script, style, header, noscript, svg, [data-nextjs-scroll-focus-boundary]').remove()
     bodyText = $content.text()
   }
 
-  // If Cheerio extraction yielded very little, try regex-based extraction
+  // If $('body').html() was empty, try $.html() (entire document)
+  if (bodyHtml.length === 0 && html.length > 500) {
+    console.log(`[SEO Analyzer] ${path}: body.html() empty, trying full HTML parsing`)
+    const $full = cheerio.load(html)
+    $full('head, nav, footer, script, style, header, noscript, svg').remove()
+    bodyText = $full.text()
+  }
+
   const cheerioWords = bodyText.split(/\s+/).filter(w => w.length > 0)
+  console.log(`[SEO Analyzer] ${path}: cheerio extracted ${cheerioWords.length} words`)
+
+  // Strategy 2: Regex fallback if Cheerio found very little
   if (cheerioWords.length < 50 && html.length > 1000) {
-    // Strip tags known to contain non-content
+    console.log(`[SEO Analyzer] ${path}: cheerio found <50 words, trying regex extraction`)
     let stripped = html
       .replace(/<head[\s\S]*?<\/head>/gi, '')
       .replace(/<script[\s\S]*?<\/script>/gi, '')
@@ -73,6 +96,7 @@ export function analyzeHtml(html: string, path: string, url: string, statusCode:
       .trim()
 
     const regexWords = stripped.split(/\s+/).filter(w => w.length > 0)
+    console.log(`[SEO Analyzer] ${path}: regex extracted ${regexWords.length} words`)
     if (regexWords.length > cheerioWords.length) {
       bodyText = stripped
     }
@@ -80,8 +104,9 @@ export function analyzeHtml(html: string, path: string, url: string, statusCode:
 
   const words = bodyText.split(/\s+/).filter(w => w.length > 0)
   const wordCount = words.length
+  console.log(`[SEO Analyzer] ${path}: final word count=${wordCount}, h1=${h1Count}, h2=${h2Count}`)
 
-  // Images - Cheerio first, regex fallback
+  // === IMAGES ===
   let imgCount = 0
   let imgWithAlt = 0
   $('img').each((_, el) => {
@@ -95,7 +120,7 @@ export function analyzeHtml(html: string, path: string, url: string, statusCode:
     imgWithAlt = imgMatches.filter(tag => /alt\s*=\s*["'][^"']+["']/i.test(tag)).length
   }
 
-  // Links - Cheerio first, regex fallback
+  // === LINKS ===
   const baseUrl = new URL(url).origin
   let internalLinks = 0
   let externalLinks = 0
@@ -121,27 +146,49 @@ export function analyzeHtml(html: string, path: string, url: string, statusCode:
     }
   }
 
-  // Structured data (JSON-LD)
+  // === STRUCTURED DATA (JSON-LD) ===
   const jsonLdTypes: string[] = []
   let hasFaqSchema = false
   let hasBreadcrumbSchema = false
   let hasProductSchema = false
+
+  // Strategy 1: Cheerio
   $('script[type="application/ld+json"]').each((_, el) => {
     try {
-      const data = JSON.parse($(el).html() || '{}')
+      const jsonText = $(el).html() || '{}'
+      const data = JSON.parse(jsonText)
       extractSchemaTypes(data, jsonLdTypes)
-      if (jsonLdTypes.includes('FAQPage')) hasFaqSchema = true
-      if (jsonLdTypes.includes('BreadcrumbList')) hasBreadcrumbSchema = true
-      if (jsonLdTypes.includes('Product')) hasProductSchema = true
-    } catch {
-      // Invalid JSON-LD, skip
+    } catch (e) {
+      console.log(`[SEO Analyzer] ${path}: JSON-LD parse error (cheerio)`)
     }
   })
+
+  // Strategy 2: Regex fallback for JSON-LD if Cheerio found none
+  if (jsonLdTypes.length === 0) {
+    const ldRegex = /<script\s+type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
+    let ldMatch
+    while ((ldMatch = ldRegex.exec(html)) !== null) {
+      try {
+        const data = JSON.parse(ldMatch[1])
+        extractSchemaTypes(data, jsonLdTypes)
+      } catch (e) {
+        console.log(`[SEO Analyzer] ${path}: JSON-LD parse error (regex)`)
+      }
+    }
+  }
+
+  hasFaqSchema = jsonLdTypes.includes('FAQPage')
+  hasBreadcrumbSchema = jsonLdTypes.includes('BreadcrumbList')
+  hasProductSchema = jsonLdTypes.includes('Product')
+
+  console.log(`[SEO Analyzer] ${path}: schema types=[${jsonLdTypes.join(', ')}], faq=${hasFaqSchema}`)
 
   // GEO scoring - pass bodyText directly instead of re-extracting
   const contentClarityScore = calculateContentClarity(bodyText, h1Values, h2Count, h3Count)
   const answerabilityScore = calculateAnswerability(html, bodyText, h1Values, hasFaqSchema)
   const citationWorthinessScore = calculateCitationWorthiness(bodyText)
+
+  console.log(`[SEO Analyzer] ${path}: GEO scores - clarity=${contentClarityScore}, answer=${answerabilityScore}, citation=${citationWorthinessScore}`)
 
   return {
     path,
