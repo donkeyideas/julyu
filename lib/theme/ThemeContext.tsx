@@ -33,8 +33,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [theme, mounted])
 
+  // Always render children so server-side rendering works for SEO crawlers.
+  // Before mount, render children without theme context (uses CSS default theme).
   if (!mounted) {
-    return null
+    return <>{children}</>
   }
 
   return (
@@ -46,8 +48,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
 export function useTheme() {
   const context = useContext(ThemeContext)
+  // Return default values during SSR / before ThemeProvider mounts
   if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider')
+    return { theme: 'dark' as Theme, setTheme: () => {} }
   }
   return context
 }

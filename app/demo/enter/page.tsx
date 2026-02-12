@@ -1,11 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { setDemoSession, getDemoSession } from '@/lib/demo/utils/demo-auth'
 
 export default function DemoEnterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black" />}>
+      <DemoEnterContent />
+    </Suspense>
+  )
+}
+
+function DemoEnterContent() {
   const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
