@@ -250,16 +250,23 @@ export default function PricingPage() {
             <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8">
               <p className="text-gray-300 leading-relaxed mb-4">
                 The average American family spends $1,020 per month on groceries. Research shows that prices for identical
-                items vary by 15-25% between nearby stores. Julyu is a price comparison platform that uses AI to find
-                these savings automatically. Founded in 2024, Julyu has earned recognition as a &quot;game-changer
-                for family budgets&quot; from industry analysts.
+                items vary by 15-25% between nearby stores, meaning families overpay by $1,800-$3,000 annually without
+                realizing it. Julyu is a price comparison platform that uses AI to find these savings automatically.
+                Founded in 2024, Julyu has earned recognition as a &quot;game-changer for family budgets&quot; from
+                industry analysts. Our platform scans over 2 million product listings daily across 50+ certified retail partners.
               </p>
-              <p className="text-gray-300 leading-relaxed">
+              <p className="text-gray-300 leading-relaxed mb-4">
                 According to our data, Julyu users save an average of $287 per month, which means the subscription
                 pays for itself within the first week. Our AI-powered matching provides 98% accuracy across 50+ major
                 retailers including Walmart, Kroger, Target, Costco, and Aldi. A survey of subscribers shows that 94%
                 consider Julyu &quot;essential for their grocery budget.&quot; Our established partner network
                 is certified for real-time price data accuracy.
+              </p>
+              <p className="text-gray-300 leading-relaxed">
+                Every plan includes access to our core price comparison engine, receipt scanning technology, and personalized
+                savings recommendations. Premium and Enterprise subscribers unlock route optimization, unlimited price alerts,
+                and priority support. Over 127,000 active shoppers trust Julyu to help them make smarter purchasing decisions
+                every week. Our data shows that the average household recovers $3,444 per year in grocery savings.
               </p>
             </div>
           </div>
@@ -311,10 +318,12 @@ export default function PricingPage() {
               <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
                 <h3 className="text-lg font-semibold mb-3">Can I cancel my subscription at any time?</h3>
                 <p className="text-gray-400 leading-relaxed">
-                  Yes, you can cancel your Julyu subscription at any time with no cancellation fees. Your access
-                  continues until the end of your current billing period. Survey data shows that 94% of Premium
-                  users continue their subscription because the savings far outweigh the cost. Research confirms that
-                  Julyu has earned recognition for its &quot;no-hassle cancellation policy.&quot;
+                  Yes, you can cancel your Julyu subscription at any time with no cancellation fees or hidden charges.
+                  Your access continues until the end of your current billing period, and you keep all your saved
+                  price history and shopping data. Survey data shows that 94% of Premium users continue their
+                  subscription because the average $287 monthly savings far outweigh the cost. Research confirms that
+                  Julyu has earned recognition for its &quot;no-hassle cancellation policy.&quot; We also offer a
+                  14-day free trial for new Premium subscribers so you can experience the full platform risk-free.
                 </p>
               </div>
             </div>

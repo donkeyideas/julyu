@@ -11,13 +11,14 @@ import GeoRadarChart from '@/components/admin-v2/charts/GeoRadarChart'
 import SearchConsoleChart from '@/components/admin-v2/charts/SearchConsoleChart'
 import type { StoredAudit, StoredPageScore, StoredRecommendation } from '@/lib/seo/types'
 
-type TabKey = 'overview' | 'pages' | 'technical' | 'content' | 'geo' | 'search-console' | 'recommendations'
+type TabKey = 'overview' | 'pages' | 'technical' | 'content' | 'traffic' | 'geo' | 'search-console' | 'recommendations'
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'overview', label: 'Overview' },
   { key: 'pages', label: 'Pages' },
   { key: 'technical', label: 'Technical' },
   { key: 'content', label: 'Content' },
+  { key: 'traffic', label: 'Traffic' },
   { key: 'geo', label: 'GEO' },
   { key: 'search-console', label: 'Search Console' },
   { key: 'recommendations', label: 'Recommendations' },
@@ -360,7 +361,7 @@ export default function SeoGeoPage() {
                 key={tab.key}
                 onClick={() => {
                   setActiveTab(tab.key)
-                  if (tab.key === 'search-console' && scConfigured && !scData) {
+                  if ((tab.key === 'search-console' || tab.key === 'traffic') && scConfigured && !scData) {
                     loadSearchConsole()
                   }
                 }}
@@ -735,6 +736,181 @@ export default function SeoGeoPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* ===== TRAFFIC TAB ===== */}
+          {activeTab === 'traffic' && (
+            <div className="space-y-6">
+              {/* Traffic summary stats */}
+              {(() => {
+                const totalClicks = scData?.pages?.reduce((s, p) => s + p.clicks, 0) || 0
+                const totalImpressions = scData?.pages?.reduce((s, p) => s + p.impressions, 0) || 0
+                const avgCtr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0
+                const avgPosition = scData?.pages?.length
+                  ? scData.pages.reduce((s, p) => s + p.position, 0) / scData.pages.length
+                  : 0
+                const avgResponseTime = pageScores.length
+                  ? Math.round(pageScores.reduce((s, p) => s + (p.response_time_ms || 0), 0) / pageScores.length)
+                  : 0
+                const fastPages = pageScores.filter(p => (p.response_time_ms || 0) < 500).length
+
+                return (
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="rounded-2xl p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                      <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Total Clicks (28d)</div>
+                      <div className="text-3xl font-black text-green-500">{scData ? totalClicks.toLocaleString() : '—'}</div>
+                      <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{scData ? 'from Search Console' : 'Connect SC to see'}</div>
+                    </div>
+                    <div className="rounded-2xl p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                      <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Impressions (28d)</div>
+                      <div className="text-3xl font-black text-blue-500">{scData ? totalImpressions.toLocaleString() : '—'}</div>
+                      <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{scData ? `${avgCtr.toFixed(1)}% CTR` : 'Connect SC to see'}</div>
+                    </div>
+                    <div className="rounded-2xl p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                      <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Avg Position</div>
+                      <div className={`text-3xl font-black ${scData && avgPosition > 0 ? (avgPosition <= 10 ? 'text-green-500' : avgPosition <= 20 ? 'text-amber-500' : 'text-red-500') : 'text-gray-500'}`}>
+                        {scData && avgPosition > 0 ? avgPosition.toFixed(1) : '—'}
+                      </div>
+                      <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{scData ? 'in Google Search' : 'Connect SC to see'}</div>
+                    </div>
+                    <div className="rounded-2xl p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                      <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Avg Response Time</div>
+                      <div className={`text-3xl font-black ${avgResponseTime < 500 ? 'text-green-500' : avgResponseTime < 1000 ? 'text-amber-500' : 'text-red-500'}`}>
+                        {avgResponseTime}ms
+                      </div>
+                      <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{fastPages}/{pageScores.length} pages under 500ms</div>
+                    </div>
+                  </div>
+                )
+              })()}
+
+              {/* Page Performance Table */}
+              <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                <div className="p-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Page Performance</h3>
+                </div>
+                <table className="min-w-full">
+                  <thead>
+                    <tr style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                      {['Page', 'Response', 'Status', ...(scData ? ['Clicks', 'Impressions', 'CTR', 'Position'] : [])].map(h => (
+                        <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pageScores.map((page, i) => {
+                      const scPage = scData?.pages?.find(p => p.page?.includes(page.page_path))
+                      return (
+                        <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                          <td className="px-4 py-3 text-sm font-mono" style={{ color: 'var(--text-primary)' }}>{page.page_path}</td>
+                          <td className="px-4 py-3 text-sm">
+                            <span className={`font-semibold ${(page.response_time_ms || 0) < 500 ? 'text-green-500' : (page.response_time_ms || 0) < 1000 ? 'text-amber-500' : 'text-red-500'}`}>
+                              {page.response_time_ms}ms
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm">
+                            <span className={`px-2 py-1 text-xs font-bold rounded ${page.status_code === 200 ? 'bg-green-500/15 text-green-500' : 'bg-red-500/15 text-red-500'}`}>
+                              {page.status_code}
+                            </span>
+                          </td>
+                          {scData && (
+                            <>
+                              <td className="px-4 py-3 text-sm font-semibold text-green-500">{scPage?.clicks || 0}</td>
+                              <td className="px-4 py-3 text-sm" style={{ color: 'var(--text-muted)' }}>{scPage?.impressions || 0}</td>
+                              <td className="px-4 py-3 text-sm" style={{ color: 'var(--text-muted)' }}>{scPage ? `${(scPage.ctr * 100).toFixed(1)}%` : '0%'}</td>
+                              <td className="px-4 py-3 text-sm" style={{ color: 'var(--text-muted)' }}>{scPage ? scPage.position.toFixed(1) : '—'}</td>
+                            </>
+                          )}
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Traffic Trends (if SC available) */}
+              {scData && scData.trends.length > 0 && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                    <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Clicks & Impressions Trend</h3>
+                    <SearchConsoleChart data={scData.trends} metric="clicks_impressions" />
+                  </div>
+                  <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                    <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Average Position Trend</h3>
+                    <SearchConsoleChart data={scData.trends} metric="position" />
+                  </div>
+                </div>
+              )}
+
+              {/* Traffic by Device & Country (if SC available) */}
+              {scData && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                    <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Traffic by Device</h3>
+                    <div className="space-y-3">
+                      {scData.devices.map((d, i) => {
+                        const maxClicks = Math.max(...scData.devices.map(x => x.clicks), 1)
+                        return (
+                          <div key={i} className="space-y-1">
+                            <div className="flex justify-between text-sm">
+                              <span className="font-semibold capitalize" style={{ color: 'var(--text-primary)' }}>{d.device}</span>
+                              <span style={{ color: 'var(--text-muted)' }}>{d.clicks} clicks</span>
+                            </div>
+                            <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border-color)' }}>
+                              <div className="h-full rounded-full bg-green-500" style={{ width: `${(d.clicks / maxClicks) * 100}%` }} />
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                    <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Top Countries</h3>
+                    <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                      {scData.countries.slice(0, 10).map((c, i) => {
+                        const maxClicks = Math.max(...scData.countries.map(x => x.clicks), 1)
+                        return (
+                          <div key={i} className="space-y-1">
+                            <div className="flex justify-between text-sm">
+                              <span className="font-semibold uppercase" style={{ color: 'var(--text-primary)' }}>{c.country}</span>
+                              <span style={{ color: 'var(--text-muted)' }}>{c.clicks} clicks | {c.impressions} imp</span>
+                            </div>
+                            <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border-color)' }}>
+                              <div className="h-full rounded-full bg-blue-500" style={{ width: `${(c.clicks / maxClicks) * 100}%` }} />
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* No SC prompt */}
+              {!scData && !scConfigured && (
+                <div className="rounded-2xl p-8 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                  <div className="text-5xl mb-4">📊</div>
+                  <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Connect Search Console for Traffic Data</h3>
+                  <p className="max-w-lg mx-auto" style={{ color: 'var(--text-muted)' }}>
+                    Connect Google Search Console to see real traffic data including clicks, impressions, CTR, and search positions for all your pages.
+                    Go to the Search Console tab for setup instructions.
+                  </p>
+                </div>
+              )}
+
+              {/* SC configured but data not loaded yet */}
+              {!scData && scConfigured && (
+                <div className="text-center">
+                  <button
+                    onClick={loadSearchConsole}
+                    disabled={scLoading}
+                    className="px-6 py-3 bg-green-500 text-black font-bold rounded-xl hover:bg-green-400 transition disabled:opacity-50"
+                  >
+                    {scLoading ? 'Loading Traffic Data...' : 'Load Traffic Data'}
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

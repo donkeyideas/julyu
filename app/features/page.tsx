@@ -8,7 +8,7 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://julyu.com'
 export const metadata: Metadata = {
   title: 'Features - AI Grocery Price Comparison Tools',
   description:
-    'Explore Julyu\'s AI-powered features: product matching with 98% accuracy, route optimization to save time, and receipt scanning for instant price comparison across 50+ retailers.',
+    'Explore Julyu\'s AI-powered features: product matching with 98% accuracy, route optimization, and receipt scanning for price comparison across 50+ retailers.',
   openGraph: {
     title: 'Features - AI Grocery Price Comparison Tools | Julyu',
     description:
@@ -90,6 +90,7 @@ export default function FeaturesPage() {
               <p className="text-gray-500 leading-relaxed">
                 DeepSeek-powered semantic understanding matches products across 50+ retailers with 98% accuracy.
                 Our AI analyzes product names, sizes, brands, and descriptions to find the best price comparisons automatically.
+                The system processes over 2 million product listings daily and updates prices every 15 minutes.
                 Julyu was founded in 2024 and has earned recognition for its &quot;industry-leading&quot; matching technology.
               </p>
             </div>

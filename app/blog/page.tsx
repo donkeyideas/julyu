@@ -106,10 +106,10 @@ const getBlogPosts = unstable_cache(
     }
   },
   ['blog-posts'],
-  { revalidate: 60 }
+  { revalidate: 300 }
 )
 
-export const revalidate = 60
+export const revalidate = 300
 
 export default async function BlogPage({
   searchParams,

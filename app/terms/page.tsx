@@ -39,7 +39,7 @@ const termsFaqJsonLd = {
 export const metadata: Metadata = {
   title: 'Terms of Service - Julyu Usage Agreement',
   description:
-    'Julyu\'s Terms of Service govern your use of our grocery price comparison platform, including account creation, acceptable use, subscriptions, and intellectual property.',
+    'Julyu\'s Terms of Service govern your use of our grocery price comparison platform, including account creation, acceptable use, and subscriptions.',
   openGraph: {
     title: 'Terms of Service | Julyu',
     description:

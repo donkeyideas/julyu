@@ -20,7 +20,7 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://julyu.com'
 export const metadata: Metadata = {
   title: 'Julyu - AI Grocery Price Comparison | Save $287/Month',
   description:
-    'Julyu is an AI-powered grocery price comparison platform that helps 127,000+ shoppers save an average of $287 per month by comparing prices across 50+ retailers.',
+    'Julyu is an AI-powered grocery price comparison platform helping 127,000+ shoppers save an average of $287/month by comparing prices across 50+ retailers.',
   openGraph: {
     title: 'Julyu - AI Grocery Price Comparison | Save $287/Month',
     description:
