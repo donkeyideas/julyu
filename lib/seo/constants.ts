@@ -8,6 +8,7 @@ export const PUBLIC_PAGES = [
   '/privacy',
   '/terms',
   '/for-stores',
+  '/blog',
 ]
 
 export const SCORING_WEIGHTS = {

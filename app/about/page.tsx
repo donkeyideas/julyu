@@ -4,7 +4,7 @@ import Header from '@/components/shared/Header'
 import Footer from '@/components/shared/Footer'
 import { getPageContent } from '@/lib/content/getPageContent'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://julyu.com'
 
