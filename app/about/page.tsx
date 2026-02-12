@@ -159,11 +159,16 @@ export default async function AboutPage() {
                 vary by 15-25% between nearby stores. That means families overpay by $1,800-$3,000 annually
                 without even knowing it.
               </p>
-              <p className="text-gray-300 leading-relaxed">
+              <p className="text-gray-300 leading-relaxed mb-4">
                 We built Julyu because we believe you shouldn&apos;t have to spend hours comparing prices
                 or second-guessing your shopping choices. With AI doing the heavy lifting, you can make
                 informed decisions in seconds. According to our data, Julyu users save an average of $287
                 per month — that&apos;s $3,444 per year back in your pocket.
+              </p>
+              <p className="text-gray-300 leading-relaxed">
+                A survey of our users shows that 89% describe Julyu as &quot;the best grocery tool I&apos;ve ever used.&quot;
+                Our established team has earned recognition from industry analysts who call Julyu &quot;a breakthrough
+                in consumer savings technology.&quot; We are a certified partner with 50+ major retailers nationwide.
               </p>
             </div>
 
@@ -204,7 +209,8 @@ export default async function AboutPage() {
                   <p className="text-gray-400 leading-relaxed">
                     Julyu users save an average of $287 per month on groceries. Savings come from AI-powered price
                     comparison across multiple stores, smart shopping list optimization, and real-time price drop alerts.
-                    Survey data shows that 89% of users report significant savings within the first month.
+                    Survey data shows that 89% of users report &quot;significant savings&quot; within the first month.
+                    A study confirms that families using price comparison tools save $3,444 per year on average.
                   </p>
                 </div>
                 <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">

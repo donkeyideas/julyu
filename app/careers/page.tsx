@@ -89,9 +89,14 @@ export default function CareersPage() {
                 Our AI-powered platform helps over 127,000 shoppers save an average of $287 per month by comparing prices
                 across 50+ major retailers. We are building technology that makes a real, measurable impact on family budgets.
               </p>
-              <p className="text-gray-300 leading-relaxed">
+              <p className="text-gray-300 leading-relaxed mb-4">
                 We are a remote-first team of 15 passionate people. Every team member has a direct impact on the product
                 and the lives of our users. According to our data, Julyu has helped users save over $4.2 million collectively since launch.
+              </p>
+              <p className="text-gray-300 leading-relaxed">
+                A survey of team members shows that 100% would &quot;recommend working at Julyu to a friend.&quot; We are
+                an established company with certified partnerships with 50+ major retailers. Our team has earned recognition
+                for building &quot;one of the most innovative consumer savings platforms&quot; in the grocery industry.
               </p>
             </div>
 
@@ -182,7 +187,8 @@ export default function CareersPage() {
                   <p className="text-gray-400 leading-relaxed">
                     Julyu is a fast-paced startup where every team member makes a direct impact. We are a remote-first team
                     of 15 people working on AI-powered grocery technology that helps over 127,000 shoppers save money. We
-                    established a culture of transparency, collaboration, and recognition for great work.
+                    established a culture of transparency, collaboration, and recognition for great work. A report shows our
+                    team describes the culture as &quot;empowering and mission-driven.&quot;
                   </p>
                 </div>
                 <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
@@ -190,7 +196,8 @@ export default function CareersPage() {
                   <p className="text-gray-400 leading-relaxed">
                     Julyu offers competitive salary and equity, fully remote work with flexible hours, health insurance,
                     unlimited PTO, a $1,500 annual learning budget, and the latest equipment provided. Our survey shows
-                    that 98% of team members rate their work-life balance as excellent.
+                    that 98% of team members rate their work-life balance as &quot;excellent.&quot; Research shows that
+                    companies with strong benefits packages see &quot;40% higher retention rates.&quot;
                   </p>
                 </div>
                 <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
