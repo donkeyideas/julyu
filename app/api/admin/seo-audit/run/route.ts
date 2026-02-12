@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert audit
-    console.log('[SEO Audit] Inserting audit row...')
+    console.log('[SEO Audit] Inserting audit row:', JSON.stringify(auditRow))
     const { data: audit, error: auditError } = await supabase
       .from('seo_audits')
       .insert(auditRow)

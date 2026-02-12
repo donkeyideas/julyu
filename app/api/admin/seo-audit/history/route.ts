@@ -33,7 +33,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch history' }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true, history: history || [] })
+    const response = NextResponse.json({ success: true, history: history || [] })
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
+    return response
   } catch (error) {
     console.error('[SEO Audit] History error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

@@ -120,10 +120,11 @@ export default function SeoGeoPage() {
 
   const loadData = async () => {
     try {
+      const fetchOpts = { headers: authHeaders(), cache: 'no-store' as RequestCache }
       const [auditRes, historyRes, scStatusRes] = await Promise.allSettled([
-        fetch('/api/admin/seo-audit?latest=true', { headers: authHeaders() }),
-        fetch('/api/admin/seo-audit/history?limit=30', { headers: authHeaders() }),
-        fetch('/api/admin/seo-audit/search-console?status=true', { headers: authHeaders() }),
+        fetch('/api/admin/seo-audit?latest=true', fetchOpts),
+        fetch('/api/admin/seo-audit/history?limit=30', fetchOpts),
+        fetch('/api/admin/seo-audit/search-console?status=true', fetchOpts),
       ])
 
       if (auditRes.status === 'fulfilled' && auditRes.value.ok) {
@@ -153,12 +154,20 @@ export default function SeoGeoPage() {
       const res = await fetch('/api/admin/seo-audit/run', {
         method: 'POST',
         headers: authHeaders(),
+        cache: 'no-store',
       })
       const data = await res.json()
       if (data.success && data.audit) {
         setAudit(data.audit)
+        if (data.dbError) {
+          showToast(`Warning: Audit ran but failed to save: ${data.dbError}`)
+          console.error('[SEO Audit] DB save failed:', data.dbError)
+        }
         // Refresh history
-        const histRes = await fetch('/api/admin/seo-audit/history?limit=30', { headers: authHeaders() })
+        const histRes = await fetch('/api/admin/seo-audit/history?limit=30', {
+          headers: authHeaders(),
+          cache: 'no-store',
+        })
         if (histRes.ok) {
           const histData = await histRes.json()
           setHistory(histData.history || [])
@@ -174,7 +183,7 @@ export default function SeoGeoPage() {
   const loadSearchConsole = async () => {
     setScLoading(true)
     try {
-      const res = await fetch('/api/admin/seo-audit/search-console?days=28', { headers: authHeaders() })
+      const res = await fetch('/api/admin/seo-audit/search-console?days=28', { headers: authHeaders(), cache: 'no-store' })
       if (res.ok) {
         const data = await res.json()
         if (data.configured && data.data) {
