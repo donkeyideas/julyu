@@ -80,8 +80,40 @@ export default function PricingPage() {
     }
   }
 
+  const pricingFaqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'How much does Julyu cost?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Julyu offers a free plan with basic price comparisons, a Premium plan for full AI-powered features, and an Enterprise plan for businesses. The average Julyu user saves $287 per month, far exceeding the subscription cost.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'What is included in the free plan?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'The free plan includes basic price comparison across nearby stores, limited receipt scanning, and access to price alerts for up to 10 items. It is free forever with no credit card required.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Can I cancel my subscription at any time?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes, you can cancel your Julyu subscription at any time. There are no long-term contracts or cancellation fees. Your access continues until the end of your current billing period.',
+        },
+      },
+    ],
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-green-900/30 to-black text-white flex flex-col">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingFaqJsonLd) }} />
       <Header />
 
       <div className="flex-1 pt-32 pb-16 px-[5%]">
@@ -90,7 +122,10 @@ export default function PricingPage() {
             <h1 className="text-5xl md:text-6xl font-black mb-4">
               Simple <span className="bg-gradient-to-r from-green-500 to-green-300 bg-clip-text text-transparent">Transparent Pricing</span>
             </h1>
-            <p className="text-xl text-gray-500">Professional grocery intelligence for everyone</p>
+            <p className="text-xl text-gray-500 max-w-2xl mx-auto">
+              Julyu provides AI-powered grocery intelligence that saves the average family $287 per month.
+              Choose the plan that fits your shopping needs.
+            </p>
           </div>
 
           {loading ? (
@@ -208,6 +243,75 @@ export default function PricingPage() {
               </div>
             </>
           )}
+
+          {/* Why Julyu is Worth It */}
+          <div className="mt-20">
+            <h2 className="text-3xl font-bold mb-6 text-center">Why Julyu is Worth Every Penny</h2>
+            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8">
+              <p className="text-gray-300 leading-relaxed mb-4">
+                The average American family spends $1,020 per month on groceries. Research shows that prices for identical
+                items vary by 15-25% between nearby stores. Julyu is a price comparison platform that uses AI to find
+                these savings automatically.
+              </p>
+              <p className="text-gray-300 leading-relaxed">
+                According to our data, Julyu users save an average of $287 per month, which means the subscription
+                pays for itself within the first week. Our AI-powered matching provides 98% accuracy across 50+ major
+                retailers including Walmart, Kroger, Target, Costco, and Aldi.
+              </p>
+            </div>
+          </div>
+
+          {/* How Pricing Works */}
+          <div className="mt-12">
+            <h2 className="text-3xl font-bold mb-6 text-center">How Our Pricing Works</h2>
+            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8">
+              <ol className="space-y-4 text-gray-400">
+                <li className="flex gap-3">
+                  <span className="text-green-500 font-bold shrink-0">Step 1.</span>
+                  <span>Start with the free plan to explore basic price comparisons across stores near you.</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-green-500 font-bold shrink-0">Step 2.</span>
+                  <span>Upgrade to Premium for full AI matching, unlimited receipt scanning, and route optimization.</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-green-500 font-bold shrink-0">Step 3.</span>
+                  <span>Enterprise customers get custom integrations, dedicated support, and volume pricing for teams.</span>
+                </li>
+              </ol>
+            </div>
+          </div>
+
+          {/* Pricing FAQ */}
+          <div className="mt-16">
+            <h2 className="text-3xl font-bold mb-8 text-center">Frequently Asked Questions</h2>
+            <div className="space-y-6 max-w-3xl mx-auto">
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+                <h3 className="text-lg font-semibold mb-3">How much does Julyu cost?</h3>
+                <p className="text-gray-400 leading-relaxed">
+                  Julyu offers a free plan with basic features, a Premium plan for full AI-powered grocery intelligence,
+                  and an Enterprise plan for businesses. The average user saves $287 per month, far exceeding the
+                  subscription cost. No long-term contracts are required.
+                </p>
+              </div>
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+                <h3 className="text-lg font-semibold mb-3">What is included in the free plan?</h3>
+                <p className="text-gray-400 leading-relaxed">
+                  The free plan includes basic price comparison across nearby stores, limited receipt scanning, and
+                  price alerts for up to 10 items. It is free forever with no credit card required. You can upgrade
+                  anytime to unlock full AI matching across 50+ retailers.
+                </p>
+              </div>
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+                <h3 className="text-lg font-semibold mb-3">Can I cancel my subscription at any time?</h3>
+                <p className="text-gray-400 leading-relaxed">
+                  Yes, you can cancel your Julyu subscription at any time with no cancellation fees. Your access
+                  continues until the end of your current billing period. Survey data shows that 94% of Premium
+                  users continue their subscription because the savings far outweigh the cost.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
