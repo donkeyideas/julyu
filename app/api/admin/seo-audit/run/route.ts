@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { randomUUID } from 'crypto'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { validateSession } from '@/lib/auth/admin-auth-v2'
 import { crawlSite } from '@/lib/seo/crawler'
@@ -8,7 +9,14 @@ import { generateRecommendations } from '@/lib/seo/recommendations'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30 // Allow up to 30s for crawling 9 pages
 
+// Clamp a number to 0-100 to satisfy DB CHECK constraints
+function clamp100(n: number): number {
+  return Math.max(0, Math.min(100, Math.round(n)))
+}
+
 export async function POST(request: NextRequest) {
+  const errors: string[] = []
+
   try {
     const authHeader = request.headers.get('authorization')
     const sessionToken = authHeader?.replace('Bearer ', '')
@@ -52,17 +60,21 @@ export async function POST(request: NextRequest) {
       low: recommendations.filter(r => r.severity === 'low').length,
     }
 
-    // Store in Supabase (cast to any — SEO tables not in generated Database type yet)
-    const supabase = await createServiceRoleClient() as any
+    // Generate UUID server-side to avoid .select().single() chain issues
+    const auditId = randomUUID()
 
-    // Build the audit row
+    // Store in Supabase (cast to any — SEO tables not in generated Database type yet)
+    const supabase = createServiceRoleClient() as any
+
+    // Build the audit row with clamped scores
     const auditRow = {
-      overall_score: scores.overall,
-      technical_score: scores.technical,
-      content_score: scores.content,
-      structured_data_score: scores.structuredData,
-      performance_score: scores.performance,
-      geo_score: scores.geo,
+      id: auditId,
+      overall_score: clamp100(scores.overall),
+      technical_score: clamp100(scores.technical),
+      content_score: clamp100(scores.content),
+      structured_data_score: clamp100(scores.structuredData),
+      performance_score: clamp100(scores.performance),
+      geo_score: clamp100(scores.geo),
       total_issues: recommendations.length,
       critical_issues: issueCounts.critical,
       high_issues: issueCounts.high,
@@ -70,127 +82,138 @@ export async function POST(request: NextRequest) {
       low_issues: issueCounts.low,
       pages_audited: pages.length,
       audit_duration_ms: auditDurationMs,
-      triggered_by: sessionResult.employee.email,
+      triggered_by: sessionResult.employee?.email || 'unknown',
     }
 
-    // Insert audit
-    console.log('[SEO Audit] Inserting audit row:', JSON.stringify(auditRow))
-    const { data: audit, error: auditError } = await supabase
+    // Insert audit - simple insert without .select().single() chain
+    console.log('[SEO Audit] Inserting audit row with id:', auditId)
+    const { error: auditError } = await supabase
       .from('seo_audits')
       .insert(auditRow)
-      .select('id')
-      .single()
 
-    if (auditError || !audit) {
-      console.error('[SEO Audit] INSERT seo_audits FAILED:', JSON.stringify(auditError))
-      // Return computed data even if DB save fails so user sees results in-session
-      return NextResponse.json({
-        success: true,
-        audit: {
-          ...auditRow,
-          id: 'temp-' + Date.now(),
-          created_at: new Date().toISOString(),
-          page_scores: pages.map(page => buildPageScoreRow('temp', page)),
-          recommendations: recommendations.map(rec => ({
-            id: 'temp',
-            audit_id: 'temp',
-            page_path: rec.pagePath,
-            severity: rec.severity,
-            category: rec.category,
-            title: rec.title,
-            description: rec.description,
-            current_value: rec.currentValue,
-            recommended_value: rec.recommendedValue,
-            estimated_impact: rec.estimatedImpact,
-            is_auto_fixable: rec.isAutoFixable,
-            fix_type: rec.fixType,
-            is_resolved: false,
-            resolved_at: null,
-            created_at: new Date().toISOString(),
-          })),
-        },
-        dbError: auditError?.message || 'Insert failed',
-      })
-    }
-
-    console.log(`[SEO Audit] Audit inserted with id=${audit.id}`)
-
-    // Insert page scores
-    const pageScoreRows = pages.map(page => buildPageScoreRow(audit.id, page))
-
-    console.log(`[SEO Audit] Inserting ${pageScoreRows.length} page score rows...`)
-    const { error: pageError } = await supabase
-      .from('seo_page_scores')
-      .insert(pageScoreRows)
-
-    if (pageError) {
-      console.error('[SEO Audit] INSERT seo_page_scores FAILED:', JSON.stringify(pageError))
+    if (auditError) {
+      console.error('[SEO Audit] INSERT seo_audits FAILED:', auditError.message, auditError.code, auditError.details, auditError.hint)
+      errors.push(`audit insert: ${auditError.message}`)
     } else {
-      console.log('[SEO Audit] Page scores inserted successfully')
+      console.log(`[SEO Audit] Audit row inserted successfully, id=${auditId}`)
     }
 
-    // Insert recommendations
-    if (recommendations.length > 0) {
-      const recRows = recommendations.map(rec => ({
-        audit_id: audit.id,
-        page_path: rec.pagePath,
-        severity: rec.severity,
-        category: rec.category,
-        title: rec.title,
-        description: rec.description,
-        current_value: rec.currentValue,
-        recommended_value: rec.recommendedValue,
-        estimated_impact: rec.estimatedImpact,
-        is_auto_fixable: rec.isAutoFixable,
-        fix_type: rec.fixType,
-        is_resolved: false,
-      }))
+    // Insert page scores (only if audit insert succeeded)
+    if (!auditError) {
+      const pageScoreRows = pages.map(page => buildPageScoreRow(auditId, page))
 
-      console.log(`[SEO Audit] Inserting ${recRows.length} recommendation rows...`)
-      const { error: recError } = await supabase
-        .from('seo_recommendations')
-        .insert(recRows)
+      console.log(`[SEO Audit] Inserting ${pageScoreRows.length} page score rows...`)
+      const { error: pageError } = await supabase
+        .from('seo_page_scores')
+        .insert(pageScoreRows)
 
-      if (recError) {
-        console.error('[SEO Audit] INSERT seo_recommendations FAILED:', JSON.stringify(recError))
+      if (pageError) {
+        console.error('[SEO Audit] INSERT seo_page_scores FAILED:', pageError.message, pageError.code, pageError.details)
+        errors.push(`page_scores insert: ${pageError.message}`)
       } else {
-        console.log('[SEO Audit] Recommendations inserted successfully')
+        console.log('[SEO Audit] Page scores inserted successfully')
+      }
+
+      // Insert recommendations
+      if (recommendations.length > 0) {
+        const recRows = recommendations.map(rec => ({
+          audit_id: auditId,
+          page_path: rec.pagePath,
+          severity: rec.severity,
+          category: rec.category,
+          title: rec.title,
+          description: rec.description,
+          current_value: rec.currentValue,
+          recommended_value: rec.recommendedValue,
+          estimated_impact: rec.estimatedImpact,
+          is_auto_fixable: rec.isAutoFixable,
+          fix_type: rec.fixType,
+          is_resolved: false,
+        }))
+
+        console.log(`[SEO Audit] Inserting ${recRows.length} recommendation rows...`)
+        const { error: recError } = await supabase
+          .from('seo_recommendations')
+          .insert(recRows)
+
+        if (recError) {
+          console.error('[SEO Audit] INSERT seo_recommendations FAILED:', recError.message, recError.code, recError.details)
+          errors.push(`recommendations insert: ${recError.message}`)
+        } else {
+          console.log('[SEO Audit] Recommendations inserted successfully')
+        }
       }
     }
 
-    // Fetch the complete audit with page scores and recommendations
-    console.log('[SEO Audit] Fetching complete audit with joins...')
-    const { data: fullAudit, error: fetchError } = await supabase
+    // Verify the audit was persisted by reading it back
+    console.log('[SEO Audit] Verifying audit persistence...')
+    const { data: verifyAudit, error: verifyError } = await supabase
       .from('seo_audits')
-      .select(`
-        *,
-        page_scores:seo_page_scores(*),
-        recommendations:seo_recommendations(*)
-      `)
-      .eq('id', audit.id)
-      .single()
+      .select('id, overall_score, created_at')
+      .eq('id', auditId)
+      .maybeSingle()
 
-    if (fetchError) {
-      console.error('[SEO Audit] Fetch full audit FAILED:', JSON.stringify(fetchError))
-    } else {
-      console.log(`[SEO Audit] Full audit fetched: ${fullAudit?.page_scores?.length || 0} pages, ${fullAudit?.recommendations?.length || 0} recs`)
+    const saved = !!(verifyAudit?.id)
+    console.log(`[SEO Audit] Verification: saved=${saved}, verifyError=${verifyError?.message || 'none'}, found=${!!verifyAudit}`)
+
+    if (!saved && !auditError) {
+      errors.push('audit row not found after insert (silent failure)')
+    }
+
+    // Fetch the complete audit with joins
+    let fullAudit = null
+    if (saved) {
+      const { data, error: fetchError } = await supabase
+        .from('seo_audits')
+        .select(`
+          *,
+          page_scores:seo_page_scores(*),
+          recommendations:seo_recommendations(*)
+        `)
+        .eq('id', auditId)
+        .single()
+
+      if (fetchError) {
+        console.error('[SEO Audit] Fetch full audit FAILED:', fetchError.message)
+        errors.push(`fetch full audit: ${fetchError.message}`)
+      } else {
+        fullAudit = data
+        console.log(`[SEO Audit] Full audit fetched: ${fullAudit?.page_scores?.length || 0} pages, ${fullAudit?.recommendations?.length || 0} recs`)
+      }
     }
 
     const response = NextResponse.json({
       success: true,
+      saved,
       audit: fullAudit || {
         ...auditRow,
-        id: audit.id,
         created_at: new Date().toISOString(),
-        page_scores: pageScoreRows,
-        recommendations: [],
+        page_scores: pages.map(page => buildPageScoreRow(auditId, page)),
+        recommendations: recommendations.map(rec => ({
+          id: 'temp',
+          audit_id: auditId,
+          page_path: rec.pagePath,
+          severity: rec.severity,
+          category: rec.category,
+          title: rec.title,
+          description: rec.description,
+          current_value: rec.currentValue,
+          recommended_value: rec.recommendedValue,
+          estimated_impact: rec.estimatedImpact,
+          is_auto_fixable: rec.isAutoFixable,
+          fix_type: rec.fixType,
+          is_resolved: false,
+          resolved_at: null,
+          created_at: new Date().toISOString(),
+        })),
       },
+      ...(errors.length > 0 ? { dbErrors: errors } : {}),
     })
 
     // Prevent caching
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
 
-    console.log(`[SEO Audit] Audit complete in ${auditDurationMs}ms`)
+    console.log(`[SEO Audit] Audit complete in ${auditDurationMs}ms, saved=${saved}, errors=${errors.length}`)
     return response
   } catch (error: any) {
     console.error('[SEO Audit] Run error:', error?.message, error?.stack)
@@ -203,7 +226,7 @@ function buildPageScoreRow(auditId: string, page: import('@/lib/seo/types').Page
     audit_id: auditId,
     page_path: page.path,
     page_url: page.url,
-    overall_score: Math.round(
+    overall_score: clamp100(
       (page.contentClarityScore + page.answerabilityScore + page.citationWorthinessScore) / 3
     ),
     has_title: !!page.title,
@@ -234,8 +257,8 @@ function buildPageScoreRow(auditId: string, page: import('@/lib/seo/types').Page
     has_product_schema: page.hasProductSchema,
     response_time_ms: page.responseTimeMs,
     status_code: page.statusCode,
-    content_clarity_score: page.contentClarityScore,
-    answerability_score: page.answerabilityScore,
-    citation_worthiness_score: page.citationWorthinessScore,
+    content_clarity_score: clamp100(page.contentClarityScore),
+    answerability_score: clamp100(page.answerabilityScore),
+    citation_worthiness_score: clamp100(page.citationWorthinessScore),
   }
 }

@@ -157,24 +157,26 @@ export default function SeoGeoPage() {
         cache: 'no-store',
       })
       const data = await res.json()
+      console.log('[SEO Audit] Run response:', { saved: data.saved, dbErrors: data.dbErrors, auditId: data.audit?.id })
+
       if (data.success && data.audit) {
-        setAudit(data.audit)
-        if (data.dbError) {
-          showToast(`Warning: Audit ran but failed to save: ${data.dbError}`)
-          console.error('[SEO Audit] DB save failed:', data.dbError)
+        if (data.saved === false || data.dbErrors?.length) {
+          // DB save failed - show results but warn user
+          setAudit(data.audit)
+          const errMsg = data.dbErrors?.join('; ') || 'Unknown error'
+          showToast(`DB save failed: ${errMsg}`)
+          console.error('[SEO Audit] DB save errors:', data.dbErrors)
+        } else {
+          // DB save succeeded - reload from DB to confirm persistence
+          await loadData()
+          showToast('Audit completed and saved successfully')
         }
-        // Refresh history
-        const histRes = await fetch('/api/admin/seo-audit/history?limit=30', {
-          headers: authHeaders(),
-          cache: 'no-store',
-        })
-        if (histRes.ok) {
-          const histData = await histRes.json()
-          setHistory(histData.history || [])
-        }
+      } else if (data.error) {
+        showToast(`Audit failed: ${data.error}`)
       }
     } catch (error) {
       console.error('Error running audit:', error)
+      showToast('Audit request failed - check console')
     } finally {
       setRunningAudit(false)
     }
