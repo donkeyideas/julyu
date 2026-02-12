@@ -9,6 +9,7 @@ import ScoreBarChart from '@/components/admin-v2/charts/ScoreBarChart'
 import IssuesPieChart from '@/components/admin-v2/charts/IssuesPieChart'
 import GeoRadarChart from '@/components/admin-v2/charts/GeoRadarChart'
 import SearchConsoleChart from '@/components/admin-v2/charts/SearchConsoleChart'
+import ResponseTimeChart from '@/components/admin-v2/charts/ResponseTimeChart'
 import type { StoredAudit, StoredPageScore, StoredRecommendation } from '@/lib/seo/types'
 
 type TabKey = 'overview' | 'pages' | 'technical' | 'content' | 'traffic' | 'geo' | 'search-console' | 'recommendations'
@@ -785,6 +786,22 @@ export default function SeoGeoPage() {
                 )
               })()}
 
+              {/* Response Time Chart */}
+              <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Response Times by Page</h3>
+                <ResponseTimeChart
+                  data={pageScores.map(p => ({
+                    page_path: p.page_path,
+                    response_time_ms: p.response_time_ms || 0,
+                  }))}
+                />
+                <div className="flex items-center gap-6 mt-4 text-xs" style={{ color: 'var(--text-muted)' }}>
+                  <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-green-500" /> Under 500ms</div>
+                  <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-amber-500" /> 500-1000ms</div>
+                  <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-red-500" /> Over 1000ms</div>
+                </div>
+              </div>
+
               {/* Page Performance Table */}
               <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                 <div className="p-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
@@ -829,8 +846,8 @@ export default function SeoGeoPage() {
                 </table>
               </div>
 
-              {/* Traffic Trends (if SC available) */}
-              {scData && scData.trends.length > 0 && (
+              {/* Traffic Trends (if SC available with data) */}
+              {scData && scData.trends.length > 0 && scData.trends.some(t => t.clicks > 0 || t.impressions > 0) && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                     <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Clicks & Impressions Trend</h3>
@@ -843,33 +860,42 @@ export default function SeoGeoPage() {
                 </div>
               )}
 
-              {/* Traffic by Device & Country (if SC available) */}
-              {scData && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-                    <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Traffic by Device</h3>
+              {/* Traffic by Device & Country */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                  <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Traffic by Device</h3>
+                  {scData && scData.devices.length > 0 && scData.devices.some(d => d.clicks > 0 || d.impressions > 0) ? (
                     <div className="space-y-3">
                       {scData.devices.map((d, i) => {
-                        const maxClicks = Math.max(...scData.devices.map(x => x.clicks), 1)
+                        const maxImpressions = Math.max(...scData.devices.map(x => x.impressions), 1)
                         return (
                           <div key={i} className="space-y-1">
                             <div className="flex justify-between text-sm">
                               <span className="font-semibold capitalize" style={{ color: 'var(--text-primary)' }}>{d.device}</span>
-                              <span style={{ color: 'var(--text-muted)' }}>{d.clicks} clicks</span>
+                              <span style={{ color: 'var(--text-muted)' }}>{d.clicks} clicks | {d.impressions} imp</span>
                             </div>
                             <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border-color)' }}>
-                              <div className="h-full rounded-full bg-green-500" style={{ width: `${(d.clicks / maxClicks) * 100}%` }} />
+                              <div className="h-full rounded-full bg-green-500" style={{ width: `${(d.impressions / maxImpressions) * 100}%`, minWidth: d.impressions > 0 ? '4px' : '0' }} />
                             </div>
                           </div>
                         )
                       })}
                     </div>
-                  </div>
-                  <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-                    <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Top Countries</h3>
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="text-3xl mb-2">📱</div>
+                      <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                        {scData ? 'No device traffic data yet. Data appears after your site receives search impressions.' : 'Connect Search Console to see device breakdown.'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                  <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Top Countries</h3>
+                  {scData && scData.countries.length > 0 && scData.countries.some(c => c.clicks > 0 || c.impressions > 0) ? (
                     <div className="space-y-3 max-h-[300px] overflow-y-auto">
                       {scData.countries.slice(0, 10).map((c, i) => {
-                        const maxClicks = Math.max(...scData.countries.map(x => x.clicks), 1)
+                        const maxImpressions = Math.max(...scData.countries.map(x => x.impressions), 1)
                         return (
                           <div key={i} className="space-y-1">
                             <div className="flex justify-between text-sm">
@@ -877,15 +903,22 @@ export default function SeoGeoPage() {
                               <span style={{ color: 'var(--text-muted)' }}>{c.clicks} clicks | {c.impressions} imp</span>
                             </div>
                             <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border-color)' }}>
-                              <div className="h-full rounded-full bg-blue-500" style={{ width: `${(c.clicks / maxClicks) * 100}%` }} />
+                              <div className="h-full rounded-full bg-blue-500" style={{ width: `${(c.impressions / maxImpressions) * 100}%`, minWidth: c.impressions > 0 ? '4px' : '0' }} />
                             </div>
                           </div>
                         )
                       })}
                     </div>
-                  </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="text-3xl mb-2">🌍</div>
+                      <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                        {scData ? 'No country traffic data yet. Data appears after your site receives search impressions.' : 'Connect Search Console to see country breakdown.'}
+                      </p>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
 
               {/* No SC prompt */}
               {!scData && !scConfigured && (

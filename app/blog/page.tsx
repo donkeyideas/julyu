@@ -84,32 +84,27 @@ const getBlogPosts = unstable_cache(
   async (page: number) => {
     const supabase = createServiceRoleClient() as any
 
-    const [countResult, postsResult] = await Promise.all([
-      supabase
-        .from('blog_posts')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'published'),
-      supabase
-        .from('blog_posts')
-        .select('id, title, slug, excerpt, category, featured_image_url, published_at, read_time_minutes')
-        .eq('status', 'published')
-        .order('published_at', { ascending: false })
-        .range(
-          (page - 1) * POSTS_PER_PAGE,
-          page * POSTS_PER_PAGE - 1
-        ),
-    ])
+    // Single query with count: 'exact' returns both data + total count in one roundtrip
+    const { data, count, error } = await supabase
+      .from('blog_posts')
+      .select('id, title, slug, excerpt, category, featured_image_url, published_at, read_time_minutes', { count: 'exact' })
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .range(
+        (page - 1) * POSTS_PER_PAGE,
+        page * POSTS_PER_PAGE - 1
+      )
 
     return {
-      totalPosts: countResult.count || 0,
-      posts: (postsResult.data || []) as BlogPost[],
+      totalPosts: count || 0,
+      posts: (data || []) as BlogPost[],
     }
   },
   ['blog-posts'],
-  { revalidate: 300 }
+  { revalidate: 3600 }
 )
 
-export const revalidate = 300
+export const revalidate = 3600
 
 export default async function BlogPage({
   searchParams,
