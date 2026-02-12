@@ -157,20 +157,29 @@ export default function SeoGeoPage() {
         cache: 'no-store',
       })
       const data = await res.json()
-      console.log('[SEO Audit] Run response:', { saved: data.saved, dbErrors: data.dbErrors, auditId: data.audit?.id })
 
       if (data.success && data.audit) {
+        // Always set audit data immediately from the run response
+        setAudit(data.audit)
+
         if (data.saved === false || data.dbErrors?.length) {
-          // DB save failed - show results but warn user
-          setAudit(data.audit)
           const errMsg = data.dbErrors?.join('; ') || 'Unknown error'
-          showToast(`DB save failed: ${errMsg}`)
-          console.error('[SEO Audit] DB save errors:', data.dbErrors)
+          showToast(`Warning: Audit ran but DB save failed: ${errMsg}`)
         } else {
-          // DB save succeeded - reload from DB to confirm persistence
-          await loadData()
           showToast('Audit completed and saved successfully')
         }
+
+        // Refresh history in background
+        try {
+          const histRes = await fetch('/api/admin/seo-audit/history?limit=30', {
+            headers: authHeaders(),
+            cache: 'no-store',
+          })
+          if (histRes.ok) {
+            const histData = await histRes.json()
+            setHistory(histData.history || [])
+          }
+        } catch { /* history refresh is non-critical */ }
       } else if (data.error) {
         showToast(`Audit failed: ${data.error}`)
       }

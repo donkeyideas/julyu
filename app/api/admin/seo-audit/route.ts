@@ -48,9 +48,29 @@ export async function GET(request: NextRequest) {
       return noCacheResponse({ success: true, audit })
     }
 
-    // Get latest audit
+    // Get latest audit - two-step query to avoid ordering issues with joins
     const latest = searchParams.get('latest')
     if (latest === 'true') {
+      // Step 1: Get the latest audit ID without joins (ordering is reliable)
+      const { data: latestRow, error: latestError } = await supabase
+        .from('seo_audits')
+        .select('id, created_at')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (latestError) {
+        console.log('[SEO Audit GET] Latest ID query error:', latestError.message, latestError.code)
+        return noCacheResponse({ success: true, audit: null })
+      }
+
+      if (!latestRow) {
+        return noCacheResponse({ success: true, audit: null })
+      }
+
+      console.log(`[SEO Audit GET] Latest audit ID: ${latestRow.id}, created: ${latestRow.created_at}`)
+
+      // Step 2: Fetch full audit with joins by specific ID
       const { data: audit, error } = await supabase
         .from('seo_audits')
         .select(`
@@ -58,12 +78,11 @@ export async function GET(request: NextRequest) {
           page_scores:seo_page_scores(*),
           recommendations:seo_recommendations(*)
         `)
-        .order('created_at', { ascending: false })
-        .limit(1)
+        .eq('id', latestRow.id)
         .single()
 
       if (error) {
-        console.log('[SEO Audit GET] Latest audit query error:', error.message, error.code)
+        console.error('[SEO Audit GET] Fetch by latest id error:', error.message, error.code)
         return noCacheResponse({ success: true, audit: null })
       }
 
