@@ -18,7 +18,12 @@ export const createServiceRoleClient = () => {
     auth: {
       autoRefreshToken: false,
       persistSession: false
-    }
+    },
+    global: {
+      // Next.js patches fetch to cache responses by default.
+      // Force no-store so Supabase queries always hit the DB.
+      fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' }),
+    },
   })
 }
 
