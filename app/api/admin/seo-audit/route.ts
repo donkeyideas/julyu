@@ -51,18 +51,19 @@ export async function GET(request: NextRequest) {
     // Get latest audit - two-step query to avoid ordering issues with joins
     const latest = searchParams.get('latest')
     if (latest === 'true') {
-      // Step 1: Get the latest audit ID without joins (ordering is reliable)
-      const { data: latestRow, error: latestError } = await supabase
+      // Step 1: Get the latest audit ID using array result (avoid .maybeSingle() which alters PostgREST behavior)
+      const { data: rows, error: latestError } = await supabase
         .from('seo_audits')
         .select('id, created_at')
         .order('created_at', { ascending: false })
         .limit(1)
-        .maybeSingle()
 
       if (latestError) {
         console.log('[SEO Audit GET] Latest ID query error:', latestError.message, latestError.code)
         return noCacheResponse({ success: true, audit: null })
       }
+
+      const latestRow = rows?.[0] || null
 
       if (!latestRow) {
         return noCacheResponse({ success: true, audit: null })
