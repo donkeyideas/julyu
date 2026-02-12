@@ -52,22 +52,26 @@ export default function AdminV2Dashboard() {
       const thirtyDaysAgo = new Date()
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-      // Fetch AI usage via authenticated API route (bypasses RLS)
+      // Fetch data via API routes (bypasses RLS on restricted tables)
       const token = getAdminSessionToken()
       const usageFetch = token
         ? fetch('/api/admin/usage?timeRange=30d', {
             headers: { Authorization: `Bearer ${token}` },
           }).then(r => r.ok ? r.json() : null).catch(() => null)
         : Promise.resolve(null)
+      const ordersFetch = fetch('/api/admin/bodega-orders')
+        .then(r => r.ok ? r.json() : null).catch(() => null)
+      const analyticsFetch = fetch('/api/admin/analytics?days=30')
+        .then(r => r.ok ? r.json() : null).catch(() => null)
 
       // Load all stats in parallel
-      const [usageRes, usersResult, configResult, ordersResult, recentUsersResult, receiptsResult] = await Promise.all([
+      const [usageRes, ordersRes, analyticsRes, usersResult, configResult, recentUsersResult] = await Promise.all([
         usageFetch,
+        ordersFetch,
+        analyticsFetch,
         supabase.from('users').select('*', { count: 'exact', head: true }),
         supabase.from('ai_model_config').select('*').eq('is_active', true),
-        supabase.from('bodega_orders').select('total_amount, commission_amount, ordered_at').gte('ordered_at', thirtyDaysAgo.toISOString()),
         supabase.from('users').select('created_at').gte('created_at', thirtyDaysAgo.toISOString()),
-        supabase.from('receipts').select('created_at').gte('created_at', thirtyDaysAgo.toISOString()),
       ])
 
       // partner_retailers table not yet created - skip query to avoid 404 console errors
@@ -93,17 +97,18 @@ export default function AdminV2Dashboard() {
         avgResponseTime: Math.round(avgResponseTime),
       })
 
-      // Process revenue data (last 30 days)
-      const orders = ordersResult.data || []
+      // Process revenue data from API (last 30 days)
+      const allOrders = (ordersRes?.orders || []) as Array<{ total_amount?: string; commission_amount?: string; ordered_at?: string }>
+      const orders = allOrders.filter((o) => o.ordered_at && new Date(o.ordered_at) >= thirtyDaysAgo)
       const revenueByDate: { [key: string]: { revenue: number, orders: number, commission: number } } = {}
 
-      orders.forEach((order: any) => {
-        const date = new Date(order.ordered_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      orders.forEach((order) => {
+        const date = new Date(order.ordered_at!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
         if (!revenueByDate[date]) {
           revenueByDate[date] = { revenue: 0, orders: 0, commission: 0 }
         }
-        revenueByDate[date].revenue += parseFloat(order.total_amount || 0)
-        revenueByDate[date].commission += parseFloat(order.commission_amount || 0)
+        revenueByDate[date].revenue += parseFloat(order.total_amount || '0')
+        revenueByDate[date].commission += parseFloat(order.commission_amount || '0')
         revenueByDate[date].orders += 1
       })
 
@@ -115,7 +120,7 @@ export default function AdminV2Dashboard() {
 
       // Process user growth data (last 30 days)
       const newUsers = recentUsersResult.data || []
-      const receipts = receiptsResult.data || []
+      const receiptsByDay = (analyticsRes?.receipts?.byDay || {}) as Record<string, number>
       const growthByDate: { [key: string]: { newUsers: number, receiptsScanned: number } } = {}
 
       newUsers.forEach((user: any) => {
@@ -126,12 +131,13 @@ export default function AdminV2Dashboard() {
         growthByDate[date].newUsers += 1
       })
 
-      receipts.forEach((receipt: any) => {
-        const date = new Date(receipt.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      // Receipts from analytics API (bypasses RLS)
+      Object.entries(receiptsByDay).forEach(([dateStr, count]) => {
+        const date = new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
         if (!growthByDate[date]) {
           growthByDate[date] = { newUsers: 0, receiptsScanned: 0 }
         }
-        growthByDate[date].receiptsScanned += 1
+        growthByDate[date].receiptsScanned += count
       })
 
       const userGrowthChartData: UserGrowthData[] = Object.entries(growthByDate)
