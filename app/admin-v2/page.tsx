@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { getAdminSessionToken } from '@/lib/auth/admin-session-client'
 
 interface DashboardStats {
   totalUsers: number
@@ -51,10 +52,18 @@ export default function AdminV2Dashboard() {
       const thirtyDaysAgo = new Date()
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-      // Load all stats
-      const [usersResult, usageResult, configResult, ordersResult, recentUsersResult, receiptsResult] = await Promise.all([
+      // Fetch AI usage via authenticated API route (bypasses RLS)
+      const token = getAdminSessionToken()
+      const usageFetch = token
+        ? fetch('/api/admin/usage?timeRange=30d', {
+            headers: { Authorization: `Bearer ${token}` },
+          }).then(r => r.ok ? r.json() : null).catch(() => null)
+        : Promise.resolve(null)
+
+      // Load all stats in parallel
+      const [usageRes, usersResult, configResult, ordersResult, recentUsersResult, receiptsResult] = await Promise.all([
+        usageFetch,
         supabase.from('users').select('*', { count: 'exact', head: true }),
-        supabase.from('ai_model_usage').select('*').order('created_at', { ascending: false }).limit(1000),
         supabase.from('ai_model_config').select('*').eq('is_active', true),
         supabase.from('bodega_orders').select('total_amount, commission_amount, ordered_at').gte('ordered_at', thirtyDaysAgo.toISOString()),
         supabase.from('users').select('created_at').gte('created_at', thirtyDaysAgo.toISOString()),
@@ -64,19 +73,15 @@ export default function AdminV2Dashboard() {
       // partner_retailers table not yet created - skip query to avoid 404 console errors
       const totalRetailers = 0
 
-      interface UsageRecord {
-        cost?: number | null
-        response_time_ms?: number | null
-      }
-
       const totalUsers = usersResult.count || 0
-      const usage = (usageResult.data || []) as UsageRecord[]
       const activeConfigs = configResult.data || []
 
-      const totalRequests = usage.length
-      const totalCost = usage.reduce((sum: number, item: UsageRecord) => sum + (item.cost || 0), 0)
-      const avgResponseTime = usage.length > 0
-        ? usage.reduce((sum: number, item: UsageRecord) => sum + (item.response_time_ms || 0), 0) / usage.length
+      // AI stats from API route (service role client, no RLS)
+      const aiData = (usageRes?.aiData || []) as Array<{ cost?: number; response_time_ms?: number }>
+      const totalRequests = aiData.length
+      const totalCost = aiData.reduce((sum, item) => sum + (item.cost || 0), 0)
+      const avgResponseTime = aiData.length > 0
+        ? aiData.reduce((sum, item) => sum + (item.response_time_ms || 0), 0) / aiData.length
         : 0
 
       setStats({
