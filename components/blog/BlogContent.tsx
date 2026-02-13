@@ -20,14 +20,35 @@ function BlogGrid({ initialPosts, totalPages }: { initialPosts: BlogPost[]; tota
   const searchParams = useSearchParams()
   const pageParam = searchParams.get('page')
   const currentPage = Math.max(1, parseInt(pageParam || '1', 10) || 1)
-  const safePage = Math.min(currentPage, totalPages)
+  const safePage = Math.min(currentPage, totalPages || 1)
 
   const [posts, setPosts] = useState(initialPosts)
   const [loading, setLoading] = useState(false)
+  const [actualTotalPages, setActualTotalPages] = useState(totalPages)
+
+  // Fallback: if server returned empty for page 1, fetch client-side
+  useEffect(() => {
+    if (currentPage <= 1 && initialPosts.length === 0) {
+      setLoading(true)
+      fetch('/api/blog/posts?page=1')
+        .then((res) => res.json())
+        .then((data) => {
+          const fetched = data.posts || []
+          setPosts(fetched)
+          if (fetched.length > 0) {
+            setActualTotalPages(Math.max(totalPages, 1))
+          }
+          setLoading(false)
+        })
+        .catch(() => setLoading(false))
+    }
+  }, [initialPosts, currentPage, totalPages])
 
   useEffect(() => {
     if (currentPage <= 1) {
-      setPosts(initialPosts)
+      if (initialPosts.length > 0) {
+        setPosts(initialPosts)
+      }
       return
     }
     setLoading(true)
