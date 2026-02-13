@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Insert message
+    // Insert message into JulyU's own database
     const { error: insertError } = await supabase
       .from('contact_messages')
       .insert({
@@ -96,6 +96,26 @@ export async function POST(request: NextRequest) {
         { error: 'Failed to send message. Please try again later.' },
         { status: 500 }
       )
+    }
+
+    // Forward to Donkey Ideas centralized inbox
+    try {
+      await fetch('https://www.donkeyideas.com/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.DONKEY_IDEAS_CONTACT_API_KEY || '',
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.toLowerCase().trim(),
+          message: `[${subject}] ${message.trim()}`,
+          source: 'julyu',
+        }),
+      })
+    } catch (forwardError) {
+      // Don't fail the user's submission if forwarding fails
+      console.error('[Contact] Forward to Donkey Ideas failed:', forwardError)
     }
 
     return NextResponse.json({ success: true, message: 'Message sent successfully!' })
