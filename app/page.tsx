@@ -150,7 +150,7 @@ export default async function HomePage() {
       <StoreOwnerCTA content={content.store_cta} />
 
       {/* Why Julyu Saves You Money */}
-      <section className="py-20 px-[5%] bg-black">
+      <section className="py-20 px-[5%] bg-gradient-to-b from-green-950/60 to-black">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold mb-6 text-center">How Julyu Saves You Money</h2>
           <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8">
@@ -176,7 +176,7 @@ export default async function HomePage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 px-[5%] bg-black">
+      <section className="py-20 px-[5%] bg-gradient-to-b from-black to-green-950/60">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold mb-8 text-center">Frequently Asked Questions</h2>
           <div className="space-y-6">

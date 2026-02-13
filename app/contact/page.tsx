@@ -33,7 +33,7 @@ const contactJsonLd = {
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'customer support',
-      email: 'support@julyu.com',
+      email: 'info@donkeyideas.com',
       availableLanguage: 'English',
     },
   },
@@ -94,48 +94,17 @@ export default function ContactPage() {
             <h2 className="text-2xl font-bold mb-6 text-center">How Can Julyu Help You?</h2>
             <div className="grid md:grid-cols-3 gap-6">
               <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 text-center">
-                <div className="text-3xl mb-3">💬</div>
                 <h3 className="font-semibold mb-2">General Support</h3>
                 <p className="text-gray-400 text-sm">Account setup, billing questions, and technical troubleshooting. Average response time is 4 hours. Survey data shows 96% satisfaction rate.</p>
               </div>
               <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 text-center">
-                <div className="text-3xl mb-3">🏪</div>
                 <h3 className="font-semibold mb-2">Store Partners</h3>
                 <p className="text-gray-400 text-sm">Integration help, onboarding, and partnership inquiries for our established network of 50+ retailers and grocery chains.</p>
               </div>
               <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 text-center">
-                <div className="text-3xl mb-3">💡</div>
                 <h3 className="font-semibold mb-2">Feature Requests</h3>
                 <p className="text-gray-400 text-sm">Share ideas and suggestions. According to our data, 78% of feature requests from users are implemented within 90 days.</p>
               </div>
-            </div>
-          </div>
-
-          {/* How to Reach Us */}
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold mb-6 text-center">How to Reach Our Support Team</h2>
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8">
-              <p className="text-gray-300 leading-relaxed mb-4">
-                Julyu was founded in 2024 with a commitment to providing &quot;world-class customer support.&quot; Our
-                established support team is certified in customer service best practices and handles over 5,000 inquiries
-                per month. Research shows that fast response times are the top factor in customer satisfaction. Whether you
-                need help with account setup, receipt scanning, price comparisons, or subscription billing, our team is
-                here to assist. We support over 127,000 active shoppers and 50+ retail partners across the United States.
-              </p>
-              <ol className="space-y-3 text-gray-400">
-                <li className="flex gap-3">
-                  <span className="text-green-500 font-bold shrink-0">Step 1.</span>
-                  <span>Fill out the contact form below with your name, email, and a description of your question.</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-green-500 font-bold shrink-0">Step 2.</span>
-                  <span>Select the appropriate category (General Support, Store Partner, or Feature Request) so we can route your inquiry to the right team.</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-green-500 font-bold shrink-0">Step 3.</span>
-                  <span>Our support team will respond within 24 hours. Premium subscribers receive priority support with an average 4-hour response time.</span>
-                </li>
-              </ol>
             </div>
           </div>
 
@@ -147,14 +116,10 @@ export default function ContactPage() {
             <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 mb-6">
               <h2 className="text-2xl font-bold mb-4">Direct Contact Information</h2>
               <p className="text-gray-400 leading-relaxed">
-                For general support and inquiries, email us at{' '}
-                <a href="mailto:support@julyu.com" className="text-green-500 hover:text-green-400 transition">
-                  support@julyu.com
-                </a>. For store partnership opportunities, reach our partnerships team at{' '}
-                <a href="mailto:partners@julyu.com" className="text-green-500 hover:text-green-400 transition">
-                  partners@julyu.com
-                </a>. Our support hours are Monday through Friday, 8 AM to 8 PM Eastern Time. Premium subscribers
-                have access to extended weekend support. Average response time for email inquiries is under 12 hours.
+                For all inquiries, email us at{' '}
+                <a href="mailto:info@donkeyideas.com" className="text-green-500 hover:text-green-400 transition">
+                  info@donkeyideas.com
+                </a>.
               </p>
             </div>
           </div>
