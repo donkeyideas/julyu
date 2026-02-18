@@ -47,6 +47,30 @@ interface UserStats {
   activeToday: number
 }
 
+interface UserAnalytics {
+  user: User & { location?: any }
+  preferences: any
+  summary: {
+    totalComparisons: number
+    totalSavings: number
+    totalSpentFromComparisons: number
+    totalReceipts: number
+    totalReceiptAmount: number
+    totalLists: number
+    activeAlerts: number
+    totalAlerts: number
+    totalConversations: number
+    favoriteStore: string | null
+    lastActivity: string | null
+    uniqueSessions: number
+  }
+  comparisons: any[]
+  receipts: any[]
+  lists: any[]
+  savings: any[]
+  recentActivity: { type: string; data: any; timestamp: string }[]
+}
+
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([])
   const [stats, setStats] = useState<UserStats>({
@@ -68,6 +92,11 @@ export default function UsersPage() {
   const [userToDelete, setUserToDelete] = useState<User | null>(null)
   const [signInEnabled, setSignInEnabled] = useState(true)
   const [signInToggleLoading, setSignInToggleLoading] = useState(false)
+  const [analyticsModalOpen, setAnalyticsModalOpen] = useState(false)
+  const [analyticsUser, setAnalyticsUser] = useState<User | null>(null)
+  const [analytics, setAnalytics] = useState<UserAnalytics | null>(null)
+  const [analyticsLoading, setAnalyticsLoading] = useState(false)
+  const [analyticsTab, setAnalyticsTab] = useState<'overview' | 'activity' | 'comparisons' | 'receipts'>('overview')
 
   useEffect(() => {
     loadUsers()
@@ -239,6 +268,44 @@ export default function UsersPage() {
     }
   }
 
+  const handleViewAnalytics = async (user: User) => {
+    setAnalyticsUser(user)
+    setAnalyticsModalOpen(true)
+    setAnalyticsLoading(true)
+    setAnalyticsTab('overview')
+    setAnalytics(null)
+
+    try {
+      const res = await fetch(`/api/admin/users/${user.id}/analytics`)
+      if (res.ok) {
+        const data = await res.json()
+        setAnalytics(data)
+      }
+    } catch (error) {
+      console.error('Error loading analytics:', error)
+    } finally {
+      setAnalyticsLoading(false)
+    }
+  }
+
+  const getEventLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      comparison_run: 'Compared Prices',
+      receipt_scan: 'Scanned Receipt',
+      alert_created: 'Created Price Alert',
+      list_created: 'Created Shopping List',
+      list_updated: 'Updated Shopping List',
+      login: 'Logged In',
+      signup: 'Signed Up',
+      page_view: 'Viewed Page',
+      search: 'Searched Products',
+      deal_viewed: 'Viewed Deal',
+      deal_saved: 'Saved Deal',
+      ai_chat: 'Used AI Assistant',
+    }
+    return labels[type] || type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  }
+
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Never'
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -386,7 +453,7 @@ export default function UsersPage() {
               ) : (
                 filteredUsers.map((user) => (
                   <tr key={user.id} className="hover:opacity-80 transition" style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 cursor-pointer" onClick={() => handleViewAnalytics(user)}>
                       <div className="flex items-center gap-3">
                         {/* Avatar or initial */}
                         {user.avatar_url ? (
@@ -428,6 +495,12 @@ export default function UsersPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => handleViewAnalytics(user)}
+                          className="px-4 py-2 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/20 transition text-sm font-medium"
+                        >
+                          View
+                        </button>
                         <button
                           onClick={() => handleEditUser(user)}
                           className="px-4 py-2 bg-green-500/10 text-green-500 rounded-lg hover:bg-green-500/20 transition text-sm font-medium"
@@ -560,6 +633,346 @@ export default function UsersPage() {
               >
                 {saving ? 'Saving...' : 'Save Changes'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* User Analytics Modal */}
+      {analyticsModalOpen && analyticsUser && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => setAnalyticsModalOpen(false)}>
+          <div
+            className="rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col"
+            style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="p-6 flex items-center justify-between flex-shrink-0" style={{ borderBottom: '1px solid var(--border-color)' }}>
+              <div className="flex items-center gap-4">
+                {analyticsUser.avatar_url ? (
+                  <img src={analyticsUser.avatar_url} alt="" className="w-14 h-14 rounded-full object-cover" />
+                ) : (
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center font-bold text-xl" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>
+                    {(analyticsUser.full_name || analyticsUser.email)[0].toUpperCase()}
+                  </div>
+                )}
+                <div>
+                  <h2 className="text-2xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                    {analyticsUser.full_name || 'No name'}
+                    {(analyticsUser.auth_provider === 'google' || analyticsUser.firebase_uid) && (
+                      <span title="Google account"><GoogleIcon /></span>
+                    )}
+                  </h2>
+                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{analyticsUser.email}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setAnalyticsModalOpen(false)}
+                className="p-2 rounded-lg hover:opacity-70 transition"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex gap-1 px-6 pt-4 flex-shrink-0">
+              {(['overview', 'activity', 'comparisons', 'receipts'] as const).map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setAnalyticsTab(tab)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                    analyticsTab === tab ? 'bg-green-500 text-black' : 'hover:opacity-70'
+                  }`}
+                  style={analyticsTab !== tab ? { color: 'var(--text-secondary)' } : {}}
+                >
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </button>
+              ))}
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto flex-1">
+              {analyticsLoading ? (
+                <div className="flex items-center justify-center py-16">
+                  <div className="text-center">
+                    <div className="inline-block w-10 h-10 border-4 rounded-full animate-spin mb-3" style={{ borderColor: 'var(--border-color)', borderTopColor: 'var(--accent-primary)' }}></div>
+                    <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Loading analytics...</div>
+                  </div>
+                </div>
+              ) : !analytics ? (
+                <div className="text-center py-16" style={{ color: 'var(--text-secondary)' }}>
+                  Failed to load analytics data.
+                </div>
+              ) : analyticsTab === 'overview' ? (
+                <>
+                  {/* Summary Stats Grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                    <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                      <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Price Comparisons</div>
+                      <div className="text-2xl font-black text-green-500">{analytics.summary.totalComparisons}</div>
+                    </div>
+                    <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                      <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Total Savings</div>
+                      <div className="text-2xl font-black text-green-400">${analytics.summary.totalSavings.toFixed(2)}</div>
+                    </div>
+                    <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                      <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Receipts Scanned</div>
+                      <div className="text-2xl font-black text-blue-400">{analytics.summary.totalReceipts}</div>
+                    </div>
+                    <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                      <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Total Spent</div>
+                      <div className="text-2xl font-black text-yellow-400">${analytics.summary.totalReceiptAmount.toFixed(2)}</div>
+                    </div>
+                    <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                      <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Shopping Lists</div>
+                      <div className="text-2xl font-black" style={{ color: 'var(--text-primary)' }}>{analytics.summary.totalLists}</div>
+                    </div>
+                    <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                      <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Price Alerts</div>
+                      <div className="text-2xl font-black text-orange-400">{analytics.summary.activeAlerts} / {analytics.summary.totalAlerts}</div>
+                    </div>
+                    <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                      <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>AI Conversations</div>
+                      <div className="text-2xl font-black text-purple-400">{analytics.summary.totalConversations}</div>
+                    </div>
+                    <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                      <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Sessions</div>
+                      <div className="text-2xl font-black" style={{ color: 'var(--text-primary)' }}>{analytics.summary.uniqueSessions}</div>
+                    </div>
+                  </div>
+
+                  {/* User Details */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="rounded-xl p-5" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                      <h3 className="font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Account Details</h3>
+                      <div className="space-y-3 text-sm">
+                        <div className="flex justify-between">
+                          <span style={{ color: 'var(--text-muted)' }}>User ID</span>
+                          <span className="font-mono text-xs truncate max-w-[200px]" style={{ color: 'var(--text-secondary)' }}>{analyticsUser.id}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span style={{ color: 'var(--text-muted)' }}>Tier</span>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${getTierBadgeColor(analyticsUser.subscription_tier)}`}
+                            style={analyticsUser.subscription_tier === 'free' ? { backgroundColor: 'var(--bg-card)', color: 'var(--text-muted)', borderColor: 'var(--border-color)' } : {}}>
+                            {analyticsUser.subscription_tier.charAt(0).toUpperCase() + analyticsUser.subscription_tier.slice(1)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span style={{ color: 'var(--text-muted)' }}>Auth Method</span>
+                          <span className="flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
+                            {(analyticsUser.auth_provider === 'google' || analyticsUser.firebase_uid) ? (
+                              <><GoogleIcon /> Google</>
+                            ) : 'Email/Password'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span style={{ color: 'var(--text-muted)' }}>Joined</span>
+                          <span style={{ color: 'var(--text-secondary)' }}>{formatDate(analyticsUser.created_at)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span style={{ color: 'var(--text-muted)' }}>Last Login</span>
+                          <span style={{ color: 'var(--text-secondary)' }}>{formatDate(analyticsUser.last_login)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span style={{ color: 'var(--text-muted)' }}>Last Activity</span>
+                          <span style={{ color: 'var(--text-secondary)' }}>{formatDate(analytics.summary.lastActivity)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span style={{ color: 'var(--text-muted)' }}>Phone</span>
+                          <span style={{ color: 'var(--text-secondary)' }}>{analyticsUser.phone || 'Not set'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span style={{ color: 'var(--text-muted)' }}>Stripe Customer</span>
+                          <span className="font-mono text-xs" style={{ color: 'var(--text-secondary)' }}>{analyticsUser.stripe_customer_id || 'Not connected'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl p-5" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                      <h3 className="font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Usage Insights</h3>
+                      <div className="space-y-3 text-sm">
+                        <div className="flex justify-between">
+                          <span style={{ color: 'var(--text-muted)' }}>Favorite Store</span>
+                          <span style={{ color: 'var(--text-secondary)' }}>{analytics.summary.favoriteStore || 'No data'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span style={{ color: 'var(--text-muted)' }}>Avg Savings/Comparison</span>
+                          <span className="text-green-400">
+                            {analytics.summary.totalComparisons > 0
+                              ? `$${(analytics.summary.totalSavings / analytics.summary.totalComparisons).toFixed(2)}`
+                              : '$0.00'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span style={{ color: 'var(--text-muted)' }}>Avg Receipt Amount</span>
+                          <span style={{ color: 'var(--text-secondary)' }}>
+                            {analytics.summary.totalReceipts > 0
+                              ? `$${(analytics.summary.totalReceiptAmount / analytics.summary.totalReceipts).toFixed(2)}`
+                              : '$0.00'}
+                          </span>
+                        </div>
+                        {analytics.preferences && (
+                          <>
+                            <div className="flex justify-between">
+                              <span style={{ color: 'var(--text-muted)' }}>Shopping Frequency</span>
+                              <span style={{ color: 'var(--text-secondary)' }}>{analytics.preferences.shopping_frequency || 'Not set'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span style={{ color: 'var(--text-muted)' }}>Monthly Budget</span>
+                              <span style={{ color: 'var(--text-secondary)' }}>
+                                {analytics.preferences.budget_monthly ? `$${analytics.preferences.budget_monthly}` : 'Not set'}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span style={{ color: 'var(--text-muted)' }}>Max Drive Time</span>
+                              <span style={{ color: 'var(--text-secondary)' }}>
+                                {analytics.preferences.max_drive_time ? `${analytics.preferences.max_drive_time} min` : 'Not set'}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span style={{ color: 'var(--text-muted)' }}>AI Features</span>
+                              <span style={{ color: analytics.preferences.ai_features_enabled ? '#4ade80' : 'var(--text-secondary)' }}>
+                                {analytics.preferences.ai_features_enabled ? 'Enabled' : 'Disabled'}
+                              </span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Monthly Savings Chart */}
+                  {analytics.savings.length > 0 && (
+                    <div className="mt-4 rounded-xl p-5" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                      <h3 className="font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Monthly Savings History</h3>
+                      <div className="space-y-2">
+                        {analytics.savings.slice(0, 6).map((s: any, i: number) => (
+                          <div key={i} className="flex items-center gap-3 text-sm">
+                            <span className="w-24 flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
+                              {new Date(s.month).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                            </span>
+                            <div className="flex-1 h-5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-card)' }}>
+                              <div
+                                className="h-full rounded-full bg-green-500"
+                                style={{ width: `${Math.min(100, ((parseFloat(s.total_saved) || 0) / Math.max(parseFloat(s.total_spent) || 1, 1)) * 100)}%` }}
+                              />
+                            </div>
+                            <span className="w-20 text-right text-green-400">${parseFloat(s.total_saved || 0).toFixed(2)}</span>
+                            <span className="w-20 text-right" style={{ color: 'var(--text-muted)' }}>${parseFloat(s.total_spent || 0).toFixed(2)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : analyticsTab === 'activity' ? (
+                <div className="space-y-2">
+                  {analytics.recentActivity.length === 0 ? (
+                    <div className="text-center py-12" style={{ color: 'var(--text-secondary)' }}>
+                      No activity recorded for this user.
+                    </div>
+                  ) : (
+                    analytics.recentActivity.map((activity, i) => (
+                      <div key={i} className="flex items-center gap-4 p-3 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                        <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+                        <div className="flex-1">
+                          <span className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>
+                            {getEventLabel(activity.type)}
+                          </span>
+                          {activity.data && Object.keys(activity.data).length > 0 && (
+                            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                              {Object.entries(activity.data).slice(0, 3).map(([k, v]) => `${k}: ${v}`).join(' | ')}
+                            </p>
+                          )}
+                        </div>
+                        <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
+                          {formatDate(activity.timestamp)}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              ) : analyticsTab === 'comparisons' ? (
+                <div>
+                  {analytics.comparisons.length === 0 ? (
+                    <div className="text-center py-12" style={{ color: 'var(--text-secondary)' }}>
+                      No price comparisons found for this user.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {analytics.comparisons.map((comp: any, i: number) => (
+                        <div key={i} className="flex items-center justify-between p-4 rounded-xl" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                          <div>
+                            <div className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>
+                              {comp.best_store || 'Comparison'} {comp.item_count ? `(${comp.item_count} items)` : ''}
+                            </div>
+                            <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                              {formatDate(comp.created_at)}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            {comp.total_spent && (
+                              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                Spent: ${parseFloat(comp.total_spent).toFixed(2)}
+                              </div>
+                            )}
+                            {comp.total_savings && parseFloat(comp.total_savings) > 0 && (
+                              <div className="text-sm text-green-400">
+                                Saved: ${parseFloat(comp.total_savings).toFixed(2)}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : analyticsTab === 'receipts' ? (
+                <div>
+                  {analytics.receipts.length === 0 ? (
+                    <div className="text-center py-12" style={{ color: 'var(--text-secondary)' }}>
+                      No receipts found for this user.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {analytics.receipts.map((receipt: any, i: number) => (
+                        <div key={i} className="flex items-center justify-between p-4 rounded-xl" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                          <div>
+                            <div className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>
+                              Receipt #{(i + 1).toString().padStart(3, '0')}
+                            </div>
+                            <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                              {formatDate(receipt.purchase_date || receipt.created_at)}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              receipt.ocr_status === 'complete' ? 'bg-green-500/20 text-green-400' :
+                              receipt.ocr_status === 'failed' ? 'bg-red-500/20 text-red-400' :
+                              'bg-yellow-500/20 text-yellow-400'
+                            }`}>
+                              {receipt.ocr_status || 'Unknown'}
+                            </span>
+                            <div className="text-right">
+                              <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                                ${parseFloat(receipt.total_amount || 0).toFixed(2)}
+                              </div>
+                              {receipt.tax_amount && (
+                                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                                  Tax: ${parseFloat(receipt.tax_amount).toFixed(2)}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : null}
             </div>
           </div>
         </div>

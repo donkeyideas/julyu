@@ -144,6 +144,22 @@ export async function POST(request: NextRequest) {
       .eq('email', email)
       .single()
 
+    // If this is a NEW user, check if registration is disabled
+    if (!existingUser || findError) {
+      const { data: settingData } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'user_sign_in_enabled')
+        .single()
+
+      if (settingData?.value?.enabled === false) {
+        return NextResponse.json(
+          { error: 'Registration is currently disabled' },
+          { status: 403 }
+        )
+      }
+    }
+
     if (existingUser && !findError) {
       // User exists - update their info
       const { data: updatedUser, error: updateError } = await updateUserWithFallback(

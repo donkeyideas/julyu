@@ -62,6 +62,20 @@ export async function POST(request: NextRequest) {
     let userId: string
 
     if (!user) {
+      // Check if registration is disabled before creating new accounts
+      const { data: regSetting } = await supabaseAdmin
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'user_sign_in_enabled')
+        .single()
+
+      if (regSetting?.value?.enabled === false) {
+        return NextResponse.json(
+          { error: 'Registration is currently disabled. Please contact support.' },
+          { status: 403 }
+        )
+      }
+
       // User not logged in - create account for them
       // Generate a temporary password
       const tempPassword = `Store${Math.random().toString(36).substring(2, 15)}!`
