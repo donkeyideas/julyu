@@ -103,6 +103,30 @@ async function crawlPage(baseUrl: string, path: string): Promise<PageAnalysis> {
       contentClarityScore: 0,
       answerabilityScore: 0,
       citationWorthinessScore: 0,
+      // AEO defaults
+      aeoScore: 0,
+      schemaRichnessScore: 0,
+      faqCoverageScore: 0,
+      directAnswerReadinessScore: 0,
+      entityMarkupScore: 0,
+      speakableContentScore: 0,
+      aiSnippetCompatibilityScore: 0,
+      // CRO defaults
+      croScore: 0,
+      ctaPresenceScore: 0,
+      formAccessibilityScore: 0,
+      loadSpeedImpactScore: 0,
+      trustSignalsScore: 0,
+      socialProofScore: 0,
+      valuePropositionScore: 0,
+      mobileCroScore: 0,
+      ctaCount: 0,
+      ctaTexts: [],
+      formCount: 0,
+      hasTrustBadges: false,
+      hasTestimonials: false,
+      hasSocialProof: false,
+      hasValueProp: false,
     }
   } finally {
     clearTimeout(timeout)

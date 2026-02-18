@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
     // Calculate scores
     const scores = calculateScores(pages, validation)
-    console.log(`[SEO Audit] Scores: overall=${scores.overall}, tech=${scores.technical}, content=${scores.content}, schema=${scores.structuredData}, perf=${scores.performance}, geo=${scores.geo}`)
+    console.log(`[SEO Audit] Scores: overall=${scores.overall}, tech=${scores.technical}, content=${scores.content}, schema=${scores.structuredData}, perf=${scores.performance}, geo=${scores.geo}, aeo=${scores.aeo}, cro=${scores.cro}`)
 
     // Generate recommendations
     const recommendations = generateRecommendations(pages, validation)
@@ -75,6 +75,8 @@ export async function POST(request: NextRequest) {
       structured_data_score: clamp100(scores.structuredData),
       performance_score: clamp100(scores.performance),
       geo_score: clamp100(scores.geo),
+      aeo_score: clamp100(scores.aeo),
+      cro_score: clamp100(scores.cro),
       total_issues: recommendations.length,
       critical_issues: issueCounts.critical,
       high_issues: issueCounts.high,
@@ -260,5 +262,29 @@ function buildPageScoreRow(auditId: string, page: import('@/lib/seo/types').Page
     content_clarity_score: clamp100(page.contentClarityScore),
     answerability_score: clamp100(page.answerabilityScore),
     citation_worthiness_score: clamp100(page.citationWorthinessScore),
+    // AEO
+    aeo_score: clamp100(page.aeoScore),
+    schema_richness_score: clamp100(page.schemaRichnessScore),
+    faq_coverage_score: clamp100(page.faqCoverageScore),
+    direct_answer_readiness_score: clamp100(page.directAnswerReadinessScore),
+    entity_markup_score: clamp100(page.entityMarkupScore),
+    speakable_content_score: clamp100(page.speakableContentScore),
+    ai_snippet_compatibility_score: clamp100(page.aiSnippetCompatibilityScore),
+    // CRO
+    cro_score: clamp100(page.croScore),
+    cta_presence_score: clamp100(page.ctaPresenceScore),
+    form_accessibility_score: clamp100(page.formAccessibilityScore),
+    load_speed_impact_score: clamp100(page.loadSpeedImpactScore),
+    trust_signals_score: clamp100(page.trustSignalsScore),
+    social_proof_score: clamp100(page.socialProofScore),
+    value_proposition_score: clamp100(page.valuePropositionScore),
+    mobile_cro_score: clamp100(page.mobileCroScore),
+    cta_count: page.ctaCount,
+    cta_texts: page.ctaTexts,
+    form_count: page.formCount,
+    has_trust_badges: page.hasTrustBadges,
+    has_testimonials: page.hasTestimonials,
+    has_social_proof: page.hasSocialProof,
+    has_value_prop: page.hasValueProp,
   }
 }

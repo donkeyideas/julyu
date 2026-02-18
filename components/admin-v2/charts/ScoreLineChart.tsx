@@ -11,6 +11,8 @@ interface ScoreLineChartProps {
     structured_data_score: number
     performance_score: number
     geo_score: number
+    aeo_score?: number | null
+    cro_score?: number | null
   }>
 }
 
@@ -21,11 +23,16 @@ const LINES = [
   { key: 'structured_data_score', color: '#f59e0b', name: 'Structured Data' },
   { key: 'performance_score', color: '#06b6d4', name: 'Performance' },
   { key: 'geo_score', color: '#ec4899', name: 'GEO' },
+  { key: 'aeo_score', color: '#f97316', name: 'AEO' },
+  { key: 'cro_score', color: '#14b8a6', name: 'CRO' },
 ]
 
 export default function ScoreLineChart({ data }: ScoreLineChartProps) {
   const formattedData = data.map(d => ({
     ...d,
+    // Ensure null/undefined AEO/CRO scores from old audits show as 0
+    aeo_score: d.aeo_score ?? 0,
+    cro_score: d.cro_score ?? 0,
     date: new Date(d.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
   }))
 

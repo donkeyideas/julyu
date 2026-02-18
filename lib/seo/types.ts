@@ -38,6 +38,32 @@ export interface PageAnalysis {
   contentClarityScore: number
   answerabilityScore: number
   citationWorthinessScore: number
+
+  // AEO scores
+  aeoScore: number
+  schemaRichnessScore: number
+  faqCoverageScore: number
+  directAnswerReadinessScore: number
+  entityMarkupScore: number
+  speakableContentScore: number
+  aiSnippetCompatibilityScore: number
+
+  // CRO scores
+  croScore: number
+  ctaPresenceScore: number
+  formAccessibilityScore: number
+  loadSpeedImpactScore: number
+  trustSignalsScore: number
+  socialProofScore: number
+  valuePropositionScore: number
+  mobileCroScore: number
+  ctaCount: number
+  ctaTexts: string[]
+  formCount: number
+  hasTrustBadges: boolean
+  hasTestimonials: boolean
+  hasSocialProof: boolean
+  hasValueProp: boolean
 }
 
 export interface SiteValidation {
@@ -55,12 +81,14 @@ export interface SeoScores {
   structuredData: number
   performance: number
   geo: number
+  aeo: number
+  cro: number
 }
 
 export interface SeoRecommendation {
   pagePath: string | null
   severity: 'critical' | 'high' | 'medium' | 'low'
-  category: 'technical' | 'content' | 'structured_data' | 'performance' | 'geo'
+  category: 'technical' | 'content' | 'structured_data' | 'performance' | 'geo' | 'aeo' | 'cro'
   title: string
   description: string
   currentValue: string | null
@@ -87,6 +115,8 @@ export interface StoredAudit {
   structured_data_score: number
   performance_score: number
   geo_score: number
+  aeo_score: number
+  cro_score: number
   total_issues: number
   critical_issues: number
   high_issues: number
@@ -137,6 +167,30 @@ export interface StoredPageScore {
   content_clarity_score: number | null
   answerability_score: number | null
   citation_worthiness_score: number | null
+  // AEO
+  aeo_score: number | null
+  schema_richness_score: number | null
+  faq_coverage_score: number | null
+  direct_answer_readiness_score: number | null
+  entity_markup_score: number | null
+  speakable_content_score: number | null
+  ai_snippet_compatibility_score: number | null
+  // CRO
+  cro_score: number | null
+  cta_presence_score: number | null
+  form_accessibility_score: number | null
+  load_speed_impact_score: number | null
+  trust_signals_score: number | null
+  social_proof_score: number | null
+  value_proposition_score: number | null
+  mobile_cro_score: number | null
+  cta_count: number | null
+  cta_texts: string[] | null
+  form_count: number | null
+  has_trust_badges: boolean | null
+  has_testimonials: boolean | null
+  has_social_proof: boolean | null
+  has_value_prop: boolean | null
   created_at: string
 }
 
@@ -145,7 +199,7 @@ export interface StoredRecommendation {
   audit_id: string
   page_path: string | null
   severity: 'critical' | 'high' | 'medium' | 'low'
-  category: 'technical' | 'content' | 'structured_data' | 'performance' | 'geo'
+  category: 'technical' | 'content' | 'structured_data' | 'performance' | 'geo' | 'aeo' | 'cro'
   title: string
   description: string
   current_value: string | null

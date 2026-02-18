@@ -7,16 +7,20 @@ export function calculateScores(pages: PageAnalysis[], validation: SiteValidatio
   const structuredData = calculateStructuredDataScore(pages)
   const performance = calculatePerformanceScore(pages)
   const geo = calculateGeoScore(pages)
+  const aeo = calculateAeoScore(pages)
+  const cro = calculateCroScore(pages)
 
   const overall = Math.round(
     technical * SCORING_WEIGHTS.technical +
     content * SCORING_WEIGHTS.content +
     structuredData * SCORING_WEIGHTS.structuredData +
     performance * SCORING_WEIGHTS.performance +
-    geo * SCORING_WEIGHTS.geo
+    geo * SCORING_WEIGHTS.geo +
+    aeo * SCORING_WEIGHTS.aeo +
+    cro * SCORING_WEIGHTS.cro
   )
 
-  return { overall, technical, content, structuredData, performance, geo }
+  return { overall, technical, content, structuredData, performance, geo, aeo, cro }
 }
 
 function calculateTechnicalScore(pages: PageAnalysis[], validation: SiteValidation): number {
@@ -211,4 +215,24 @@ function calculateGeoScore(pages: PageAnalysis[]): number {
   score += Math.round(coverage * 20)
 
   return Math.min(100, score)
+}
+
+function calculateAeoScore(pages: PageAnalysis[]): number {
+  if (pages.length === 0) return 0
+
+  // For AEO, only score server-rendered pages (schema/content must be in HTML)
+  const serverPages = pages.filter(p => !isClientRendered(p))
+  const serverTotal = serverPages.length || 1
+
+  const avgAeo = serverPages.reduce((sum, p) => sum + p.aeoScore, 0) / serverTotal
+  return Math.min(100, Math.round(avgAeo))
+}
+
+function calculateCroScore(pages: PageAnalysis[]): number {
+  const total = pages.length
+  if (total === 0) return 0
+
+  // CRO considers all pages including client-rendered (CTAs can exist in JS shells)
+  const avgCro = pages.reduce((sum, p) => sum + p.croScore, 0) / total
+  return Math.min(100, Math.round(avgCro))
 }

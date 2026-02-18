@@ -12,11 +12,13 @@ export const PUBLIC_PAGES = [
 ]
 
 export const SCORING_WEIGHTS = {
-  technical: 0.25,
-  content: 0.25,
-  structuredData: 0.20,
+  technical: 0.20,
+  content: 0.20,
+  structuredData: 0.15,
   performance: 0.10,
-  geo: 0.20,
+  geo: 0.15,
+  aeo: 0.10,
+  cro: 0.10,
 }
 
 export const THRESHOLDS = {
