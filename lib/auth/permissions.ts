@@ -172,6 +172,12 @@ export function hasPagePermission(
   page: keyof AdminPermissions['pages']
 ): boolean {
   if (!permissions) return false
+  // If the permission key doesn't exist in the stored object (added after account was created),
+  // grant access if the user already has all other page permissions (i.e., full admin)
+  if (permissions.pages?.[page] === undefined) {
+    const existingValues = Object.values(permissions.pages || {})
+    return existingValues.length > 0 && existingValues.every((v) => v === true)
+  }
   return permissions.pages?.[page] === true
 }
 
@@ -180,6 +186,12 @@ export function hasActionPermission(
   action: keyof AdminPermissions['actions']
 ): boolean {
   if (!permissions) return false
+  // If the action key doesn't exist in the stored object (added after account was created),
+  // grant access if the user already has all other action permissions (i.e., full admin)
+  if (permissions.actions?.[action] === undefined) {
+    const existingValues = Object.values(permissions.actions || {})
+    return existingValues.length > 0 && existingValues.every((v) => v === true)
+  }
   return permissions.actions?.[action] === true
 }
 
