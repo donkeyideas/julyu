@@ -19,6 +19,7 @@ export interface AdminPermissions {
     seo_geo: boolean
     blog: boolean
     inbox: boolean
+    social_media: boolean
   }
   actions: {
     approve_stores: boolean
@@ -31,6 +32,7 @@ export interface AdminPermissions {
     manage_ai_models: boolean
     manage_seo: boolean
     manage_blog: boolean
+    manage_social_media: boolean
   }
 }
 
@@ -52,6 +54,7 @@ export const PAGE_PERMISSIONS = {
   seo_geo: { label: 'SEO & GEO', description: 'View SEO and GEO analytics and audit results' },
   blog: { label: 'Blog', description: 'Manage blog posts' },
   inbox: { label: 'Inbox', description: 'View and manage contact messages' },
+  social_media: { label: 'Social Media', description: 'Manage social media posts and automation' },
 } as const
 
 // Action permission definitions with display info
@@ -66,6 +69,7 @@ export const ACTION_PERMISSIONS = {
   manage_ai_models: { label: 'Manage AI Models', description: 'Configure AI/LLM settings' },
   manage_seo: { label: 'Manage SEO', description: 'Run SEO audits and manage recommendations' },
   manage_blog: { label: 'Manage Blog', description: 'Create, edit, and delete blog posts' },
+  manage_social_media: { label: 'Manage Social Media', description: 'Generate, schedule, and publish social media posts' },
 } as const
 
 // Default permissions for new employees (minimal access)
@@ -87,6 +91,7 @@ export const DEFAULT_PERMISSIONS: AdminPermissions = {
     seo_geo: false,
     blog: false,
     inbox: false,
+    social_media: false,
   },
   actions: {
     approve_stores: false,
@@ -99,6 +104,7 @@ export const DEFAULT_PERMISSIONS: AdminPermissions = {
     manage_ai_models: false,
     manage_seo: false,
     manage_blog: false,
+    manage_social_media: false,
   },
 }
 
@@ -121,6 +127,7 @@ export const FULL_ADMIN_PERMISSIONS: AdminPermissions = {
     seo_geo: true,
     blog: true,
     inbox: true,
+    social_media: true,
   },
   actions: {
     approve_stores: true,
@@ -133,6 +140,7 @@ export const FULL_ADMIN_PERMISSIONS: AdminPermissions = {
     manage_ai_models: true,
     manage_seo: true,
     manage_blog: true,
+    manage_social_media: true,
   },
 }
 
@@ -155,6 +163,7 @@ export const ROUTE_TO_PAGE_PERMISSION: Record<string, keyof AdminPermissions['pa
   '/admin-v2/seo-geo': 'seo_geo',
   '/admin-v2/blog': 'blog',
   '/admin-v2/inbox': 'inbox',
+  '/admin-v2/social-media': 'social_media',
 }
 
 // Helper functions

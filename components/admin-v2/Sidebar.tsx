@@ -71,6 +71,7 @@ export default function AdminSidebar() {
     { href: '/admin-v2/blog', label: 'Blog', icon: '', section: 'Content', permission: 'blog' },
     { href: '/admin-v2/demo-codes', label: 'Demo Codes', icon: '', section: 'Marketing', permission: 'demo_codes' },
     { href: '/admin-v2/seo-geo', label: 'Search & AI', icon: '', section: 'Marketing', permission: 'seo_geo' },
+    { href: '/admin-v2/social-media', label: 'Social Media', icon: '', section: 'Marketing', permission: 'social_media' },
     { href: '/admin-v2/inbox', label: 'Inbox', icon: '', section: 'Support', permission: 'inbox' },
   ]
 
