@@ -179,7 +179,11 @@ export default function SocialMediaPage() {
         const contentMap: Record<string, string> = {}
         newPosts.forEach((p: SocialMediaPost) => { contentMap[p.id] = p.content })
         setEditedContent(contentMap)
-        showToast(`Generated ${data.totalGenerated} post(s)${data.totalErrors > 0 ? ` (${data.totalErrors} failed)` : ''}`)
+        if (data.totalGenerated > 0) {
+          showToast(`Generated ${data.totalGenerated} post(s)${data.totalErrors > 0 ? ` (${data.totalErrors} failed)` : ''}`)
+        } else if (data.errors?.length > 0) {
+          showToast(data.errors[0].error || 'All generations failed', 'error')
+        }
         loadPosts()
       } else {
         showToast(data.error || 'Generation failed', 'error')

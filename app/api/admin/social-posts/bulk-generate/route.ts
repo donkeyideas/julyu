@@ -8,11 +8,11 @@ export const dynamic = 'force-dynamic'
 const DEEPSEEK_BASE_URL = process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com'
 
 const PLATFORM_MAX_TOKENS: Record<string, number> = {
-  TWITTER: 150,
-  TIKTOK: 150,
-  FACEBOOK: 600,
-  INSTAGRAM: 600,
-  LINKEDIN: 600,
+  TWITTER: 500,
+  TIKTOK: 500,
+  FACEBOOK: 1000,
+  INSTAGRAM: 1000,
+  LINKEDIN: 1000,
 }
 
 export async function POST(request: NextRequest) {
@@ -179,11 +179,14 @@ Return JSON:
     const generated: any[] = []
     const errors: any[] = []
 
-    for (const result of results) {
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i]
       if (result.status === 'fulfilled') {
         generated.push(result.value)
       } else {
-        errors.push({ error: result.reason?.message || 'Unknown error' })
+        const errMsg = result.reason?.message || 'Unknown error'
+        console.error(`[Social Posts] Generation failed for ${platforms[i]}:`, errMsg)
+        errors.push({ platform: platforms[i], error: errMsg })
       }
     }
 
