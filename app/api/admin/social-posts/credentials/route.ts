@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { validateSession } from '@/lib/auth/admin-auth-v2'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import crypto from 'crypto'
 
@@ -21,23 +20,6 @@ function encrypt(text: string): string {
   return iv.toString('hex') + ':' + encrypted
 }
 
-function decrypt(encryptedText: string): string {
-  try {
-    if (!encryptedText || typeof encryptedText !== 'string') return ''
-    const key = getEncryptionKey()
-    const parts = encryptedText.split(':')
-    if (parts.length !== 2) return ''
-    const iv = Buffer.from(parts[0], 'hex')
-    if (iv.length !== 16) return ''
-    const decipher = crypto.createDecipheriv(ALGORITHM, Buffer.from(key, 'utf8'), iv)
-    let decrypted = decipher.update(parts[1], 'hex', 'utf8')
-    decrypted += decipher.final('utf8')
-    return decrypted
-  } catch {
-    return ''
-  }
-}
-
 const PLATFORM_MODEL_NAMES: Record<string, string> = {
   TWITTER: 'twitter-social',
   LINKEDIN: 'linkedin-social',
@@ -45,19 +27,8 @@ const PLATFORM_MODEL_NAMES: Record<string, string> = {
 }
 
 // GET - Check which platforms have credentials configured
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const authHeader = request.headers.get('authorization')
-    const sessionToken = authHeader?.replace('Bearer ', '')
-    if (!sessionToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const sessionResult = await validateSession(sessionToken)
-    if (!sessionResult.valid || !sessionResult.employee) {
-      return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
-    }
-
     const supabase = await createServiceRoleClient() as any
     const { data: configs } = await supabase
       .from('ai_model_config')
@@ -93,17 +64,6 @@ export async function GET(request: NextRequest) {
 // POST - Save platform credentials
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization')
-    const sessionToken = authHeader?.replace('Bearer ', '')
-    if (!sessionToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const sessionResult = await validateSession(sessionToken)
-    if (!sessionResult.valid || !sessionResult.employee) {
-      return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
-    }
-
     const { platform, credentials } = await request.json()
 
     if (!platform || !credentials) {

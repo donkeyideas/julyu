@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { validateSession } from '@/lib/auth/admin-auth-v2'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
@@ -10,17 +9,6 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const authHeader = request.headers.get('authorization')
-    const sessionToken = authHeader?.replace('Bearer ', '')
-    if (!sessionToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const sessionResult = await validateSession(sessionToken)
-    if (!sessionResult.valid || !sessionResult.employee) {
-      return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
-    }
-
     const { id } = await params
     const body = await request.json()
     const { content, hashtags, image_prompt, status, scheduled_at } = body
@@ -62,17 +50,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const authHeader = request.headers.get('authorization')
-    const sessionToken = authHeader?.replace('Bearer ', '')
-    if (!sessionToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const sessionResult = await validateSession(sessionToken)
-    if (!sessionResult.valid || !sessionResult.employee) {
-      return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
-    }
-
     const { id } = await params
     const supabase = await createServiceRoleClient() as any
     const { error } = await supabase

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { validateSession } from '@/lib/auth/admin-auth-v2'
 import { getApiKey } from '@/lib/api/config'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { PLATFORM_CHAR_LIMITS, type Platform } from '@/lib/social/types'
@@ -18,17 +17,6 @@ const PLATFORM_MAX_TOKENS: Record<string, number> = {
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization')
-    const sessionToken = authHeader?.replace('Bearer ', '')
-    if (!sessionToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const sessionResult = await validateSession(sessionToken)
-    if (!sessionResult.valid || !sessionResult.employee) {
-      return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
-    }
-
     const { topic, tone, platforms } = await request.json()
 
     if (!topic || typeof topic !== 'string' || topic.trim().length === 0) {
@@ -154,7 +142,6 @@ Return JSON:
 
       // Clean content
       let content = (parsed.content || '').trim()
-      // Remove any markdown artifacts
       content = content.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1')
 
       // Extract hashtags

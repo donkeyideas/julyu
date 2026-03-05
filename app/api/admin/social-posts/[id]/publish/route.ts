@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { validateSession } from '@/lib/auth/admin-auth-v2'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { publishToplatform } from '@/lib/social/publishers'
 import type { Platform } from '@/lib/social/types'
@@ -44,17 +43,6 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const authHeader = request.headers.get('authorization')
-    const sessionToken = authHeader?.replace('Bearer ', '')
-    if (!sessionToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const sessionResult = await validateSession(sessionToken)
-    if (!sessionResult.valid || !sessionResult.employee) {
-      return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
-    }
-
     const { id } = await params
     const supabase = await createServiceRoleClient() as any
 
@@ -77,7 +65,6 @@ export async function POST(
     const modelName = PLATFORM_MODEL_NAMES[platform]
 
     if (!modelName) {
-      // Update status to FAILED
       await supabase
         .from('social_media_posts')
         .update({ status: 'FAILED', publish_error: `Publishing to ${platform} is not supported` })

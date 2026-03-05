@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { validateSession } from '@/lib/auth/admin-auth-v2'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
@@ -7,17 +6,6 @@ export const dynamic = 'force-dynamic'
 // GET - List posts with filters + stats
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization')
-    const sessionToken = authHeader?.replace('Bearer ', '')
-    if (!sessionToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const sessionResult = await validateSession(sessionToken)
-    if (!sessionResult.valid || !sessionResult.employee) {
-      return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
-    }
-
     const supabase = await createServiceRoleClient() as any
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
@@ -79,17 +67,6 @@ export async function GET(request: NextRequest) {
 // POST - Create a single post
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization')
-    const sessionToken = authHeader?.replace('Bearer ', '')
-    if (!sessionToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const sessionResult = await validateSession(sessionToken)
-    if (!sessionResult.valid || !sessionResult.employee) {
-      return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
-    }
-
     const body = await request.json()
     const { platform, content, hashtags, image_prompt, topic, tone, status, scheduled_at } = body
 

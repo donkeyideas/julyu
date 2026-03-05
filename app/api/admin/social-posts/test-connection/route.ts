@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { validateSession } from '@/lib/auth/admin-auth-v2'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { testConnection } from '@/lib/social/publishers'
 import type { Platform } from '@/lib/social/types'
@@ -39,17 +38,6 @@ const PLATFORM_MODEL_NAMES: Record<string, string> = {
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization')
-    const sessionToken = authHeader?.replace('Bearer ', '')
-    if (!sessionToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const sessionResult = await validateSession(sessionToken)
-    if (!sessionResult.valid || !sessionResult.employee) {
-      return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
-    }
-
     const { platform } = await request.json()
 
     if (!platform) {

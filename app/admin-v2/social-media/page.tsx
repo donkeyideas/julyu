@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useAdminAuth } from '@/components/admin-v2/AdminAuthGuard'
 import {
   PLATFORM_CHAR_LIMITS,
   PLATFORM_LABELS,
@@ -22,18 +21,7 @@ const TONES: { value: Tone; label: string }[] = [
   { value: 'controversial', label: 'Controversial' },
 ]
 
-function getSessionToken(): string | null {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem('admin_session_token') || sessionStorage.getItem('admin_session_token')
-}
-
-function authHeaders(): Record<string, string> {
-  const token = getSessionToken()
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  }
-}
+const JSON_HEADERS = { 'Content-Type': 'application/json' }
 
 function statusBadge(status: PostStatus) {
   const colors: Record<string, string> = {
@@ -69,7 +57,6 @@ function formatDate(dateStr: string | null): string {
 }
 
 export default function SocialMediaPage() {
-  const { employee } = useAdminAuth()
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<Tab>('generator')
   const [posts, setPosts] = useState<SocialMediaPost[]>([])
@@ -133,7 +120,7 @@ export default function SocialMediaPage() {
       const params = new URLSearchParams()
       if (status && status !== 'ALL') params.set('status', status)
       if (platform && platform !== 'ALL') params.set('platform', platform)
-      const res = await fetch(`/api/admin/social-posts?${params}`, { headers: authHeaders() })
+      const res = await fetch(`/api/admin/social-posts?${params}`, { headers: JSON_HEADERS })
       const data = await res.json()
       if (res.ok) {
         setPosts(data.posts || [])
@@ -148,7 +135,7 @@ export default function SocialMediaPage() {
 
   const loadAutomation = async () => {
     try {
-      const res = await fetch('/api/admin/social-posts/automation', { headers: authHeaders() })
+      const res = await fetch('/api/admin/social-posts/automation', { headers: JSON_HEADERS })
       const data = await res.json()
       if (res.ok && data.config) {
         setAutomationConfig(data.config)
@@ -160,7 +147,7 @@ export default function SocialMediaPage() {
 
   const loadConnectionStatus = async () => {
     try {
-      const res = await fetch('/api/admin/social-posts/credentials', { headers: authHeaders() })
+      const res = await fetch('/api/admin/social-posts/credentials', { headers: JSON_HEADERS })
       const data = await res.json()
       if (res.ok && data.status) {
         setConnectionStatus(data.status)
@@ -182,7 +169,7 @@ export default function SocialMediaPage() {
     try {
       const res = await fetch('/api/admin/social-posts/bulk-generate', {
         method: 'POST',
-        headers: authHeaders(),
+        headers: JSON_HEADERS,
         body: JSON.stringify({ topic: genTopic, tone: genTone, platforms: genPlatforms }),
       })
       const data = await res.json()
@@ -214,7 +201,7 @@ export default function SocialMediaPage() {
       const content = editedContent[post.id] || post.content
       const res = await fetch(`/api/admin/social-posts/${post.id}`, {
         method: 'PATCH',
-        headers: authHeaders(),
+        headers: JSON_HEADERS,
         body: JSON.stringify({ content, status: 'SCHEDULED', scheduled_at: tomorrow.toISOString() }),
       })
       if (res.ok) {
@@ -229,7 +216,7 @@ export default function SocialMediaPage() {
 
   const handleDiscardPost = async (postId: string) => {
     try {
-      await fetch(`/api/admin/social-posts/${postId}`, { method: 'DELETE', headers: authHeaders() })
+      await fetch(`/api/admin/social-posts/${postId}`, { method: 'DELETE', headers: JSON_HEADERS })
       setGeneratedPosts((prev) => prev.filter((p) => p.id !== postId))
       loadPosts()
     } catch {
@@ -263,7 +250,7 @@ export default function SocialMediaPage() {
     try {
       const res = await fetch(`/api/admin/social-posts/${postId}/publish`, {
         method: 'POST',
-        headers: authHeaders(),
+        headers: JSON_HEADERS,
       })
       const data = await res.json()
       if (res.ok) {
@@ -281,7 +268,7 @@ export default function SocialMediaPage() {
 
   const handleDeletePost = async (postId: string) => {
     try {
-      await fetch(`/api/admin/social-posts/${postId}`, { method: 'DELETE', headers: authHeaders() })
+      await fetch(`/api/admin/social-posts/${postId}`, { method: 'DELETE', headers: JSON_HEADERS })
       showToast('Post deleted')
       loadPosts()
     } catch {
@@ -303,7 +290,7 @@ export default function SocialMediaPage() {
         drafts.map((p) =>
           fetch(`/api/admin/social-posts/${p.id}`, {
             method: 'PATCH',
-            headers: authHeaders(),
+            headers: JSON_HEADERS,
             body: JSON.stringify({ status: 'SCHEDULED', scheduled_at: tomorrow.toISOString() }),
           })
         )
@@ -324,7 +311,7 @@ export default function SocialMediaPage() {
     try {
       const res = await fetch('/api/admin/social-posts/automation', {
         method: 'POST',
-        headers: authHeaders(),
+        headers: JSON_HEADERS,
         body: JSON.stringify(automationConfig),
       })
       if (res.ok) showToast('Automation config saved')
@@ -343,7 +330,7 @@ export default function SocialMediaPage() {
     try {
       const res = await fetch('/api/admin/social-posts/credentials', {
         method: 'POST',
-        headers: authHeaders(),
+        headers: JSON_HEADERS,
         body: JSON.stringify({ platform, credentials: credentials[platform] }),
       })
       const data = await res.json()
@@ -366,7 +353,7 @@ export default function SocialMediaPage() {
     try {
       const res = await fetch('/api/admin/social-posts/test-connection', {
         method: 'POST',
-        headers: authHeaders(),
+        headers: JSON_HEADERS,
         body: JSON.stringify({ platform }),
       })
       const data = await res.json()
