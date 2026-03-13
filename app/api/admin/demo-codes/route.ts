@@ -103,9 +103,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { request_id, email, name, demo_type, expires_days = 30 } = body
 
-    if (!email || !demo_type) {
+    if (!demo_type) {
       return NextResponse.json(
-        { error: 'Email and demo type are required' },
+        { error: 'Demo type is required' },
         { status: 400 }
       )
     }
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
         code,
         demo_type,
         request_id: request_id || null,
-        email,
+        email: email || null,
         name: name || null,
         is_active: true,
         uses_count: 0,

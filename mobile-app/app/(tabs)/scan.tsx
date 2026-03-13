@@ -12,55 +12,68 @@ import * as ImagePicker from 'expo-image-picker'
 import { LinearGradient } from 'expo-linear-gradient'
 import { Ionicons } from '@expo/vector-icons'
 import { BlurView } from 'expo-blur'
+import { useRouter } from 'expo-router'
 import { GlassCard, GlassButton, ScreenContainer } from '@/components'
 import { colors, spacing, fontSize, gradients } from '@/constants/colors'
+import { useReceiptsStore } from '@/store/receiptsStore'
 
 export default function ScanScreen() {
   const [permission, requestPermission] = useCameraPermissions()
   const [isProcessing, setIsProcessing] = useState(false)
   const [scanProgress, setScanProgress] = useState(0)
   const cameraRef = useRef<CameraView>(null)
+  const router = useRouter()
+  const { scanNewReceipt } = useReceiptsStore()
+
+  const processReceipt = async (imageUri: string) => {
+    setIsProcessing(true)
+    setScanProgress(0)
+
+    // Animate progress bar while API processes
+    const interval = setInterval(() => {
+      setScanProgress((prev) => {
+        if (prev >= 90) {
+          clearInterval(interval)
+          return 90
+        }
+        return prev + 10
+      })
+    }, 300)
+
+    const result = await scanNewReceipt(imageUri)
+
+    clearInterval(interval)
+    setScanProgress(100)
+
+    // Brief pause to show 100% before navigating
+    await new Promise((resolve) => setTimeout(resolve, 300))
+
+    setIsProcessing(false)
+    setScanProgress(0)
+
+    if (result.error) {
+      Alert.alert('Scan Failed', result.error)
+      return
+    }
+
+    if (result.receiptId) {
+      router.push(`/receipt/${result.receiptId}`)
+    }
+  }
 
   const handleCapture = async () => {
     if (!cameraRef.current) return
 
     try {
-      setIsProcessing(true)
-      setScanProgress(0)
-
       const photo = await cameraRef.current.takePictureAsync({
         quality: 0.8,
       })
 
       if (photo) {
-        // Simulate processing progress
-        const interval = setInterval(() => {
-          setScanProgress((prev) => {
-            if (prev >= 100) {
-              clearInterval(interval)
-              return 100
-            }
-            return prev + 10
-          })
-        }, 200)
-
-        // TODO: Send to API for processing
-        await new Promise((resolve) => setTimeout(resolve, 2500))
-
-        clearInterval(interval)
-        setScanProgress(100)
-
-        Alert.alert(
-          'Receipt Scanned!',
-          'We found 12 items totaling $52.47. You saved $8.23!',
-          [{ text: 'View Details' }, { text: 'OK' }]
-        )
+        await processReceipt(photo.uri)
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to capture photo')
-    } finally {
-      setIsProcessing(false)
-      setScanProgress(0)
+      Alert.alert('Error', 'Failed to capture photo. Please try again.')
     }
   }
 
@@ -72,37 +85,10 @@ export default function ScanScreen() {
       })
 
       if (!result.canceled && result.assets[0]) {
-        setIsProcessing(true)
-        setScanProgress(0)
-
-        // Simulate processing
-        const interval = setInterval(() => {
-          setScanProgress((prev) => {
-            if (prev >= 100) {
-              clearInterval(interval)
-              return 100
-            }
-            return prev + 10
-          })
-        }, 200)
-
-        await new Promise((resolve) => setTimeout(resolve, 2500))
-
-        clearInterval(interval)
-        setScanProgress(100)
-
-        Alert.alert(
-          'Receipt Scanned!',
-          'We found 8 items totaling $38.92. You saved $4.15!',
-          [{ text: 'View Details' }, { text: 'OK' }]
-        )
-
-        setIsProcessing(false)
-        setScanProgress(0)
+        await processReceipt(result.assets[0].uri)
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to pick image')
-      setIsProcessing(false)
+      Alert.alert('Error', 'Failed to pick image. Please try again.')
     }
   }
 

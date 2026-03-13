@@ -10,11 +10,10 @@ import {
   Alert,
 } from 'react-native'
 import { Link, router } from 'expo-router'
-import { LinearGradient } from 'expo-linear-gradient'
 import { Ionicons } from '@expo/vector-icons'
 import { GlassCard, GlassButton, GlassInput, ScreenContainer } from '@/components'
 import { useAuthStore } from '@/store/authStore'
-import { colors, spacing, fontSize, gradients } from '@/constants/colors'
+import { colors, spacing, fontSize } from '@/constants/colors'
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('')
@@ -22,15 +21,19 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
 
-  const { login, isLoading } = useAuthStore()
+  const { login, loginWithGoogle, isLoading } = useAuthStore()
+
+  const handleGoogleLogin = async () => {
+    const result = await loginWithGoogle()
+    if (result.error) {
+      Alert.alert('Google Sign-In Failed', result.error)
+    } else {
+      router.replace('/(tabs)')
+    }
+  }
 
   const validate = () => {
     const newErrors: { email?: string; password?: string } = {}
-
-    // Allow demo mode login
-    if (email === 'demo' || email === 'demo@julyu.com') {
-      return true
-    }
 
     if (!email) {
       newErrors.email = 'Email is required'
@@ -71,18 +74,6 @@ export default function LoginScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Logo Section */}
-          <View style={styles.logoSection}>
-            <LinearGradient
-              colors={[...gradients.primary]}
-              style={styles.logoContainer}
-            >
-              <Ionicons name="leaf" size={40} color="#000" />
-            </LinearGradient>
-            <Text style={styles.appName}>Julyu</Text>
-            <Text style={styles.tagline}>Save smart. Shop better.</Text>
-          </View>
-
           {/* Login Card */}
           <GlassCard variant="elevated" style={styles.card}>
             <Text style={styles.title}>Welcome back!</Text>
@@ -146,15 +137,8 @@ export default function LoginScreen() {
               <GlassButton
                 title="Google"
                 variant="secondary"
-                onPress={() => {}}
+                onPress={handleGoogleLogin}
                 icon={<Ionicons name="logo-google" size={20} color={colors.text} />}
-                style={styles.socialButton}
-              />
-              <GlassButton
-                title="Apple"
-                variant="secondary"
-                onPress={() => {}}
-                icon={<Ionicons name="logo-apple" size={20} color={colors.text} />}
                 style={styles.socialButton}
               />
             </View>
@@ -169,11 +153,6 @@ export default function LoginScreen() {
               </TouchableOpacity>
             </Link>
           </View>
-
-          {/* Demo Mode Hint */}
-          <Text style={styles.demoHint}>
-            Try demo mode: enter "demo" as email
-          </Text>
         </ScrollView>
       </KeyboardAvoidingView>
     </ScreenContainer>
@@ -189,41 +168,19 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     justifyContent: 'center',
   },
-  logoSection: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  logoContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  appName: {
-    fontSize: fontSize['3xl'],
-    fontWeight: 'bold',
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  tagline: {
-    fontSize: fontSize.base,
-    color: colors.textSecondary,
-  },
   card: {
     marginBottom: spacing.lg,
   },
   title: {
-    fontSize: fontSize['2xl'],
+    fontSize: 22,
     fontWeight: 'bold',
     color: colors.text,
     marginBottom: spacing.xs,
   },
   subtitle: {
-    fontSize: fontSize.base,
+    fontSize: 15,
     color: colors.textSecondary,
-    marginBottom: spacing.lg,
+    marginBottom: 20,
   },
   passwordContainer: {
     position: 'relative',
@@ -273,18 +230,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   signUpText: {
-    fontSize: fontSize.base,
+    fontSize: 15,
     color: colors.textSecondary,
   },
   signUpLink: {
-    fontSize: fontSize.base,
+    fontSize: 15,
     color: colors.primary,
     fontWeight: '600',
-  },
-  demoHint: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    textAlign: 'center',
-    marginTop: spacing.md,
   },
 })

@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Julyu Mobile App - UI Preview</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root, [data-theme="dark"] {
+    --primary: #22c55e;
+    --primary-light: #4ade80;
+    --primary-dark: #16a34a;
+    --bg: #000000;
+    --card: #111827;
+    --border: #1f2937;
+    --border-light: #374151;
+    --text: #ffffff;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --text-placeholder: #4b5563;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+    --glass-bg: rgba(17, 24, 39, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --purple: #8b5cf6;
+    --orange: #f97316;
+    --page-bg: #0a0a0a;
+    --nav-bg: rgba(10,10,10,0.95);
+    --phone-border: #333;
+    --notch-bg: #000;
+    --home-bar: rgba(255,255,255,0.3);
+    --auth-radial: rgba(2,44,34,0.6);
+    --splash-bg: #000000;
+    --dash-radial-1: rgba(13,31,23,0.8);
+    --dash-radial-2: rgba(30,27,75,0.3);
+    --profile-radial: rgba(13,31,23,0.8);
+  }
+  [data-theme="light"] {
+    --primary: #16a34a;
+    --primary-light: #22c55e;
+    --primary-dark: #15803d;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --border-light: #cbd5e1;
+    --text: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --text-placeholder: #94a3b8;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(0, 0, 0, 0.08);
+    --purple: #8b5cf6;
+    --orange: #f97316;
+    --page-bg: #e2e8f0;
+    --nav-bg: rgba(248,250,252,0.95);
+    --phone-border: #cbd5e1;
+    --notch-bg: #0f172a;
+    --home-bar: rgba(0,0,0,0.2);
+    --auth-radial: rgba(220,252,231,0.6);
+    --splash-bg: #f8fafc;
+    --dash-radial-1: rgba(220,252,231,0.5);
+    --dash-radial-2: rgba(219,234,254,0.3);
+    --profile-radial: rgba(220,252,231,0.5);
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+    background: var(--page-bg); color: var(--text); min-height: 100vh;
+    transition: background 0.3s, color 0.3s;
+  }
+  .page-header { text-align: center; padding: 40px 20px 20px; }
+  .page-header h1 {
+    font-size: 32px; font-weight: 700;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .page-header p { color: var(--text-secondary); margin-top: 8px; }
+  .theme-toggle {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--border);
+    background: var(--glass-bg); color: var(--text); cursor: pointer;
+    margin-top: 16px; transition: all 0.3s;
+  }
+  .theme-toggle:hover { border-color: var(--primary); }
+  .theme-icon-moon { display: none; }
+  [data-theme="light"] .theme-icon-sun { display: none; }
+  [data-theme="light"] .theme-icon-moon { display: block; }
+  .nav-tabs {
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; padding: 16px 20px;
+    position: sticky; top: 0; z-index: 100;
+    background: var(--nav-bg); backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    transition: background 0.3s;
+  }
+  .nav-tab {
+    padding: 10px 20px; border-radius: 12px; border: 1px solid var(--border);
+    background: var(--glass-bg); color: var(--text-secondary); cursor: pointer;
+    font-size: 14px; font-weight: 500; transition: all 0.3s; white-space: nowrap;
+  }
+  .nav-tab:hover { border-color: var(--primary); color: var(--text); }
+  .nav-tab.active {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #000; border-color: var(--primary); font-weight: 600;
+  }
+  .screen-showcase { display: flex; justify-content: center; padding: 40px 20px; min-height: 80vh; }
+
+  /* Phone frame */
+  .phone-frame {
+    width: 375px; height: 812px; background: var(--bg); border-radius: 44px;
+    border: 3px solid var(--phone-border); overflow: hidden; position: relative;
+    box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+    flex-shrink: 0; transition: background 0.3s, border-color 0.3s;
+  }
+  .phone-notch {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 160px; height: 34px; background: var(--notch-bg); border-radius: 0 0 20px 20px; z-index: 50;
+    transition: background 0.3s;
+  }
+  .phone-home-bar {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    width: 134px; height: 5px; background: var(--home-bar); border-radius: 3px; z-index: 50;
+    transition: background 0.3s;
+  }
+  .phone-screen {
+    width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; position: relative;
+    -ms-overflow-style: none; scrollbar-width: none;
+  }
+  .phone-screen::-webkit-scrollbar { display: none; }
+
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 28px 8px; font-size: 12px; font-weight: 600;
+    position: sticky; top: 0; z-index: 40;
+  }
+  .status-icons { display: flex; gap: 4px; align-items: center; }
+
+  /* Glass components */
+  .glass-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 16px; }
+  .glass-card.elevated { box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+  .glass-button {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 16px 24px; border-radius: 14px; font-size: 16px; font-weight: 600;
+    cursor: pointer; border: none; width: 100%; transition: all 0.2s;
+  }
+  .glass-button.primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #000; }
+  .glass-button.secondary { background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text); }
+  .glass-input { width: 100%; margin-bottom: 16px; }
+  .glass-input label { display: block; font-size: 14px; color: var(--text-secondary); margin-bottom: 8px; }
+  .glass-input .input-wrapper {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: 12px; padding: 14px 16px;
+  }
+  .glass-input .input-icon { color: var(--text-muted); font-size: 16px; flex-shrink: 0; }
+  .glass-input .input-text { color: var(--text-placeholder); font-size: 16px; flex: 1; }
+
+  /* Julyu logo */
+  .julyu-logo {
+    width: 80px; height: 80px; object-fit: contain;
+  }
+  .julyu-logo-sm {
+    width: 80px; height: 80px; object-fit: contain;
+  }
+
+  /* ===== SPLASH ===== */
+  .splash-screen {
+    width: 100%; min-height: 812px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; background: var(--splash-bg);
+    position: relative; transition: background 0.3s;
+  }
+  .splash-center {
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .splash-loader-wrap {
+    position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+  }
+  .splash-logo-wrap {
+    animation: logoPulse 2.5s ease-in-out infinite;
+  }
+  .splash-logo-wrap img { width: 160px; height: 160px; object-fit: contain; }
+  @keyframes logoPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.06); opacity: 0.9; }
+  }
+  .splash-title { font-size: 40px; font-weight: 700; margin-top: 20px; }
+  .splash-tagline { font-size: 16px; color: var(--text-secondary); margin-top: 8px; }
+  .splash-loader {
+    margin-top: 48px; width: 28px; height: 28px;
+    border: 2px solid rgba(34,197,94,0.2); border-top-color: var(--primary);
+    border-radius: 50%; animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ===== ONBOARDING ===== */
+  .onboarding-screen { height: 100%; display: flex; flex-direction: column; padding-top: 60px; }
+  .onboarding-content {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 24px; text-align: center;
+  }
+  .onboarding-icon-wrap {
+    width: 140px; height: 140px; border-radius: 70px;
+    display: flex; align-items: center; justify-content: center; margin-bottom: 40px;
+  }
+  .onboarding-icon-wrap svg { width: 64px; height: 64px; }
+  .onboarding-title { font-size: 28px; font-weight: 700; margin-bottom: 12px; line-height: 1.2; }
+  .onboarding-subtitle { font-size: 16px; color: var(--text-secondary); line-height: 1.5; max-width: 300px; }
+  .onboarding-bottom { padding: 24px; padding-bottom: 40px; }
+  .onboarding-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; }
+  .dot { width: 8px; height: 8px; border-radius: 4px; background: var(--border-light); }
+  .dot.active { width: 24px; background: var(--primary); }
+  .onboarding-buttons { display: flex; flex-direction: column; gap: 12px; }
+  .skip-text { text-align: center; color: var(--text-muted); font-size: 14px; margin-top: 12px; cursor: pointer; }
+
+  /* ===== AUTH ===== */
+  .auth-screen {
+    min-height: 100%; display: flex; flex-direction: column;
+    background: radial-gradient(ellipse at 50% 30%, var(--auth-radial), transparent 70%), var(--bg);
+    padding-top: 60px; transition: background 0.3s;
+  }
+  .auth-content { flex: 1; padding: 24px; display: flex; flex-direction: column; justify-content: center; }
+  .auth-logo { display: flex; flex-direction: column; align-items: center; margin-bottom: 32px; }
+  .auth-logo h2 { font-size: 28px; font-weight: 700; margin-top: 8px; }
+  .auth-logo p { color: var(--text-secondary); font-size: 15px; margin-top: 4px; }
+  .auth-card-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .auth-card-subtitle { color: var(--text-secondary); font-size: 15px; margin-bottom: 20px; }
+  .forgot-link { text-align: right; margin-top: -8px; margin-bottom: 16px; }
+  .forgot-link a { color: var(--primary); font-size: 14px; text-decoration: none; }
+  .divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; }
+  .divider-line { flex: 1; height: 1px; background: var(--glass-border); }
+  .divider-text { color: var(--text-muted); font-size: 14px; }
+  .social-row { display: flex; gap: 12px; }
+  .social-row .glass-button { flex: 1; padding: 14px; font-size: 14px; }
+  .auth-footer { text-align: center; padding: 20px; font-size: 15px; color: var(--text-secondary); }
+  .auth-footer a { color: var(--primary); text-decoration: none; font-weight: 600; }
+  .password-strength { display: flex; gap: 4px; margin-top: -8px; margin-bottom: 16px; }
+  .strength-bar { flex: 1; height: 4px; border-radius: 2px; background: var(--border); }
+  .strength-bar.active { background: var(--primary); }
+  .strength-label { font-size: 12px; color: var(--primary); margin-top: 4px; margin-bottom: 12px; }
+  .terms-row { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .checkbox {
+    width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--primary);
+    background: rgba(34,197,94,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .checkbox svg { width: 14px; height: 14px; }
+  .terms-text { font-size: 14px; color: var(--text-secondary); }
+  .terms-text a { color: var(--primary); text-decoration: none; }
+
+  /* ===== DASHBOARD ===== */
+  .dashboard-screen {
+    min-height: 100%;
+    background: radial-gradient(ellipse at 30% 20%, var(--dash-radial-1), transparent 60%),
+                radial-gradient(ellipse at 80% 80%, var(--dash-radial-2), transparent 50%), var(--bg);
+    padding: 44px 0 100px; transition: background 0.3s;
+  }
+  .dash-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 16px; }
+  .dash-greeting { font-size: 24px; font-weight: 700; }
+  .dash-subgreeting { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+  .notif-btn {
+    width: 44px; height: 44px; border-radius: 12px; background: var(--glass-bg);
+    border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .notif-badge {
+    position: absolute; top: -4px; right: -4px; width: 18px; height: 18px;
+    border-radius: 9px; background: var(--error); display: flex; align-items: center;
+    justify-content: center; font-size: 10px; font-weight: 700;
+  }
+  .savings-card {
+    margin: 0 16px 24px;
+    background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(34,197,94,0.05)), var(--glass-bg);
+    border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px;
+  }
+  .savings-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .savings-label { font-size: 14px; color: var(--text-secondary); }
+  .savings-badge {
+    display: flex; align-items: center; gap: 4px;
+    background: rgba(34,197,94,0.2); padding: 4px 10px; border-radius: 20px;
+    font-size: 12px; color: var(--primary); font-weight: 600;
+  }
+  .savings-amount { font-size: 48px; font-weight: 700; color: var(--primary); margin-bottom: 4px; letter-spacing: -1px; }
+  .savings-subtext { font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; }
+  .progress-bar-bg { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--primary), var(--primary-dark)); width: 78%; }
+  .progress-text { font-size: 12px; color: var(--text-muted); text-align: right; margin-top: 4px; }
+  .section-title { font-size: 18px; font-weight: 600; padding: 0 16px; margin-bottom: 12px; }
+  .actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; margin-bottom: 24px; }
+  .action-card {
+    background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px;
+    padding: 20px; display: flex; flex-direction: column; align-items: center;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .action-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+  .action-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; margin-bottom: 8px;
+  }
+  .action-icon.green { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); }
+  .action-icon.blue { background: linear-gradient(135deg, var(--info), #1d4ed8); }
+  .action-icon.purple { background: linear-gradient(135deg, var(--purple), #7c3aed); }
+  .action-icon.orange { background: linear-gradient(135deg, var(--orange), #ea580c); }
+  .action-icon svg { width: 24px; height: 24px; }
+  .action-label { font-size: 14px; font-weight: 500; }
+  .section-header { display: flex; justify-content: space-between; align-items: center; padding: 0 16px; margin-bottom: 12px; }
+  .section-header .section-title { margin-bottom: 0; padding: 0; }
+  .see-all { font-size: 14px; color: var(--primary); cursor: pointer; }
+
+  .receipt-card {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px;
+    padding: 14px 16px; margin: 0 16px 8px; cursor: pointer; transition: all 0.2s;
+  }
+  .receipt-card:hover { border-color: rgba(255,255,255,0.2); }
+
+  /* Store brand logos - styled text to resemble actual branding */
+  .store-logo-box {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    overflow: hidden;
+  }
+  .store-logo-box.kroger {
+    background: #FFFFFF;
+  }
+  .store-logo-box.kroger span {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 11px; font-weight: 700; color: #E21836; letter-spacing: -0.3px;
+    text-transform: uppercase;
+  }
+  .store-logo-box.walmart {
+    background: #0071CE;
+  }
+  .store-logo-box.walmart span {
+    font-size: 9px; font-weight: 700; color: #FFFFFF; letter-spacing: 0.5px;
+  }
+  .store-logo-box.target {
+    background: #CC0000;
+  }
+  .store-logo-box.target .target-ring {
+    width: 32px; height: 32px; border-radius: 50%; border: 5px solid white;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .store-logo-box.target .target-ring::after {
+    content: ''; width: 12px; height: 12px; border-radius: 50%; background: white;
+    border: 4px solid #CC0000;
+    box-sizing: content-box;
+  }
+  .store-logo-box.wholefoods {
+    background: #004F2D;
+  }
+  .store-logo-box.wholefoods span {
+    font-size: 7px; font-weight: 800; color: #FFFFFF; text-align: center;
+    line-height: 1.2; letter-spacing: 0.3px; text-transform: uppercase;
+  }
+
+  .receipt-info { flex: 1; }
+  .receipt-store { font-weight: 600; font-size: 16px; }
+  .receipt-meta { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
+  .receipt-amounts { text-align: right; }
+  .receipt-total { font-weight: 600; font-size: 16px; }
+  .receipt-saved { font-size: 12px; color: var(--primary); margin-top: 2px; }
+  .receipt-chevron { color: var(--text-muted); font-size: 20px; }
+
+  /* Tab bar */
+  .tab-bar {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    display: flex; justify-content: space-around; padding: 8px 16px 28px;
+    background: var(--glass-bg); backdrop-filter: blur(20px);
+    border-top: 1px solid var(--glass-border); z-index: 40;
+  }
+  .tab-item {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    cursor: pointer; padding: 4px 12px; border-radius: 12px; transition: all 0.2s;
+  }
+  .tab-item.active { background: rgba(34,197,94,0.15); }
+  .tab-item svg { width: 24px; height: 24px; }
+  .tab-item .tab-label { font-size: 11px; color: var(--text-muted); }
+  .tab-item.active .tab-label { color: var(--primary); font-weight: 600; }
+
+  /* ===== PROFILE ===== */
+  .profile-screen { min-height: 100%; background: radial-gradient(ellipse at 50% 10%, var(--profile-radial), transparent 60%), var(--bg); padding: 44px 0 100px; transition: background 0.3s; }
+  .profile-header-section { padding: 24px 16px; text-align: center; }
+  .profile-avatar {
+    width: 88px; height: 88px; border-radius: 44px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px; font-size: 36px; font-weight: 700; color: #000;
+  }
+  .profile-name { font-size: 24px; font-weight: 700; }
+  .profile-email { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+  .profile-member { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  .edit-profile-btn {
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 20px;
+    border-radius: 20px; background: var(--glass-bg); border: 1px solid var(--glass-border);
+    color: var(--primary); font-size: 14px; font-weight: 500; margin-top: 16px; cursor: pointer;
+  }
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; padding: 0 16px; margin-bottom: 24px; }
+  .stat-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 16px; text-align: center; }
+  .stat-value { font-size: 22px; font-weight: 700; color: var(--primary); }
+  .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  .settings-section { padding: 0 16px; margin-bottom: 24px; }
+  .settings-section-title { font-size: 14px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+  .settings-list { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; overflow: hidden; }
+  .settings-item {
+    display: flex; align-items: center; gap: 12px; padding: 16px; cursor: pointer;
+    border-bottom: 1px solid var(--glass-border);
+  }
+  .settings-item:last-child { border-bottom: none; }
+  .settings-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .settings-icon svg { width: 20px; height: 20px; }
+  .settings-item-content { flex: 1; }
+  .settings-item-label { font-size: 16px; font-weight: 500; }
+  .settings-item-value { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+  .settings-chevron { color: var(--text-muted); }
+  .signout-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin: 0 16px 16px; padding: 16px; border-radius: 14px;
+    background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2);
+    color: var(--error); font-size: 16px; font-weight: 600; cursor: pointer;
+  }
+  .version-text { text-align: center; font-size: 12px; color: var(--text-muted); padding-bottom: 16px; }
+
+  /* ===== STORE PORTAL ===== */
+  .store-screen {
+    min-height: 100%;
+    background: radial-gradient(ellipse at 70% 20%, var(--dash-radial-2), transparent 60%),
+                radial-gradient(ellipse at 20% 80%, var(--dash-radial-1), transparent 60%), var(--bg);
+    padding: 44px 0 100px; transition: background 0.3s;
+  }
+  .store-header { padding: 16px; display: flex; justify-content: space-between; align-items: center; }
+  .store-badge {
+    display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px;
+    background: rgba(34,197,94,0.15); font-size: 12px; color: var(--primary); font-weight: 600;
+  }
+  .store-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; margin-bottom: 24px; }
+  .store-stat-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 16px; }
+  .store-stat-label { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+  .store-stat-value { font-size: 28px; font-weight: 700; }
+  .store-stat-change { font-size: 12px; margin-top: 4px; }
+  .store-stat-change.up { color: var(--primary); }
+  .store-stat-change.down { color: var(--error); }
+  .order-card {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px;
+    padding: 14px 16px; margin: 0 16px 8px;
+  }
+  .order-num-box {
+    width: 48px; height: 48px; border-radius: 12px; display: flex;
+    align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
+  .order-number { font-weight: 600; font-size: 16px; }
+  .order-details { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
+  .order-status { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .order-status.pending { background: rgba(245,158,11,0.15); color: var(--warning); }
+  .order-status.preparing { background: rgba(59,130,246,0.15); color: var(--info); }
+  .order-status.ready { background: rgba(34,197,94,0.15); color: var(--primary); }
+
+  .screen-view { display: none; width: 100%; height: 100%; }
+  .screen-view.active { display: flex; }
+
+  @media (max-width: 480px) {
+    .phone-frame { width: 100%; height: 100vh; border-radius: 0; border: none; box-shadow: none; }
+    .nav-tabs { padding: 12px; }
+    .screen-showcase { padding: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Julyu Mobile App</h1>
+  <p>Interactive UI Preview - iOS & Android</p>
+  <button class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">
+    <svg class="theme-icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    <svg class="theme-icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+</div>
+
+<div class="nav-tabs">
+  <div class="nav-tab active" onclick="showScreen('splash')">Splash</div>
+  <div class="nav-tab" onclick="showScreen('onboarding1')">Onboarding 1</div>
+  <div class="nav-tab" onclick="showScreen('onboarding2')">Onboarding 2</div>
+  <div class="nav-tab" onclick="showScreen('onboarding3')">Onboarding 3</div>
+  <div class="nav-tab" onclick="showScreen('login')">Login</div>
+  <div class="nav-tab" onclick="showScreen('register')">Register</div>
+  <div class="nav-tab" onclick="showScreen('dashboard')">Dashboard</div>
+  <div class="nav-tab" onclick="showScreen('profile')">Profile</div>
+  <div class="nav-tab" onclick="showScreen('store-portal')">Store Portal</div>
+</div>
+
+<div class="screen-showcase">
+<div class="phone-frame">
+  <div class="phone-notch"></div>
+  <div class="phone-home-bar"></div>
+
+  <!-- ===== SPLASH ===== -->
+  <div id="screen-splash" class="screen-view active">
+    <div class="phone-screen">
+      <div class="splash-screen">
+        <div class="splash-center">
+          <div class="splash-logo-wrap">
+            <img src="julyu_j.png" alt="Julyu" class="julyu-logo">
+          </div>
+          <div class="splash-title">Julyu</div>
+          <div class="splash-tagline">Save smart. Shop better.</div>
+        </div>
+        <div class="splash-loader-wrap">
+          <div class="splash-loader"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ONBOARDING 1 ===== -->
+  <div id="screen-onboarding1" class="screen-view">
+    <div class="phone-screen">
+      <div class="onboarding-screen" style="background: radial-gradient(ellipse at 50% 40%, rgba(34,197,94,0.08), transparent 70%), var(--bg);">
+        <div class="onboarding-content">
+          <div class="onboarding-icon-wrap" style="background: rgba(34,197,94,0.1);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+          </div>
+          <div class="onboarding-title">Compare Prices<br>Across Stores</div>
+          <div class="onboarding-subtitle">Find the best deals across 20+ grocery stores like Kroger, Walmart, Target, and more.</div>
+        </div>
+        <div class="onboarding-bottom">
+          <div class="onboarding-dots"><div class="dot active"></div><div class="dot"></div><div class="dot"></div></div>
+          <div class="onboarding-buttons"><button class="glass-button primary" onclick="showScreen('onboarding2')">Next</button></div>
+          <div class="skip-text" onclick="showScreen('login')">Skip</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ONBOARDING 2 ===== -->
+  <div id="screen-onboarding2" class="screen-view">
+    <div class="phone-screen">
+      <div class="onboarding-screen" style="background: radial-gradient(ellipse at 50% 40%, rgba(59,130,246,0.08), transparent 70%), var(--bg);">
+        <div class="onboarding-content">
+          <div class="onboarding-icon-wrap" style="background: rgba(59,130,246,0.1);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
+            </svg>
+          </div>
+          <div class="onboarding-title">Scan Receipts<br>& Track Savings</div>
+          <div class="onboarding-subtitle">Snap a photo of your receipt. Our AI reads it and tracks how much you save.</div>
+        </div>
+        <div class="onboarding-bottom">
+          <div class="onboarding-dots"><div class="dot"></div><div class="dot active"></div><div class="dot"></div></div>
+          <div class="onboarding-buttons"><button class="glass-button primary" onclick="showScreen('onboarding3')">Next</button></div>
+          <div class="skip-text" onclick="showScreen('login')">Skip</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ONBOARDING 3 ===== -->
+  <div id="screen-onboarding3" class="screen-view">
+    <div class="phone-screen">
+      <div class="onboarding-screen" style="background: radial-gradient(ellipse at 50% 40%, rgba(139,92,246,0.08), transparent 70%), var(--bg);">
+        <div class="onboarding-content">
+          <div class="onboarding-icon-wrap" style="background: rgba(139,92,246,0.1);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </div>
+          <div class="onboarding-title">Meet Jules,<br>Your AI Assistant</div>
+          <div class="onboarding-subtitle">Get meal plans, budget tips, and smart shopping recommendations powered by AI.</div>
+        </div>
+        <div class="onboarding-bottom">
+          <div class="onboarding-dots"><div class="dot"></div><div class="dot"></div><div class="dot active"></div></div>
+          <div class="onboarding-buttons">
+            <button class="glass-button primary" onclick="showScreen('login')">Get Started</button>
+            <button class="glass-button secondary" onclick="showScreen('login')">I have an account</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== LOGIN ===== -->
+  <div id="screen-login" class="screen-view">
+    <div class="phone-screen">
+      <div class="auth-screen">
+        <div class="auth-content">
+          <div class="glass-card elevated">
+            <div class="auth-card-title">Welcome back!</div>
+            <div class="auth-card-subtitle">Sign in to continue saving</div>
+            <div class="glass-input"><label>Email</label><div class="input-wrapper"><svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span class="input-text">Enter your email</span></div></div>
+            <div class="glass-input"><label>Password</label><div class="input-wrapper"><svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span class="input-text">Enter your password</span><svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div></div>
+            <div class="forgot-link"><a href="#">Forgot password?</a></div>
+            <button class="glass-button primary" onclick="showScreen('dashboard')">Sign In</button>
+            <div class="divider"><div class="divider-line"></div><div class="divider-text">or continue with</div><div class="divider-line"></div></div>
+            <div class="social-row">
+              <button class="glass-button secondary"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg> Google</button>
+              <button class="glass-button secondary"><svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg> Apple</button>
+            </div>
+          </div>
+          <div class="auth-footer">Don't have an account? <a href="#" onclick="showScreen('register');return false;">Sign up</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== REGISTER ===== -->
+  <div id="screen-register" class="screen-view">
+    <div class="phone-screen">
+      <div class="auth-screen">
+        <div class="auth-content">
+          <div class="glass-card elevated">
+            <div class="auth-card-title">Create account</div>
+            <div class="auth-card-subtitle">Start saving on groceries today</div>
+            <div class="glass-input"><label>Full Name</label><div class="input-wrapper"><svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="input-text">Enter your full name</span></div></div>
+            <div class="glass-input"><label>Email</label><div class="input-wrapper"><svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span class="input-text">Enter your email</span></div></div>
+            <div class="glass-input" style="margin-bottom:4px"><label>Password</label><div class="input-wrapper"><svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span class="input-text" style="color:var(--text-muted)">&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;</span><svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div></div>
+            <div class="password-strength"><div class="strength-bar active"></div><div class="strength-bar active"></div><div class="strength-bar active"></div><div class="strength-bar"></div></div>
+            <div class="strength-label">Good</div>
+            <div class="glass-input"><label>Confirm Password</label><div class="input-wrapper"><svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span class="input-text" style="color:var(--text-muted)">&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;</span></div></div>
+            <div class="terms-row">
+              <div class="checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+              <div class="terms-text">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></div>
+            </div>
+            <button class="glass-button primary" onclick="showScreen('dashboard')">Create Account</button>
+            <div class="divider"><div class="divider-line"></div><div class="divider-text">or continue with</div><div class="divider-line"></div></div>
+            <div class="social-row">
+              <button class="glass-button secondary"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg> Google</button>
+              <button class="glass-button secondary"><svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg> Apple</button>
+            </div>
+          </div>
+          <div class="auth-footer">Already have an account? <a href="#" onclick="showScreen('login');return false;">Sign in</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DASHBOARD ===== -->
+  <div id="screen-dashboard" class="screen-view">
+    <div class="phone-screen">
+      <div class="dashboard-screen">
+        <div class="status-bar"><span>9:41</span><div class="status-icons"><svg width="16" height="12" viewBox="0 0 16 12" fill="white"><rect x="0" y="4" width="3" height="8" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/><rect x="13" y="2" width="3" height="10" rx="1" opacity="0.3"/></svg><svg width="16" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg><svg width="24" height="12" viewBox="0 0 28 14" fill="none"><rect x=".5" y=".5" width="23" height="13" rx="3" stroke="white" stroke-opacity=".35"/><rect x="25" y="4" width="2" height="6" rx="1" fill="white" fill-opacity=".4"/><rect x="2" y="2" width="16" height="10" rx="2" fill="var(--primary)"/></svg></div></div>
+        <div class="dash-header">
+          <div><div class="dash-greeting">Good morning, Alex!</div><div class="dash-subgreeting">Let's save some money today</div></div>
+          <div class="notif-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><div class="notif-badge">3</div></div>
+        </div>
+        <div class="savings-card">
+          <div class="savings-header"><div class="savings-label">This Month's Savings</div><div class="savings-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> +12%</div></div>
+          <div class="savings-amount">$47.32</div>
+          <div class="savings-subtext">You're on track for $60 this month!</div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill"></div></div>
+          <div class="progress-text">78% of goal</div>
+        </div>
+        <div class="section-title">Quick Actions</div>
+        <div class="actions-grid">
+          <div class="action-card"><div class="action-icon green"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div><div class="action-label">Scan Receipt</div></div>
+          <div class="action-card"><div class="action-icon blue"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div><div class="action-label">Lists</div></div>
+          <div class="action-card"><div class="action-icon purple"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><div class="action-label">Compare</div></div>
+          <div class="action-card"><div class="action-icon orange"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="action-label">Alerts</div></div>
+        </div>
+        <div class="section-header"><div class="section-title">Recent Receipts</div><div class="see-all">See all</div></div>
+
+        <!-- Kroger -->
+        <div class="receipt-card">
+          <div class="store-logo-box kroger"><span>Kroger</span></div>
+          <div class="receipt-info"><div class="receipt-store">Kroger</div><div class="receipt-meta">Jan 20 - 12 items</div></div>
+          <div class="receipt-amounts"><div class="receipt-total">$52.47</div><div class="receipt-saved">Saved $8.23</div></div>
+          <span class="receipt-chevron">&#8250;</span>
+        </div>
+        <!-- Walmart -->
+        <div class="receipt-card">
+          <div class="store-logo-box walmart"><span>Walmart</span></div>
+          <div class="receipt-info"><div class="receipt-store">Walmart</div><div class="receipt-meta">Jan 18 - 8 items</div></div>
+          <div class="receipt-amounts"><div class="receipt-total">$38.92</div><div class="receipt-saved">Saved $4.15</div></div>
+          <span class="receipt-chevron">&#8250;</span>
+        </div>
+        <!-- Target -->
+        <div class="receipt-card">
+          <div class="store-logo-box target"><div class="target-ring"></div></div>
+          <div class="receipt-info"><div class="receipt-store">Target</div><div class="receipt-meta">Jan 15 - 5 items</div></div>
+          <div class="receipt-amounts"><div class="receipt-total">$28.15</div><div class="receipt-saved">Saved $3.50</div></div>
+          <span class="receipt-chevron">&#8250;</span>
+        </div>
+        <!-- Whole Foods -->
+        <div class="receipt-card">
+          <div class="store-logo-box wholefoods"><span>WHOLE<br>FOODS</span></div>
+          <div class="receipt-info"><div class="receipt-store">Whole Foods</div><div class="receipt-meta">Jan 12 - 9 items</div></div>
+          <div class="receipt-amounts"><div class="receipt-total">$67.30</div><div class="receipt-saved">Saved $11.45</div></div>
+          <span class="receipt-chevron">&#8250;</span>
+        </div>
+        <div style="height:80px"></div>
+      </div>
+      <div class="tab-bar">
+        <div class="tab-item active"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="tab-label" style="color:var(--primary)">Home</span></div>
+        <div class="tab-item"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="tab-label">Scan</span></div>
+        <div class="tab-item"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span class="tab-label">Lists</span></div>
+        <div class="tab-item" onclick="showScreen('profile')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="tab-label">Profile</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PROFILE ===== -->
+  <div id="screen-profile" class="screen-view">
+    <div class="phone-screen">
+      <div class="profile-screen">
+        <div class="status-bar"><span>9:41</span><div class="status-icons"><svg width="16" height="12" viewBox="0 0 16 12" fill="white"><rect x="0" y="4" width="3" height="8" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/><rect x="13" y="2" width="3" height="10" rx="1" opacity="0.3"/></svg><svg width="16" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg><svg width="24" height="12" viewBox="0 0 28 14" fill="none"><rect x=".5" y=".5" width="23" height="13" rx="3" stroke="white" stroke-opacity=".35"/><rect x="25" y="4" width="2" height="6" rx="1" fill="white" fill-opacity=".4"/><rect x="2" y="2" width="16" height="10" rx="2" fill="var(--primary)"/></svg></div></div>
+        <div class="profile-header-section">
+          <div class="profile-avatar">A</div>
+          <div class="profile-name">Alex Johnson</div>
+          <div class="profile-email">alex@email.com</div>
+          <div class="profile-member">Member since Jan 2024</div>
+          <div class="edit-profile-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit Profile</div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-value">$847</div><div class="stat-label">Total Saved</div></div>
+          <div class="stat-card"><div class="stat-value">156</div><div class="stat-label">Receipts</div></div>
+          <div class="stat-card"><div class="stat-value">12</div><div class="stat-label">Lists</div></div>
+        </div>
+        <div class="settings-section"><div class="settings-section-title">Settings</div><div class="settings-list">
+          <div class="settings-item"><div class="settings-icon" style="background:rgba(59,130,246,0.15)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="settings-item-content"><div class="settings-item-label">Notifications</div><div class="settings-item-value">Alerts & weekly summary</div></div><span class="settings-chevron">&#8250;</span></div>
+          <div class="settings-item"><div class="settings-icon" style="background:rgba(34,197,94,0.15)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div><div class="settings-item-content"><div class="settings-item-label">Default ZIP Code</div><div class="settings-item-value">90210</div></div><span class="settings-chevron">&#8250;</span></div>
+          <div class="settings-item"><div class="settings-icon" style="background:rgba(139,92,246,0.15)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div><div class="settings-item-content"><div class="settings-item-label">Preferred Stores</div><div class="settings-item-value">5 stores selected</div></div><span class="settings-chevron">&#8250;</span></div>
+          <div class="settings-item"><div class="settings-icon" style="background:rgba(245,158,11,0.15)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div><div class="settings-item-content"><div class="settings-item-label">Subscription</div><div class="settings-item-value">Free Plan</div></div><span class="settings-chevron">&#8250;</span></div>
+        </div></div>
+        <div class="settings-section"><div class="settings-section-title">Support</div><div class="settings-list">
+          <div class="settings-item"><div class="settings-icon" style="background:rgba(255,255,255,0.05)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div class="settings-item-content"><div class="settings-item-label">Help Center</div></div><span class="settings-chevron">&#8250;</span></div>
+          <div class="settings-item"><div class="settings-icon" style="background:rgba(255,255,255,0.05)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div><div class="settings-item-content"><div class="settings-item-label">Contact Us</div></div><span class="settings-chevron">&#8250;</span></div>
+          <div class="settings-item"><div class="settings-icon" style="background:rgba(255,255,255,0.05)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><div class="settings-item-content"><div class="settings-item-label">Terms of Service</div></div><span class="settings-chevron">&#8250;</span></div>
+          <div class="settings-item"><div class="settings-icon" style="background:rgba(255,255,255,0.05)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><div class="settings-item-content"><div class="settings-item-label">Privacy Policy</div></div><span class="settings-chevron">&#8250;</span></div>
+        </div></div>
+        <div style="padding:0 16px;margin-bottom:16px"><div onclick="showScreen('store-portal')" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;border-radius:14px;background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(59,130,246,0.15));border:1px solid rgba(139,92,246,0.3);cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span style="font-weight:600;color:var(--purple)">Switch to Store Portal</span></div></div>
+        <div class="signout-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Sign Out</div>
+        <div class="version-text">Julyu v1.0.0</div>
+        <div style="height:80px"></div>
+      </div>
+      <div class="tab-bar">
+        <div class="tab-item" onclick="showScreen('dashboard')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="tab-label">Home</span></div>
+        <div class="tab-item"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="tab-label">Scan</span></div>
+        <div class="tab-item"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span class="tab-label">Lists</span></div>
+        <div class="tab-item active"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="tab-label" style="color:var(--primary)">Profile</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== STORE PORTAL ===== -->
+  <div id="screen-store-portal" class="screen-view">
+    <div class="phone-screen">
+      <div class="store-screen">
+        <div class="status-bar"><span>9:41</span><div class="status-icons"><svg width="16" height="12" viewBox="0 0 16 12" fill="white"><rect x="0" y="4" width="3" height="8" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/><rect x="13" y="2" width="3" height="10" rx="1" opacity="0.3"/></svg><svg width="16" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg><svg width="24" height="12" viewBox="0 0 28 14" fill="none"><rect x=".5" y=".5" width="23" height="13" rx="3" stroke="white" stroke-opacity=".35"/><rect x="25" y="4" width="2" height="6" rx="1" fill="white" fill-opacity=".4"/><rect x="2" y="2" width="16" height="10" rx="2" fill="var(--primary)"/></svg></div></div>
+        <div class="store-header"><div><div class="dash-greeting">Alex's Bodega</div><div class="dash-subgreeting">Store Dashboard</div></div><div class="store-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Verified</div></div>
+        <div class="store-stats-grid">
+          <div class="store-stat-card"><div class="store-stat-label">Today's Revenue</div><div class="store-stat-value" style="color:var(--primary)">$1,247</div><div class="store-stat-change up">+18% vs yesterday</div></div>
+          <div class="store-stat-card"><div class="store-stat-label">Orders Today</div><div class="store-stat-value" style="color:var(--info)">23</div><div class="store-stat-change up">+5 from yesterday</div></div>
+          <div class="store-stat-card"><div class="store-stat-label">Inventory Items</div><div class="store-stat-value" style="color:var(--purple)">342</div><div class="store-stat-change down">12 low stock</div></div>
+          <div class="store-stat-card"><div class="store-stat-label">Avg. Rating</div><div class="store-stat-value" style="color:var(--warning)">4.8</div><div class="store-stat-change up">156 reviews</div></div>
+        </div>
+        <div class="section-title">Quick Actions</div>
+        <div class="actions-grid">
+          <div class="action-card"><div class="action-icon green"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div class="action-label">Add Item</div></div>
+          <div class="action-card"><div class="action-icon blue"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></div><div class="action-label">Bulk Import</div></div>
+        </div>
+        <div class="section-header"><div class="section-title">Recent Orders</div><div class="see-all">View all</div></div>
+        <div class="order-card"><div class="order-num-box" style="background:rgba(245,158,11,0.15);color:var(--warning)">#1247</div><div class="receipt-info" style="flex:1"><div class="order-number">Maria G.</div><div class="order-details">6 items - $34.50</div></div><div class="order-status pending">Pending</div></div>
+        <div class="order-card"><div class="order-num-box" style="background:rgba(59,130,246,0.15);color:var(--info)">#1246</div><div class="receipt-info" style="flex:1"><div class="order-number">James T.</div><div class="order-details">3 items - $18.75</div></div><div class="order-status preparing">Preparing</div></div>
+        <div class="order-card"><div class="order-num-box" style="background:rgba(34,197,94,0.15);color:var(--primary)">#1245</div><div class="receipt-info" style="flex:1"><div class="order-number">Sarah K.</div><div class="order-details">8 items - $52.30</div></div><div class="order-status ready">Ready</div></div>
+        <div class="section-title" style="margin-top:12px">Low Stock Alerts</div>
+        <div style="padding:0 16px;margin-bottom:16px"><div class="glass-card" style="border-color:rgba(239,68,68,0.3)">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--error)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span style="font-weight:600;color:var(--error)">3 items need restocking</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--glass-border)"><span style="color:var(--text-secondary)">Organic Milk (1 gal)</span><span style="color:var(--error);font-weight:600">2 left</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--glass-border)"><span style="color:var(--text-secondary)">Avocados (each)</span><span style="color:var(--error);font-weight:600">4 left</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0"><span style="color:var(--text-secondary)">Sourdough Bread</span><span style="color:var(--warning);font-weight:600">5 left</span></div>
+        </div></div>
+        <div style="padding:0 16px;margin-bottom:16px"><div onclick="showScreen('dashboard')" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;border-radius:14px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span style="font-weight:600;color:var(--primary)">Switch to Shopper View</span></div></div>
+        <div style="height:80px"></div>
+      </div>
+      <div class="tab-bar">
+        <div class="tab-item active"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="tab-label" style="color:var(--primary)">Dashboard</span></div>
+        <div class="tab-item"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="tab-label">Inventory</span></div>
+        <div class="tab-item"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><span class="tab-label">Orders</span></div>
+        <div class="tab-item"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 0 1 0 4h-.09c-.658.003-1.25.396-1.51 1z"/></svg><span class="tab-label">Settings</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+function showScreen(id) {
+  document.querySelectorAll('.screen-view').forEach(function(el) { el.classList.remove('active'); });
+  document.getElementById('screen-' + id).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(function(tab) {
+    tab.classList.remove('active');
+    if (tab.getAttribute('onclick') && tab.getAttribute('onclick').indexOf(id) !== -1) tab.classList.add('active');
+  });
+  var el = document.getElementById('screen-' + id);
+  var ps = el.querySelector('.phone-screen');
+  if (ps) ps.scrollTop = 0;
+}
+
+function toggleTheme() {
+  var html = document.documentElement;
+  var current = html.getAttribute('data-theme') || 'dark';
+  html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+}
+</script>
+</body>
+</html>

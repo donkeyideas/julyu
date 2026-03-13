@@ -10,11 +10,10 @@ import {
   Alert,
 } from 'react-native'
 import { Link, router } from 'expo-router'
-import { LinearGradient } from 'expo-linear-gradient'
 import { Ionicons } from '@expo/vector-icons'
 import { GlassCard, GlassButton, GlassInput, ScreenContainer } from '@/components'
 import { useAuthStore } from '@/store/authStore'
-import { colors, spacing, fontSize, gradients } from '@/constants/colors'
+import { colors, spacing, fontSize } from '@/constants/colors'
 
 export default function RegisterScreen() {
   const [fullName, setFullName] = useState('')
@@ -31,7 +30,16 @@ export default function RegisterScreen() {
     terms?: string
   }>({})
 
-  const { register, isLoading } = useAuthStore()
+  const { register, loginWithGoogle, isLoading } = useAuthStore()
+
+  const handleGoogleLogin = async () => {
+    const result = await loginWithGoogle()
+    if (result.error) {
+      Alert.alert('Google Sign-In Failed', result.error)
+    } else {
+      router.replace('/(tabs)')
+    }
+  }
 
   const validate = () => {
     const newErrors: typeof errors = {}
@@ -101,20 +109,11 @@ export default function RegisterScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Logo Section */}
-          <View style={styles.logoSection}>
-            <LinearGradient
-              colors={[...gradients.primary]}
-              style={styles.logoContainer}
-            >
-              <Ionicons name="leaf" size={40} color="#000" />
-            </LinearGradient>
-            <Text style={styles.appName}>Create Account</Text>
-            <Text style={styles.tagline}>Join thousands saving on groceries</Text>
-          </View>
-
           {/* Register Card */}
           <GlassCard variant="elevated" style={styles.card}>
+            <Text style={styles.title}>Create account</Text>
+            <Text style={styles.subtitle}>Start saving on groceries today</Text>
+
             <GlassInput
               label="Full Name"
               icon="person-outline"
@@ -215,8 +214,8 @@ export default function RegisterScreen() {
               </View>
               <Text style={styles.termsText}>
                 I agree to the{' '}
-                <Text style={styles.termsLink}>Terms of Service</Text> and{' '}
-                <Text style={styles.termsLink}>Privacy Policy</Text>
+                <Text style={styles.termsLink} onPress={() => router.push('/legal/terms')}>Terms of Service</Text> and{' '}
+                <Text style={styles.termsLink} onPress={() => router.push('/legal/privacy')}>Privacy Policy</Text>
               </Text>
             </TouchableOpacity>
             {errors.terms && <Text style={styles.errorText}>{errors.terms}</Text>}
@@ -227,6 +226,24 @@ export default function RegisterScreen() {
               loading={isLoading}
               style={styles.registerButton}
             />
+
+            {/* Divider */}
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or continue with</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            {/* Social Buttons */}
+            <View style={styles.socialButtons}>
+              <GlassButton
+                title="Google"
+                variant="secondary"
+                onPress={handleGoogleLogin}
+                icon={<Ionicons name="logo-google" size={20} color={colors.text} />}
+                style={styles.socialButton}
+              />
+            </View>
           </GlassCard>
 
           {/* Sign In Link */}
@@ -253,28 +270,16 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     justifyContent: 'center',
   },
-  logoSection: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  logoContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  appName: {
-    fontSize: fontSize['2xl'],
+  title: {
+    fontSize: 22,
     fontWeight: 'bold',
     color: colors.text,
     marginBottom: spacing.xs,
   },
-  tagline: {
-    fontSize: fontSize.base,
+  subtitle: {
+    fontSize: 15,
     color: colors.textSecondary,
-    textAlign: 'center',
+    marginBottom: 20,
   },
   card: {
     marginBottom: spacing.lg,
@@ -348,6 +353,28 @@ const styles = StyleSheet.create({
   },
   registerButton: {
     marginTop: spacing.sm,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: spacing.md,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.glass.border,
+  },
+  dividerText: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    marginHorizontal: spacing.md,
+  },
+  socialButtons: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  socialButton: {
+    flex: 1,
   },
   signInContainer: {
     flexDirection: 'row',

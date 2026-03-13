@@ -212,7 +212,7 @@ export default function DemoCodesPage() {
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!generateForm.email || !generateForm.demo_type) return
+    if (!generateForm.demo_type) return
     setGenerateLoading(true)
     setGeneratedCode(null)
     try {
@@ -531,11 +531,10 @@ export default function DemoCodesPage() {
               {/* Email */}
               <div>
                 <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
-                  Email <span className="text-red-500">*</span>
+                  Email
                 </label>
                 <input
                   type="email"
-                  required
                   value={generateForm.email}
                   onChange={(e) => setGenerateForm({ ...generateForm, email: e.target.value })}
                   placeholder="user@example.com"
@@ -598,7 +597,7 @@ export default function DemoCodesPage() {
 
               <button
                 type="submit"
-                disabled={generateLoading || !generateForm.email}
+                disabled={generateLoading}
                 className="w-full px-6 py-3 rounded-lg font-bold text-black bg-green-500 hover:bg-green-600 transition disabled:opacity-50"
               >
                 {generateLoading ? 'Generating...' : 'Generate Code'}

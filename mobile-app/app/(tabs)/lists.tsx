@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   FlatList,
   TextInput,
   Alert,
+  RefreshControl,
 } from 'react-native'
 import { Link } from 'expo-router'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -14,60 +15,37 @@ import { Ionicons } from '@expo/vector-icons'
 import { BlurView } from 'expo-blur'
 import { GlassCard, GlassButton, ScreenContainer } from '@/components'
 import { colors, spacing, fontSize, gradients } from '@/constants/colors'
-
-interface ShoppingList {
-  id: string
-  name: string
-  items_count: number
-  estimated_total: number
-  created_at: string
-}
-
-// Mock data - will be replaced with API
-const mockLists: ShoppingList[] = [
-  {
-    id: '1',
-    name: 'Weekly Groceries',
-    items_count: 15,
-    estimated_total: 78.50,
-    created_at: '2024-01-20',
-  },
-  {
-    id: '2',
-    name: 'Party Supplies',
-    items_count: 8,
-    estimated_total: 45.00,
-    created_at: '2024-01-18',
-  },
-  {
-    id: '3',
-    name: 'Healthy Meal Prep',
-    items_count: 12,
-    estimated_total: 62.30,
-    created_at: '2024-01-15',
-  },
-]
+import { useListsStore } from '@/store/listsStore'
+import type { ShoppingList } from '@/services/lists'
 
 export default function ListsScreen() {
-  const [lists, setLists] = useState<ShoppingList[]>(mockLists)
+  const { lists, fetchLists, createNewList, removeList, isLoading } = useListsStore()
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [newListName, setNewListName] = useState('')
+  const [refreshing, setRefreshing] = useState(false)
 
-  const handleCreateList = () => {
+  useEffect(() => {
+    fetchLists()
+  }, [])
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true)
+    await fetchLists()
+    setRefreshing(false)
+  }, [fetchLists])
+
+  const handleCreateList = async () => {
     if (!newListName.trim()) {
       Alert.alert('Error', 'Please enter a list name')
       return
     }
 
-    const newList: ShoppingList = {
-      id: Date.now().toString(),
-      name: newListName.trim(),
-      items_count: 0,
-      estimated_total: 0,
-      created_at: new Date().toISOString().split('T')[0],
+    const result = await createNewList(newListName.trim())
+    if (result.error) {
+      Alert.alert('Error', result.error)
+      return
     }
 
-    setLists([newList, ...lists])
     setNewListName('')
     setShowCreateModal(false)
   }
@@ -81,7 +59,12 @@ export default function ListsScreen() {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => setLists(lists.filter((list) => list.id !== id)),
+          onPress: async () => {
+            const result = await removeList(id)
+            if (result.error) {
+              Alert.alert('Error', result.error)
+            }
+          },
         },
       ]
     )
@@ -167,6 +150,14 @@ export default function ListsScreen() {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
+            />
+          }
         />
       )}
 

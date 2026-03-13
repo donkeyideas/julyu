@@ -1,8 +1,10 @@
+import { useEffect } from 'react'
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native'
 import { router } from 'expo-router'
 import { LinearGradient } from 'expo-linear-gradient'
 import { Ionicons } from '@expo/vector-icons'
 import { useAuthStore } from '@/store/authStore'
+import { useSavingsStore } from '@/store/savingsStore'
 import { GlassCard, GlassButton, ScreenContainer } from '@/components'
 import { colors, spacing, fontSize, gradients } from '@/constants/colors'
 
@@ -49,6 +51,11 @@ function StatItem({ label, value, icon }: StatItemProps) {
 
 export default function ProfileScreen() {
   const { user, logout, isAuthenticated } = useAuthStore()
+  const { savings, fetchSavings } = useSavingsStore()
+
+  useEffect(() => {
+    if (isAuthenticated) fetchSavings()
+  }, [isAuthenticated])
 
   const handleLogout = () => {
     Alert.alert(
@@ -133,7 +140,7 @@ export default function ProfileScreen() {
             title="Edit Profile"
             variant="secondary"
             size="small"
-            onPress={() => {}}
+            onPress={() => router.push('/profile/edit')}
             style={styles.editButton}
           />
         </GlassCard>
@@ -142,9 +149,9 @@ export default function ProfileScreen() {
         <GlassCard style={styles.statsCard}>
           <Text style={styles.sectionTitle}>Savings Summary</Text>
           <View style={styles.statsGrid}>
-            <StatItem label="Total Saved" value="$847" icon="wallet" />
-            <StatItem label="Receipts" value="156" icon="receipt" />
-            <StatItem label="Lists" value="12" icon="list" />
+            <StatItem label="Total Saved" value={`$${savings?.total_saved || 0}`} icon="wallet" />
+            <StatItem label="Receipts" value={`${savings?.receipts_count || 0}`} icon="receipt" />
+            <StatItem label="Lists" value={`${savings?.lists_count || 0}`} icon="list" />
           </View>
         </GlassCard>
 
@@ -154,21 +161,21 @@ export default function ProfileScreen() {
           <SettingsItem
             icon="notifications-outline"
             label="Notifications"
-            onPress={() => {}}
+            onPress={() => router.push('/settings/notifications')}
           />
           <View style={styles.settingsDivider} />
           <SettingsItem
             icon="location-outline"
             label="Default ZIP Code"
-            value="90210"
-            onPress={() => {}}
+            value={user?.zip_code || '90210'}
+            onPress={() => router.push('/profile/edit')}
           />
           <View style={styles.settingsDivider} />
           <SettingsItem
             icon="storefront-outline"
             label="Preferred Stores"
             value="5 selected"
-            onPress={() => {}}
+            onPress={() => router.push('/settings/stores')}
           />
           <View style={styles.settingsDivider} />
           <SettingsItem
@@ -185,27 +192,78 @@ export default function ProfileScreen() {
           <SettingsItem
             icon="help-circle-outline"
             label="Help Center"
-            onPress={() => {}}
+            onPress={() => router.push('/support' as any)}
           />
           <View style={styles.settingsDivider} />
           <SettingsItem
             icon="chatbubble-outline"
             label="Contact Us"
-            onPress={() => {}}
+            onPress={() => router.push('/support/contact' as any)}
           />
           <View style={styles.settingsDivider} />
           <SettingsItem
             icon="document-text-outline"
             label="Terms of Service"
-            onPress={() => {}}
+            onPress={() => router.push('/legal/terms')}
           />
           <View style={styles.settingsDivider} />
           <SettingsItem
             icon="shield-checkmark-outline"
             label="Privacy Policy"
-            onPress={() => {}}
+            onPress={() => router.push('/legal/privacy')}
           />
         </GlassCard>
+
+        {/* Quick Links */}
+        <View style={styles.quickLinksRow}>
+          <TouchableOpacity
+            style={styles.quickLink}
+            onPress={() => router.push('/assistant' as any)}
+          >
+            <GlassCard innerStyle={styles.quickLinkInner}>
+              <LinearGradient
+                colors={[...gradients.primary]}
+                style={styles.quickLinkIcon}
+              >
+                <Ionicons name="chatbubble-ellipses" size={20} color="#000" />
+              </LinearGradient>
+              <Text style={styles.quickLinkLabel}>AI Assistant</Text>
+            </GlassCard>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.quickLink}
+            onPress={() => router.push('/(store-portal)' as any)}
+          >
+            <GlassCard innerStyle={styles.quickLinkInner}>
+              <LinearGradient
+                colors={[...gradients.purple]}
+                style={styles.quickLinkIcon}
+              >
+                <Ionicons name="storefront" size={20} color="#fff" />
+              </LinearGradient>
+              <Text style={styles.quickLinkLabel}>Store Portal</Text>
+            </GlassCard>
+          </TouchableOpacity>
+        </View>
+
+        {/* Store Application Link */}
+        <TouchableOpacity
+          style={styles.storeApplyButton}
+          onPress={() => router.push('/store-apply' as any)}
+        >
+          <GlassCard innerStyle={styles.storeApplyInner}>
+            <View style={styles.storeApplyLeft}>
+              <View style={styles.storeApplyIcon}>
+                <Ionicons name="add-circle" size={22} color="#8b5cf6" />
+              </View>
+              <View>
+                <Text style={styles.storeApplyTitle}>Become a Store Partner</Text>
+                <Text style={styles.storeApplySubtitle}>Apply to list your store on Julyu</Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+          </GlassCard>
+        </TouchableOpacity>
 
         {/* Sign Out */}
         <GlassButton
@@ -373,6 +431,62 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: colors.glass.border,
     marginLeft: 52,
+  },
+  quickLinksRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  quickLink: {
+    flex: 1,
+  },
+  quickLinkInner: {
+    alignItems: 'center',
+    padding: spacing.md,
+  },
+  quickLinkIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.sm,
+  },
+  quickLinkLabel: {
+    fontSize: fontSize.sm,
+    color: colors.text,
+    fontWeight: '500',
+  },
+  storeApplyButton: {
+    marginBottom: spacing.lg,
+  },
+  storeApplyInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  storeApplyLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  storeApplyIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: 'rgba(139, 92, 246, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  storeApplyTitle: {
+    fontSize: fontSize.base,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  storeApplySubtitle: {
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+    marginTop: 2,
   },
   signOutButton: {
     marginBottom: spacing.md,

@@ -1,13 +1,48 @@
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native'
-import { Link } from 'expo-router'
+import { useState, useEffect, useCallback } from 'react'
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl, ActivityIndicator } from 'react-native'
+import { Link, router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useAuthStore } from '@/store/authStore'
+import { useSavingsStore } from '@/store/savingsStore'
+import { useReceiptsStore } from '@/store/receiptsStore'
 import { GlassCard, ScreenContainer } from '@/components'
 import { colors, spacing, fontSize, gradients } from '@/constants/colors'
 
 export default function HomeScreen() {
   const { user } = useAuthStore()
+  const { savings, fetchSavings, isLoading: savingsLoading } = useSavingsStore()
+  const { receipts, fetchReceipts, isLoading: receiptsLoading } = useReceiptsStore()
+  const [refreshing, setRefreshing] = useState(false)
+
+  useEffect(() => {
+    fetchSavings()
+    fetchReceipts()
+  }, [])
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true)
+    await Promise.all([fetchSavings(), fetchReceipts()])
+    setRefreshing(false)
+  }, [fetchSavings, fetchReceipts])
+
+  const formatDate = (isoString: string) => {
+    const date = new Date(isoString)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  }
+
+  const isFirstLoad = (savingsLoading && !savings) || (receiptsLoading && receipts.length === 0)
+
+  if (isFirstLoad) {
+    return (
+      <ScreenContainer variant="home" edges={['top', 'left', 'right']}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Loading your data...</Text>
+        </View>
+      </ScreenContainer>
+    )
+  }
 
   const getGreeting = () => {
     const hour = new Date().getHours()
@@ -22,6 +57,9 @@ export default function HomeScreen() {
         style={styles.container}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
+        }
       >
         {/* Header */}
         <View style={styles.header}>
@@ -51,11 +89,11 @@ export default function HomeScreen() {
               <Text style={styles.savingsLabel}>This Month's Savings</Text>
               <View style={styles.savingsBadge}>
                 <Ionicons name="trending-up" size={14} color={colors.primary} />
-                <Text style={styles.savingsBadgeText}>+12%</Text>
+                <Text style={styles.savingsBadgeText}>+{savings?.trend_percentage || 0}%</Text>
               </View>
             </View>
-            <Text style={styles.savingsAmount}>$47.32</Text>
-            <Text style={styles.savingsSubtext}>You're on track for $60 this month!</Text>
+            <Text style={styles.savingsAmount}>${savings?.this_month?.toFixed(2) || '0.00'}</Text>
+            <Text style={styles.savingsSubtext}>You're on track for ${savings?.monthly_goal || 0} this month!</Text>
 
             {/* Progress Bar */}
             <View style={styles.progressContainer}>
@@ -64,10 +102,10 @@ export default function HomeScreen() {
                   colors={[...gradients.primary]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
-                  style={[styles.progressBar, { width: '78%' }]}
+                  style={[styles.progressBar, { width: `${savings?.goal_progress || 0}%` }]}
                 />
               </View>
-              <Text style={styles.progressText}>78% of goal</Text>
+              <Text style={styles.progressText}>{savings?.goal_progress || 0}% of goal</Text>
             </View>
           </LinearGradient>
         </GlassCard>
@@ -103,29 +141,33 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </Link>
 
-          <TouchableOpacity style={styles.actionCardWrapper}>
-            <GlassCard style={styles.actionCard} innerStyle={styles.actionCardInner}>
-              <LinearGradient
-                colors={[...gradients.purple]}
-                style={styles.actionIconContainer}
-              >
-                <Ionicons name="search" size={24} color="#fff" />
-              </LinearGradient>
-              <Text style={styles.actionLabel}>Compare</Text>
-            </GlassCard>
-          </TouchableOpacity>
+          <Link href="/search" asChild>
+            <TouchableOpacity style={styles.actionCardWrapper}>
+              <GlassCard style={styles.actionCard} innerStyle={styles.actionCardInner}>
+                <LinearGradient
+                  colors={[...gradients.purple]}
+                  style={styles.actionIconContainer}
+                >
+                  <Ionicons name="search" size={24} color="#fff" />
+                </LinearGradient>
+                <Text style={styles.actionLabel}>Compare</Text>
+              </GlassCard>
+            </TouchableOpacity>
+          </Link>
 
-          <TouchableOpacity style={styles.actionCardWrapper}>
-            <GlassCard style={styles.actionCard} innerStyle={styles.actionCardInner}>
-              <LinearGradient
-                colors={[...gradients.orange]}
-                style={styles.actionIconContainer}
-              >
-                <Ionicons name="notifications" size={24} color="#fff" />
-              </LinearGradient>
-              <Text style={styles.actionLabel}>Alerts</Text>
-            </GlassCard>
-          </TouchableOpacity>
+          <Link href="/alerts" asChild>
+            <TouchableOpacity style={styles.actionCardWrapper}>
+              <GlassCard style={styles.actionCard} innerStyle={styles.actionCardInner}>
+                <LinearGradient
+                  colors={[...gradients.orange]}
+                  style={styles.actionIconContainer}
+                >
+                  <Ionicons name="notifications" size={24} color="#fff" />
+                </LinearGradient>
+                <Text style={styles.actionLabel}>Alerts</Text>
+              </GlassCard>
+            </TouchableOpacity>
+          </Link>
         </View>
 
         {/* Recent Receipts */}
@@ -136,29 +178,25 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        <ReceiptCard
-          store="Kroger"
-          date="Jan 20, 2024"
-          items={12}
-          total={52.47}
-          saved={8.23}
-        />
-
-        <ReceiptCard
-          store="Walmart"
-          date="Jan 18, 2024"
-          items={8}
-          total={38.92}
-          saved={4.15}
-        />
-
-        <ReceiptCard
-          store="Target"
-          date="Jan 15, 2024"
-          items={5}
-          total={28.15}
-          saved={3.50}
-        />
+        {receipts.length === 0 ? (
+          <GlassCard style={styles.receiptCard} innerStyle={styles.emptyReceiptsInner}>
+            <Ionicons name="receipt-outline" size={32} color={colors.textMuted} />
+            <Text style={styles.emptyReceiptsText}>No receipts yet</Text>
+            <Text style={styles.emptyReceiptsSubtext}>Scan your first receipt to start saving!</Text>
+          </GlassCard>
+        ) : (
+          receipts.slice(0, 5).map((receipt) => (
+            <ReceiptCard
+              key={receipt.id}
+              id={receipt.id}
+              store={receipt.store_name}
+              date={formatDate(receipt.scanned_at || receipt.created_at)}
+              items={receipt.items_count}
+              total={receipt.total_amount}
+              saved={receipt.savings_amount}
+            />
+          ))
+        )}
 
         <View style={styles.bottomPadding} />
       </ScrollView>
@@ -167,6 +205,7 @@ export default function HomeScreen() {
 }
 
 interface ReceiptCardProps {
+  id: string
   store: string
   date: string
   items: number
@@ -174,19 +213,16 @@ interface ReceiptCardProps {
   saved: number
 }
 
-function ReceiptCard({ store, date, items, total, saved }: ReceiptCardProps) {
-  // Format date to be shorter (Jan 20)
-  const shortDate = date.replace(', 2024', '').replace(', 2025', '').replace(', 2026', '')
-
+function ReceiptCard({ id, store, date, items, total, saved }: ReceiptCardProps) {
   return (
-    <TouchableOpacity>
+    <TouchableOpacity onPress={() => router.push(`/receipt/${id}`)}>
       <GlassCard style={styles.receiptCard} innerStyle={styles.receiptCardInner}>
         <View style={styles.receiptIcon}>
           <Ionicons name="receipt" size={24} color={colors.primary} />
         </View>
         <View style={styles.receiptInfo}>
           <Text style={styles.receiptStore}>{store}</Text>
-          <Text style={styles.receiptDate} numberOfLines={1}>{shortDate} • {items} items</Text>
+          <Text style={styles.receiptDate} numberOfLines={1}>{date} • {items} items</Text>
         </View>
         <View style={styles.receiptAmount}>
           <Text style={styles.receiptTotal}>${total.toFixed(2)}</Text>
@@ -398,6 +434,31 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xs,
     color: colors.primary,
     marginTop: 2,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: fontSize.base,
+    color: colors.textSecondary,
+    marginTop: spacing.md,
+  },
+  emptyReceiptsInner: {
+    alignItems: 'center',
+    padding: spacing.xl,
+  },
+  emptyReceiptsText: {
+    fontSize: fontSize.base,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginTop: spacing.md,
+  },
+  emptyReceiptsSubtext: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    marginTop: spacing.xs,
   },
   bottomPadding: {
     height: spacing.xxl,
