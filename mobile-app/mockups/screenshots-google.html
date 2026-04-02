@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Julyu - Google Play Screenshots (1080x1920)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto+Mono:wght@400;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #111; font-family: 'Inter', sans-serif; padding: 40px; }
+
+  .page-title { font-family: 'Inter', sans-serif; font-weight: 900; font-size: 48px; color: #22c55e; text-align: center; letter-spacing: 2px; margin-bottom: 8px; }
+  .page-subtitle { text-align: center; color: rgba(255,255,255,0.4); font-size: 14px; margin-bottom: 12px; letter-spacing: 2px; text-transform: uppercase; }
+  .page-spec { text-align: center; color: rgba(255,255,255,0.25); font-family: 'Roboto Mono', monospace; font-size: 13px; margin-bottom: 40px; }
+
+  .instructions { max-width: 900px; margin: 0 auto 40px; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 24px; color: #ccc; font-size: 14px; line-height: 1.6; }
+  .instructions h2 { color: #22c55e; font-family: 'Inter', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: 2px; margin-bottom: 12px; }
+  .instructions strong { color: #fff; }
+  .instructions code { background: #333; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+
+  .slide-label { text-align: center; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 3px; text-transform: uppercase; color: #22c55e; margin-bottom: 20px; }
+  .banner-label { text-align: center; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 3px; text-transform: uppercase; color: #22c55e; margin-bottom: 20px; margin-top: 40px; }
+
+  .screenshot-slide {
+    width: 1080px;
+    height: 1920px;
+    position: relative;
+    overflow: hidden;
+    margin: 0 auto 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Phone frame */
+  .phone-frame {
+    width: 340px;
+    height: 735px;
+    background: #000;
+    border-radius: 40px;
+    overflow: hidden;
+    position: relative;
+    border: 3px solid #2a2a2a;
+    box-shadow: 0 0 0 2px #111, 0 30px 60px rgba(0,0,0,0.6), 0 15px 30px rgba(0,0,0,0.4);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  .phone-frame::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%; transform: translateX(-50%);
+    width: 140px; height: 30px;
+    background: #000;
+    border-radius: 0 0 18px 18px;
+    z-index: 10;
+  }
+
+  .headline { font-family: 'Inter', sans-serif; font-weight: 900; color: #fff; text-align: center; text-transform: uppercase; letter-spacing: 2px; line-height: 1.1; }
+  .headline .accent { color: #000; }
+  .subheadline { font-family: 'Inter', sans-serif; font-weight: 500; color: rgba(255,255,255,0.6); text-align: center; line-height: 1.4; }
+
+  /* Phone internals */
+  .status-bar { height: 44px; padding: 12px 20px 0; display: flex; justify-content: space-between; align-items: center; font-family: 'Roboto Mono', monospace; font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .screen-content { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+  .tab-bar { height: 58px; background: rgba(10,10,10,0.95); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; padding-bottom: 6px; }
+  .tab-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .tab-icon { color: rgba(255,255,255,0.35); }
+  .tab-icon.active { color: #22c55e; }
+  .tab-name { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 8px; letter-spacing: 0.5px; text-transform: uppercase; color: rgba(255,255,255,0.35); }
+  .tab-name.active { color: #22c55e; }
+
+  /* App-specific styles for phone screens */
+  .app-header { display: flex; justify-content: space-between; align-items: center; padding: 4px 14px 6px; }
+  .greeting { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 16px; color: #fff; }
+  .sub-greeting { font-family: 'Inter', sans-serif; font-weight: 400; font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+  .notif-wrap { width: 28px; height: 28px; border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; position: relative; }
+  .notif-wrap svg { width: 15px; height: 15px; }
+  .notif-dot { width: 7px; height: 7px; background: #EF4444; border-radius: 50%; position: absolute; top: -2px; right: -2px; }
+  .savings-card-inner { margin: 6px 14px 10px; background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(34,197,94,0.05)); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px; }
+  .savings-label { font-size: 10px; color: rgba(255,255,255,0.5); }
+  .savings-amount { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 32px; color: #22c55e; margin: 2px 0; letter-spacing: -1px; }
+  .savings-sub { font-size: 10px; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
+  .progress-bg { height: 5px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #22c55e, #16a34a); }
+  .section-label { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px; padding: 8px 14px 4px; color: #fff; }
+  .actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 0 14px; }
+  .action-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .action-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+  .action-icon svg { width: 16px; height: 16px; }
+  .action-label { font-size: 10px; font-weight: 500; color: #fff; }
+  .receipt-row { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .store-box { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .store-box span { font-weight: 700; font-size: 7px; }
+  .receipt-info { flex: 1; }
+  .receipt-store { font-weight: 600; font-size: 11px; color: #fff; }
+  .receipt-meta { font-size: 9px; color: rgba(255,255,255,0.4); }
+  .receipt-amounts { text-align: right; }
+  .receipt-total { font-weight: 600; font-size: 11px; color: #fff; }
+  .receipt-saved { font-size: 9px; color: #22c55e; }
+
+  /* Auth screen */
+  .auth-inner { padding: 14px; display: flex; flex-direction: column; justify-content: center; flex: 1; }
+  .auth-logo-area { text-align: center; margin-bottom: 16px; }
+  .auth-logo-area img { width: 50px; height: 50px; }
+  .auth-logo-area h2 { font-size: 18px; font-weight: 700; color: #fff; margin-top: 4px; }
+  .auth-logo-area p { font-size: 10px; color: rgba(255,255,255,0.5); }
+  .glass-card { background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px; }
+  .card-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+  .card-subtitle { font-size: 10px; color: rgba(255,255,255,0.5); margin-bottom: 12px; }
+  .input-field { display: flex; align-items: center; gap: 8px; background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+  .input-field svg { width: 12px; height: 12px; color: rgba(255,255,255,0.3); flex-shrink: 0; }
+  .input-field span { font-size: 11px; color: rgba(255,255,255,0.25); }
+  .btn-primary { background: linear-gradient(135deg, #22c55e, #16a34a); border: none; border-radius: 10px; padding: 10px; font-weight: 600; font-size: 12px; color: #000; text-align: center; margin-top: 4px; }
+  .divider-row { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+  .divider-line { flex: 1; height: 1px; background: rgba(255,255,255,0.08); }
+  .divider-text { font-size: 9px; color: rgba(255,255,255,0.3); }
+  .social-btns { display: flex; gap: 8px; }
+  .social-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px; font-size: 10px; font-weight: 500; color: #fff; }
+  .social-btn svg { width: 14px; height: 14px; }
+  .auth-footer { text-align: center; padding: 10px; font-size: 10px; color: rgba(255,255,255,0.5); }
+  .auth-footer a { color: #22c55e; text-decoration: none; font-weight: 600; }
+
+  /* Onboarding screen */
+  .onboarding-inner { display: flex; flex-direction: column; flex: 1; padding-top: 44px; }
+  .onboarding-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; text-align: center; }
+  .onboarding-icon { width: 90px; height: 90px; border-radius: 45px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
+  .onboarding-icon svg { width: 40px; height: 40px; }
+  .onboarding-title { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 8px; line-height: 1.2; }
+  .onboarding-subtitle { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.4; max-width: 220px; }
+  .onboarding-bottom { padding: 16px; padding-bottom: 24px; }
+  .onboarding-dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 12px; }
+  .dot { width: 6px; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.2); }
+  .dot.active { width: 18px; background: #22c55e; }
+
+  /* Profile screen */
+  .profile-inner { padding: 44px 0 60px; }
+  .profile-header { text-align: center; padding: 16px; }
+  .profile-avatar { width: 56px; height: 56px; border-radius: 28px; background: linear-gradient(135deg, #22c55e, #16a34a); display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-size: 22px; font-weight: 700; color: #000; }
+  .profile-name { font-size: 16px; font-weight: 700; color: #fff; }
+  .profile-email { font-size: 10px; color: rgba(255,255,255,0.5); }
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; padding: 0 14px; margin: 8px 0; }
+  .stat-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 10px; text-align: center; }
+  .stat-val { font-size: 16px; font-weight: 700; color: #22c55e; }
+  .stat-lbl { font-size: 8px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+  .settings-section { padding: 0 14px; margin-top: 10px; }
+  .settings-title { font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .settings-list { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; overflow: hidden; }
+  .settings-item { display: flex; align-items: center; gap: 8px; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .settings-item:last-child { border-bottom: none; }
+  .settings-icon { width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .settings-icon svg { width: 13px; height: 13px; }
+  .settings-item-label { font-size: 11px; font-weight: 500; color: #fff; flex: 1; }
+  .settings-chevron { color: rgba(255,255,255,0.3); font-size: 14px; }
+
+  /* Store Portal */
+  .store-inner { padding: 44px 0 60px; }
+  .store-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 0 14px; margin-bottom: 10px; }
+  .store-stat { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 10px; }
+  .store-stat-label { font-size: 9px; color: rgba(255,255,255,0.5); margin-bottom: 4px; }
+  .store-stat-value { font-size: 18px; font-weight: 700; }
+  .store-stat-change { font-size: 9px; margin-top: 2px; }
+  .store-stat-change.up { color: #22c55e; }
+  .store-badge-small { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 12px; background: rgba(34,197,94,0.15); font-size: 9px; color: #22c55e; font-weight: 600; }
+  .order-card { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .order-num { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 700; flex-shrink: 0; }
+  .order-name { font-weight: 600; font-size: 11px; color: #fff; }
+  .order-details { font-size: 9px; color: rgba(255,255,255,0.4); }
+  .order-status { padding: 2px 8px; border-radius: 12px; font-size: 9px; font-weight: 600; white-space: nowrap; }
+  .order-status.pending { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .order-status.preparing { background: rgba(59,130,246,0.15); color: #3b82f6; }
+  .order-status.ready { background: rgba(34,197,94,0.15); color: #22c55e; }
+
+  /* Decorative */
+  .deco-circle { position: absolute; border-radius: 50%; border: 3px solid rgba(255,255,255,0.12); }
+  .deco-circle-fill { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.04); }
+  .deco-line { position: absolute; height: 3px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); }
+  .deco-dot { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.25); }
+  .deco-leaf { position: absolute; width: 60px; height: 60px; border-radius: 0 50% 0 50%; border: 3px solid rgba(255,255,255,0.15); transform: rotate(-45deg); }
+
+  .zoom-controls { position: fixed; top: 20px; right: 20px; display: flex; gap: 8px; z-index: 100; }
+  .zoom-btn { background: #22c55e; color: #000; border: none; border-radius: 8px; padding: 8px 16px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; }
+  .zoom-btn:hover { transform: scale(1.05); }
+  .zoom-btn.active { background: #fff; color: #22c55e; }
+</style>
+</head>
+<body>
+
+<div class="zoom-controls">
+  <button class="zoom-btn" onclick="setZoom(0.5)">50%</button>
+  <button class="zoom-btn active" onclick="setZoom(0.65)">65%</button>
+  <button class="zoom-btn" onclick="setZoom(0.85)">85%</button>
+  <button class="zoom-btn" onclick="setZoom(1)">100%</button>
+</div>
+
+<h1 class="page-title">JULYU</h1>
+<p class="page-subtitle">Google Play Store Screenshots</p>
+<p class="page-spec">Phone: 1080 x 1920 px &mdash; JPEG/PNG, no alpha &mdash; up to 8 screenshots</p>
+
+<div class="instructions">
+  <h2>EXPORT INSTRUCTIONS</h2>
+  <p>1. Click <strong>100%</strong> zoom above.</p>
+  <p>2. Right-click a slide and select <strong>Inspect</strong>.</p>
+  <p>3. In DevTools, right-click the <code>.screenshot-slide</code> element and select <strong>Capture node screenshot</strong>.</p>
+  <p>4. Repeat for each slide. Upload the PNGs to Google Play Console.</p>
+  <p style="margin-top:8px;">The Feature Graphic (1024x500) is at the bottom of this page.</p>
+</div>
+
+
+<!-- SLIDE 1: HERO -->
+<div class="slide-label">1 / 6 &mdash; HERO</div>
+<div id="slide-1" class="screenshot-slide" style="background:linear-gradient(165deg,#15803d 0%,#22c55e 40%,#16a34a 100%);">
+  <div class="deco-circle" style="width:300px;height:300px;top:-60px;right:-80px;"></div>
+  <div class="deco-circle" style="width:200px;height:200px;bottom:120px;left:-40px;"></div>
+  <div class="deco-circle-fill" style="width:600px;height:600px;top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+  <div class="deco-leaf" style="top:60px;right:80px;"></div>
+  <div class="deco-leaf" style="bottom:120px;left:60px;width:50px;height:50px;"></div>
+  <div class="deco-dot" style="top:160px;left:150px;"></div>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;">
+    <div style="padding-top:80px;text-align:center;flex-shrink:0;">
+      <div class="headline" style="font-size:60px;margin-bottom:16px;">SAVE SMART.<br><span class="accent">SHOP BETTER.</span></div>
+      <div class="subheadline" style="font-size:20px;">Compare prices across 20+ grocery stores.<br>Scan receipts. Track savings. Powered by AI.</div>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;">
+      <div class="phone-frame" style="transform:scale(1.65);">
+        <div class="status-bar"><span style="font-size:12px;">9:41</span><div style="font-size:10px;color:rgba(255,255,255,0.6);">||||&nbsp;100%</div></div>
+        <div class="screen-content">
+          <div class="app-header">
+            <div><div class="greeting">Good morning, Alex!</div><div class="sub-greeting">Let's save some money today</div></div>
+            <div class="notif-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><div class="notif-dot"></div></div>
+          </div>
+          <div class="savings-card-inner">
+            <div style="display:flex;justify-content:space-between;align-items:center;"><div class="savings-label">This Month's Savings</div><div style="font-size:9px;color:#22c55e;font-weight:600;">+12%</div></div>
+            <div class="savings-amount">$47.32</div>
+            <div class="savings-sub">You're on track for $60 this month!</div>
+            <div class="progress-bg"><div class="progress-fill" style="width:78%;"></div></div>
+          </div>
+          <div class="section-label">Quick Actions</div>
+          <div class="actions-grid">
+            <div class="action-card"><div class="action-icon" style="background:linear-gradient(135deg,#22c55e,#16a34a);"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div><div class="action-label">Scan Receipt</div></div>
+            <div class="action-card"><div class="action-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div><div class="action-label">Lists</div></div>
+            <div class="action-card"><div class="action-icon" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><div class="action-label">Compare</div></div>
+            <div class="action-card"><div class="action-icon" style="background:linear-gradient(135deg,#f97316,#ea580c);"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="action-label">Alerts</div></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px 4px;"><div class="section-label" style="padding:0;">Recent Receipts</div><div style="font-size:10px;color:#22c55e;">See all</div></div>
+          <div class="receipt-row">
+            <div class="store-box" style="background:#fff;"><span style="color:#E21836;font-family:Georgia,serif;font-size:8px;">Kroger</span></div>
+            <div class="receipt-info"><div class="receipt-store">Kroger</div><div class="receipt-meta">Jan 20 - 12 items</div></div>
+            <div class="receipt-amounts"><div class="receipt-total">$52.47</div><div class="receipt-saved">Saved $8.23</div></div>
+          </div>
+          <div class="receipt-row">
+            <div class="store-box" style="background:#0071CE;"><span style="color:#fff;font-size:6px;letter-spacing:0.3px;">Walmart</span></div>
+            <div class="receipt-info"><div class="receipt-store">Walmart</div><div class="receipt-meta">Jan 18 - 8 items</div></div>
+            <div class="receipt-amounts"><div class="receipt-total">$38.92</div><div class="receipt-saved">Saved $4.15</div></div>
+          </div>
+          <div class="receipt-row">
+            <div class="store-box" style="background:#CC0000;"><div style="width:20px;height:20px;border-radius:50%;border:3px solid white;display:flex;align-items:center;justify-content:center;"><div style="width:6px;height:6px;border-radius:50%;background:white;"></div></div></div>
+            <div class="receipt-info"><div class="receipt-store">Target</div><div class="receipt-meta">Jan 15 - 5 items</div></div>
+            <div class="receipt-amounts"><div class="receipt-total">$28.15</div><div class="receipt-saved">Saved $3.50</div></div>
+          </div>
+          <div class="receipt-row">
+            <div class="store-box" style="background:#004F2D;"><span style="color:#fff;font-size:5px;font-weight:800;text-align:center;line-height:1.2;text-transform:uppercase;">WHOLE<br>FOODS</span></div>
+            <div class="receipt-info"><div class="receipt-store">Whole Foods</div><div class="receipt-meta">Jan 12 - 9 items</div></div>
+            <div class="receipt-amounts"><div class="receipt-total">$67.30</div><div class="receipt-saved">Saved $11.45</div></div>
+          </div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab-item"><svg class="tab-icon active" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="tab-name active">Home</span></div>
+          <div class="tab-item"><svg class="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="tab-name">Scan</span></div>
+          <div class="tab-item"><svg class="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span class="tab-name">Lists</span></div>
+          <div class="tab-item"><svg class="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="tab-name">Profile</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding-bottom:60px;flex-shrink:0;text-align:center;">
+      <div style="font-family:'Inter',sans-serif;font-weight:900;font-size:28px;color:#000;letter-spacing:2px;">JULYU</div>
+      <div style="font-family:'Inter',sans-serif;font-weight:500;font-size:16px;color:rgba(255,255,255,0.4);letter-spacing:3px;margin-top:6px;">SAVE SMART. SHOP BETTER.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2: COMPARE PRICES -->
+<div class="slide-label">2 / 6 &mdash; COMPARE PRICES</div>
+<div id="slide-2" class="screenshot-slide" style="background:linear-gradient(170deg,#16a34a 0%,#4ade80 50%,#15803d 100%);">
+  <div class="deco-circle" style="width:350px;height:350px;top:-100px;left:-100px;"></div>
+  <div class="deco-circle" style="width:220px;height:220px;bottom:60px;right:-60px;"></div>
+  <div class="deco-leaf" style="top:100px;left:90px;"></div>
+  <div class="deco-leaf" style="bottom:120px;right:90px;width:70px;height:70px;"></div>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;">
+    <div style="padding-top:90px;text-align:center;flex-shrink:0;">
+      <div class="headline" style="font-size:60px;margin-bottom:16px;">COMPARE<br><span class="accent">EVERY STORE</span></div>
+      <div class="subheadline" style="font-size:20px;">Kroger, Walmart, Target, Whole Foods and more.<br>Find the best deal before you shop.</div>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;">
+      <div class="phone-frame" style="transform:scale(1.65);">
+        <div class="status-bar"><span style="font-size:12px;">9:41</span><div style="font-size:10px;color:rgba(255,255,255,0.6);">||||&nbsp;100%</div></div>
+        <div class="screen-content" style="background:#000;">
+          <!-- Search bar -->
+          <div style="padding:10px 14px 6px;">
+            <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 12px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <span style="font-size:11px;color:rgba(255,255,255,0.25);">Search products...</span>
+            </div>
+          </div>
+          <!-- Product card -->
+          <div style="padding:6px 14px;">
+            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:12px;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                <div style="width:44px;height:44px;border-radius:10px;background:rgba(34,197,94,0.1);display:flex;align-items:center;justify-content:center;">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
+                </div>
+                <div style="flex:1;"><div style="font-weight:700;font-size:13px;color:#fff;">Organic Whole Milk</div><div style="font-size:9px;color:rgba(255,255,255,0.4);margin-top:1px;">1 gallon &bull; Comparing 5 stores</div></div>
+                <div style="background:rgba(34,197,94,0.15);padding:3px 8px;border-radius:10px;font-size:9px;color:#22c55e;font-weight:600;">Save $2.50</div>
+              </div>
+              <!-- Store prices -->
+              <div style="display:flex;flex-direction:column;gap:4px;">
+                <div style="display:flex;align-items:center;gap:8px;padding:8px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:8px;">
+                  <div style="width:26px;height:26px;border-radius:6px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-family:Georgia,serif;font-size:6px;font-weight:700;color:#E21836;">Kroger</span></div>
+                  <div style="flex:1;font-size:11px;font-weight:500;color:#fff;">Kroger</div>
+                  <div style="font-size:9px;color:rgba(255,255,255,0.4);">0.3 mi</div>
+                  <div style="font-size:13px;font-weight:700;color:#22c55e;">$4.29</div>
+                  <div style="background:#22c55e;border-radius:4px;padding:2px 6px;font-size:8px;font-weight:700;color:#000;">BEST</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;padding:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;">
+                  <div style="width:26px;height:26px;border-radius:6px;background:#0071CE;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:5px;font-weight:700;color:#fff;">Walmart</span></div>
+                  <div style="flex:1;font-size:11px;font-weight:500;color:#fff;">Walmart</div>
+                  <div style="font-size:9px;color:rgba(255,255,255,0.4);">1.2 mi</div>
+                  <div style="font-size:13px;font-weight:700;color:#fff;">$4.78</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;padding:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;">
+                  <div style="width:26px;height:26px;border-radius:6px;background:#CC0000;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><div style="width:14px;height:14px;border-radius:50%;border:2px solid white;display:flex;align-items:center;justify-content:center;"><div style="width:4px;height:4px;border-radius:50%;background:white;"></div></div></div>
+                  <div style="flex:1;font-size:11px;font-weight:500;color:#fff;">Target</div>
+                  <div style="font-size:9px;color:rgba(255,255,255,0.4);">0.8 mi</div>
+                  <div style="font-size:13px;font-weight:700;color:#fff;">$5.19</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;padding:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;">
+                  <div style="width:26px;height:26px;border-radius:6px;background:#004F2D;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:4px;font-weight:800;color:#fff;text-align:center;line-height:1.1;text-transform:uppercase;">WHOLE<br>FOODS</span></div>
+                  <div style="flex:1;font-size:11px;font-weight:500;color:#fff;">Whole Foods</div>
+                  <div style="font-size:9px;color:rgba(255,255,255,0.4);">2.1 mi</div>
+                  <div style="font-size:13px;font-weight:700;color:#fff;">$6.49</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;padding:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;">
+                  <div style="width:26px;height:26px;border-radius:6px;background:#E31837;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:5px;font-weight:800;color:#fff;">H-E-B</span></div>
+                  <div style="flex:1;font-size:11px;font-weight:500;color:#fff;">H-E-B</div>
+                  <div style="font-size:9px;color:rgba(255,255,255,0.4);">1.5 mi</div>
+                  <div style="font-size:13px;font-weight:700;color:#fff;">$4.99</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Add to list button -->
+          <div style="padding:6px 14px;">
+            <div class="btn-primary" style="text-align:center;padding:10px;display:flex;align-items:center;justify-content:center;gap:6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add to Shopping List
+            </div>
+          </div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab-item"><svg class="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="tab-name">Home</span></div>
+          <div class="tab-item"><svg class="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="tab-name">Scan</span></div>
+          <div class="tab-item"><svg class="tab-icon active" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span class="tab-name active">Compare</span></div>
+          <div class="tab-item"><svg class="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="tab-name">Profile</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding-bottom:60px;flex-shrink:0;display:flex;gap:50px;">
+      <div style="text-align:center;"><div style="font-family:'Roboto Mono',monospace;font-weight:700;font-size:36px;color:#000;">20+</div><div style="font-family:'Inter',sans-serif;font-weight:600;font-size:14px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:2px;">Stores</div></div>
+      <div style="text-align:center;"><div style="font-family:'Roboto Mono',monospace;font-weight:700;font-size:36px;color:#000;">REAL</div><div style="font-family:'Inter',sans-serif;font-weight:600;font-size:14px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:2px;">Prices</div></div>
+      <div style="text-align:center;"><div style="font-family:'Roboto Mono',monospace;font-weight:700;font-size:36px;color:#000;">FREE</div><div style="font-family:'Inter',sans-serif;font-weight:600;font-size:14px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:2px;">Always</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: SCAN RECEIPTS -->
+<div class="slide-label">3 / 6 &mdash; SCAN RECEIPTS</div>
+<div id="slide-3" class="screenshot-slide" style="background:linear-gradient(160deg,#166534 0%,#22c55e 45%,#15803d 100%);">
+  <div class="deco-circle" style="width:350px;height:350px;bottom:-80px;left:-80px;"></div>
+  <div class="deco-circle" style="width:250px;height:250px;top:60px;right:-60px;"></div>
+  <div class="deco-leaf" style="top:80px;left:60px;width:70px;height:70px;"></div>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;">
+    <div style="padding-top:90px;text-align:center;flex-shrink:0;">
+      <div class="headline" style="font-size:60px;margin-bottom:16px;">SCAN RECEIPTS<br><span class="accent">TRACK SAVINGS</span></div>
+      <div class="subheadline" style="font-size:20px;">Snap a photo of your receipt.<br>Our AI reads it and tracks how much you save.</div>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;">
+      <div class="phone-frame" style="transform:scale(1.65);">
+        <div class="status-bar"><span style="font-size:12px;">9:41</span><div style="font-size:10px;color:rgba(255,255,255,0.6);">||||&nbsp;100%</div></div>
+        <div class="screen-content" style="background:#000;">
+          <!-- Header -->
+          <div style="padding:10px 14px 6px;display:flex;align-items:center;justify-content:space-between;">
+            <div style="font-size:11px;color:#22c55e;">&#8249; Back</div>
+            <div style="font-weight:700;font-size:13px;color:#fff;">Receipt Details</div>
+            <div style="font-size:11px;color:#22c55e;">Share</div>
+          </div>
+          <!-- Receipt card -->
+          <div style="padding:6px 14px;">
+            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:12px;">
+              <!-- Store header -->
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06);">
+                <div style="width:36px;height:36px;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;"><span style="font-family:Georgia,serif;font-size:7px;font-weight:700;color:#E21836;">Kroger</span></div>
+                <div style="flex:1;"><div style="font-weight:700;font-size:13px;color:#fff;">Kroger</div><div style="font-size:9px;color:rgba(255,255,255,0.4);">Jan 20, 2026 &bull; 2:34 PM</div></div>
+                <div style="background:rgba(34,197,94,0.15);padding:3px 8px;border-radius:10px;font-size:9px;color:#22c55e;font-weight:600;">AI Scanned</div>
+              </div>
+              <!-- Items -->
+              <div style="font-size:10px;color:rgba(255,255,255,0.5);font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Items (12)</div>
+              <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:10px;"><span style="color:rgba(255,255,255,0.7);">Organic Whole Milk 1gal</span><span style="color:#fff;font-weight:600;">$4.29</span></div>
+              <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:10px;"><span style="color:rgba(255,255,255,0.7);">Chicken Breast 2lb</span><span style="color:#fff;font-weight:600;">$7.99</span></div>
+              <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:10px;"><span style="color:rgba(255,255,255,0.7);">Avocados (3 pack)</span><span style="color:#fff;font-weight:600;">$4.49</span></div>
+              <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:10px;"><span style="color:rgba(255,255,255,0.7);">Sourdough Bread</span><span style="color:#fff;font-weight:600;">$3.99</span></div>
+              <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:10px;"><span style="color:rgba(255,255,255,0.7);">Bananas (bunch)</span><span style="color:#fff;font-weight:600;">$1.29</span></div>
+              <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:10px;"><span style="color:rgba(255,255,255,0.7);">Greek Yogurt 32oz</span><span style="color:#fff;font-weight:600;">$5.49</span></div>
+              <div style="text-align:center;padding:4px 0;font-size:9px;color:rgba(255,255,255,0.3);">+ 6 more items</div>
+              <!-- Totals -->
+              <div style="margin-top:6px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08);">
+                <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11px;"><span style="color:rgba(255,255,255,0.5);">Subtotal</span><span style="color:#fff;">$56.70</span></div>
+                <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11px;"><span style="color:rgba(255,255,255,0.5);">Store Coupons</span><span style="color:#22c55e;">-$4.23</span></div>
+                <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;font-weight:700;border-top:1px solid rgba(255,255,255,0.08);margin-top:4px;"><span style="color:#fff;">Total Paid</span><span style="color:#fff;">$52.47</span></div>
+              </div>
+            </div>
+          </div>
+          <!-- Savings comparison -->
+          <div style="padding:6px 14px;">
+            <div style="background:linear-gradient(135deg,rgba(34,197,94,0.12),rgba(34,197,94,0.04));border:1px solid rgba(34,197,94,0.2);border-radius:12px;padding:12px;">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                <span style="font-weight:700;font-size:12px;color:#22c55e;">You saved $8.23 on this trip!</span>
+              </div>
+              <div style="font-size:9px;color:rgba(255,255,255,0.5);line-height:1.4;">Compared to average prices across 5 nearby stores. You chose the best store for 9 of 12 items.</div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab-item"><svg class="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="tab-name">Home</span></div>
+          <div class="tab-item"><svg class="tab-icon active" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="tab-name active">Scan</span></div>
+          <div class="tab-item"><svg class="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span class="tab-name">Lists</span></div>
+          <div class="tab-item"><svg class="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="tab-name">Profile</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding-bottom:60px;flex-shrink:0;display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
+      <div style="background:rgba(0,0,0,0.15);border:1px solid rgba(0,0,0,0.3);border-radius:24px;padding:10px 24px;font-family:'Inter',sans-serif;font-weight:700;font-size:16px;color:#000;letter-spacing:1px;">AI POWERED</div>
+      <div style="background:rgba(0,0,0,0.15);border:1px solid rgba(0,0,0,0.3);border-radius:24px;padding:10px 24px;font-family:'Inter',sans-serif;font-weight:700;font-size:16px;color:#000;letter-spacing:1px;">INSTANT</div>
+      <div style="background:rgba(0,0,0,0.15);border:1px solid rgba(0,0,0,0.3);border-radius:24px;padding:10px 24px;font-family:'Inter',sans-serif;font-weight:700;font-size:16px;color:#000;letter-spacing:1px;">AUTOMATIC</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4: JULES AI CHAT -->
+<div class="slide-label">4 / 6 &mdash; JULES AI CHAT</div>
+<div id="slide-5" class="screenshot-slide" style="background:linear-gradient(155deg,#16a34a 0%,#4ade80 45%,#15803d 100%);">
+  <div class="deco-circle" style="width:280px;height:280px;top:30px;right:-70px;"></div>
+  <div class="deco-circle" style="width:350px;height:350px;bottom:-80px;left:-80px;"></div>
+  <div class="deco-leaf" style="bottom:140px;right:80px;width:60px;height:60px;"></div>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;">
+    <div style="padding-top:90px;text-align:center;flex-shrink:0;">
+      <div class="headline" style="font-size:60px;margin-bottom:16px;">ASK <span class="accent">JULES</span><br>ANYTHING</div>
+      <div class="subheadline" style="font-size:20px;">Your AI shopping assistant. Meal plans,<br>budget tips, and smart recommendations.</div>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;">
+      <div class="phone-frame" style="transform:scale(1.65);">
+        <div class="status-bar"><span style="font-size:12px;">9:41</span><div style="font-size:10px;color:rgba(255,255,255,0.6);">||||&nbsp;100%</div></div>
+        <div class="screen-content" style="background:#000;">
+          <!-- Chat header -->
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.06);">
+            <div style="font-size:11px;color:#22c55e;">&#8249; Back</div>
+            <div style="flex:1;text-align:center;">
+              <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
+                <div style="width:24px;height:24px;border-radius:12px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);display:flex;align-items:center;justify-content:center;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div style="font-weight:700;font-size:13px;color:#fff;">Jules</div>
+              </div>
+              <div style="font-size:8px;color:#22c55e;margin-top:1px;">Online</div>
+            </div>
+            <div style="width:30px;"></div>
+          </div>
+          <!-- Chat messages -->
+          <div style="flex:1;padding:10px 14px;display:flex;flex-direction:column;gap:10px;overflow:hidden;">
+            <!-- User message -->
+            <div style="display:flex;justify-content:flex-end;">
+              <div style="max-width:75%;background:linear-gradient(135deg,#22c55e,#16a34a);border-radius:14px 14px 4px 14px;padding:10px 12px;font-size:11px;color:#000;font-weight:500;line-height:1.4;">I need a healthy dinner for a family of 4, budget under $15</div>
+            </div>
+            <!-- Jules response -->
+            <div style="display:flex;gap:6px;align-items:flex-end;">
+              <div style="width:20px;height:20px;border-radius:10px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <div style="max-width:75%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:14px 14px 14px 4px;padding:10px 12px;">
+                <div style="font-size:11px;color:#fff;line-height:1.5;font-weight:400;">Here's a great option! <span style="font-weight:600;">Lemon Herb Chicken with Roasted Veggies:</span></div>
+                <div style="margin-top:6px;font-size:10px;color:rgba(255,255,255,0.6);line-height:1.5;">
+                  <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span>Chicken thighs (2 lb)</span><span style="color:#22c55e;font-weight:600;">$4.99</span></div>
+                  <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span>Broccoli (1 bunch)</span><span style="color:#22c55e;font-weight:600;">$1.79</span></div>
+                  <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span>Sweet potatoes (3)</span><span style="color:#22c55e;font-weight:600;">$2.49</span></div>
+                  <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span>Lemon &amp; herbs</span><span style="color:#22c55e;font-weight:600;">$1.50</span></div>
+                  <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span>Rice (1 bag)</span><span style="color:#22c55e;font-weight:600;">$2.29</span></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-top:6px;padding-top:4px;font-size:11px;font-weight:700;"><span style="color:#fff;">Total</span><span style="color:#22c55e;">$13.06</span></div>
+                <div style="margin-top:2px;font-size:9px;color:rgba(255,255,255,0.4);">Best prices at Kroger (your area)</div>
+              </div>
+            </div>
+            <!-- Jules follow-up -->
+            <div style="display:flex;gap:6px;align-items:flex-end;">
+              <div style="width:20px;height:20px;border-radius:10px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <div style="max-width:75%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:14px 14px 14px 4px;padding:10px 12px;">
+                <div style="font-size:11px;color:#fff;line-height:1.4;">Want me to add these to your shopping list? I also found a $2 coupon for chicken thighs at Kroger!</div>
+                <div style="display:flex;gap:6px;margin-top:8px;">
+                  <div style="flex:1;background:linear-gradient(135deg,#22c55e,#16a34a);border-radius:8px;padding:6px;text-align:center;font-size:10px;font-weight:600;color:#000;">Add to List</div>
+                  <div style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px;text-align:center;font-size:10px;font-weight:500;color:#fff;">More Options</div>
+                </div>
+              </div>
+            </div>
+            <!-- User message 2 -->
+            <div style="display:flex;justify-content:flex-end;">
+              <div style="max-width:75%;background:linear-gradient(135deg,#22c55e,#16a34a);border-radius:14px 14px 4px 14px;padding:10px 12px;font-size:11px;color:#000;font-weight:500;line-height:1.4;">Yes! Add it. What about dessert? Something quick</div>
+            </div>
+            <!-- Jules typing indicator -->
+            <div style="display:flex;gap:6px;align-items:flex-end;">
+              <div style="width:20px;height:20px;border-radius:10px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:14px 14px 14px 4px;padding:10px 16px;display:flex;gap:4px;">
+                <div style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4);animation:pulse 1.4s infinite;"></div>
+                <div style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4);animation:pulse 1.4s infinite 0.2s;"></div>
+                <div style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4);animation:pulse 1.4s infinite 0.4s;"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Chat input bar -->
+          <div style="padding:8px 14px 14px;border-top:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:22px;padding:8px 14px;">
+              <span style="font-size:11px;color:rgba(255,255,255,0.25);flex:1;">Ask Jules anything...</span>
+              <div style="width:28px;height:28px;border-radius:14px;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="padding-bottom:60px;flex-shrink:0;display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
+      <div style="background:rgba(0,0,0,0.15);border:1px solid rgba(0,0,0,0.3);border-radius:24px;padding:10px 24px;font-family:'Inter',sans-serif;font-weight:700;font-size:16px;color:#000;letter-spacing:1px;">MEAL PLANS</div>
+      <div style="background:rgba(0,0,0,0.15);border:1px solid rgba(0,0,0,0.3);border-radius:24px;padding:10px 24px;font-family:'Inter',sans-serif;font-weight:700;font-size:16px;color:#000;letter-spacing:1px;">BUDGET TIPS</div>
+      <div style="background:rgba(0,0,0,0.15);border:1px solid rgba(0,0,0,0.3);border-radius:24px;padding:10px 24px;font-family:'Inter',sans-serif;font-weight:700;font-size:16px;color:#000;letter-spacing:1px;">COUPONS</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 6: FEATURES -->
+<div class="slide-label">5 / 6 &mdash; FEATURES</div>
+<div id="slide-6" class="screenshot-slide" style="background:linear-gradient(170deg,#166534 0%,#22c55e 50%,#16a34a 100%);">
+  <div class="deco-circle" style="width:350px;height:350px;top:-80px;right:-100px;"></div>
+  <div class="deco-circle" style="width:280px;height:280px;bottom:60px;left:-70px;"></div>
+  <div class="deco-leaf" style="top:120px;left:60px;width:70px;height:70px;"></div>
+  <div class="deco-leaf" style="bottom:140px;right:80px;"></div>
+  <div class="deco-line" style="width:220px;top:280px;right:70px;transform:rotate(-5deg);"></div>
+  <div class="deco-dot" style="width:6px;height:6px;top:360px;left:140px;"></div>
+  <div class="deco-dot" style="width:5px;height:5px;bottom:300px;right:180px;"></div>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;padding:0 60px;">
+    <div style="text-align:center;margin-bottom:60px;">
+      <div style="font-family:'Inter',sans-serif;font-weight:900;font-size:72px;color:#fff;line-height:1;letter-spacing:2px;">PACKED WITH<br><span style="color:#000;">FEATURES</span></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:20px;width:100%;max-width:920px;">
+      <!-- Compare Prices -->
+      <div style="display:flex;align-items:center;gap:24px;background:rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px 32px;">
+        <div style="width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <div><div style="font-family:'Inter',sans-serif;font-weight:800;font-size:24px;color:#fff;letter-spacing:1px;margin-bottom:4px;">COMPARE PRICES</div><div style="font-family:'Inter',sans-serif;font-size:17px;color:rgba(0,0,0,0.5);line-height:1.4;">Across 20+ grocery stores in real-time</div></div>
+      </div>
+      <!-- Scan Receipts -->
+      <div style="display:flex;align-items:center;gap:24px;background:rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px 32px;">
+        <div style="width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+        <div><div style="font-family:'Inter',sans-serif;font-weight:800;font-size:24px;color:#fff;letter-spacing:1px;margin-bottom:4px;">SCAN RECEIPTS</div><div style="font-family:'Inter',sans-serif;font-size:17px;color:rgba(0,0,0,0.5);line-height:1.4;">AI-powered receipt reading in seconds</div></div>
+      </div>
+      <!-- Track Savings -->
+      <div style="display:flex;align-items:center;gap:24px;background:rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px 32px;">
+        <div style="width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        </div>
+        <div><div style="font-family:'Inter',sans-serif;font-weight:800;font-size:24px;color:#fff;letter-spacing:1px;margin-bottom:4px;">TRACK SAVINGS</div><div style="font-family:'Inter',sans-serif;font-size:17px;color:rgba(0,0,0,0.5);line-height:1.4;">See exactly how much you save each month</div></div>
+      </div>
+      <!-- AI Assistant -->
+      <div style="display:flex;align-items:center;gap:24px;background:rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px 32px;">
+        <div style="width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div><div style="font-family:'Inter',sans-serif;font-weight:800;font-size:24px;color:#fff;letter-spacing:1px;margin-bottom:4px;">AI ASSISTANT</div><div style="font-family:'Inter',sans-serif;font-size:17px;color:rgba(0,0,0,0.5);line-height:1.4;">Meal plans and smart recommendations</div></div>
+      </div>
+      <!-- Shopping Lists -->
+      <div style="display:flex;align-items:center;gap:24px;background:rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px 32px;">
+        <div style="width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </div>
+        <div><div style="font-family:'Inter',sans-serif;font-weight:800;font-size:24px;color:#fff;letter-spacing:1px;margin-bottom:4px;">SHOPPING LISTS</div><div style="font-family:'Inter',sans-serif;font-size:17px;color:rgba(0,0,0,0.5);line-height:1.4;">Create, organize, and share lists</div></div>
+      </div>
+      <!-- Price Alerts -->
+      <div style="display:flex;align-items:center;gap:24px;background:rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px 32px;">
+        <div style="width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <div><div style="font-family:'Inter',sans-serif;font-weight:800;font-size:24px;color:#fff;letter-spacing:1px;margin-bottom:4px;">PRICE ALERTS</div><div style="font-family:'Inter',sans-serif;font-size:17px;color:rgba(0,0,0,0.5);line-height:1.4;">Get notified when prices drop</div></div>
+      </div>
+      <!-- Store Portal -->
+      <div style="display:flex;align-items:center;gap:24px;background:rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px 32px;">
+        <div style="width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        </div>
+        <div><div style="font-family:'Inter',sans-serif;font-weight:800;font-size:24px;color:#fff;letter-spacing:1px;margin-bottom:4px;">STORE PORTAL</div><div style="font-family:'Inter',sans-serif;font-size:17px;color:rgba(0,0,0,0.5);line-height:1.4;">Built-in tools for store owners</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 7: DOWNLOAD -->
+<div class="slide-label">6 / 6 &mdash; DOWNLOAD</div>
+<div id="slide-7" class="screenshot-slide" style="background:linear-gradient(170deg,#15803d 0%,#22c55e 50%,#15803d 100%);">
+  <div class="deco-circle" style="width:400px;height:400px;top:-80px;right:-100px;border-color:rgba(34,197,94,0.15);"></div>
+  <div class="deco-circle" style="width:280px;height:280px;bottom:60px;left:-60px;"></div>
+  <div class="deco-leaf" style="top:100px;left:80px;width:80px;height:80px;"></div>
+  <div class="deco-leaf" style="bottom:160px;right:100px;width:50px;height:50px;"></div>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;gap:50px;">
+    <div style="text-align:center;">
+      <div class="headline" style="font-size:70px;margin-bottom:20px;">SAVE SMART.<br><span class="accent">SHOP BETTER.</span></div>
+      <div class="subheadline" style="font-size:22px;max-width:700px;margin:0 auto;">Compare prices across 20+ stores. Scan receipts with AI. Track your savings. Meet Jules, your personal shopping assistant.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;align-items:center;">
+      <div style="display:flex;gap:30px;">
+        <div style="text-align:center;"><div style="font-family:'Roboto Mono',monospace;font-weight:700;font-size:36px;color:#000;">20+</div><div style="font-family:'Inter',sans-serif;font-weight:600;font-size:14px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;">Stores</div></div>
+        <div style="text-align:center;"><div style="font-family:'Roboto Mono',monospace;font-weight:700;font-size:36px;color:#000;">AI</div><div style="font-family:'Inter',sans-serif;font-weight:600;font-size:14px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;">Powered</div></div>
+        <div style="text-align:center;"><div style="font-family:'Roboto Mono',monospace;font-weight:700;font-size:36px;color:#000;">FREE</div><div style="font-family:'Inter',sans-serif;font-weight:600;font-size:14px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;">Always</div></div>
+      </div>
+    </div>
+    <div style="font-family:'Inter',sans-serif;font-weight:900;font-size:42px;color:#fff;letter-spacing:3px;">DOWNLOAD <span style="color:#000;">NOW</span></div>
+  </div>
+</div>
+
+
+<!-- FEATURE GRAPHIC -->
+<div class="banner-label">FEATURE GRAPHIC &mdash; 1024 x 500 px</div>
+<div id="slide-banner" style="width:1024px;height:500px;margin:0 auto 60px;position:relative;overflow:hidden;background:linear-gradient(135deg,#15803d 0%,#22c55e 50%,#16a34a 100%);">
+  <div class="deco-circle" style="width:300px;height:300px;top:-80px;right:-50px;"></div>
+  <div class="deco-circle" style="width:200px;height:200px;bottom:-60px;left:-40px;"></div>
+  <div class="deco-leaf" style="top:40px;left:60px;"></div>
+  <div class="deco-leaf" style="bottom:60px;right:80px;width:50px;height:50px;"></div>
+  <div style="position:relative;z-index:2;display:flex;align-items:center;justify-content:center;height:100%;gap:60px;padding:0 60px;">
+    <div style="display:flex;align-items:center;gap:24px;">
+      <div>
+        <div style="font-family:'Inter',sans-serif;font-weight:900;font-size:72px;color:#fff;letter-spacing:3px;line-height:1;">JUL<span style="color:#000;">YU</span></div>
+        <div style="font-family:'Inter',sans-serif;font-weight:500;font-size:20px;color:rgba(255,255,255,0.5);letter-spacing:3px;margin-top:12px;">SAVE SMART. SHOP BETTER.</div>
+      </div>
+    </div>
+    <div style="width:3px;height:200px;background:linear-gradient(180deg,transparent,rgba(34,197,94,0.4),transparent);"></div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div style="font-family:'Inter',sans-serif;font-weight:700;font-size:18px;color:#000;letter-spacing:2px;display:flex;align-items:center;gap:10px;"><span style="width:8px;height:8px;background:#000;border-radius:50%;display:inline-block;"></span> COMPARE PRICES</div>
+      <div style="font-family:'Inter',sans-serif;font-weight:700;font-size:18px;color:#000;letter-spacing:2px;display:flex;align-items:center;gap:10px;"><span style="width:8px;height:8px;background:#000;border-radius:50%;display:inline-block;"></span> SCAN RECEIPTS</div>
+      <div style="font-family:'Inter',sans-serif;font-weight:700;font-size:18px;color:#000;letter-spacing:2px;display:flex;align-items:center;gap:10px;"><span style="width:8px;height:8px;background:#000;border-radius:50%;display:inline-block;"></span> AI ASSISTANT</div>
+      <div style="font-family:'Inter',sans-serif;font-weight:700;font-size:18px;color:#000;letter-spacing:2px;display:flex;align-items:center;gap:10px;"><span style="width:8px;height:8px;background:#000;border-radius:50%;display:inline-block;"></span> STORE PORTAL</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function setZoom(level) {
+  document.querySelectorAll('.screenshot-slide').forEach(function(el) {
+    el.style.transform = 'scale(' + level + ')';
+    el.style.transformOrigin = 'top center';
+    el.style.marginBottom = (-(1920 * (1 - level)) + 60) + 'px';
+  });
+  var banner = document.getElementById('slide-banner');
+  if (banner) {
+    banner.style.transform = 'scale(' + level + ')';
+    banner.style.transformOrigin = 'top center';
+    banner.style.marginBottom = (-(500 * (1 - level)) + 60) + 'px';
+  }
+  document.querySelectorAll('.zoom-btn').forEach(function(btn) { btn.classList.remove('active'); });
+  event.target.classList.add('active');
+}
+window.addEventListener('load', function() {
+  document.querySelectorAll('.screenshot-slide').forEach(function(el) {
+    el.style.transform = 'scale(0.65)';
+    el.style.transformOrigin = 'top center';
+    el.style.marginBottom = (-(1920 * 0.35) + 60) + 'px';
+  });
+  var banner = document.getElementById('slide-banner');
+  if (banner) {
+    banner.style.transform = 'scale(0.65)';
+    banner.style.transformOrigin = 'top center';
+    banner.style.marginBottom = (-(500 * 0.35) + 60) + 'px';
+  }
+});
+</script>
+</body>
+</html>
