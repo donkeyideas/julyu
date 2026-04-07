@@ -13,39 +13,69 @@
  */
 
 import * as admin from 'firebase-admin'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 
 // ============================================
-// Firebase Admin Initialization
+// Firebase Admin Initialization (DB-first)
 // ============================================
 
 let firebaseApp: admin.app.App | null = null
 
-function getFirebaseAdmin(): admin.app.App | null {
-  if (firebaseApp) {
-    return firebaseApp
+async function getServiceAccount(): Promise<admin.ServiceAccount | null> {
+  // 1. Try admin_settings table (DB-first)
+  try {
+    const supabase = createServiceRoleClient() as any
+    const { data } = await supabase
+      .from('admin_settings')
+      .select('value')
+      .eq('key', 'FIREBASE_SERVICE_ACCOUNT')
+      .single()
+
+    if (data?.value) {
+      const parsed = typeof data.value === 'string' ? JSON.parse(data.value) : data.value
+      if (parsed?.project_id) {
+        console.log('[PushNotifications] Loaded service account from DB')
+        return parsed
+      }
+    }
+  } catch (err) {
+    console.warn('[PushNotifications] DB lookup failed, trying env vars:', (err as Error).message)
   }
 
+  // 2. Try FIREBASE_SERVICE_ACCOUNT env var (full JSON)
+  const json = process.env.FIREBASE_SERVICE_ACCOUNT
+  if (json) {
+    try {
+      const parsed = JSON.parse(json)
+      if (parsed?.project_id) return parsed
+    } catch { /* fall through */ }
+  }
+
+  // 3. Try individual env vars (legacy)
   const projectId = process.env.FIREBASE_PROJECT_ID
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL
   const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')
-
-  if (!projectId || !clientEmail || !privateKey) {
-    console.warn('[PushNotifications] Firebase credentials not configured')
-    return null
+  if (projectId && clientEmail && privateKey) {
+    return { projectId, clientEmail, privateKey } as admin.ServiceAccount
   }
+
+  console.warn('[PushNotifications] Firebase credentials not configured')
+  return null
+}
+
+async function getFirebaseAdmin(): Promise<admin.app.App | null> {
+  if (firebaseApp) return firebaseApp
+
+  const serviceAccount = await getServiceAccount()
+  if (!serviceAccount) return null
 
   try {
     firebaseApp = admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId,
-        clientEmail,
-        privateKey,
-      }),
+      credential: admin.credential.cert(serviceAccount),
     })
     console.log('[PushNotifications] Firebase Admin initialized')
     return firebaseApp
   } catch (error) {
-    // App may already be initialized
     if ((error as Error).message?.includes('already exists')) {
       firebaseApp = admin.app()
       return firebaseApp
@@ -85,7 +115,7 @@ export async function sendPushNotification(
   deviceToken: string,
   payload: PushNotificationPayload
 ): Promise<NotificationResult> {
-  const app = getFirebaseAdmin()
+  const app = await getFirebaseAdmin()
 
   if (!app) {
     return { success: false, error: 'Firebase not configured' }
@@ -135,7 +165,7 @@ export async function sendPushNotificationToMany(
   deviceTokens: string[],
   payload: PushNotificationPayload
 ): Promise<{ successCount: number; failureCount: number }> {
-  const app = getFirebaseAdmin()
+  const app = await getFirebaseAdmin()
 
   if (!app) {
     return { successCount: 0, failureCount: deviceTokens.length }
