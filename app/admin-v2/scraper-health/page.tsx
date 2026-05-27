@@ -365,7 +365,7 @@ export default function ScraperHealthPage() {
                       )}
                     </td>
                     <td className="p-3 text-xs" style={{ color: 'var(--text-muted)' }}>
-                      {e.query && <span>"{e.query}"</span>}
+                      {e.query && <span>&quot;{e.query}&quot;</span>}
                       {e.query && e.zip && <span> · </span>}
                       {e.zip && <span>{e.zip}</span>}
                     </td>

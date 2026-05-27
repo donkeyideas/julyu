@@ -337,8 +337,6 @@ export async function sendPriceAlertPush(
 // Device Token Management
 // ============================================
 
-import { createServiceRoleClient } from '@/lib/supabase/server'
-
 /**
  * Register a device token for a user
  */

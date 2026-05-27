@@ -206,27 +206,27 @@ export default async function TermsPage() {
               <p className="text-gray-300 leading-relaxed mb-4">{acceptableUseIntro}</p>
               <ul className="space-y-2 text-gray-300">
                 <li className="flex items-start gap-3">
-                  <span className="text-red-400 font-bold text-xs uppercase tracking-wider">Don't</span>
+                  <span className="text-red-400 font-bold text-xs uppercase tracking-wider">Avoid</span>
                   <span>{acceptableUse1}</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-red-400 font-bold text-xs uppercase tracking-wider">Don't</span>
+                  <span className="text-red-400 font-bold text-xs uppercase tracking-wider">Avoid</span>
                   <span>{acceptableUse2}</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-red-400 font-bold text-xs uppercase tracking-wider">Don't</span>
+                  <span className="text-red-400 font-bold text-xs uppercase tracking-wider">Avoid</span>
                   <span>{acceptableUse3}</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-red-400 font-bold text-xs uppercase tracking-wider">Don't</span>
+                  <span className="text-red-400 font-bold text-xs uppercase tracking-wider">Avoid</span>
                   <span>{acceptableUse4}</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-red-400 font-bold text-xs uppercase tracking-wider">Don't</span>
+                  <span className="text-red-400 font-bold text-xs uppercase tracking-wider">Avoid</span>
                   <span>{acceptableUse5}</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-red-400 font-bold text-xs uppercase tracking-wider">Don't</span>
+                  <span className="text-red-400 font-bold text-xs uppercase tracking-wider">Avoid</span>
                   <span>{acceptableUse6}</span>
                 </li>
               </ul>
