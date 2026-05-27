@@ -20,7 +20,6 @@ interface Insight {
   title: string
   description: string
   potentialSavings: number
-  icon: string
 }
 
 const INSIGHTS: Insight[] = [
@@ -30,7 +29,6 @@ const INSIGHTS: Insight[] = [
     title: 'Switch to ALDI for dairy products',
     description: 'Based on your last 3 months of purchases, you could save an average of $4.82 per trip by buying dairy items at ALDI instead of Publix.',
     potentialSavings: 19.28,
-    icon: '💡',
   },
   {
     id: '2',
@@ -38,7 +36,6 @@ const INSIGHTS: Insight[] = [
     title: 'Your meat spending is trending up',
     description: "You've spent 18% more on meat and seafood this month compared to your 3-month average. Consider buying family packs at Kroger.",
     potentialSavings: 24.50,
-    icon: '📈',
   },
   {
     id: '3',
@@ -46,7 +43,6 @@ const INSIGHTS: Insight[] = [
     title: 'Kroger BOGO on chicken breast this week',
     description: 'Kroger is running a buy-one-get-one-free deal on boneless chicken breast through this weekend. Since you buy chicken weekly, stock up!',
     potentialSavings: 9.98,
-    icon: '🏷️',
   },
   {
     id: '4',
@@ -54,7 +50,6 @@ const INSIGHTS: Insight[] = [
     title: 'Buy produce at local farmers market',
     description: "You spend an average of $58 on produce per week. Seasonal fruits and vegetables at farmers markets are typically 15-25% cheaper.",
     potentialSavings: 14.50,
-    icon: '🥬',
   },
   {
     id: '5',
@@ -62,7 +57,6 @@ const INSIGHTS: Insight[] = [
     title: 'Your snack spending has decreased',
     description: "Great job! You've cut snack and beverage spending by 12% over the last 2 months by switching to store brands.",
     potentialSavings: 0,
-    icon: '🎉',
   },
   {
     id: '6',
@@ -70,7 +64,6 @@ const INSIGHTS: Insight[] = [
     title: 'Stock up on pasta at Target this week',
     description: 'Target has Barilla pasta on sale for $0.99 per box (normally $1.89). Your purchase history shows you buy pasta every 2 weeks.',
     potentialSavings: 5.40,
-    icon: '🍝',
   },
 ]
 
@@ -144,7 +137,6 @@ export default function DemoInsightsPage() {
               style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
             >
               <div className="flex items-start gap-3 mb-3">
-                <span className="text-2xl">{insight.icon}</span>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span

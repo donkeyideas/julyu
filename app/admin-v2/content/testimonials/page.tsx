@@ -362,7 +362,7 @@ export default function TestimonialsPage() {
       {/* Testimonials List */}
       {testimonials.length === 0 ? (
         <div className="rounded-xl p-12 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-          <div className="text-6xl mb-4">💬</div>
+          <div className="text-xs font-semibold mb-4 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Empty</div>
           <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>No testimonials yet</h3>
           <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>Add your first testimonial to display on the homepage</p>
           <button

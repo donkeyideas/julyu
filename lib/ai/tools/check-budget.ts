@@ -75,7 +75,7 @@ async function execute(
     const pct = ((totalSpentFromReceipts / overallBudget) * 100).toFixed(0)
     message += `Overall: $${totalSpentFromReceipts.toFixed(2)} / $${overallBudget.toFixed(2)} (${pct}% used, $${remaining.toFixed(2)} remaining)`
     if (remaining < overallBudget * 0.2) {
-      message += ' ⚠️ Budget is running low!'
+      message += ' Note: Budget is running low.'
     }
   } else {
     message += `Total spent: $${totalSpentFromReceipts.toFixed(2)} (no monthly budget set)`

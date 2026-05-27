@@ -41,7 +41,7 @@ export default function InstacartAPIPage() {
       {/* Status Banner */}
       <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-6 mb-8">
         <div className="flex items-start gap-4">
-          <div className="text-3xl">🚧</div>
+          <div className="text-xs font-bold uppercase tracking-wider text-yellow-400 px-2 py-1 rounded bg-yellow-500/20">Pending</div>
           <div>
             <h3 className="text-lg font-semibold text-yellow-400 mb-2">Integration Pending</h3>
             <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>
@@ -130,7 +130,7 @@ export default function InstacartAPIPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-            <div className="text-2xl mb-2">🏪</div>
+            <div className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Coverage</div>
             <h4 className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>50+ Retailers</h4>
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
               Access pricing from Kroger, Costco, Safeway, Publix, and many more
@@ -138,7 +138,7 @@ export default function InstacartAPIPage() {
           </div>
 
           <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-            <div className="text-2xl mb-2">⚡</div>
+            <div className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Speed</div>
             <h4 className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Real-Time Prices</h4>
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
               Get up-to-the-minute pricing and availability data
@@ -146,7 +146,7 @@ export default function InstacartAPIPage() {
           </div>
 
           <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-            <div className="text-2xl mb-2">📍</div>
+            <div className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Local</div>
             <h4 className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Location-Based</h4>
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
               Prices specific to user location and nearby stores
@@ -154,7 +154,7 @@ export default function InstacartAPIPage() {
           </div>
 
           <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-            <div className="text-2xl mb-2">🔗</div>
+            <div className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Checkout</div>
             <h4 className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Direct Ordering</h4>
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
               Enable users to order directly through Instacart

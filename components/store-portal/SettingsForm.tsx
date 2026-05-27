@@ -94,10 +94,10 @@ export default function SettingsForm({ initialStoreOwner, initialStore }: Props)
       // Show detailed success message with verification status
       let successMsg = 'Store information updated successfully!'
       if (data.verified) {
-        successMsg += ' ✓ Store is now verified and visible to customers.'
+        successMsg += ' Store is now verified and visible to customers.'
       }
       if (data.hasCoordinates) {
-        successMsg += ' ✓ Location coordinates updated.'
+        successMsg += ' Location coordinates updated.'
       }
       setSuccess(successMsg)
       router.refresh()

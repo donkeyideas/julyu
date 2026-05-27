@@ -320,7 +320,10 @@ function calculateContentClarity(text: string, h1Values: string[], h2Count: numb
   }
 
   // Has lists or structured content (up to 20 points)
-  if (text.includes('•') || text.includes('✓') || text.includes('✔')) score += 10
+  // Detect bullet-style list markers in the user's content. The bullet glyph
+  // (U+2022) is a typographic character common in CMS-pasted content; the
+  // platform's own UI never outputs it.
+  if (text.includes('•')) score += 10
   if (h2Count >= 3) score += 10
 
   return Math.min(100, score)
@@ -516,7 +519,7 @@ function calculateDirectAnswerReadiness(bodyText: string, html: string): number 
   // Numbered/bulleted lists (up to 25 points)
   const hasOl = /<ol[\s>]/i.test(html)
   const hasUl = /<ul[\s>]/i.test(html)
-  const hasBullets = lower.includes('•') || lower.includes('✓')
+  const hasBullets = lower.includes('•')
   if (hasOl) score += 10
   if (hasUl) score += 10
   if (hasBullets) score += 5

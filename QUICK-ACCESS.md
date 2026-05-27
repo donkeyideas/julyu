@@ -1,4 +1,4 @@
-# 🚀 Quick Access Guide - Test Auth (No Supabase)
+#  Quick Access Guide - Test Auth (No Supabase)
 
 ## Direct URLs
 
@@ -14,7 +14,7 @@ http://localhost:3825/admin
 
 ---
 
-## ⚡ Fastest Way to Test
+##  Fastest Way to Test
 
 ### 1. Start Server
 ```powershell
@@ -42,25 +42,25 @@ npm run dev
 
 **Admin Dashboard:**
 - Go to: http://localhost:3825/admin
-- ✅ Test user has enterprise tier (admin access)
-- ✅ New users default to free tier (can still access admin for testing)
+-  Test user has enterprise tier (admin access)
+-  New users default to free tier (can still access admin for testing)
 
 ---
 
-## ✅ What Works
+##  What Works
 
-- ✅ **No Supabase required** - Uses test authentication
-- ✅ **All pages accessible** - User and admin dashboards
-- ✅ **Session persists** - Stored in browser localStorage
-- ✅ **Sign up/Login** - Any email/password works
+-  **No Supabase required** - Uses test authentication
+-  **All pages accessible** - User and admin dashboards
+-  **Session persists** - Stored in browser localStorage
+-  **Sign up/Login** - Any email/password works
 
 ---
 
-## 🔄 When You Add Supabase
+##  When You Add Supabase
 
 Once you configure Supabase in `.env.local`, the app automatically switches from test auth to real Supabase. No code changes needed!
 
 ---
 
-**That's it! Both dashboards are accessible without Supabase!** ✅
+**That's it! Both dashboards are accessible without Supabase!** 
 

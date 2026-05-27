@@ -61,6 +61,28 @@ interface ProductResult {
   price: number | null
   imageUrl?: string
   available: boolean
+  // Per-unit comparison fields (set by the equivalence engine)
+  pricePerUnitFormatted?: string | null
+  sizeLabel?: string | null
+  // Phase 3 — deal context surfaced from Flipp / classifier
+  dealCondition?: string | null
+  validTo?: string | null
+  hasConditionalPricing?: boolean
+}
+
+interface StoreItemRow {
+  userInput: string
+  product: {
+    id?: string
+    name: string
+    brand?: string
+    imageUrl?: string
+    price?: { regular?: number; sale?: number }
+  } | null
+  price: number | null
+  pricePerUnit?: number | null
+  pricePerUnitFormatted?: string | null
+  sizeLabel?: string | null
 }
 
 interface StoreOption {
@@ -73,7 +95,35 @@ interface StoreOption {
   }
   total: number
   savings?: number
-  items: any[]
+  items: StoreItemRow[]
+}
+
+// Per-store item counts derived from items[] (the API doesn't surface them on
+// bestOption/alternatives layers, only on the underlying storeResults).
+function countItems(items: StoreItemRow[] | undefined): { found: number; total: number } {
+  if (!items || items.length === 0) return { found: 0, total: 0 }
+  const found = items.filter((i) => i.price !== null && i.price !== undefined).length
+  return { found, total: items.length }
+}
+
+// Pick a short, user-readable source label for an "address" string we emit
+// from the analyze route. Determines the badge color too.
+function sourceLabelFor(address?: string): { label: string; tone: 'live' | 'ad' | 'online' | 'user' | null } {
+  if (!address) return { label: '', tone: null }
+  if (address.startsWith('Weekly ad')) return { label: 'Weekly Ad', tone: 'ad' }
+  if (address.startsWith('Online')) return { label: 'Online', tone: 'online' }
+  if (address.startsWith('User-reported')) return { label: 'User-Reported', tone: 'user' }
+  return { label: 'Live Price', tone: 'live' }
+}
+
+// Human-readable "why this is missing" text per source type. "Not at this store"
+// is misleading — Meijer DOES sell milk, it's just not in their weekly flyer.
+function missingItemLabel(address?: string): string {
+  if (!address) return 'Not found'
+  if (address.startsWith('Weekly ad')) return "Not in this week's ad"
+  if (address.startsWith('Online')) return 'Not in online catalog'
+  if (address.startsWith('User-reported')) return 'No recent user reports'
+  return 'Not stocked here'
 }
 
 interface AnalyzeResult {
@@ -503,7 +553,7 @@ function ComparePageContent() {
     const items = store.items
       ?.filter(item => item.price && item.product?.id) // Only items with valid Kroger product IDs
       .map(item => ({
-        productId: item.product.id,
+        productId: item.product!.id!,
         quantity: 1
       })) || []
 
@@ -654,6 +704,11 @@ function ComparePageContent() {
       price: item.price,
       imageUrl: item.product?.imageUrl || null,
       available: item.price !== null,
+      pricePerUnitFormatted: item.pricePerUnitFormatted || null,
+      sizeLabel: item.sizeLabel || null,
+      dealCondition: item.dealCondition || null,
+      validTo: item.validTo || null,
+      hasConditionalPricing: Boolean(item.hasConditionalPricing),
     }))
 
     setStoreDetails({
@@ -885,7 +940,10 @@ function ComparePageContent() {
                 </tr>
               </thead>
               <tbody>
-                {results.bestOption && (
+                {results.bestOption && (() => {
+                  const counts = countItems(results.bestOption.items)
+                  const src = sourceLabelFor(results.bestOption.store.address)
+                  return (
                   <tr className="hover:opacity-80 bg-green-500/5" style={{ borderTop: '1px solid var(--border-color)' }}>
                     <td className="p-4">
                       <div className="flex items-center gap-3">
@@ -895,14 +953,25 @@ function ComparePageContent() {
                             <span className="text-xs bg-green-500 text-black px-2 py-0.5 rounded font-bold">BEST</span>
                             <strong style={{ color: 'var(--accent-primary)' }}>{results.bestOption.store.name}</strong>
                           </div>
-                          <div className="text-sm" style={{ color: 'var(--text-muted)' }}>{results.bestOption.store.retailer}</div>
+                          <div className="text-sm flex items-center gap-2 mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                            <span>{results.bestOption.store.retailer}</span>
+                            {src.label && (
+                              <span className={
+                                'text-[10px] px-1.5 py-0.5 rounded font-semibold ' +
+                                (src.tone === 'ad' ? 'bg-amber-500/15 text-amber-400' :
+                                 src.tone === 'live' ? 'bg-green-500/15 text-green-400' :
+                                 src.tone === 'online' ? 'bg-blue-500/15 text-blue-400' :
+                                 'bg-purple-500/15 text-purple-400')
+                              }>{src.label}</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </td>
                     <td className="p-4" style={{ color: 'var(--text-secondary)' }}>
-                      {results.bestOption.store.distance ? `${results.bestOption.store.distance} mi` : 'N/A'}
+                      {results.bestOption.store.distance ? `${results.bestOption.store.distance} mi` : '—'}
                     </td>
-                    <td className="p-4" style={{ color: 'var(--text-primary)' }}>{results.summary?.itemsFound || 0}/{results.summary?.totalItems || 0}</td>
+                    <td className="p-4" style={{ color: 'var(--text-primary)' }}>{counts.found}/{counts.total}</td>
                     <td className="p-4 font-bold text-xl" style={{ color: 'var(--accent-primary)' }}>${results.bestOption.total?.toFixed(2)}</td>
                     <td className="p-4">
                       <div className="flex gap-2">
@@ -929,22 +998,37 @@ function ComparePageContent() {
                       </div>
                     </td>
                   </tr>
-                )}
-                {results.alternatives?.map((alt, idx) => (
+                  )
+                })()}
+                {results.alternatives?.map((alt, idx) => {
+                  const counts = countItems(alt.items)
+                  const src = sourceLabelFor(alt.store.address)
+                  return (
                   <tr key={idx} className="hover:opacity-80" style={{ borderTop: '1px solid var(--border-color)' }}>
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <StoreLogo name={alt.store.retailer || alt.store.name} size={32} />
                         <div>
                           <strong style={{ color: 'var(--text-primary)' }}>{alt.store.name}</strong>
-                          <div className="text-sm" style={{ color: 'var(--text-muted)' }}>{alt.store.retailer}</div>
+                          <div className="text-sm flex items-center gap-2 mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                            <span>{alt.store.retailer}</span>
+                            {src.label && (
+                              <span className={
+                                'text-[10px] px-1.5 py-0.5 rounded font-semibold ' +
+                                (src.tone === 'ad' ? 'bg-amber-500/15 text-amber-400' :
+                                 src.tone === 'live' ? 'bg-green-500/15 text-green-400' :
+                                 src.tone === 'online' ? 'bg-blue-500/15 text-blue-400' :
+                                 'bg-purple-500/15 text-purple-400')
+                              }>{src.label}</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </td>
                     <td className="p-4" style={{ color: 'var(--text-secondary)' }}>
-                      {alt.store.distance ? `${alt.store.distance} mi` : 'N/A'}
+                      {alt.store.distance ? `${alt.store.distance} mi` : '—'}
                     </td>
-                    <td className="p-4" style={{ color: 'var(--text-primary)' }}>{results.summary?.itemsFound || 0}/{results.summary?.totalItems || 0}</td>
+                    <td className="p-4" style={{ color: 'var(--text-primary)' }}>{counts.found}/{counts.total}</td>
                     <td className="p-4 font-bold" style={{ color: 'var(--text-primary)' }}>${alt.total?.toFixed(2)}</td>
                     <td className="p-4">
                       <div className="flex gap-2">
@@ -971,7 +1055,8 @@ function ComparePageContent() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -1111,26 +1196,83 @@ function ComparePageContent() {
 
               <h4 className="font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Items at this store:</h4>
               <div className="space-y-3">
-                {storeDetails.products.map((product, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-                    <div className="flex items-center gap-3">
-                      {product.imageUrl && (
-                        <img src={product.imageUrl} alt="" className="w-10 h-10 object-cover rounded" />
+                {storeDetails.products.map((product, idx) => {
+                  // Compute a human-readable "valid through" string for weekly-ad items.
+                  let validThrough: string | null = null
+                  if (product.validTo) {
+                    try {
+                      const d = new Date(product.validTo)
+                      if (!isNaN(d.getTime())) {
+                        validThrough = d.toLocaleDateString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                        })
+                      }
+                    } catch { /* ignore */ }
+                  }
+                  return (
+                  <div key={idx} className="flex items-start justify-between gap-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      {product.imageUrl ? (
+                        <img src={product.imageUrl} alt="" className="w-12 h-12 object-cover rounded flex-shrink-0" />
+                      ) : (
+                        <div className="w-12 h-12 rounded flex-shrink-0" style={{ backgroundColor: 'var(--bg-primary)' }} />
                       )}
-                      <div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs uppercase mb-0.5" style={{ color: 'var(--text-muted)' }}>You asked for: {product.userInput}</div>
                         <div className="font-medium" style={{ color: 'var(--text-primary)' }}>{product.name}</div>
-                        <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{product.brand || 'Generic'}</div>
+                        <div className="text-xs flex items-center gap-2 mt-1 flex-wrap" style={{ color: 'var(--text-muted)' }}>
+                          {product.brand && <span>{product.brand}</span>}
+                          {product.sizeLabel && (
+                            <span className="px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--bg-primary)' }}>
+                              {product.sizeLabel}
+                            </span>
+                          )}
+                          {validThrough && (
+                            <span className="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400">
+                              Valid through {validThrough}
+                            </span>
+                          )}
+                        </div>
+                        {product.dealCondition && (
+                          <div className="text-xs mt-1.5 px-2 py-1 rounded inline-block bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                            <span className="font-bold mr-1">Note:</span>{product.dealCondition}
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex-shrink-0">
                       {product.available ? (
-                        <div className="font-bold" style={{ color: 'var(--text-primary)' }}>${product.price?.toFixed(2) || '-'}</div>
+                        <>
+                          <div className="font-bold" style={{ color: 'var(--text-primary)' }}>${product.price?.toFixed(2) || '-'}</div>
+                          {product.pricePerUnitFormatted ? (
+                            <div className="text-xs mt-0.5" style={{ color: 'var(--accent-primary)' }}>
+                              {product.pricePerUnitFormatted}
+                            </div>
+                          ) : product.hasConditionalPricing ? (
+                            <div className="text-xs mt-0.5 italic" style={{ color: 'var(--text-muted)' }}>
+                              conditional
+                            </div>
+                          ) : null}
+                        </>
                       ) : (
-                        <div className="text-red-500 text-sm">Not available</div>
+                        <div className="flex flex-col items-end gap-1">
+                          <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                            {missingItemLabel(storeDetails.store?.store.address)}
+                          </div>
+                          <a
+                            href="/dashboard/receipts/scan"
+                            className="text-[11px] px-2 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/30 hover:bg-green-500/20 transition"
+                            title="Help fill in this price — scan a receipt from this store"
+                          >
+                            Scan a receipt
+                          </a>
+                        </div>
                       )}
                     </div>
                   </div>
-                ))}
+                  )
+                })}
               </div>
 
               <div className="mt-6 flex gap-3">

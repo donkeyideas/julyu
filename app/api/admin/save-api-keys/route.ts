@@ -287,9 +287,9 @@ export async function POST(request: NextRequest) {
           console.log('[Save API Keys] Verification - decrypted starts with:', verifyDecrypted.substring(0, 10))
           
           if (verifyDecrypted === trimmedKey) {
-            console.log('[Save API Keys] ✅ Verification passed - key stored correctly')
+            console.log('[Save API Keys] Verification passed - key stored correctly')
           } else {
-            console.error('[Save API Keys] ❌ Verification failed - stored key does not match!')
+            console.error('[Save API Keys] Verification failed - stored key does not match!')
             console.error('[Save API Keys] Original (first 30):', trimmedKey.substring(0, 30))
             console.error('[Save API Keys] Decrypted (first 30):', verifyDecrypted.substring(0, 30))
             // Don't fail the save - just log the error

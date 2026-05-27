@@ -1,4 +1,4 @@
-# 🤖 AI System Setup Guide
+#  AI System Setup Guide
 
 ## Overview
 
@@ -13,7 +13,7 @@ All AI calls are tracked for:
 
 ---
 
-## 🔑 API Key Configuration
+##  API Key Configuration
 
 ### 1. Get API Keys
 
@@ -43,14 +43,14 @@ DEEPSEEK_BASE_URL=https://api.deepseek.com
 ### 3. Configure in Admin Panel
 
 1. Go to Admin Dashboard → AI Models
-2. Click "🔑 Configure API Keys"
+2. Click " Configure API Keys"
 3. Enter your API keys
-4. Click "💾 Save API Keys"
+4. Click " Save API Keys"
 5. Test connection using "Test Connection" button
 
 ---
 
-## 📊 Database Setup
+##  Database Setup
 
 ### Run AI Tracking Schema
 
@@ -67,30 +67,30 @@ This creates:
 
 ---
 
-## 🔄 How It Works
+##  How It Works
 
 ### 1. API Call Flow
 
 ```
 User Request
-    ↓
+ ↓
 API Route (/api/ai/match-products or /api/receipts/scan)
-    ↓
+ ↓
 AI Client (DeepSeek or OpenAI)
-    ↓
+ ↓
 AI Tracker (logs usage, cost, training data)
-    ↓
+ ↓
 Response to User
 ```
 
 ### 2. Usage Tracking
 
 Every API call automatically:
-- ✅ Logs to `ai_model_usage` table
-- ✅ Calculates cost based on tokens
-- ✅ Tracks response time
-- ✅ Stores request/response payloads
-- ✅ Records success/failure
+-  Logs to `ai_model_usage` table
+-  Calculates cost based on tokens
+-  Tracks response time
+-  Stores request/response payloads
+-  Records success/failure
 
 ### 3. Training Data Collection
 
@@ -104,7 +104,7 @@ This data will be used to train custom LLM models in the future.
 
 ---
 
-## 📈 Monitoring & Analytics
+##  Monitoring & Analytics
 
 ### AI Models Page
 - View all configured models
@@ -121,40 +121,40 @@ This data will be used to train custom LLM models in the future.
 
 ---
 
-## 🧠 Making the LLM Smart
+##  Making the LLM Smart
 
 ### Current System
 
 1. **Data Collection:**
-   - All AI inputs/outputs stored
-   - User feedback captured
-   - Accuracy scores tracked
+ - All AI inputs/outputs stored
+ - User feedback captured
+ - Accuracy scores tracked
 
 2. **Performance Tracking:**
-   - Response times monitored
-   - Success rates calculated
-   - Cost per request analyzed
+ - Response times monitored
+ - Success rates calculated
+ - Cost per request analyzed
 
 ### Future Enhancements
 
 1. **Custom Model Training:**
-   - Use collected training data
-   - Fine-tune models for specific use cases
-   - Improve accuracy over time
+ - Use collected training data
+ - Fine-tune models for specific use cases
+ - Improve accuracy over time
 
 2. **Learning System:**
-   - Analyze patterns in successful matches
-   - Learn from user corrections
-   - Adapt to regional preferences
+ - Analyze patterns in successful matches
+ - Learn from user corrections
+ - Adapt to regional preferences
 
 3. **Smart Routing:**
-   - Route requests to best model
-   - Fallback strategies
-   - Cost optimization
+ - Route requests to best model
+ - Fallback strategies
+ - Cost optimization
 
 ---
 
-## 🛠️ Testing
+## ️ Testing
 
 ### Test API Connections
 
@@ -182,7 +182,7 @@ POST /api/receipts/scan
 
 ---
 
-## 📝 Notes
+##  Notes
 
 - **API Keys:** Store securely, never commit to git
 - **Costs:** Monitor regularly in AI Costs page
@@ -191,7 +191,7 @@ POST /api/receipts/scan
 
 ---
 
-## ✅ Checklist
+##  Checklist
 
 - [ ] DeepSeek API key obtained
 - [ ] OpenAI API key obtained
@@ -204,6 +204,6 @@ POST /api/receipts/scan
 
 ---
 
-**The AI system is now ready to learn and improve!** 🚀
+**The AI system is now ready to learn and improve!** 
 
 

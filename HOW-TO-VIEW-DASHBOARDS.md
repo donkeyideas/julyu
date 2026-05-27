@@ -1,4 +1,4 @@
-# 📊 How to View Admin and User Dashboards
+#  How to View Admin and User Dashboards
 
 ## Quick Access URLs
 
@@ -14,19 +14,19 @@ http://localhost:3825/admin
 
 ---
 
-## 🔐 Access Requirements
+##  Access Requirements
 
 ### User Dashboard
-- ✅ Requires: **User account** (sign up or login)
-- ✅ Access: Any authenticated user
+-  Requires: **User account** (sign up or login)
+-  Access: Any authenticated user
 
 ### Admin Dashboard
-- ✅ Requires: **User account** + **Enterprise subscription tier**
-- ✅ Access: Only users with `subscription_tier = 'enterprise'`
+-  Requires: **User account** + **Enterprise subscription tier**
+-  Access: Only users with `subscription_tier = 'enterprise'`
 
 ---
 
-## 🚀 Step-by-Step Guide
+##  Step-by-Step Guide
 
 ### Option 1: Full Setup (Recommended)
 
@@ -76,7 +76,7 @@ I'll create a temporary bypass so you can test the admin dashboard without setti
 
 ---
 
-## 📝 Direct Links
+##  Direct Links
 
 Once authenticated:
 
@@ -87,7 +87,7 @@ Once authenticated:
 
 ---
 
-## 🔧 Troubleshooting
+##  Troubleshooting
 
 ### "Redirected to /auth/login"
 - You're not logged in
@@ -103,29 +103,29 @@ Once authenticated:
 
 ---
 
-## 🎯 Quick Test Flow
+##  Quick Test Flow
 
 1. **Start server:**
-   ```powershell
-   npm run dev
-   ```
+ ```powershell
+ npm run dev
+ ```
 
 2. **Sign up:**
-   - Go to: http://localhost:3825/auth/signup
-   - Create account
+ - Go to: http://localhost:3825/auth/signup
+ - Create account
 
 3. **View User Dashboard:**
-   - Auto-redirected after signup
-   - Or go to: http://localhost:3825/dashboard
+ - Auto-redirected after signup
+ - Or go to: http://localhost:3825/dashboard
 
 4. **Make yourself admin:**
-   - Run SQL in Supabase to set `subscription_tier = 'enterprise'`
+ - Run SQL in Supabase to set `subscription_tier = 'enterprise'`
 
 5. **View Admin Dashboard:**
-   - Go to: http://localhost:3825/admin
+ - Go to: http://localhost:3825/admin
 
 ---
 
-**That's it! You can now access both dashboards.** 🎉
+**That's it! You can now access both dashboards.** 
 
 

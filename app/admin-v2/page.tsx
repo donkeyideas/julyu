@@ -211,7 +211,7 @@ export default function AdminV2Dashboard() {
 
       {/* Critical KPI Charts */}
       <div className="mb-10">
-        <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>📊 Critical Performance Metrics</h2>
+        <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>Critical Performance Metrics</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           {/* Revenue & Financial Performance Chart */}

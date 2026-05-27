@@ -12,19 +12,19 @@
 ```
 julyu/
 ├── frontend/
-│   ├── website/          # Marketing website (Next.js)
-│   ├── user-dashboard/   # User dashboard (Next.js)
-│   └── admin-dashboard/  # Admin panel (Next.js)
+│ ├── website/ # Marketing website (Next.js)
+│ ├── user-dashboard/ # User dashboard (Next.js)
+│ └── admin-dashboard/  # Admin panel (Next.js)
 ├── backend/
-│   ├── api/              # Vercel Edge Functions
-│   ├── services/         # Business logic
-│   └── integrations/     # Instacart, DeepSeek APIs
+│ ├── api/ # Vercel Edge Functions
+│ ├── services/ # Business logic
+│ └── integrations/ # Instacart, DeepSeek APIs
 ├── database/
-│   └── migrations/       # Supabase schema
+│ └── migrations/ # Supabase schema
 ├── shared/
-│   └── types/           # TypeScript types
+│ └── types/ # TypeScript types
 └── docs/
-    └── api/             # API documentation
+ └── api/ # API documentation
 ```
 
 ---
@@ -56,7 +56,7 @@ julyu/
 
 ## 3. CRITICAL REQUIREMENTS
 
-### ✅ NO MOCK DATA
+###  NO MOCK DATA
 - All data must come from:
   - Instacart Connect APIs
   - Supabase database
@@ -64,7 +64,7 @@ julyu/
 - No hardcoded prices, products, or user data
 - All endpoints must connect to real data sources
 
-### ✅ CLEAN ARCHITECTURE
+###  CLEAN ARCHITECTURE
 - Separation of concerns
 - Reusable components
 - Type-safe (TypeScript)
@@ -141,14 +141,14 @@ Based on `04-user-dashboard-FINAL.html`:
 
 ### 6.3 API Endpoints Needed
 ```
-POST /api/ai/match-products      # DeepSeek product matching
-POST /api/lists/analyze           # Price comparison
-POST /api/receipts/scan           # Receipt OCR
-GET  /api/user/dashboard          # Dashboard KPIs
-GET  /api/user/lists              # Shopping lists
-GET  /api/user/receipts           # Receipt history
-GET  /api/user/savings            # Savings analytics
-GET  /api/user/alerts             # Price alerts
+POST /api/ai/match-products # DeepSeek product matching
+POST /api/lists/analyze # Price comparison
+POST /api/receipts/scan # Receipt OCR
+GET  /api/user/dashboard # Dashboard KPIs
+GET  /api/user/lists # Shopping lists
+GET  /api/user/receipts # Receipt history
+GET  /api/user/savings # Savings analytics
+GET  /api/user/alerts # Price alerts
 ```
 
 ---
@@ -176,13 +176,13 @@ Based on `admin-dashboard-FIXED.html`:
 
 ### 7.3 API Endpoints Needed
 ```
-GET /api/admin/overview           # Platform metrics
-GET /api/admin/ai/models          # AI model status
-GET /api/admin/ai/performance     # AI performance metrics
-GET /api/admin/ai/costs           # AI cost tracking
-GET /api/admin/partnerships       # Retailer data
-GET /api/admin/users              # User management
-GET /api/admin/prices             # Price database stats
+GET /api/admin/overview # Platform metrics
+GET /api/admin/ai/models # AI model status
+GET /api/admin/ai/performance # AI performance metrics
+GET /api/admin/ai/costs # AI cost tracking
+GET /api/admin/partnerships # Retailer data
+GET /api/admin/users # User management
+GET /api/admin/prices # Price database stats
 ```
 
 ---

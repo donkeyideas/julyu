@@ -394,11 +394,11 @@ export default function AIModelsPage() {
           <div>
             {apiKeyStatus.deepseek ? (
               <span className="px-4 py-2 bg-green-500/15 text-green-500 rounded-lg text-sm font-semibold">
-                ✓ Configured
+                Configured
               </span>
             ) : (
               <span className="px-4 py-2 bg-red-500/15 text-red-500 rounded-lg text-sm font-semibold">
-                ✗ Not Set
+                Not Set
               </span>
             )}
           </div>
@@ -466,11 +466,11 @@ export default function AIModelsPage() {
           <div>
             {apiKeyStatus.openai ? (
               <span className="px-4 py-2 bg-green-500/15 text-green-500 rounded-lg text-sm font-semibold">
-                ✓ Configured
+                Configured
               </span>
             ) : (
               <span className="px-4 py-2 bg-red-500/15 text-red-500 rounded-lg text-sm font-semibold">
-                ✗ Not Set
+                Not Set
               </span>
             )}
           </div>
@@ -539,11 +539,11 @@ export default function AIModelsPage() {
           <div>
             {apiKeyStatus.kroger ? (
               <span className="px-4 py-2 bg-green-500/15 text-green-500 rounded-lg text-sm font-semibold">
-                ✓ Configured
+                Configured
               </span>
             ) : (
               <span className="px-4 py-2 bg-red-500/15 text-red-500 rounded-lg text-sm font-semibold">
-                ✗ Not Set
+                Not Set
               </span>
             )}
           </div>
@@ -630,11 +630,11 @@ export default function AIModelsPage() {
           <div>
             {apiKeyStatus.spoonacular ? (
               <span className="px-4 py-2 bg-green-500/15 text-green-500 rounded-lg text-sm font-semibold">
-                ✓ Configured
+                Configured
               </span>
             ) : (
               <span className="px-4 py-2 bg-red-500/15 text-red-500 rounded-lg text-sm font-semibold">
-                ✗ Not Set
+                Not Set
               </span>
             )}
           </div>
@@ -709,11 +709,11 @@ export default function AIModelsPage() {
           <div>
             {apiKeyStatus.positionstack ? (
               <span className="px-4 py-2 bg-green-500/15 text-green-500 rounded-lg text-sm font-semibold">
-                ✓ Configured
+                Configured
               </span>
             ) : (
               <span className="px-4 py-2 bg-red-500/15 text-red-500 rounded-lg text-sm font-semibold">
-                ✗ Not Set
+                Not Set
               </span>
             )}
           </div>
@@ -771,11 +771,11 @@ export default function AIModelsPage() {
           <div>
             {apiKeyStatus.stripe ? (
               <span className="px-4 py-2 bg-green-500/15 text-green-500 rounded-lg text-sm font-semibold">
-                ✓ Configured
+                Configured
               </span>
             ) : (
               <span className="px-4 py-2 bg-red-500/15 text-red-500 rounded-lg text-sm font-semibold">
-                ✗ Not Set
+                Not Set
               </span>
             )}
           </div>
@@ -891,7 +891,7 @@ export default function AIModelsPage() {
           </div>
           <div>
             <span className="px-4 py-2 bg-green-500/15 text-green-500 rounded-lg text-sm font-semibold">
-              ✓ Ready to Use
+              Ready to Use
             </span>
           </div>
         </div>

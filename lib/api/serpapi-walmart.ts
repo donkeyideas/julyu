@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { getSerpApiKey } from './config'
 import { canMakeApiCall, trackApiCall } from '@/lib/services/rate-limiter'
+import { logEvent, detectErrorKind } from '@/lib/services/scraper-health'
 
 /**
  * SerpApi Walmart Client
@@ -291,6 +292,7 @@ export class SerpApiWalmartClient {
       return []
     }
 
+    const startedAt = Date.now()
     try {
       const params: Record<string, any> = {
         engine: 'walmart',
@@ -326,6 +328,15 @@ export class SerpApiWalmartClient {
 
       if (response.data.error) {
         console.error('[SerpApi] API error:', response.data.error)
+        logEvent({
+          source: 'walmart',
+          operation: 'search_products',
+          success: false,
+          latencyMs: Date.now() - startedAt,
+          errorMessage: response.data.error,
+          errorKind: detectErrorKind({ message: response.data.error }),
+          query,
+        })
         return []
       }
 
@@ -339,12 +350,37 @@ export class SerpApiWalmartClient {
         await this.cacheResults(query, normalizedResults)
       }
 
+      logEvent({
+        source: 'walmart',
+        operation: 'search_products',
+        success: true,
+        latencyMs: Date.now() - startedAt,
+        query,
+        resultCount: normalizedResults.length,
+        errorKind: normalizedResults.length === 0 ? 'no_results' : undefined,
+      })
+
       return normalizedResults.slice(0, limit)
     } catch (error: any) {
       // Track failed call
       await trackApiCall('serpapi', false)
 
       console.error('[SerpApi] Search error:', error.response?.data || error.message)
+      const status = error.response?.status
+      const bodyPreview =
+        typeof error.response?.data === 'string'
+          ? error.response.data
+          : JSON.stringify(error.response?.data || {}).substring(0, 200)
+      logEvent({
+        source: 'walmart',
+        operation: 'search_products',
+        success: false,
+        latencyMs: Date.now() - startedAt,
+        httpStatus: status,
+        errorMessage: error.message,
+        errorKind: detectErrorKind({ status, bodyPreview, message: error.message }),
+        query,
+      })
       return []
     }
   }

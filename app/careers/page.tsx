@@ -104,19 +104,19 @@ export default function CareersPage() {
               <h2 className="text-2xl font-bold text-green-500 mb-4">Our Values</h2>
               <ul className="space-y-3 text-gray-300">
                 <li className="flex items-start gap-3">
-                  <span className="text-green-500 font-bold mt-0.5">✓</span>
+                  <span className="w-1 self-stretch rounded-full bg-green-500 mt-1" />
                   <span><strong>User First</strong> — Every decision starts with how it helps shoppers save money and time.</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-green-500 font-bold mt-0.5">✓</span>
+                  <span className="w-1 self-stretch rounded-full bg-green-500 mt-1" />
                   <span><strong>Data-Driven</strong> — We use research and data to guide product decisions, not guesswork.</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-green-500 font-bold mt-0.5">✓</span>
+                  <span className="w-1 self-stretch rounded-full bg-green-500 mt-1" />
                   <span><strong>Move Fast</strong> — We ship weekly and iterate based on real user feedback.</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-green-500 font-bold mt-0.5">✓</span>
+                  <span className="w-1 self-stretch rounded-full bg-green-500 mt-1" />
                   <span><strong>Transparency</strong> — Open communication, honest pricing, and no hidden agendas.</span>
                 </li>
               </ul>
@@ -126,27 +126,27 @@ export default function CareersPage() {
               <h2 className="text-2xl font-bold text-green-500 mb-4">Benefits and Perks</h2>
               <div className="grid md:grid-cols-2 gap-4 text-gray-300">
                 <div className="flex items-start gap-3">
-                  <span className="text-green-500 font-bold mt-0.5">✓</span>
+                  <span className="w-1 self-stretch rounded-full bg-green-500 mt-1" />
                   <span>Competitive salary and equity package</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <span className="text-green-500 font-bold mt-0.5">✓</span>
+                  <span className="w-1 self-stretch rounded-full bg-green-500 mt-1" />
                   <span>Fully remote with flexible hours</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <span className="text-green-500 font-bold mt-0.5">✓</span>
+                  <span className="w-1 self-stretch rounded-full bg-green-500 mt-1" />
                   <span>Health, dental, and vision insurance</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <span className="text-green-500 font-bold mt-0.5">✓</span>
+                  <span className="w-1 self-stretch rounded-full bg-green-500 mt-1" />
                   <span>Unlimited PTO policy</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <span className="text-green-500 font-bold mt-0.5">✓</span>
+                  <span className="w-1 self-stretch rounded-full bg-green-500 mt-1" />
                   <span>$1,500 annual learning budget</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <span className="text-green-500 font-bold mt-0.5">✓</span>
+                  <span className="w-1 self-stretch rounded-full bg-green-500 mt-1" />
                   <span>Latest equipment provided</span>
                 </div>
               </div>

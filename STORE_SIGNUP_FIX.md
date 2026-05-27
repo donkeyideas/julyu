@@ -6,9 +6,9 @@ The store application is failing with "Failed to create account. This email may 
 
 1. **Database tables don't exist yet** - The migration hasn't been run
 2. When someone tries to apply:
-   - ✅ Supabase auth creates user successfully
-   - ❌ Insert to `store_owners` table fails (table doesn't exist)
-   - ❌ Error shows "email already in use" if you retry with same email
+ -  Supabase auth creates user successfully
+ -  Insert to `store_owners` table fails (table doesn't exist)
+ -  Error shows "email already in use" if you retry with same email
 
 ## The Solution
 
@@ -43,14 +43,14 @@ supabase db push
 
 1. In Supabase Dashboard, click **Table Editor**
 2. You should now see these 8 new tables:
-   - ✅ `store_owners`
-   - ✅ `bodega_stores`
-   - ✅ `bodega_inventory`
-   - ✅ `pos_integrations`
-   - ✅ `bodega_orders`
-   - ✅ `commission_tiers`
-   - ✅ `store_payouts`
-   - ✅ `delivery_jobs`
+ -  `store_owners`
+ -  `bodega_stores`
+ -  `bodega_inventory`
+ -  `pos_integrations`
+ -  `bodega_orders`
+ -  `commission_tiers`
+ -  `store_payouts`
+ -  `delivery_jobs`
 
 3. Click on **commission_tiers** table
 4. You should see 1 row: "Standard" tier at 15%
@@ -109,10 +109,10 @@ POS System (optional):
 2. You should see "Joe's Bodega" in the applications list
 3. Status should be **Pending** (yellow badge)
 4. You should see:
-   - Business Name: Joe's Bodega
-   - Type: Bodega
-   - Location: Joe's Bodega NYC, New York, NY 10013
-   - Created date: Today's date
+ - Business Name: Joe's Bodega
+ - Type: Bodega
+ - Location: Joe's Bodega NYC, New York, NY 10013
+ - Created date: Today's date
 
 ---
 
@@ -204,31 +204,31 @@ When you submit the store application form:
 
 1. **POST to /api/store-portal/apply**
 2. **Create auth user** (if not logged in)
-   - Email: joesbodega@test.com
-   - Auto-generated password
-   - User metadata: `user_type: 'store_owner'`
+ - Email: joesbodega@test.com
+ - Auto-generated password
+ - User metadata: `user_type: 'store_owner'`
 3. **Insert store_owners record**
-   - Links to auth user
-   - Status: 'pending'
-   - Commission rate: 15%
+ - Links to auth user
+ - Status: 'pending'
+ - Commission rate: 15%
 4. **Geocode address** (using Google Maps API)
-   - Gets latitude/longitude for store
+ - Gets latitude/longitude for store
 5. **Insert bodega_stores record**
-   - Links to store_owner
-   - Status: inactive until approved
+ - Links to store_owner
+ - Status: inactive until approved
 6. **Return success**
 
 When admin approves:
 
 1. **Update store_owners**
-   - application_status: 'approved'
-   - approval_date: NOW()
-   - reviewed_by: admin user ID
+ - application_status: 'approved'
+ - approval_date: NOW()
+ - reviewed_by: admin user ID
 2. **Update bodega_stores**
-   - is_active: true
-   - verified: true
+ - is_active: true
+ - verified: true
 3. **Enable ordering**
-   - accepts_orders: true
+ - accepts_orders: true
 
 ---
 
@@ -236,11 +236,11 @@ When admin approves:
 
 Once you've verified the store signup and approval works:
 
-1. ✅ Store applications - WORKING
-2. ⏳ Inventory management - Build next
-3. ⏳ Order placement - Build after inventory
-4. ⏳ DoorDash delivery - Build with orders
-5. ⏳ Stripe Connect payouts - Build last
+1.  Store applications - WORKING
+2.  Inventory management - Build next
+3.  Order placement - Build after inventory
+4.  DoorDash delivery - Build with orders
+5.  Stripe Connect payouts - Build last
 
 ---
 
@@ -259,4 +259,4 @@ Once you've verified the store signup and approval works:
 - [ ] See "Joe's Bodega" in stores list
 - [ ] Verify commission tier shows 1 store using it
 
-**If all checkboxes pass: Store signup system is WORKING! ✅**
+**If all checkboxes pass: Store signup system is WORKING! **

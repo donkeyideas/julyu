@@ -85,7 +85,7 @@ export default function FeaturesPage() {
 
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-gray-900 border border-gray-800 rounded-2xl p-10 hover:border-green-500 transition">
-              <div className="text-5xl mb-6">🧠</div>
+              <div className="text-xs font-semibold mb-6 uppercase tracking-wider text-green-500">AI</div>
               <h3 className="text-2xl font-bold mb-4">AI Product Matching</h3>
               <p className="text-gray-500 leading-relaxed">
                 DeepSeek-powered semantic understanding matches products across 50+ retailers with 98% accuracy.
@@ -96,7 +96,7 @@ export default function FeaturesPage() {
             </div>
 
             <div className="bg-gray-900 border border-gray-800 rounded-2xl p-10 hover:border-green-500 transition">
-              <div className="text-5xl mb-6">🗺️</div>
+              <div className="text-xs font-semibold mb-6 uppercase tracking-wider text-green-500">Routing</div>
               <h3 className="text-2xl font-bold mb-4">Route Optimization</h3>
               <p className="text-gray-500 leading-relaxed">
                 Multi-store routing finds optimal shopping paths that factor in price savings, driving distance, and your time value.
@@ -106,7 +106,7 @@ export default function FeaturesPage() {
             </div>
 
             <div className="bg-gray-900 border border-gray-800 rounded-2xl p-10 hover:border-green-500 transition">
-              <div className="text-5xl mb-6">📸</div>
+              <div className="text-xs font-semibold mb-6 uppercase tracking-wider text-green-500">OCR</div>
               <h3 className="text-2xl font-bold mb-4">Receipt Scanning</h3>
               <p className="text-gray-500 leading-relaxed">
                 OCR technology extracts prices automatically from your grocery receipts, building a personal price history.

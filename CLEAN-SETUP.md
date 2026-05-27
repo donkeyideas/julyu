@@ -1,16 +1,16 @@
-# 🧹 Clean Setup Guide - No Mock Data
+#  Clean Setup Guide - No Mock Data
 
 ## Overview
 
 The project is now **completely clean** with:
-- ✅ **No mock data** - All data comes from real APIs and database
-- ✅ **Port 3825** - Changed from 3000
-- ✅ **Clean codebase** - All mock files removed
-- ✅ **Real API integration** - Requires actual API keys
+-  **No mock data** - All data comes from real APIs and database
+-  **Port 3825** - Changed from 3000
+-  **Clean codebase** - All mock files removed
+-  **Real API integration** - Requires actual API keys
 
 ---
 
-## ⚠️ Required Setup
+## ️ Required Setup
 
 ### 1. Supabase (REQUIRED)
 You **must** set up Supabase:
@@ -37,7 +37,7 @@ You need to add these to `.env.local`:
 
 ---
 
-## 🚀 Setup Commands
+##  Setup Commands
 
 ### 1. Install Dependencies
 ```powershell
@@ -81,46 +81,46 @@ Server will run on: **http://localhost:3825**
 
 ---
 
-## 📝 Instacart API Setup
+##  Instacart API Setup
 
 **I do NOT have Instacart API keys.** You need to:
 
 1. **Contact Instacart:**
-   - Visit: https://docs.instacart.com/connect/
-   - Click "Contact us" or "Get Started"
-   - Request API access for your project
+ - Visit: https://docs.instacart.com/connect/
+ - Click "Contact us" or "Get Started"
+ - Request API access for your project
 
 2. **Provide Information:**
-   - Your project details
-   - Use case (grocery price comparison)
-   - Expected volume
+ - Your project details
+ - Use case (grocery price comparison)
+ - Expected volume
 
 3. **Get Credentials:**
-   - They'll provide:
-     - API Key
-     - API Secret
-     - Base URL (usually https://api.instacart.com)
+ - They'll provide:
+ - API Key
+ - API Secret
+ - Base URL (usually https://api.instacart.com)
 
 4. **Add to .env.local:**
-   ```env
-   INSTACART_API_KEY=your_key_here
-   INSTACART_API_SECRET=your_secret_here
-   INSTACART_BASE_URL=https://api.instacart.com
-   ```
+ ```env
+ INSTACART_API_KEY=your_key_here
+ INSTACART_API_SECRET=your_secret_here
+ INSTACART_BASE_URL=https://api.instacart.com
+ ```
 
 ---
 
-## ✅ What's Clean Now
+##  What's Clean Now
 
-- ❌ **No mock database** - Removed all mock files
-- ❌ **No mock data** - All pages show empty states until data exists
-- ❌ **No hardcoded values** - Everything comes from database/APIs
-- ✅ **Real Supabase** - Requires actual Supabase setup
-- ✅ **Real APIs** - Requires actual API keys
+-  **No mock database** - Removed all mock files
+-  **No mock data** - All pages show empty states until data exists
+-  **No hardcoded values** - Everything comes from database/APIs
+-  **Real Supabase** - Requires actual Supabase setup
+-  **Real APIs** - Requires actual API keys
 
 ---
 
-## 🐛 If You See Errors
+##  If You See Errors
 
 ### "Missing Supabase environment variables"
 - Add Supabase credentials to `.env.local`
@@ -139,16 +139,16 @@ Get-Process -Id (Get-NetTCPConnection -LocalPort 3825).OwningProcess | Stop-Proc
 
 ---
 
-## 📚 Next Steps
+##  Next Steps
 
-1. ✅ Set up Supabase
-2. ✅ Add API keys to `.env.local`
-3. ✅ Run database migration
-4. ✅ Start server: `npm run dev`
-5. ✅ Test at http://localhost:3825
+1.  Set up Supabase
+2.  Add API keys to `.env.local`
+3.  Run database migration
+4.  Start server: `npm run dev`
+5.  Test at http://localhost:3825
 
 ---
 
-**The codebase is now clean and ready for real API integration!** 🎉
+**The codebase is now clean and ready for real API integration!** 
 
 

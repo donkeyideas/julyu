@@ -54,7 +54,7 @@ async function main() {
 
     // Verify dimensions
     const box = await slide.boundingBox();
-    console.log(`✓ ${name}.png captured (${Math.round(box.width)}x${Math.round(box.height)})`);
+    console.log(`OK ${name}.png captured (${Math.round(box.width)}x${Math.round(box.height)})`);
   }
 
   // ── Feature Graphic (1024x500) ──
@@ -75,7 +75,7 @@ async function main() {
     type: 'png',
   });
   const bannerBox = await banner.boundingBox();
-  console.log(`✓ feature-graphic-1024x500.png captured (${Math.round(bannerBox.width)}x${Math.round(bannerBox.height)})`);
+  console.log(`OK feature-graphic-1024x500.png captured (${Math.round(bannerBox.width)}x${Math.round(bannerBox.height)})`);
 
   // ── App Icon (512x512) ──
   // Read logo as base64 so it works in headless browser
@@ -113,7 +113,7 @@ async function main() {
     type: 'png',
     clip: { x: 0, y: 0, width: 512, height: 512 },
   });
-  console.log('✓ app-icon-512.png captured (512x512)');
+  console.log('OK app-icon-512.png captured (512x512)');
 
   await browser.close();
   console.log(`\nAll assets saved to: ${OUTPUT_DIR}`);

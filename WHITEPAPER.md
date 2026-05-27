@@ -307,34 +307,34 @@ The grocery market represents a massive opportunity:
 Julyu solves these problems through a comprehensive platform that combines:
 
 1. **Real-Time Price Comparison**
-   - Live price data from 50+ retailers
-   - Historical price tracking and trends
-   - Price alerts for favorite products
-   - Multi-store shopping optimization
+ - Live price data from 50+ retailers
+ - Historical price tracking and trends
+ - Price alerts for favorite products
+ - Multi-store shopping optimization
 
 2. **AI-Powered Product Matching**
-   - Semantic understanding of product names
-   - Automatic matching across retailers
-   - Brand, size, and attribute normalization
-   - Confidence scoring for matches
+ - Semantic understanding of product names
+ - Automatic matching across retailers
+ - Brand, size, and attribute normalization
+ - Confidence scoring for matches
 
 3. **Intelligent Shopping Lists**
-   - AI-analyzed shopping lists
-   - Optimal store recommendations
-   - Savings projections
-   - Route optimization
+ - AI-analyzed shopping lists
+ - Optimal store recommendations
+ - Savings projections
+ - Route optimization
 
 4. **Receipt OCR & Database Updates**
-   - Automatic receipt scanning via GPT-4 Vision
-   - Real-time price database updates
-   - Purchase history tracking
-   - Savings calculation
+ - Automatic receipt scanning via GPT-4 Vision
+ - Real-time price database updates
+ - Purchase history tracking
+ - Savings calculation
 
 5. **Advanced Analytics**
-   - Monthly savings reports
-   - Price trend analysis
-   - Shopping pattern insights
-   - Budget tracking
+ - Monthly savings reports
+ - Price trend analysis
+ - Shopping pattern insights
+ - Budget tracking
 
 ---
 
@@ -420,30 +420,30 @@ Julyu is built on a modern, scalable architecture:
 
 ```
 ┌─────────────────────────────────────────────────┐
-│              Next.js Frontend                   │
-│  (React, TypeScript, Tailwind CSS)              │
+│ Next.js Frontend │
+│  (React, TypeScript, Tailwind CSS) │
 └──────────────────┬──────────────────────────────┘
-                   │
+ │
 ┌──────────────────▼──────────────────────────────┐
-│           API Layer (Next.js API Routes)         │
-│  - Authentication (Supabase)                     │
-│  - Price Comparison                              │
-│  - AI Product Matching                           │
-│  - Receipt OCR                                   │
+│ API Layer (Next.js API Routes) │
+│  - Authentication (Supabase) │
+│  - Price Comparison │
+│  - AI Product Matching │
+│  - Receipt OCR │
 └──────────────────┬──────────────────────────────┘
-                   │
+ │
 ┌──────────────────▼──────────────────────────────┐
-│              AI Services Layer                   │
-│  - DeepSeek API (Product Matching)              │
-│  - OpenAI GPT-4 Vision (Receipt OCR)            │
-│  - Usage Tracking & Analytics                   │
+│ AI Services Layer │
+│  - DeepSeek API (Product Matching) │
+│  - OpenAI GPT-4 Vision (Receipt OCR) │
+│  - Usage Tracking & Analytics │
 └──────────────────┬──────────────────────────────┘
-                   │
+ │
 ┌──────────────────▼──────────────────────────────┐
-│          Data Sources & Storage                  │
-│  - Supabase (PostgreSQL Database)               │
-│  - Instacart Connect API                        │
-│  - Cloudflare R2 (Receipt Storage)              │
+│ Data Sources & Storage │
+│  - Supabase (PostgreSQL Database) │
+│  - Instacart Connect API │
+│  - Cloudflare R2 (Receipt Storage) │
 └──────────────────────────────────────────────────┘
 ```
 
@@ -537,24 +537,24 @@ Julyu is built on a modern, scalable architecture:
 ### Revenue Streams
 
 1. **Subscription Revenue (Primary)**
-   - Premium: $14.99/month = $179.88/year
-   - Enterprise: $99.99/month = $1,199.88/year
-   - Target: 100K Premium + 10K Enterprise in Year 3
+ - Premium: $14.99/month = $179.88/year
+ - Enterprise: $99.99/month = $1,199.88/year
+ - Target: 100K Premium + 10K Enterprise in Year 3
 
 2. **Affiliate Commissions**
-   - Revenue share with retailers via Instacart Connect
-   - Average commission: 2-5% of referred purchases
-   - Projected: $50-100/user/year
+ - Revenue share with retailers via Instacart Connect
+ - Average commission: 2-5% of referred purchases
+ - Projected: $50-100/user/year
 
 3. **API Access (Enterprise)**
-   - White-label solutions
-   - Custom integrations
-   - B2B partnerships
+ - White-label solutions
+ - Custom integrations
+ - B2B partnerships
 
 4. **Data Insights (Future)**
-   - Aggregated, anonymized market insights
-   - Price trend reports
-   - Consumer behavior analytics
+ - Aggregated, anonymized market insights
+ - Price trend reports
+ - Consumer behavior analytics
 
 ### Pricing Strategy
 
@@ -645,24 +645,24 @@ Julyu is built on a modern, scalable architecture:
 ### Customer Segments
 
 1. **Price-Conscious Families** (40%)
-   - Large grocery budgets
-   - Willing to shop multiple stores
-   - High savings potential
+ - Large grocery budgets
+ - Willing to shop multiple stores
+ - High savings potential
 
 2. **Busy Professionals** (30%)
-   - Time-constrained
-   - Value convenience
-   - Willing to pay for premium
+ - Time-constrained
+ - Value convenience
+ - Willing to pay for premium
 
 3. **Budget-Conscious Individuals** (20%)
-   - Limited income
-   - Maximize every dollar
-   - Free tier users
+ - Limited income
+ - Maximize every dollar
+ - Free tier users
 
 4. **Small Businesses** (10%)
-   - Restaurants, cafes
-   - Bulk purchasing
-   - Enterprise tier
+ - Restaurants, cafes
+ - Bulk purchasing
+ - Enterprise tier
 
 ---
 
@@ -690,23 +690,23 @@ Julyu is built on a modern, scalable architecture:
 ### Competitive Advantage
 
 1. **Technology Moat:**
-   - Proprietary AI matching algorithms
-   - Real-time price aggregation
-   - Advanced analytics
+ - Proprietary AI matching algorithms
+ - Real-time price aggregation
+ - Advanced analytics
 
 2. **Data Network Effects:**
-   - More users = more receipt data = better price database
-   - Better database = more accurate recommendations = more users
+ - More users = more receipt data = better price database
+ - Better database = more accurate recommendations = more users
 
 3. **Partnership Advantages:**
-   - Direct API access to retailers
-   - Revenue share agreements
-   - Exclusive data access
+ - Direct API access to retailers
+ - Revenue share agreements
+ - Exclusive data access
 
 4. **Brand Positioning:**
-   - "Bloomberg Terminal for Groceries" positioning
-   - Professional-grade tools
-   - Trust and credibility
+ - "Bloomberg Terminal for Groceries" positioning
+ - Professional-grade tools
+ - Trust and credibility
 
 ---
 
@@ -715,58 +715,58 @@ Julyu is built on a modern, scalable architecture:
 ### Product Roadmap
 
 **Q1 2025: Foundation**
-- ✅ Core price comparison engine
-- ✅ AI product matching (DeepSeek)
-- ✅ Receipt OCR (OpenAI)
-- ✅ Basic shopping list analysis
-- ✅ User authentication and tiers
+-  Core price comparison engine
+-  AI product matching (DeepSeek)
+-  Receipt OCR (OpenAI)
+-  Basic shopping list analysis
+-  User authentication and tiers
 
 **Q2 2025: Enhancement**
-- 📍 Advanced analytics dashboard
-- 📍 Price trend visualization
-- 📍 Mobile app (iOS/Android)
-- 📍 Enhanced AI matching accuracy
-- 📍 Retailer partnership expansion (75+ retailers)
+-  Advanced analytics dashboard
+-  Price trend visualization
+-  Mobile app (iOS/Android)
+-  Enhanced AI matching accuracy
+-  Retailer partnership expansion (75+ retailers)
 
 **Q3 2025: Scale**
-- 📍 Enterprise features
-- 📍 API access for developers
-- 📍 White-label solutions
-- 📍 International expansion (Canada, UK)
-- 📍 Advanced route optimization
+-  Enterprise features
+-  API access for developers
+-  White-label solutions
+-  International expansion (Canada, UK)
+-  Advanced route optimization
 
 **Q4 2025: Innovation**
-- 📍 Predictive pricing (AI price forecasting)
-- 📍 Meal planning integration
-- 📍 Nutrition tracking
-- 📍 Social features (price sharing)
-- 📍 Voice assistant integration
+-  Predictive pricing (AI price forecasting)
+-  Meal planning integration
+-  Nutrition tracking
+-  Social features (price sharing)
+-  Voice assistant integration
 
 ### Key Milestones
 
 **Year 1:**
-- ✅ Product launch
-- 📍 10,000 users
-- 📍 50+ retailers integrated
-- 📍 $500K ARR
+-  Product launch
+-  10,000 users
+-  50+ retailers integrated
+-  $500K ARR
 
 **Year 2:**
-- 📍 100,000 users
-- 📍 100+ retailers
-- 📍 $5M ARR
-- 📍 Mobile apps launched
+-  100,000 users
+-  100+ retailers
+-  $5M ARR
+-  Mobile apps launched
 
 **Year 3:**
-- 📍 1,000,000 users
-- 📍 International expansion
-- 📍 $50M ARR
-- 📍 Profitable
+-  1,000,000 users
+-  International expansion
+-  $50M ARR
+-  Profitable
 
 **Year 5:**
-- 📍 5,000,000 users
-- 📍 Global presence
-- 📍 $500M ARR
-- 📍 IPO consideration
+-  5,000,000 users
+-  Global presence
+-  $500M ARR
+-  IPO consideration
 
 ---
 
@@ -905,29 +905,29 @@ Julyu is built on a modern, scalable architecture:
 ### Risk Factors
 
 1. **Technology Risks:**
-   - AI API dependency (DeepSeek, OpenAI)
-   - API rate limits and costs
-   - Data accuracy and reliability
+ - AI API dependency (DeepSeek, OpenAI)
+ - API rate limits and costs
+ - Data accuracy and reliability
 
 2. **Market Risks:**
-   - Retailer partnership changes
-   - Competitive pressure
-   - Market adoption rates
+ - Retailer partnership changes
+ - Competitive pressure
+ - Market adoption rates
 
 3. **Regulatory Risks:**
-   - Privacy law changes
-   - Data protection regulations
-   - Industry-specific regulations
+ - Privacy law changes
+ - Data protection regulations
+ - Industry-specific regulations
 
 4. **Operational Risks:**
-   - Key personnel dependency
-   - Infrastructure scaling
-   - Data security breaches
+ - Key personnel dependency
+ - Infrastructure scaling
+ - Data security breaches
 
 5. **Financial Risks:**
-   - Customer acquisition costs
-   - Churn rates
-   - Funding availability
+ - Customer acquisition costs
+ - Churn rates
+ - Funding availability
 
 ### Disclaimers
 

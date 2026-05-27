@@ -1,10 +1,10 @@
-# 🚨 QUICK FIX: Store Signup Not Working
+#  QUICK FIX: Store Signup Not Working
 
 ## The Problem
 Store signup returns: **"Failed to create account. This email may already be in use."**
 
 ## Root Cause
-❌ Database tables don't exist yet (migration not run)
+ Database tables don't exist yet (migration not run)
 
 ## The Fix (3 minutes)
 
@@ -42,7 +42,7 @@ Click **Table Editor** - should see 8 new tables:
 
 ---
 
-## ⚠️ If You Already Tried Signup
+## ️ If You Already Tried Signup
 
 The email might be stuck in auth. Two options:
 

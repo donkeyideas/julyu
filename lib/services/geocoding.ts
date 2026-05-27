@@ -6,6 +6,7 @@
 
 import { createServerClient } from '@/lib/supabase/server'
 import { getApiKey } from '@/lib/api/config'
+import { logEvent } from '@/lib/services/scraper-health'
 
 export interface GeocodeResult {
   latitude: number
@@ -205,8 +206,60 @@ export async function geocodeAddress(address: string): Promise<GeocodeResult | n
 }
 
 /**
+ * Free, no-key ZIP-to-coordinates fallback via zippopotam.us.
+ * Used when Positionstack isn't configured. US-only, ~50ms per call,
+ * no rate limits on reasonable usage. Results are cached so each ZIP
+ * is only fetched once per cache window.
+ */
+async function callZippopotam(zipCode: string): Promise<GeocodeResult | null> {
+  const clean = zipCode.trim().slice(0, 5)
+  if (!/^\d{5}$/.test(clean)) return null
+
+  try {
+    console.log('[Geocoding] Trying zippopotam.us fallback for:', clean)
+    const response = await fetch(`https://api.zippopotam.us/us/${clean}`, {
+      headers: { Accept: 'application/json' },
+    })
+    if (!response.ok) {
+      console.warn('[Geocoding] zippopotam.us returned', response.status, 'for', clean)
+      return null
+    }
+    const data: {
+      'post code'?: string
+      country?: string
+      places?: Array<{
+        latitude?: string
+        longitude?: string
+        'place name'?: string
+        state?: string
+        'state abbreviation'?: string
+      }>
+    } = await response.json()
+
+    const place = data.places?.[0]
+    if (!place?.latitude || !place?.longitude) return null
+
+    const lat = parseFloat(place.latitude)
+    const lng = parseFloat(place.longitude)
+    if (!isFinite(lat) || !isFinite(lng)) return null
+
+    return {
+      latitude: lat,
+      longitude: lng,
+      formattedAddress: `${place['place name'] || clean}, ${place['state abbreviation'] || ''} ${clean}`.trim(),
+      confidence: 0.85, // ZIP centroid — accurate enough for distance ranking
+      source: 'zip_fallback',
+    }
+  } catch (e: any) {
+    console.warn('[Geocoding] zippopotam.us exception:', e.message)
+    return null
+  }
+}
+
+/**
  * Geocode a zip code
- * Checks cache first, then calls Positionstack API
+ * Checks cache first, then calls Positionstack API, falling back to a free
+ * no-key service if Positionstack isn't configured or fails.
  */
 export async function geocodeZipCode(zipCode: string): Promise<GeocodeResult | null> {
   if (!zipCode || zipCode.trim() === '') {
@@ -221,14 +274,32 @@ export async function geocodeZipCode(zipCode: string): Promise<GeocodeResult | n
     return cached
   }
 
-  // Call Positionstack API with zip code + country code for better results
+  // Try Positionstack first (paid, more accurate)
+  const startedAt = Date.now()
   const query = `${zipCode}, USA`
-  const result = await callPositionstack(query)
+  let result = await callPositionstack(query)
+  let fallbackUsed = false
+
+  // Fall back to free service if Positionstack isn't configured or returned nothing
+  if (!result) {
+    result = await callZippopotam(zipCode)
+    fallbackUsed = true
+  }
 
   // Save to cache if successful
   if (result) {
     await saveToCache(zipCode, result)
   }
+
+  logEvent({
+    source: 'geocoding',
+    operation: fallbackUsed ? 'geocode_zip_fallback' : 'geocode_zip_positionstack',
+    success: !!result,
+    latencyMs: Date.now() - startedAt,
+    zip: zipCode,
+    resultCount: result ? 1 : 0,
+    errorKind: !result ? 'no_results' : undefined,
+  })
 
   return result
 }

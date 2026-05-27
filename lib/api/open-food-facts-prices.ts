@@ -6,6 +6,8 @@
  * No authentication required for read operations
  */
 
+import { logEvent, detectErrorKind } from '@/lib/services/scraper-health'
+
 const BASE_URL = 'https://prices.openfoodfacts.org/api/v1'
 
 export interface OpenFoodFactsPrice {
@@ -71,6 +73,7 @@ export interface ApiResponse<T> {
  * Search for prices in the Open Food Facts database
  */
 export async function searchPrices(params: PriceSearchParams = {}): Promise<ApiResponse<OpenFoodFactsPrice>> {
+  const startedAt = Date.now()
   try {
     const queryParams = new URLSearchParams()
 
@@ -91,11 +94,31 @@ export async function searchPrices(params: PriceSearchParams = {}): Promise<ApiR
     })
 
     if (!response.ok) {
+      const bodyPreview = await response.text().then(t => t.substring(0, 200)).catch(() => '')
+      logEvent({
+        source: 'off',
+        operation: 'search_prices',
+        success: false,
+        latencyMs: Date.now() - startedAt,
+        httpStatus: response.status,
+        errorMessage: `${response.status} ${response.statusText}`,
+        errorKind: detectErrorKind({ status: response.status, bodyPreview }),
+        query: params.product_name,
+      })
       throw new Error(`API request failed: ${response.status} ${response.statusText}`)
     }
 
     const data = await response.json()
     console.log('[Open Food Facts] Found', data.total, 'prices')
+    logEvent({
+      source: 'off',
+      operation: 'search_prices',
+      success: true,
+      latencyMs: Date.now() - startedAt,
+      query: params.product_name,
+      resultCount: data.total || 0,
+      errorKind: (data.total || 0) === 0 ? 'no_results' : undefined,
+    })
 
     return data
   } catch (error: any) {

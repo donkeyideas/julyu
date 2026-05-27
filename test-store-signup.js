@@ -26,7 +26,7 @@ const testStoreData = {
 }
 
 async function createStoreApplication() {
-  console.log('🚀 Creating test store application...\n')
+  console.log('Creating test store application...\n')
   console.log('Data:', JSON.stringify(testStoreData, null, 2), '\n')
 
   try {
@@ -41,11 +41,11 @@ async function createStoreApplication() {
     const data = await response.json()
 
     if (!response.ok) {
-      console.error('❌ Error:', response.status, response.statusText)
+      console.error('Error:', response.status, response.statusText)
       console.error('Response:', data)
 
       if (response.status === 400 && data.error?.includes('email may already be in use')) {
-        console.log('\n💡 Solution: The email is already registered.')
+        console.log('\nSolution: The email is already registered.')
         console.log('Either:')
         console.log('1. Delete the user from Supabase Auth > Users')
         console.log('2. Or use a different email address\n')
@@ -54,18 +54,18 @@ async function createStoreApplication() {
       process.exit(1)
     }
 
-    console.log('✅ Success! Store application created:')
+    console.log('Success! Store application created:')
     console.log('Store Owner ID:', data.data.storeOwnerId)
     console.log('Store ID:', data.data.storeId)
     console.log('Status:', data.data.status)
-    console.log('\n📋 Next steps:')
+    console.log('\nNext steps:')
     console.log('1. Go to /admin/stores/applications')
     console.log('2. You should see "Joe\'s Test Bodega" with Pending status')
     console.log('3. Click Approve to activate the store')
     console.log('4. Check /admin/stores to see the approved store\n')
 
   } catch (error) {
-    console.error('❌ Network error:', error.message)
+    console.error('Network error:', error.message)
     console.log('\nMake sure:')
     console.log('1. The dev server is running (npm run dev)')
     console.log('2. The database migration has been run')

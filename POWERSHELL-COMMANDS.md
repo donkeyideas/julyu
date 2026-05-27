@@ -1,4 +1,4 @@
-# 🚀 PowerShell Commands - Complete Guide
+#  PowerShell Commands - Complete Guide
 
 ## Quick Start (Copy & Paste)
 
@@ -276,42 +276,42 @@ Get-ChildItem -Recurse | Select-String "supabase"
 After running setup, test these:
 
 1. **Server starts:**
-   ```powershell
-   npm run dev
-   # Should see: "Ready on http://localhost:3825"
-   ```
+ ```powershell
+ npm run dev
+ # Should see: "Ready on http://localhost:3825"
+ ```
 
 2. **Website loads:**
-   - Open http://localhost:3825
-   - Should see home page
+ - Open http://localhost:3825
+ - Should see home page
 
 3. **Sign up works:**
-   - Click "Get Started"
-   - Enter any email/password
-   - Should redirect to dashboard
+ - Click "Get Started"
+ - Enter any email/password
+ - Should redirect to dashboard
 
 4. **Dashboard loads:**
-   - Should see dashboard with mock data
+ - Should see dashboard with mock data
 
 5. **Compare prices:**
-   - Go to Compare Prices
-   - Enter grocery list
-   - Click "Compare Prices Across Stores"
-   - Should see results
+ - Go to Compare Prices
+ - Enter grocery list
+ - Click "Compare Prices Across Stores"
+ - Should see results
 
 ---
 
 ## Next Steps After Setup
 
-1. ✅ Configure Supabase and API keys in .env.local
-2. ✅ Run database migration (database/schema.sql)
-3. ✅ Server running on http://localhost:3825
-4. ✅ Test all pages
-5. ✅ Try price comparison (requires API keys)
-6. ✅ Check admin dashboard
-7. ✅ Test responsive design
+1.  Configure Supabase and API keys in .env.local
+2.  Run database migration (database/schema.sql)
+3.  Server running on http://localhost:3825
+4.  Test all pages
+5.  Try price comparison (requires API keys)
+6.  Check admin dashboard
+7.  Test responsive design
 
 ---
 
-**All set! Happy coding! 🎉**
+**All set! Happy coding! **
 

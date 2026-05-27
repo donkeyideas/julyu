@@ -345,7 +345,7 @@ export default function SeoGeoPage() {
       {/* No audit state */}
       {!audit && (
         <div className="rounded-2xl p-12 text-center mb-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-          <div className="text-6xl mb-4">🔍</div>
+          <div className="text-6xl mb-4" style={{ color: 'var(--text-muted)' }}>—</div>
           <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>No Audit Data Yet</h2>
           <p className="mb-6" style={{ color: 'var(--text-muted)' }}>
             Run your first SEO audit to see detailed analytics, scores, and recommendations.
@@ -629,7 +629,7 @@ export default function SeoGeoPage() {
                           check.warn ? 'bg-amber-500/15 text-amber-500' :
                           'bg-red-500/15 text-red-500'
                         }`}>
-                          {check.pass ? '✓' : check.warn ? '!' : '✗'}
+                          {check.pass ? 'OK' : check.warn ? '!' : 'X'}
                         </div>
                         <div className="flex-1">
                           <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{check.label}</div>
@@ -729,7 +729,7 @@ export default function SeoGeoPage() {
                     <div>
                       <div className="text-xs font-semibold mb-2" style={{ color: 'var(--text-muted)' }}>Heading Hierarchy</div>
                       <div className="space-y-1 text-sm">
-                        <div style={{ color: page.h1_count === 1 ? '#10b981' : '#ef4444' }}>H1: {page.h1_count} {page.h1_count === 1 ? '✓' : '✗'}</div>
+                        <div style={{ color: page.h1_count === 1 ? '#10b981' : '#ef4444' }}>H1: {page.h1_count} {page.h1_count === 1 ? 'OK' : 'X'}</div>
                         <div className="pl-4" style={{ color: 'var(--text-muted)' }}>H2: {page.h2_count}</div>
                         <div className="pl-8" style={{ color: 'var(--text-muted)' }}>H3: {page.h3_count}</div>
                       </div>
@@ -892,7 +892,7 @@ export default function SeoGeoPage() {
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <div className="text-3xl mb-2">📱</div>
+                      <div className="text-xs font-semibold mb-2 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>No data</div>
                       <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                         {scData ? 'No device traffic data yet. Data appears after your site receives search impressions.' : 'Connect Search Console to see device breakdown.'}
                       </p>
@@ -920,7 +920,7 @@ export default function SeoGeoPage() {
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <div className="text-3xl mb-2">🌍</div>
+                      <div className="text-xs font-semibold mb-2 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>No data</div>
                       <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                         {scData ? 'No country traffic data yet. Data appears after your site receives search impressions.' : 'Connect Search Console to see country breakdown.'}
                       </p>
@@ -932,7 +932,7 @@ export default function SeoGeoPage() {
               {/* No SC prompt */}
               {!scData && !scConfigured && (
                 <div className="rounded-2xl p-8 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-                  <div className="text-5xl mb-4">📊</div>
+                  <div className="text-xs font-semibold mb-4 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>No connection</div>
                   <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Connect Search Console for Traffic Data</h3>
                   <p className="max-w-lg mx-auto" style={{ color: 'var(--text-muted)' }}>
                     Connect Google Search Console to see real traffic data including clicks, impressions, CTR, and search positions for all your pages.
@@ -1389,7 +1389,7 @@ export default function SeoGeoPage() {
             <div className="space-y-6">
               {!scConfigured ? (
                 <div className="rounded-2xl p-8 text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-                  <div className="text-5xl mb-4">🔗</div>
+                  <div className="text-xs font-semibold mb-4 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Not connected</div>
                   <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Search Console Not Configured</h3>
                   <p className="mb-6 max-w-lg mx-auto" style={{ color: 'var(--text-muted)' }}>
                     Connect Google Search Console to see real search ranking data, queries, clicks, impressions, and more.
@@ -1666,11 +1666,11 @@ export default function SeoGeoPage() {
 
 // Helper components
 function Check() {
-  return <span className="text-green-500 font-bold">✓</span>
+  return <span className="text-green-500 font-bold text-xs">OK</span>
 }
 
 function Cross() {
-  return <span className="text-red-500 font-bold">✗</span>
+  return <span className="text-red-500 font-bold text-xs">FAIL</span>
 }
 
 function Warn() {

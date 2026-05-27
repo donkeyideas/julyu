@@ -17,22 +17,18 @@ const CATEGORIES = [
 const RECOMMENDATIONS = [
   {
     id: '1',
-    icon: '💡',
     text: "You're on track to come in $47 under your grocery budget this month. Consider stocking up on non-perishable staples like rice, canned goods, and pasta while you have room.",
   },
   {
     id: '2',
-    icon: '🥩',
     text: 'Switching your weekly chicken and ground beef purchases from Publix to Kroger or ALDI could save you $12-18 per month based on your typical quantities.',
   },
   {
     id: '3',
-    icon: '🏠',
     text: 'Your household supplies spending is higher than average. Buying paper towels and trash bags in bulk at Walmart or Costco could reduce this category by 20%.',
   },
   {
     id: '4',
-    icon: '🎯',
     text: "You've been spending less on personal care this month -- great discipline! Redirecting that surplus toward next month's grocery budget would give you more flexibility for meal planning.",
   },
 ]
@@ -191,7 +187,7 @@ export default function DemoBudgetPage() {
               className="flex items-start gap-3 p-4 rounded-lg"
               style={{ backgroundColor: 'var(--bg-primary)' }}
             >
-              <span className="text-xl">{rec.icon}</span>
+              <div className="w-1 self-stretch rounded-full bg-green-500" />
               <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                 {rec.text}
               </p>
